@@ -1,0 +1,25 @@
+enum EventClientEnum {
+  SERVICE_NAME = 'EVENT_CLIENT_SERVICE',
+  CRM = 'CRM',
+  MESSAGE = 'MESSAGE',
+  CATEGORY = 'CATEGORY',
+  PSP_ACCOUNT = 'PSP_ACCOUNT',
+  PERMISSION = 'PERMISSION',
+  PSP = 'PSP',
+  TRAFFIC = 'TRAFFIC',
+  AFFILIATE = 'AFFILIATE',
+  LEAD = 'LEAD',
+  CARD = 'CARD',
+  ACTIVITY = 'ACTIVITY',
+  TRANSFER = 'TRANSFER',
+  USER = 'USER',
+  ROLE = 'ROLE',
+  STATS = 'STATS',
+  STATUS = 'STATUS',
+  PERSON = 'PERSON',
+  GROUP = 'GROUP',
+  BRAND = 'BRAND',
+  FILE = 'FILE',
+}
+
+export default EventClientEnum;

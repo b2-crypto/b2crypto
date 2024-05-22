@@ -1,0 +1,81 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Local",
+      //"runtimeExecutable": "${env:HOME}/.nvm/versions/node/v18.13.0/bin/npm",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "run",
+        //"start:debug",
+        "start-local:debug",
+        "--",
+        "--inspect-brk"
+      ],
+      "console": "integratedTerminal",
+      "restart": true,
+      "protocol": "auto",
+      "port": 9229,
+      "autoAttachChildProcesses": true,
+      "envFile": "${workspaceRoot}/.env"
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Microservices-Local",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "run",
+        //"start:debug",
+        "start-microservices:debug",
+        "--",
+        "--inspect-brk"
+      ],
+      "console": "integratedTerminal",
+      "restart": true,
+      "protocol": "auto",
+      "port": 9229,
+      "autoAttachChildProcesses": true,
+      "envFile": "${workspaceRoot}/.env"
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Activity gateway",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "run",
+        //"start:debug",
+        "start-gateway-activity:debug",
+        "--",
+        "--inspect-brk"
+      ],
+      "console": "integratedTerminal",
+      "restart": true,
+      "protocol": "auto",
+      "port": 9229,
+      "autoAttachChildProcesses": true,
+      "envFile": "${workspaceRoot}/.env"
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Activity microservice",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "run",
+        "start-microservice-activity:debug",
+        "--",
+        "--inspect-brk"
+      ],
+      "console": "integratedTerminal",
+      "restart": true,
+      "protocol": "auto",
+      "port": 9230,
+      "autoAttachChildProcesses": true,
+      "envFile": "${workspaceRoot}/.env"
+    }
+  ]
+}

@@ -1,0 +1,18 @@
+export const dataTableHeadersTransfer = {
+  ID: { text: 'Id', sortable: true, key: '_id' },
+  EMAIL: { text: 'Email', sortable: true, key: 'leadEmail' },
+  TP_ID: { text: 'Tp id', sortable: true, key: 'leadTpId' },
+  CRM_ID: { text: 'Crm Id', sortable: true, key: 'crm' },
+  COUNTRY: { text: 'Country', sortable: true, key: 'leadCountry' },
+  AMOUNT: { text: 'Amount', sortable: true, key: 'amount' },
+  STATUS_PSP: { text: 'Status Psp', sortable: true },
+  DEPARTMENT: { text: 'Department', sortable: true },
+  REFERENCE: { text: 'Reference', sortable: true },
+  PSP_NAME: { text: 'Psp Name', sortable: true },
+  BRAND: { text: 'Brand', sortable: true },
+  PSP_ID: { text: 'Psp Id', sortable: true },
+  INSERT_DATE: { text: 'Insert Date', sortable: true },
+  CONFIRM_DATE: { text: 'Confirm Date', sortable: true },
+  STATUS_TRANSACTION: { text: 'Status Transaction', sortable: true },
+  ACTIONS: { text: 'Actions', sortable: false },
+};
