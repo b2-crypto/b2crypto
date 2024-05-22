@@ -11,7 +11,7 @@ const configHttp = {
   ...configApp,
 };
 
-/* configHttp.imports.push(JobModule);
+configHttp.imports.push(JobModule);
 
 configHttp.providers.push({
   provide: APP_GUARD,
@@ -21,7 +21,7 @@ configHttp.providers.push({
 configHttp.providers.push({
   provide: APP_GUARD,
   useClass: PoliciesGuard,
-}); */
+});
 
 configHttp.imports.push(SeedModule);
 

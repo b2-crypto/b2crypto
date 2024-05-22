@@ -13,7 +13,10 @@ import { ResponseB2CryptoModule } from '@response-b2crypto/response-b2crypto';
 import { AccountServiceController } from './account-service.controller';
 import { AccountServiceService } from './account-service.service';
 import { CardServiceController } from './card-service.controller';
-import { IntegrationModule, IntegrationService } from '@integration/integration';
+import {
+  IntegrationModule,
+  IntegrationService,
+} from '@integration/integration';
 
 @Module({
   imports: [
