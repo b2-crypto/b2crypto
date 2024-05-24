@@ -16,6 +16,7 @@ import { CardDto } from '@integration/integration/card/generic/dto/card.dto';
 import { UserCardDto } from '@integration/integration/card/generic/dto/user.card.dto';
 import { UserCard, UserCardSchema } from './user-card.schema';
 import { Card, CardSchema } from './card.schema';
+import { AddressSchema } from '@person/person/entities/mongoose/address.schema';
 
 export type AccountDocument = Account & Document;
 
@@ -38,7 +39,13 @@ export class Account extends AccountEntity {
   lastName?: string;
 
   @Prop()
+  type?: string;
+
+  @Prop()
   docId: string;
+
+  @Prop()
+  pin: string;
 
   @Prop()
   email: string;
@@ -129,6 +136,9 @@ export class Account extends AccountEntity {
 
   @Prop({ type: CardSchema })
   cardConfig?: Card;
+
+  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'accounts' })
+  prevAccount: Account;
 }
 
 export const AccountSchema = SchemaFactory.createForClass(Account);

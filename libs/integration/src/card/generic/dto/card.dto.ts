@@ -4,7 +4,7 @@ import { IsObject, IsOptional, IsString } from 'class-validator';
 export class CardDto {
   @IsString()
   @IsOptional()
-  id: string;
+  id?: string;
 
   @IsString()
   @IsOptional()
@@ -34,6 +34,10 @@ export class CardDto {
   @IsString()
   @IsOptional()
   name_on_card: string;
+
+  @IsString()
+  @IsOptional()
+  email?: string;
 }
 
 export class Address {

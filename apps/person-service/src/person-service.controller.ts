@@ -3,6 +3,7 @@ import {
   Controller,
   Delete,
   Get,
+  Inject,
   Param,
   ParseArrayPipe,
   Patch,
@@ -31,11 +32,16 @@ import { PersonCreateDto } from '@person/person/dto/person.create.dto';
 import { PersonUpdateDto } from '@person/person/dto/person.update.dto';
 import EventsNamesPersonEnum from './enum/events.names.person.enum';
 import { PersonServiceService } from './person-service.service';
+import { UserServiceService } from 'apps/user-service/src/user-service.service';
 
 @ApiTags('PERSON')
-@Controller('person')
+@Controller('persons')
 export class PersonServiceController implements GenericServiceController {
-  constructor(private readonly personService: PersonServiceService) {}
+  constructor(
+    private readonly personService: PersonServiceService,
+    @Inject(UserServiceService)
+    private readonly userService: UserServiceService,
+  ) {}
 
   @Get('all')
   // @CheckPoliciesAbility(new PolicyHandlerPersonRead())
@@ -52,7 +58,22 @@ export class PersonServiceController implements GenericServiceController {
   @Post()
   // @CheckPoliciesAbility(new PolicyHandlerPersonCreate())
   async createOne(@Body() createPersonDto: PersonCreateDto) {
-    return this.personService.newPerson(createPersonDto);
+    createPersonDto.name = createPersonDto.firstName;
+    createPersonDto.nationality =
+      createPersonDto.nationality ?? createPersonDto.country;
+    createPersonDto.taxIdentificationType =
+      createPersonDto.taxIdentificationType ?? createPersonDto.typeDocId;
+    createPersonDto.taxIdentificationValue =
+      createPersonDto.taxIdentificationValue ??
+      parseInt(createPersonDto.numDocId);
+    const personalData = await this.personService.newPerson(createPersonDto);
+    if (personalData.user) {
+      await this.userService.updateUser({
+        id: personalData.user._id,
+        personalData: personalData._id,
+      });
+    }
+    return personalData;
   }
 
   @Post('all')

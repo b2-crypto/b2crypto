@@ -34,21 +34,6 @@ export class Group extends GroupEntity {
 
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'categories' })
   category: Category;
-
-  /* @Prop({ type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'psps' }] })
-  pspGroup: Psp[];
-
-  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'statuses' })
-  status: Status;
-
-  @Prop({ type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'crms' }] })
-  crmOptions: Crm[];
-
-  @Prop({ type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'leads' }] })
-  leads: Lead[];
-
-  @Prop({ type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'affiliates' }] })
-  affiliates: Affiliate[]; */
 }
 
 export const GroupSchema = SchemaFactory.createForClass(Group);

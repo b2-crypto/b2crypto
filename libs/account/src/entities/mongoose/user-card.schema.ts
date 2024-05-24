@@ -1,16 +1,16 @@
-import { Prop, SchemaFactory } from '@nestjs/mongoose';
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 
 export class AddressUserCard {
   @Prop()
   street_name: string;
   @Prop()
-  street_number: number;
+  street_number: string;
   @Prop()
-  floor: number;
+  floor: string;
   @Prop()
   apartment: string;
   @Prop()
-  zip_code: number;
+  zip_code: string;
   @Prop()
   neighborhood: string;
   @Prop()
@@ -18,7 +18,7 @@ export class AddressUserCard {
   @Prop()
   region: string;
   @Prop()
-  additional_info: string;
+  additional_info?: string;
   @Prop()
   country: string;
 }
@@ -52,7 +52,7 @@ export class UserCard {
   email: string;
 
   @Prop()
-  phone: string;
+  phone?: string;
 
   @Prop()
   tax_identification_type: string;
@@ -68,6 +68,13 @@ export class UserCard {
 
   @Prop()
   operation_country: string;
+
+  @Prop()
+  status: string;
+
+  @Prop()
+  client_id: string;
 }
 
-export const UserCardSchema = SchemaFactory.createForClass(UserCard);
+@Schema()
+export class UserCardSchema extends UserCard {}

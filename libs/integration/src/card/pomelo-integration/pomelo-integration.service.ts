@@ -20,7 +20,7 @@ export class PomeloIntegrationService extends IntegrationCardService<
   ) {
     super(_account, configService);
     this.setClient({
-      id: this.account?.id ?? 'b2crypto',
+      id: 'BPdaVjhdJAyzPW43JI7YUM1czNoTPh2G',
       secret:
         this.account?.secret ??
         'eRIIDxqovn5sBhFII7_E9aGrSu3CiU7aLpr5tw2As3-PjU78rro2Q2uoob0qw54F',
@@ -29,6 +29,7 @@ export class PomeloIntegrationService extends IntegrationCardService<
       grantType: this.account?.grantType ?? 'client_credentials',
     });
     this.setRouteMap({
+      getFormatKey: 'filter[%key%]',
       // Auth
       auth: '/oauth/token',
       // User

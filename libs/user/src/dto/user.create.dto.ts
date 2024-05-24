@@ -10,9 +10,11 @@ import {
   IsJSON,
   IsMongoId,
   IsNotEmpty,
+  IsObject,
   IsOptional,
   IsString,
 } from 'class-validator';
+import { UserCardDto } from '@integration/integration/card/generic/dto/user.card.dto';
 
 export class UserCreateDto extends UserChangePasswordDto {
   @IsString()
@@ -61,6 +63,11 @@ export class UserCreateDto extends UserChangePasswordDto {
   @IsOptional()
   twoFactorQr: string;
 
+  @IsObject()
+  @Type(() => UserCardDto)
+  @IsOptional()
+  userCard?: UserCardDto;
+
   @IsBoolean()
   @IsOptional()
   twoFactorIsActive: boolean;
@@ -69,9 +76,4 @@ export class UserCreateDto extends UserChangePasswordDto {
   @IsOptional()
   @IsMongoId({ each: true })
   permissions: Array<ObjectId>;
-  /* 
-  @IsArray()
-  @IsOptional()
-  @IsMongoId({ each: true })
-  affiliates: ObjectId[]; */
 }

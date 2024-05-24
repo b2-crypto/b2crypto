@@ -40,7 +40,7 @@ import GenericServiceController from '@common/common/interfaces/controller.gener
 import ResponseB2Crypto from '@response-b2crypto/response-b2crypto/models/ResponseB2Crypto';
 
 @ApiTags('USER')
-@Controller('user')
+@Controller('users')
 export class UserServiceController implements GenericServiceController {
   constructor(private readonly userService: UserServiceService) {}
 

@@ -15,27 +15,27 @@ export class CategoryCreateDto extends CreateAnyDto {
   name: string;
 
   @IsEmpty()
-  slug: string;
+  slug?: string;
 
   @IsString()
   @IsOptional()
-  description: string;
+  description?: string;
 
   @IsString()
   @IsOptional()
   @IsEnum(TagEnum)
-  type: string;
+  type?: string;
 
   @IsArray()
   @IsOptional()
   @IsEnum(ResourcesEnum, { each: true })
-  resources: ResourcesEnum[];
+  resources?: ResourcesEnum[];
 
   @IsNumber()
   @IsOptional()
-  valueNumber: number;
+  valueNumber?: number;
 
   @IsString()
   @IsOptional()
-  valueText: string;
+  valueText?: string;
 }

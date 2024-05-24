@@ -1,4 +1,4 @@
-import CountryCodeB2cryptoEnum from '@common/common/enums/country.code.b2crypto.enum';
+import CountryCodeEnum from '@common/common/enums/country.code.b2crypto.enum';
 import { CreateAnyDto } from '@common/common/models/create-any.dto';
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
@@ -10,6 +10,7 @@ import {
   IsEnum,
   IsMongoId,
   IsNotEmpty,
+  IsNumber,
   IsOptional,
   IsString,
   Matches,
@@ -22,6 +23,7 @@ import { AccountInterface } from '../entities/account.interface';
 import { CategoryUpdateDto } from '@category/category/dto/category.update.dto';
 import { PersonCreateDto } from '@person/person/dto/person.create.dto';
 import { StatusInterface } from '@status/status/entities/status.interface';
+import AddressDto from '@person/person/dto/address.dto';
 
 export class AccountCreateDto extends CreateAnyDto implements AccountInterface {
   _id?: ObjectId;
@@ -33,6 +35,10 @@ export class AccountCreateDto extends CreateAnyDto implements AccountInterface {
   @IsString()
   @IsNotEmpty()
   name: string;
+
+  @IsString()
+  @IsNotEmpty()
+  type: string;
 
   @ApiProperty({
     type: String,
@@ -54,6 +60,21 @@ export class AccountCreateDto extends CreateAnyDto implements AccountInterface {
   })
   @IsOptional()
   docId: string;
+
+  @IsString()
+  @IsOptional()
+  secret: string;
+
+  @IsNumber({ maxDecimalPlaces: 0, allowNaN: false, allowInfinity: false })
+  pin: number;
+
+  @ApiProperty({
+    description: 'Account DocId',
+  })
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => AddressDto)
+  address: AddressDto;
 
   @ApiProperty({
     description: 'Account email',
@@ -116,9 +137,9 @@ export class AccountCreateDto extends CreateAnyDto implements AccountInterface {
   @ApiProperty({
     description: 'Account country',
   })
-  @IsEnum(CountryCodeB2cryptoEnum)
+  @IsEnum(CountryCodeEnum)
   @IsOptional()
-  country: CountryCodeB2cryptoEnum;
+  country: CountryCodeEnum;
 
   @ApiProperty({
     example: 'GOOGLE',

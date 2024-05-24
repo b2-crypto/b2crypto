@@ -20,6 +20,12 @@ class ResponseB2Crypto {
     if (data.response) {
       data = data.response;
     }
+    if (data.response) {
+      data = data.response;
+    }
+    if (data.response) {
+      data = data.response;
+    }
     this.code = code || this.getCode(data);
     this.action = action;
     this.message = message || data?.message;

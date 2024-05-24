@@ -1,3 +1,6 @@
+import CountryCodeEnum from '@common/common/enums/country.code.b2crypto.enum';
+import LocationModel from '@common/common/models/LocationModel';
+import { Type } from 'class-transformer';
 import {
   IsEnum,
   IsMongoId,
@@ -6,12 +9,10 @@ import {
   IsOptional,
   IsString,
 } from 'class-validator';
-import LocationModel from '@common/common/models/LocationModel';
 import { ObjectId } from 'mongodb';
-import { Type } from 'class-transformer';
+import AddressDto from './address.dto';
 import BasicDto from './basic.dto';
 import GeopointDto from './geopoint.dto';
-import CountryCodeB2cryptoEnum from '@common/common/enums/country.code.b2crypto.enum';
 
 export default class LocationDto implements LocationModel {
   @IsString()
@@ -31,14 +32,13 @@ export default class LocationDto implements LocationModel {
   @Type(() => BasicDto)
   colony!: BasicDto;
 
-  @IsObject()
+  @IsString()
   @IsOptional()
-  @Type(() => BasicDto)
-  city!: BasicDto;
+  city!: string;
 
   @IsOptional()
-  @IsEnum(CountryCodeB2cryptoEnum)
-  country: CountryCodeB2cryptoEnum;
+  @IsEnum(CountryCodeEnum)
+  country: CountryCodeEnum;
 
   @IsOptional()
   @IsMongoId()
@@ -47,17 +47,16 @@ export default class LocationDto implements LocationModel {
   @IsObject()
   @IsOptional()
   @Type(() => BasicDto)
-  address!: BasicDto;
+  address!: AddressDto;
 
   @IsObject()
   @IsOptional()
   @Type(() => BasicDto)
   street!: BasicDto;
 
-  @IsObject()
+  @IsString()
   @IsOptional()
-  @Type(() => BasicDto)
-  zipcode!: BasicDto;
+  zipcode!: string;
 
   @IsObject()
   @IsOptional()

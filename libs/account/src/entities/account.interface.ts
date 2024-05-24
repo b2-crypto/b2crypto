@@ -43,7 +43,9 @@ export interface AccountInterface {
   // Trackbox
   firstName?: string;
   lastName?: string;
+  type?: string;
   responseCreation?: string;
+  prevAccount?: AccountInterface;
 }
 
 export const AccountPropertiesRelations = [

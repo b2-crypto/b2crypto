@@ -28,7 +28,7 @@ export class LocationSchema implements LocationModel {
   colony: ColonySchema;
 
   @Prop({ type: CitySchema })
-  city: CitySchema;
+  city: string;
 
   @Prop({ type: String, enum: CountryCodeB2cryptoEnum })
   country: CountryCodeB2cryptoEnum;
@@ -39,8 +39,8 @@ export class LocationSchema implements LocationModel {
   @Prop({ type: StreetSchema })
   street: StreetSchema;
 
-  @Prop({ type: ZipCodeSchema })
-  zipcode: ZipCodeSchema;
+  @Prop()
+  zipcode: string;
 
   @Prop({ type: GeoPointSchema })
   geopoint: GeoPointSchema;

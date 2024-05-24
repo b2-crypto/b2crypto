@@ -1,5 +1,6 @@
 import { Account } from '@account/account/entities/mongoose/account.schema';
 import { Affiliate } from '@affiliate/affiliate/infrastructure/mongoose/affiliate.schema';
+import CountryCodeEnum from '@common/common/enums/country.code.b2crypto.enum';
 import DocIdTypeEnum from '@common/common/enums/DocIdTypeEnum';
 import GenderEnum from '@common/common/enums/GenderEnum';
 import { Lead } from '@lead/lead/entities/mongoose/lead.schema';
@@ -42,6 +43,18 @@ export class Person extends PersonEntity {
   @Prop()
   email: string[];
 
+  @Prop({ type: String, enum: CountryCodeEnum })
+  nationality: CountryCodeEnum;
+
+  @Prop({ type: String, enum: CountryCodeEnum })
+  country: CountryCodeEnum;
+
+  @Prop()
+  taxIdentificationType: string;
+
+  @Prop()
+  taxIdentificationValue: number;
+
   @Prop([{ type: TelephoneSchema }])
   telephone: TelephoneSchema[];
 
@@ -57,8 +70,8 @@ export class Person extends PersonEntity {
   @Prop({ type: JobSchema })
   job: JobSchema;
 
-  @Prop({ type: BirthSchema })
-  birth: BirthSchema;
+  @Prop({ type: Date })
+  birth: Date;
 
   @Prop({ type: String, enum: GenderEnum })
   gender: GenderEnum;

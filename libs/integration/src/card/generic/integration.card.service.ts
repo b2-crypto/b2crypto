@@ -4,6 +4,7 @@ import { BadRequestException, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import axios, {
   AxiosInstance,
+  AxiosRequestConfig,
   AxiosResponse,
   CreateAxiosDefaults,
 } from 'axios';
@@ -14,6 +15,8 @@ import { CardRoutesInterface } from './interface/card.routes.interface';
 import { CardDto } from './dto/card.dto';
 import { ClientCardDto } from './dto/client.card.dto';
 import { AccountDocument } from '@account/account/entities/mongoose/account.schema';
+import { Readable } from 'stream';
+import { URLSearchParams } from 'url';
 
 export class IntegrationCardService<
   // DTO
@@ -65,14 +68,21 @@ export class IntegrationCardService<
         baseURL: this.client.url,
         headers: {
           'Content-Type': 'application/json',
-          Accept: 'application/json',
-          'Accept-Encoding': '*',
+          Accept: '*/*',
+          'Accept-Encoding': 'gzip, deflate, br',
         },
       } as CreateAxiosDefaults;
       if (!this.token) {
         this.urlEncoded = false;
         try {
-          const token = await axios.post(
+          const token = await this.fetch('POST', this.routesMap.auth, {
+            client_id: this.client.id,
+            client_secret: this.client.secret,
+            audience: this.client.audience,
+            grant_type: this.client.grantType,
+          });
+          this.token = token.access_token;
+          /* const token = await axios.post(
             `${this.client.url}${this.routesMap.auth}`,
             {
               client_id: this.client.id,
@@ -80,8 +90,14 @@ export class IntegrationCardService<
               audience: this.client.audience,
               grant_type: this.client.grantType,
             },
+            {
+              headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/json',
+              },
+            },
           );
-          this.token = token.data?.access_token;
+          this.token = token.data.access_token; */
         } catch (err) {
           Logger.error(err, IntegrationCardService.name);
           Logger.error(
@@ -101,6 +117,7 @@ export class IntegrationCardService<
             })}`,
             IntegrationCardService.name,
           );
+          return null;
         }
         // Todo[hender] Save token and check if already expire
         //this.dateToExpireToken = today.getTime() + expireIn;
@@ -113,11 +130,47 @@ export class IntegrationCardService<
     }
   }
 
+  private async fetch(method: string, uri: string, data?: any, headers?) {
+    const request = {
+      method: method ?? 'GET',
+      headers: headers ?? {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      },
+      body: undefined,
+    };
+    if (data) {
+      if (
+        request.method === 'POST' ||
+        request.method === 'PUT' ||
+        request.method === 'PATCH'
+      ) {
+        request.body = JSON.stringify(data);
+      } else {
+        const queryParams = new URLSearchParams();
+        Object.entries(data).forEach(([key, val]) => {
+          queryParams.append(
+            this.routesMap.getFormatKey.replace('%key%', key.toString()),
+            val.toString(),
+          );
+        });
+        uri += `?${queryParams.toString()}`;
+      }
+    }
+    if (this.token) {
+      request.headers.Authorization = `Bearer ${this.token}`;
+    }
+    const response = await fetch(`${this.client.url}${uri}`, request);
+    return response.json();
+  }
+
   async getUser(userCard: TUserCardDto): Promise<AxiosResponse<any[], any>> {
-    return this.http.get(this.routesMap.searchUser, userCard);
+    //return this.http.get(this.routesMap.searchUser, userCard);
+    return this.fetch('GET', this.routesMap.searchUser, userCard);
   }
   async createUser(userCard: TUserCardDto): Promise<AxiosResponse<any[], any>> {
-    return this.http.post(this.routesMap.createUser, userCard);
+    //return this.http.post(this.routesMap.createUser, userCard);
+    return this.fetch('POST', this.routesMap.createUser, userCard);
   }
   async updateUser(userCard: TUserCardDto): Promise<AxiosResponse<any[], any>> {
     return this.http.patch(this.routesMap.updateUser, userCard);
@@ -126,8 +179,9 @@ export class IntegrationCardService<
   async getCard(card: TCardDto): Promise<AxiosResponse<any[], any>> {
     return this.http.get(this.routesMap.searchCard, card);
   }
-  async createCards(card: TCardDto): Promise<AxiosResponse<any[], any>> {
-    return this.http.post(this.routesMap.createCard, card);
+  async createCard(card: TCardDto): Promise<AxiosResponse<any[], any>> {
+    //return this.http.post(this.routesMap.createCard, card);
+    return this.fetch('POST', this.routesMap.createUser, card);
   }
   async updateCard(card: TCardDto): Promise<AxiosResponse<any[], any>> {
     return this.http.patch(this.routesMap.updateCard, card);
@@ -136,7 +190,8 @@ export class IntegrationCardService<
   async getAffinityGroup(
     userCard: TUserCardDto,
   ): Promise<AxiosResponse<any[], any>> {
-    return this.http.get(this.routesMap.searchAffinityGroupCard);
+    //return this.http.get(this.routesMap.searchAffinityGroupCard);
+    return this.fetch('GET', this.routesMap.searchAffinityGroupCard);
   }
   async getInformationCard(
     userCard: TUserCardDto,

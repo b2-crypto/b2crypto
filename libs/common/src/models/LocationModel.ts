@@ -1,5 +1,5 @@
 import { CategoryInterface } from '@category/category/entities/category.interface';
-import CountryCodeB2cryptoEnum from '@common/common/enums/country.code.b2crypto.enum';
+import CountryCodeEnum from '@common/common/enums/country.code.b2crypto.enum';
 import AddressModel from './AddressModel';
 import CityModel from './CityModel';
 import ColonyModel from './ColonyModel';
@@ -12,11 +12,11 @@ interface LocationModel {
   description: string;
   category: CategoryInterface;
   colony: ColonyModel;
-  city: CityModel;
-  country: CountryCodeB2cryptoEnum;
+  city: string;
+  country: CountryCodeEnum;
   address: AddressModel;
   street: StreetModel;
-  zipcode: ZipCodeModel;
+  zipcode: string;
   // The geoposition of location
   geopoint: GeopointModel;
 }

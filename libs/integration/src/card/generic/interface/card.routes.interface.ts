@@ -1,4 +1,6 @@
 export interface CardRoutesInterface {
+  // configSearch
+  getFormatKey?: string;
   // Auth
   auth?: string;
   // User

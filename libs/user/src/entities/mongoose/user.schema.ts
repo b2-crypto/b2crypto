@@ -1,4 +1,7 @@
-import { Affiliate } from '@affiliate/affiliate/infrastructure/mongoose/affiliate.schema';
+import {
+  UserCard,
+  UserCardSchema,
+} from '@account/account/entities/mongoose/user-card.schema';
 import { FileInterface } from '@file/file/entities/file.interface';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Permission } from '@permission/permission/entities/mongoose/permission.schema';
@@ -89,6 +92,9 @@ export class User extends UserEntity {
 
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'affiliates' })
   userParent: User;
+
+  @Prop({ type: UserCardSchema })
+  userCard?: UserCard;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

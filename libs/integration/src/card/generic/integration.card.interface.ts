@@ -18,7 +18,7 @@ export interface IntegrationCardInterface<
   updateUser(userCard: TUserCardDto): Promise<AxiosResponse<any[]>>;
 
   getCard(card: TCardDto): Promise<AxiosResponse<any[]>>;
-  createCards(card: TCardDto): Promise<AxiosResponse<any[]>>;
+  createCard(card: TCardDto): Promise<AxiosResponse<any[]>>;
   updateCard(card: TCardDto): Promise<AxiosResponse<any[]>>;
 
   getInformationCard(

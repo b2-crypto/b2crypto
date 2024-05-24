@@ -9,7 +9,11 @@ export class GroupCreateDto extends CreateAnyDto {
 
   @IsString()
   @IsOptional()
-  description: string;
+  description?: string;
+
+  @IsString()
+  @IsOptional()
+  valueGroup?: string;
 
   @IsMongoId()
   @IsNotEmpty()
@@ -17,5 +21,5 @@ export class GroupCreateDto extends CreateAnyDto {
 
   @IsMongoId()
   @IsOptional()
-  category: ObjectId;
+  category?: ObjectId;
 }

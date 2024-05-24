@@ -1,3 +1,4 @@
+import CountryCodeEnum from '@common/common/enums/country.code.b2crypto.enum';
 import { AffiliateEntity } from '@affiliate/affiliate/domain/entities/affiliate.entity';
 import DocIdTypeEnum from '@common/common/enums/DocIdTypeEnum';
 import GenderEnum from '@common/common/enums/GenderEnum';
@@ -25,7 +26,7 @@ export interface PersonInterface {
   typeDocId: DocIdTypeEnum;
   location: LocationModel;
   job: JobModel;
-  birth: BirthModel;
+  birth: Date;
   gender: GenderEnum;
   kyc: KyCModel;
   user: UserEntity;
@@ -34,6 +35,10 @@ export interface PersonInterface {
   affiliates: AffiliateEntity[];
   createdAt: Date;
   updatedAt: Date;
+  nationality: CountryCodeEnum;
+  country: CountryCodeEnum;
+  taxIdentificationType: string;
+  taxIdentificationValue: number;
 }
 
 export const PersonPropertiesRelations = [

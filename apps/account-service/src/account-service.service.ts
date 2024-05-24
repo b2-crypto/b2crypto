@@ -17,19 +17,13 @@ import { StatusDocument } from '@status/status/entities/mongoose/status.schema';
 export class AccountServiceService
   implements BasicMicroserviceService<AccountDocument>
 {
-  private eventClient: ClientProxy;
-  private statusCftd: StatusDocument;
-  private statusFtd: StatusDocument;
-
   constructor(
     private configService: ConfigService,
     @Inject(BuildersService)
     private readonly builder: BuildersService,
     @Inject(AccountServiceMongooseService)
     private lib: AccountServiceMongooseService,
-  ) {
-    this.eventClient = builder.getEventClient();
-  }
+  ) {}
   async download(
     query: QuerySearchAnyDto,
     context?: any,

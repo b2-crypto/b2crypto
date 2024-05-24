@@ -44,6 +44,7 @@ export class AccountEntity implements AccountInterface {
     description: 'LastName of the account',
   })
   lastName?: string;
+  type?: string;
   slug: string;
   @ApiProperty({
     type: String,
@@ -149,4 +150,9 @@ export class AccountEntity implements AccountInterface {
     description: 'Response account integration',
   })
   responseCreation?: string;
+  @ApiProperty({
+    type: AccountEntity,
+    description: 'Account previous',
+  })
+  prevAccount: AccountEntity;
 }
