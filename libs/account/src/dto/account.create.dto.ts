@@ -1,11 +1,14 @@
+import { CategoryUpdateDto } from '@category/category/dto/category.update.dto';
 import CountryCodeEnum from '@common/common/enums/country.code.b2crypto.enum';
 import { CreateAnyDto } from '@common/common/models/create-any.dto';
 import { ApiProperty } from '@nestjs/swagger';
+import AddressDto from '@person/person/dto/address.dto';
+import { PersonCreateDto } from '@person/person/dto/person.create.dto';
+import { StatusInterface } from '@status/status/entities/status.interface';
 import { Type } from 'class-transformer';
 import {
   IsArray,
   IsBoolean,
-  IsDate,
   IsEmpty,
   IsEnum,
   IsMongoId,
@@ -13,17 +16,11 @@ import {
   IsNumber,
   IsOptional,
   IsString,
-  Matches,
-  MaxLength,
-  MinLength,
   ValidateNested,
 } from 'class-validator';
 import { ObjectId } from 'mongodb';
 import { AccountInterface } from '../entities/account.interface';
-import { CategoryUpdateDto } from '@category/category/dto/category.update.dto';
-import { PersonCreateDto } from '@person/person/dto/person.create.dto';
-import { StatusInterface } from '@status/status/entities/status.interface';
-import AddressDto from '@person/person/dto/address.dto';
+import TypesAccountEnum from '../enum/types.account.enum';
 
 export class AccountCreateDto extends CreateAnyDto implements AccountInterface {
   _id?: ObjectId;
@@ -36,9 +33,20 @@ export class AccountCreateDto extends CreateAnyDto implements AccountInterface {
   @IsNotEmpty()
   name: string;
 
+  @IsEnum(TypesAccountEnum)
+  @ApiProperty({
+    type: String,
+    description: 'Type account (Bank, E-Wallet, Card)',
+  })
+  type: TypesAccountEnum;
+
   @IsString()
   @IsNotEmpty()
-  type: string;
+  @ApiProperty({
+    type: String,
+    description: 'Type of type account',
+  })
+  accountType: string;
 
   @ApiProperty({
     type: String,

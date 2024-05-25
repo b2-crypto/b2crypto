@@ -155,4 +155,14 @@ export class AccountEntity implements AccountInterface {
     description: 'Account previous',
   })
   prevAccount: AccountEntity;
+  @ApiProperty({
+    type: AccountEntity,
+    description: 'Amount available',
+  })
+  amount: number;
+  @ApiProperty({
+    type: AccountEntity,
+    description: 'Amount blocked',
+  })
+  amountBlocked: number;
 }

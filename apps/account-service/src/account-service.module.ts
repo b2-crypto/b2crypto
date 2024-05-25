@@ -25,6 +25,7 @@ import { UserServiceService } from 'apps/user-service/src/user-service.service';
 import { AccountServiceController } from './account-service.controller';
 import { AccountServiceService } from './account-service.service';
 import { CardServiceController } from './card-service.controller';
+import { WalletServiceController } from './wallet-service.controller';
 
 @Module({
   imports: [
@@ -49,7 +50,11 @@ import { CardServiceController } from './card-service.controller';
     CategoryModule,
     StatusModule,
   ],
-  controllers: [AccountServiceController, CardServiceController],
+  controllers: [
+    AccountServiceController,
+    CardServiceController,
+    WalletServiceController,
+  ],
   providers: [
     StatusServiceService,
     CategoryServiceService,

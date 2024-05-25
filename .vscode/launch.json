@@ -5,8 +5,8 @@
       "type": "node",
       "request": "launch",
       "name": "Local",
-      "runtimeExecutable": "${env:HOME}/.nvm/versions/node/v18.18.0/bin/npm",
-      //"runtimeExecutable": "npm",
+      //"runtimeExecutable": "${env:HOME}/.nvm/versions/node/v18.18.0/bin/npm",
+      "runtimeExecutable": "npm",
       "runtimeArgs": [
         "run",
         //"start:debug",

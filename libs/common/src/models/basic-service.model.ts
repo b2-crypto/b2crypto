@@ -283,8 +283,9 @@ export class BasicServiceModel<
     id: string,
     updateAnyDto: TBasicUpdateDTO,
   ): Promise<TBasicEntity> {
-    id = id || updateAnyDto['id'];
+    id = id || updateAnyDto['id'] || updateAnyDto['_id'];
     delete updateAnyDto['id'];
+    delete updateAnyDto['_id'];
     if (!id) {
       throw new BadRequestException('Id is not finded');
     }

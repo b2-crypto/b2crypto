@@ -83,6 +83,12 @@ export class Account extends AccountEntity {
   @Prop({ default: 0 })
   quantityTransfer: number;
 
+  @Prop({ default: 0 })
+  amount: number;
+
+  @Prop({ default: 0 })
+  amountBlocked: number;
+
   @Prop()
   hasSendDisclaimer: boolean;
 

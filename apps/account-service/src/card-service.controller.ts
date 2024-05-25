@@ -1,3 +1,13 @@
+import { CardCreateDto } from '@account/account/dto/card.create.dto';
+import { Card } from '@account/account/entities/mongoose/card.schema';
+import { UserCard } from '@account/account/entities/mongoose/user-card.schema';
+import { BuildersService } from '@builder/builders';
+import { CommonService } from '@common/common';
+import ResourcesEnum from '@common/common/enums/ResourceEnum';
+import TagEnum from '@common/common/enums/TagEnum';
+import { IntegrationService } from '@integration/integration';
+import IntegrationCardEnum from '@integration/integration/card/enums/IntegrationCardEnum';
+import { UserCardDto } from '@integration/integration/card/generic/dto/user.card.dto';
 import {
   BadRequestException,
   Body,
@@ -10,26 +20,13 @@ import {
   Req,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { AccountServiceController } from './account-service.controller';
-import { AccountCreateDto } from '@account/account/dto/account.create.dto';
-import { BuildersService } from '@builder/builders';
-import { AccountServiceService } from './account-service.service';
-import { IntegrationService } from '@integration/integration';
-import { IntegrationCardService } from '@integration/integration/card/generic/integration.card.service';
-import IntegrationCardEnum from '@integration/integration/card/enums/IntegrationCardEnum';
-import { UserCardDto } from '@integration/integration/card/generic/dto/user.card.dto';
-import { CardDto } from '@integration/integration/card/generic/dto/card.dto';
-import { UserCard } from '@account/account/entities/mongoose/user-card.schema';
-import { Card } from '@account/account/entities/mongoose/card.schema';
 import { User } from '@user/user/entities/mongoose/user.schema';
-import { UserServiceService } from 'apps/user-service/src/user-service.service';
-import AddressDto from '@person/person/dto/address.dto';
-import { GroupServiceService } from 'apps/group-service/src/group-service.service';
-import { CommonService } from '@common/common';
 import { CategoryServiceService } from 'apps/category-service/src/category-service.service';
+import { GroupServiceService } from 'apps/group-service/src/group-service.service';
 import { StatusServiceService } from 'apps/status-service/src/status-service.service';
-import TagEnum from '@common/common/enums/TagEnum';
-import ResourcesEnum from '@common/common/enums/ResourceEnum';
+import { UserServiceService } from 'apps/user-service/src/user-service.service';
+import { AccountServiceController } from './account-service.controller';
+import { AccountServiceService } from './account-service.service';
 
 @ApiTags('CARD')
 @Controller('cards')
@@ -51,7 +48,7 @@ export class CardServiceController extends AccountServiceController {
     super(cardService, cardBuilder);
   }
   @Post('create')
-  async createOne(@Body() createDto: AccountCreateDto, @Req() req?: any) {
+  async createOne(@Body() createDto: CardCreateDto, @Req() req?: any) {
     const user: User = (
       await this.userService.getAll({
         relations: ['personalData'],

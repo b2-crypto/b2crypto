@@ -55,7 +55,7 @@ export class AccountServiceService
     updateDto: AccountUpdateDto,
     context?: any,
   ): Promise<AccountDocument> {
-    return this.lib.update(updateDto.id, updateDto);
+    return this.lib.update(updateDto.id ?? updateDto._id, updateDto);
   }
   async updateMany(
     updateDto: AccountUpdateDto[],

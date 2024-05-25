@@ -46,6 +46,8 @@ export interface AccountInterface {
   type?: string;
   responseCreation?: string;
   prevAccount?: AccountInterface;
+  amount?: number;
+  amountBlocked?: number;
 }
 
 export const AccountPropertiesRelations = [
