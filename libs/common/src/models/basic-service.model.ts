@@ -291,9 +291,9 @@ export class BasicServiceModel<
     }
     let rta;
     if (this.nameOrm === dbIntegrationEnum.MONGOOSE) {
-      if (!updateAnyDto['searchText']) {
+      /*if (!updateAnyDto['searchText']) {
         updateAnyDto['searchText'] = this.getSearchText(updateAnyDto);
-      }
+      }*/
       //rta = await this.model.findOneAndUpdate({ _id: id }, updateAnyDto);
       rta = await this.model.updateOne({ _id: id }, updateAnyDto);
     } else {

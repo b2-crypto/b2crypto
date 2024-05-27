@@ -79,7 +79,7 @@ export class SeedService {
       !countPermissions ||
       !countTransfers
     ) {
-      await this.clearStats();
+      /*await this.clearStats();
       await this.clearActivities();
       await this.clearPersons();
       await this.seedStatus();
@@ -93,7 +93,7 @@ export class SeedService {
       await this.seedPspAccounts();
       await this.seedAffiliates();
       await this.seedLeads();
-      await this.seedTransfers();
+      await this.seedTransfers();*/
     }
     return {
       statusCode: 200,

@@ -13,10 +13,12 @@ import {
   Body,
   Controller,
   Delete,
+  Get,
   Inject,
   Logger,
   Param,
   Post,
+  Query,
   Req,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
@@ -27,6 +29,10 @@ import { StatusServiceService } from 'apps/status-service/src/status-service.ser
 import { UserServiceService } from 'apps/user-service/src/user-service.service';
 import { AccountServiceController } from './account-service.controller';
 import { AccountServiceService } from './account-service.service';
+import { RechargeCreateDto } from '@account/account/dto/recharge.create.dto';
+import { AccountUpdateDto } from '@account/account/dto/account.update.dto';
+import { QuerySearchAnyDto } from '@common/common/models/query_search-any.dto';
+import TypesAccountEnum from '@account/account/enum/types.account.enum';
 
 @ApiTags('CARD')
 @Controller('cards')
@@ -47,6 +53,15 @@ export class CardServiceController extends AccountServiceController {
   ) {
     super(cardService, cardBuilder);
   }
+
+  @Get('all')
+  findAll(@Query() query: QuerySearchAnyDto, req?: any) {
+    query = query ?? {};
+    query.where = query.where ?? {};
+    query.where.type = TypesAccountEnum.CARD;
+    return this.cardService.findAll(query);
+  }
+
   @Post('create')
   async createOne(@Body() createDto: CardCreateDto, @Req() req?: any) {
     const user: User = (
@@ -99,7 +114,7 @@ export class CardServiceController extends AccountServiceController {
               2,
             )}-${birthDate.getDate()}`,
             gender: account.personalData?.gender ?? user.personalData.gender,
-            email: account.email ?? user.personalData.email[0],
+            email: account.email ?? user.personalData.email[0] ?? user.email,
             phone: account.telephone ?? user.personalData.telephone[0],
             tax_identification_type:
               account.personalData?.taxIdentificationType ??
@@ -128,6 +143,7 @@ export class CardServiceController extends AccountServiceController {
       } else {
         account.userCardConfig = user.userCard;
       }
+      account.email = account.email ?? user.personalData.email[0] ?? user.email;
       // Validate Affinity Group
       if (!account?.group?.valueGroup) {
         const affinityGroup = await cardIntegration.getAffinityGroup(
@@ -183,7 +199,7 @@ export class CardServiceController extends AccountServiceController {
       const card = await cardIntegration.createCard({
         user_id: account.userCardConfig.id,
         affinity_group_id: account.group.valueGroup,
-        card_type: account.type,
+        card_type: account.accountType,
         email: account.email,
         address: {
           street_name: user.personalData.location.address.street_name,
@@ -192,12 +208,13 @@ export class CardServiceController extends AccountServiceController {
           apartment: user.personalData.location.address.apartment,
           city: user.personalData.location.address.city,
           region: user.personalData.location.address.region,
-          country: 'Colombia',
+          country: user.personalData.location.address.country ?? 'Colombia',
           zip_code: user.personalData.location.zipcode,
           neighborhood: user.personalData.location.address.neighborhood,
         },
-        /* account.personalData?.location.address ??
-          user.personalData.location.address, */
+        /*address:
+          account.personalData?.location.address ??
+          user.personalData.location.address,*/
         previous_card_id: account.prevAccount?.cardConfig?.id ?? null,
         // After first access remove pin
         pin: account.pin,
@@ -216,6 +233,45 @@ export class CardServiceController extends AccountServiceController {
       return err;
     }
   }
+
+  @Post('recharge')
+  async rechargeOne(@Body() createDto: RechargeCreateDto, @Req() req?: any) {
+    const user: User = (
+      await this.userService.getAll({
+        relations: ['personalData'],
+        where: {
+          _id: req?.user.id,
+        },
+      })
+    ).list[0];
+    if (!user.personalData) {
+      throw new BadRequestException('Need the personal data to continue');
+    }
+    if (createDto.amount <= 0) {
+      throw new BadRequestException('The recharge not be 0 or less');
+    }
+    if (!createDto.from) {
+      throw new BadRequestException('I need a wallet to recharge card');
+    }
+    const from = await this.getAccountService().findOneById(
+      createDto.from.toString(),
+    );
+    if (!from) {
+      throw new BadRequestException('Wallet is not valid1');
+    }
+    if (from.amount < createDto.amount) {
+      throw new BadRequestException('Wallet with enough balance');
+    }
+    from.amount -= createDto.amount;
+    from.save();
+    return this.cardService.customUpdateOne({
+      id: createDto.id,
+      amount: {
+        $inc: createDto.amount,
+      },
+    });
+  }
+
   @Delete(':cardID')
   deleteOneById(@Param('cardID') id: string, req?: any) {
     return this.getAccountService().deleteOneById(id);

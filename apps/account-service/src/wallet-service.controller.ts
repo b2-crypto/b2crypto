@@ -6,9 +6,11 @@ import {
   Body,
   Controller,
   Delete,
+  Get,
   Inject,
   Param,
   Post,
+  Query,
   Req,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
@@ -17,19 +19,31 @@ import { UserServiceService } from 'apps/user-service/src/user-service.service';
 import { AccountServiceController } from './account-service.controller';
 import { AccountServiceService } from './account-service.service';
 import { RechargeCreateDto } from '@account/account/dto/recharge.create.dto';
+import { AccountUpdateDto } from '@account/account/dto/account.update.dto';
+import TypesAccountEnum from '@account/account/enum/types.account.enum';
+import { QuerySearchAnyDto } from '@common/common/models/query_search-any.dto';
 
 @ApiTags('E-WALLET')
 @Controller('wallets')
 export class WalletServiceController extends AccountServiceController {
   constructor(
-    readonly ewalletService: AccountServiceService,
+    readonly walletService: AccountServiceService,
     @Inject(UserServiceService)
     private readonly userService: UserServiceService,
     @Inject(BuildersService)
     readonly ewalletBuilder: BuildersService,
   ) {
-    super(ewalletService, ewalletBuilder);
+    super(walletService, ewalletBuilder);
   }
+
+  @Get('all')
+  findAll(@Query() query: QuerySearchAnyDto, req?: any) {
+    query = query ?? {};
+    query.where = query.where ?? {};
+    query.where.type = TypesAccountEnum.WALLET;
+    return this.walletService.findAll(query);
+  }
+
   @Post('create')
   async createOne(@Body() createDto: WalletCreateDto, @Req() req?: any) {
     const user: User = (
@@ -49,7 +63,7 @@ export class WalletServiceController extends AccountServiceController {
       parseInt(
         CommonService.getNumberDigits(CommonService.randomIntNumber(9999), 4),
       );
-    return this.ewalletService.createOne(createDto);
+    return this.walletService.createOne(createDto);
   }
 
   @Post('recharge')
@@ -68,7 +82,12 @@ export class WalletServiceController extends AccountServiceController {
     if (createDto.amount <= 0) {
       throw new BadRequestException('The recharge not be 0 or less');
     }
-    return this.ewalletService.updateOne(createDto);
+    return this.walletService.customUpdateOne({
+      id: createDto.id,
+      $inc: {
+        amount: createDto.amount,
+      },
+    });
   }
 
   @Delete(':walletID')

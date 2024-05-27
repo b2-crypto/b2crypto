@@ -19,6 +19,7 @@ export interface AccountInterface {
   docId: string;
   email: string;
   telephone: string;
+  accountType?: string;
   accountId?: string;
   accountName?: string;
   accountPassword?: string;
@@ -40,7 +41,6 @@ export interface AccountInterface {
   affiliate?: AffiliateInterface;
   createdAt: Date;
   updatedAt: Date;
-  // Trackbox
   firstName?: string;
   lastName?: string;
   type?: string;

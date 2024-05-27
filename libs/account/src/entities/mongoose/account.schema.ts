@@ -17,6 +17,7 @@ import { UserCardDto } from '@integration/integration/card/generic/dto/user.card
 import { UserCard, UserCardSchema } from './user-card.schema';
 import { Card, CardSchema } from './card.schema';
 import { AddressSchema } from '@person/person/entities/mongoose/address.schema';
+import TypesAccountEnum from '@account/account/enum/types.account.enum';
 
 export type AccountDocument = Account & Document;
 
@@ -38,8 +39,8 @@ export class Account extends AccountEntity {
   @Prop()
   lastName?: string;
 
-  @Prop()
-  type?: string;
+  @Prop({ type: String, enum: TypesAccountEnum })
+  type?: TypesAccountEnum;
 
   @Prop()
   docId: string;
@@ -55,6 +56,9 @@ export class Account extends AccountEntity {
 
   @Prop()
   accountId: string;
+
+  @Prop()
+  accountType: string;
 
   @Prop()
   accountName: string;

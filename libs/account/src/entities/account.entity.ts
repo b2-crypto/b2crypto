@@ -11,6 +11,7 @@ import { StatusEntity } from '@status/status/entities/status.entity';
 import { TransferEntity } from '@transfer/transfer/entities/transfer.entity';
 import { UserEntity } from '@user/user/entities/user.entity';
 import { ObjectId } from 'mongodb';
+import TypesAccountEnum from '../enum/types.account.enum';
 
 export class AccountEntity implements AccountInterface {
   _id?: ObjectId;
@@ -44,7 +45,13 @@ export class AccountEntity implements AccountInterface {
     description: 'LastName of the account',
   })
   lastName?: string;
-  type?: string;
+  @ApiProperty({
+    description: 'Types of the account',
+    enum: CountryCodeB2cryptoEnum,
+    enumName: 'TypesAccountList',
+  })
+  type?: TypesAccountEnum;
+  accountType?: string;
   slug: string;
   @ApiProperty({
     type: String,

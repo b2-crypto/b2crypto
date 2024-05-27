@@ -57,6 +57,12 @@ export class AccountServiceService
   ): Promise<AccountDocument> {
     return this.lib.update(updateDto.id ?? updateDto._id, updateDto);
   }
+  async customUpdateOne(updateRequest: any): Promise<AccountDocument> {
+    const id = updateRequest.id ?? updateRequest._id;
+    delete updateRequest.id;
+    delete updateRequest._id;
+    return this.lib.update(id, updateRequest);
+  }
   async updateMany(
     updateDto: AccountUpdateDto[],
     context?: any,
