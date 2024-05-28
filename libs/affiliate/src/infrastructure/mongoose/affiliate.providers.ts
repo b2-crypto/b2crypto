@@ -6,7 +6,7 @@ export const affiliateProviders = [
   {
     provide: 'AFFILIATE_MODEL_MONGOOSE',
     useFactory: (connection: Connection) => {
-      connection.plugin(mongooseSlugUpdater);
+      // connection.plugin(mongooseSlugUpdater);
       return connection.model('affiliates', AffiliateSchema);
     },
     inject: ['MONGOOSE_CONNECTION'],

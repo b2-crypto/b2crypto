@@ -6,7 +6,7 @@ export const PspAccountProviders = [
   {
     provide: 'PSP_ACCOUNT_MODEL_MONGOOSE',
     useFactory: (connection: Connection) => {
-      connection.plugin(mongooseSlugUpdater);
+      // connection.plugin(mongooseSlugUpdater);
       return connection.model('psp_accounts', PspAccountSchema);
     },
     inject: ['MONGOOSE_CONNECTION'],

@@ -6,7 +6,7 @@ export const accountProviders = [
   {
     provide: 'ACCOUNT_MODEL_MONGOOSE',
     useFactory: (connection: Connection) => {
-      connection.plugin(mongooseSlugUpdater);
+      // connection.plugin(mongooseSlugUpdater);
       return connection.model('accounts', AccountSchema);
     },
     inject: ['MONGOOSE_CONNECTION'],
