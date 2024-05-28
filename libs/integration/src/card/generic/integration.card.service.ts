@@ -131,12 +131,14 @@ export class IntegrationCardService<
   }
 
   private async fetch(method: string, uri: string, data?: any, headers?) {
+    method = method ?? 'GET';
+    headers = headers ?? {
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
+    };
     const request = {
-      method: method ?? 'GET',
-      headers: headers ?? {
-        Accept: 'application/json',
-        'Content-Type': 'application/json',
-      },
+      method: method,
+      headers: headers,
       body: undefined,
     };
     if (data) {
@@ -161,7 +163,8 @@ export class IntegrationCardService<
       request.headers.Authorization = `Bearer ${this.token}`;
     }
     const response = await fetch(`${this.client.url}${uri}`, request);
-    return response.json();
+    const json = await response.json();
+    return json;
   }
 
   async getUser(userCard: TUserCardDto): Promise<AxiosResponse<any[], any>> {
@@ -181,7 +184,7 @@ export class IntegrationCardService<
   }
   async createCard(card: TCardDto): Promise<AxiosResponse<any[], any>> {
     //return this.http.post(this.routesMap.createCard, card);
-    return this.fetch('POST', this.routesMap.createUser, card);
+    return this.fetch('POST', this.routesMap.createCard, card);
   }
   async updateCard(card: TCardDto): Promise<AxiosResponse<any[], any>> {
     return this.http.patch(this.routesMap.updateCard, card);

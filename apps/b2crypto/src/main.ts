@@ -59,16 +59,15 @@ async function bootstrap() {
     preflightContinue: false,
     optionsSuccessStatus: 204,
     credentials: true,
-    allowedHeaders:
-      'b2crypto-affiliate-key b2crypto-key Content-Type Accept',
+    allowedHeaders: 'b2crypto-affiliate-key b2crypto-key Content-Type Accept',
   });
   app.getHttpAdapter().getInstance().disable('x-powered-by');
   app.listen(configService.get('PORT') ?? 3000);
-  const queueAdminService = app.get<QueueAdminService>(QueueAdminService);
+  /* const queueAdminService = app.get<QueueAdminService>(QueueAdminService);
   app.connectMicroservice(
     queueAdminService.getOptions(configService.get('ENVIRONMENT')),
   );
-  await app.startAllMicroservices();
+  await app.startAllMicroservices(); */
   if (typeof process.send === 'function') {
     process.send('ready');
   }

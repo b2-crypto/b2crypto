@@ -48,7 +48,6 @@ export class IntegrationService {
     const cryptoType = this.getCryptoType(cryptoCategoryName, account);
     cryptoType.setToken(token);
     cryptoType.setUrlBase(url);
-    cryptoType.setApiKey(apiKey);
     cryptoType.setUsername(username ?? account.userCrm);
     cryptoType.setPassword(password ?? account.passwordCrm);
     await cryptoType.generateHttp();

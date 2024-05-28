@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsString } from 'class-validator';
+import { IsString } from 'class-validator';
 import TypesAccountEnum from '../enum/types.account.enum';
 import { AccountCreateDto } from './account.create.dto';
 

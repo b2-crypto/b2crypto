@@ -82,6 +82,12 @@ export class WalletServiceController extends AccountServiceController {
     if (createDto.amount <= 0) {
       throw new BadRequestException('The recharge not be 0 or less');
     }
+    const to = await this.getAccountService().findOneById(
+      createDto.id.toString(),
+    );
+    if (to.type != TypesAccountEnum.WALLET) {
+      throw new BadRequestException('Wallet not found');
+    }
     return this.walletService.customUpdateOne({
       id: createDto.id,
       $inc: {

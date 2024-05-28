@@ -7,18 +7,16 @@ import axios, {
   AxiosResponse,
   CreateAxiosDefaults,
 } from 'axios';
-import { Observable } from 'rxjs';
-import { TrackVisitDto } from './dto/track.visit.dto';
-import { UserResponseDto } from './dto/user.response.dto';
+import { DepositDto } from './dto/deposit.dto';
+import { WalletDto } from './dto/wallet.dto';
 import { IntegrationCryptoInterface } from './integration.crypto.interface';
 import { CryptoRoutesInterface } from './interface/crypto.routes.interface';
 
 export class IntegrationCryptoService<
   // DTO
-  TTrackVisitDto = TrackVisitDto,
-  // Results
-  TUserResponse = UserResponseDto,
-> implements IntegrationCryptoInterface<TTrackVisitDto, TUserResponse>
+  TDepositDto = DepositDto,
+  TWalletDto = WalletDto,
+> implements IntegrationCryptoInterface<TDepositDto, TWalletDto>
 {
   http: AxiosInstance;
   private routesMap: CryptoRoutesInterface;
@@ -60,14 +58,6 @@ export class IntegrationCryptoService<
     this.token = token;
   }
 
-  setTokenCrm(tokenCrm: string) {
-    this.tokenCrm = tokenCrm;
-  }
-
-  setApiKey(apiKey: string) {
-    this.apiKey = apiKey;
-  }
-
   async generateHttp() {
     if (!!this.urlBase) {
       const param = {
@@ -88,8 +78,13 @@ export class IntegrationCryptoService<
         this.urlEncoded = false;
         try {
           const token = await axios.post(`${this.urlBase}token`, {
-            username: this.username,
-            password: this.password,
+            data: {
+              type: 'auth-token',
+              attributes: {
+                username: this.username,
+                password: this.password,
+              },
+            },
           });
           const today = new Date();
           this.token = token.data?.Token || token.data.token;
@@ -125,10 +120,22 @@ export class IntegrationCryptoService<
     }
   }
 
-  affiliateTrackVisit(
-    trackVisitDto: TTrackVisitDto,
-  ): Observable<AxiosResponse<any[]>> {
-    const rta = this.http.get(this.routesMap.affiliateTrackVisit);
-    return rta as any;
+  async searchWallet(walletDto: TWalletDto): Promise<AxiosResponse<any[]>> {
+    const rta = this.http.get(this.routesMap.searchWallets, {
+      params: walletDto,
+    });
+    return rta;
+  }
+
+  async createDeposit(depositDto: TDepositDto): Promise<AxiosResponse<any[]>> {
+    const rta = this.http.post(this.routesMap.createDeposit, depositDto);
+    return rta;
+  }
+
+  async getDeposit(depositDto: TDepositDto): Promise<AxiosResponse<any[]>> {
+    const rta = this.http.get(this.routesMap.searchDeposit, {
+      params: depositDto,
+    });
+    return rta;
   }
 }

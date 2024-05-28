@@ -1,18 +1,19 @@
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { TrackVisitDto } from '@integration/integration/crm/generic/dto/track-visit.dto';
-import { UserResponseDto } from '@integration/integration/crm/generic/dto/user.response.dto';
 import { AxiosInstance, AxiosResponse } from 'axios';
-import { Observable } from 'rxjs';
+import { DepositDto } from './dto/deposit.dto';
+import { WalletDto } from './dto/wallet.dto';
 
 export interface IntegrationCryptoInterface<
-  TTrackVisitDto = TrackVisitDto,
-  TUserResponse = UserResponseDto,
+  TDepositDto = DepositDto,
+  TWalletDto = WalletDto,
 > {
   http: AxiosInstance;
 
   generateHttp();
 
-  affiliateTrackVisit(
-    trackVisitDto: TTrackVisitDto,
-  ): Observable<AxiosResponse<any[]>>;
+  searchWallet(walletDto: TWalletDto): Promise<AxiosResponse<any[]>>;
+
+  createDeposit(depositDto: TDepositDto): Promise<AxiosResponse<any[]>>;
+
+  getDeposit(depositDto: TDepositDto): Promise<AxiosResponse<any[]>>;
 }

@@ -208,7 +208,8 @@ export class CardServiceController extends AccountServiceController {
           apartment: user.personalData.location.address.apartment,
           city: user.personalData.location.address.city,
           region: user.personalData.location.address.region,
-          country: user.personalData.location.address.country ?? 'Colombia',
+          //country: user.personalData.location.address.country ?? 'Colombia',
+          country: 'Colombia',
           zip_code: user.personalData.location.zipcode,
           neighborhood: user.personalData.location.address.neighborhood,
         },
@@ -253,23 +254,38 @@ export class CardServiceController extends AccountServiceController {
     if (!createDto.from) {
       throw new BadRequestException('I need a wallet to recharge card');
     }
+    const to = await this.getAccountService().findOneById(
+      createDto.id.toString(),
+    );
+    if (to.type != TypesAccountEnum.CARD) {
+      throw new BadRequestException('Card not found');
+    }
     const from = await this.getAccountService().findOneById(
       createDto.from.toString(),
     );
+    if (from.type != TypesAccountEnum.WALLET) {
+      throw new BadRequestException('Wallet not found');
+    }
     if (!from) {
       throw new BadRequestException('Wallet is not valid1');
     }
     if (from.amount < createDto.amount) {
       throw new BadRequestException('Wallet with enough balance');
     }
-    from.amount -= createDto.amount;
-    from.save();
-    return this.cardService.customUpdateOne({
-      id: createDto.id,
-      amount: {
-        $inc: createDto.amount,
-      },
-    });
+    return Promise.all([
+      this.cardService.customUpdateOne({
+        id: createDto.id,
+        $inc: {
+          amount: createDto.amount,
+        },
+      }),
+      this.cardService.customUpdateOne({
+        id: createDto.from.toString(),
+        $inc: {
+          amount: createDto.amount * -1,
+        },
+      }),
+    ]).then((list) => list[0]);
   }
 
   @Delete(':cardID')

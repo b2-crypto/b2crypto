@@ -37,7 +37,7 @@ export class PomeloIntegrationService extends IntegrationCardService<
       updateUser: '/users/v1/{id}',
       searchUser: '/users/v1/',
       // Card
-      createCard: 'cards/v1/',
+      createCard: '/cards/v1/',
       updateCard: '/cards/v1/{id}',
       activateCard: '/cards/v1/activation',
       searchCard: '/cards/v1/',
