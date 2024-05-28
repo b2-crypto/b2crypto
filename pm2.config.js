@@ -36,7 +36,8 @@ module.exports = {
         ENVIRONMENT: 'PROD',
         APP_NAME: 'B2Crypto',
         GOOGLE_2FA: true,
-        DATABASE_URL: '',
+        DATABASE_URL:
+          'mongodb+srv://b2crypto:SFh59fK9mmM2ln1L@stage-b2crypto.hwml0km.mongodb.net/?retryWrites=true&w=majority&appName=stage-b2crypto',
         PORT: 8080,
         AUTH_EXPIRE_IN: '8h',
         AUTH_SECRET: 'B2Crypto',
@@ -115,7 +116,8 @@ module.exports = {
         ENVIRONMENT: 'PROD',
         APP_NAME: 'B2Crypto',
         GOOGLE_2FA: true,
-        DATABASE_URL: '',
+        DATABASE_URL:
+          'mongodb+srv://b2crypto:SFh59fK9mmM2ln1L@stage-b2crypto.hwml0km.mongodb.net/?retryWrites=true&w=majority&appName=stage-b2crypto',
         PORT: 8080,
         AUTH_EXPIRE_IN: '8h',
         AUTH_SECRET: 'B2Crypto',
@@ -156,7 +158,7 @@ module.exports = {
         URL_API_EMAIL_APP: '',
         TESTING: false,
         TZ: 'UTC',
-      }
+      },
     },
   ],
 };
