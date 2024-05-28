@@ -6,7 +6,7 @@ export const groupProviders = [
   {
     provide: 'GROUP_MODEL_MONGOOSE',
     useFactory: (connection: Connection) => {
-      // connection.plugin(mongooseSlugUpdater);
+      connection.plugin(mongooseSlugUpdater);
       return connection.model('groups', GroupSchema);
     },
     inject: ['MONGOOSE_CONNECTION'],

@@ -6,7 +6,7 @@ export const trafficProviders = [
   {
     provide: 'TRAFFIC_MODEL_MONGOOSE',
     useFactory: (connection: Connection) => {
-      // connection.plugin(mongooseSlugUpdater);
+      connection.plugin(mongooseSlugUpdater);
       return connection.model('traffics', TrafficSchema);
     },
     inject: ['MONGOOSE_CONNECTION'],

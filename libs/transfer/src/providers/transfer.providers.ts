@@ -6,7 +6,7 @@ export const transferProviders = [
   {
     provide: 'TRANSFER_MODEL_MONGOOSE',
     useFactory: (connection: Connection) => {
-      // connection.plugin(mongooseSlugUpdater);
+      connection.plugin(mongooseSlugUpdater);
       return connection.model('transfers', TransferSchema);
     },
     inject: ['MONGOOSE_CONNECTION'],

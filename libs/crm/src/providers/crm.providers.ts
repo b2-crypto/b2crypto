@@ -6,7 +6,7 @@ export const crmProviders = [
   {
     provide: 'CRM_MODEL_MONGOOSE',
     useFactory: (connection: Connection) => {
-      // connection.plugin(mongooseSlugUpdater);
+      connection.plugin(mongooseSlugUpdater);
       return connection.model('crms', CrmSchema);
     },
     inject: ['MONGOOSE_CONNECTION'],

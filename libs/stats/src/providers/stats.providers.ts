@@ -7,7 +7,7 @@ export const statsProviders = [
   {
     provide: 'STATS_DATE_MODEL_MONGOOSE',
     useFactory: (connection: Connection) => {
-      // connection.plugin(mongooseSlugUpdater);
+      connection.plugin(mongooseSlugUpdater);
       return connection.model('stats_date', StatsDateAffiliateSchema);
     },
     inject: ['MONGOOSE_CONNECTION'],
@@ -15,7 +15,7 @@ export const statsProviders = [
   {
     provide: 'STATS_DATE_AFFILIATE_MODEL_MONGOOSE',
     useFactory: (connection: Connection) => {
-      // connection.plugin(mongooseSlugUpdater);
+      connection.plugin(mongooseSlugUpdater);
       return connection.model('stats_date_affiliate', StatsDateAffiliateSchema);
     },
     inject: ['MONGOOSE_CONNECTION'],
@@ -23,7 +23,7 @@ export const statsProviders = [
   {
     provide: 'STATS_DATE_PSP_ACCOUNT_MODEL_MONGOOSE',
     useFactory: (connection: Connection) => {
-      // connection.plugin(mongooseSlugUpdater);
+      connection.plugin(mongooseSlugUpdater);
       return connection.model(
         'stats_date_psp_account',
         StatsDatePspAccountSchema,

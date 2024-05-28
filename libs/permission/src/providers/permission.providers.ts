@@ -7,7 +7,7 @@ export const permissionProviders = [
   {
     provide: 'PERMISSION_MODEL_MONGOOSE',
     useFactory: (connection: Connection) => {
-      // connection.plugin(mongooseSlugUpdater);
+      connection.plugin(mongooseSlugUpdater);
       return connection.model('permissions', PermissionSchema);
     },
     inject: ['MONGOOSE_CONNECTION'],
@@ -15,7 +15,7 @@ export const permissionProviders = [
   {
     provide: 'SCOPE_MODEL_MONGOOSE',
     useFactory: (connection: Connection) => {
-      // connection.plugin(mongooseSlugUpdater);
+      connection.plugin(mongooseSlugUpdater);
       return connection.model('scopes', ScopeSchema);
     },
     inject: ['MONGOOSE_CONNECTION'],
