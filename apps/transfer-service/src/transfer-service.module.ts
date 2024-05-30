@@ -1,14 +1,27 @@
+import { AffiliateServiceService } from 'apps/affiliate-service/src/affiliate-service.service';
+import { AccountModule } from '@account/account/account.module';
+import { BuildersModule } from '@builder/builders';
+import { CategoryModule } from '@category/category';
+import { CrmModule } from '@crm/crm';
+import {
+  IntegrationModule,
+  IntegrationService,
+} from '@integration/integration';
+import { LeadModule } from '@lead/lead';
+import { Module } from '@nestjs/common';
+import { PspAccountModule } from '@psp-account/psp-account';
+import { StatusModule } from '@status/status';
+import { TransferModule } from '@transfer/transfer';
+import { AccountServiceService } from 'apps/account-service/src/account-service.service';
 import { TransferServiceController } from './transfer-service.controller';
 import { TransferServiceService } from './transfer-service.service';
-import { TransferModule } from '@transfer/transfer';
-import { BuildersModule } from '@builder/builders';
-import { Module } from '@nestjs/common';
-import { LeadModule } from '@lead/lead';
-import { PspAccountModule } from '@psp-account/psp-account';
-import { CategoryModule } from '@category/category';
-import { StatusModule } from '@status/status';
-import { CrmModule } from '@crm/crm';
 import { TransferServiceWebsocketGateway } from './transfer-service.websocket.gateway';
+import { CategoryServiceService } from 'apps/category-service/src/category-service.service';
+import { PspAccountServiceService } from 'apps/psp-service/src/psp.account.service.service';
+import { StatusServiceService } from 'apps/status-service/src/status-service.service';
+import { AffiliateModule } from '@affiliate/affiliate';
+import { PspServiceService } from 'apps/psp-service/src/psp-service.service';
+import { PspModule } from '@psp/psp';
 
 @Module({
   imports: [
@@ -19,8 +32,23 @@ import { TransferServiceWebsocketGateway } from './transfer-service.websocket.ga
     CategoryModule,
     BuildersModule,
     PspAccountModule,
+    AccountModule,
+    IntegrationModule,
+    AffiliateModule,
+    PspModule,
   ],
   controllers: [TransferServiceController],
-  providers: [TransferServiceService, TransferServiceWebsocketGateway],
+  providers: [
+    TransferServiceService,
+    TransferServiceWebsocketGateway,
+    IntegrationService,
+    AccountServiceService,
+    StatusServiceService,
+    CategoryServiceService,
+    PspAccountServiceService,
+    AffiliateServiceService,
+    //PspAccountServiceService,
+    PspServiceService,
+  ],
 })
 export class TransferServiceModule {}

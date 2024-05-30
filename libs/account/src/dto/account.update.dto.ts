@@ -19,7 +19,7 @@ export class AccountUpdateDto extends PartialType(AccountCreateDto) {
 
   @IsNumber()
   @IsOptional()
-  totalPayed?: number;
+  amount?: number;
 
   @IsNumber()
   @IsOptional()

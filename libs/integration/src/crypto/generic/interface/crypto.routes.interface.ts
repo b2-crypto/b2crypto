@@ -1,9 +1,18 @@
 export interface CryptoRoutesInterface {
   // Auth
-  generateToken?: string;
+  auth?: string;
   // Wallets
-  searchWallets?: string;
+  createUser?: string;
+  updateUser?: string;
+  searchUser?: string;
+  getUser?: string;
+  // Wallets
+  createWallet?: string;
+  updateWallet?: string;
+  searchWallet?: string;
+  getWallet?: string;
   // Deposit
   createDeposit?: string;
   searchDeposit?: string;
+  getDeposit?: string;
 }

@@ -11,9 +11,9 @@ export interface IntegrationCryptoInterface<
 
   generateHttp();
 
-  searchWallet(walletDto: TWalletDto): Promise<AxiosResponse<any[]>>;
+  getWallet(idWallet: string): Promise<AxiosResponse<any[]>>;
 
   createDeposit(depositDto: TDepositDto): Promise<AxiosResponse<any[]>>;
 
-  getDeposit(depositDto: TDepositDto): Promise<AxiosResponse<any[]>>;
+  getDeposit(depositId: string): Promise<AxiosResponse<any[]>>;
 }

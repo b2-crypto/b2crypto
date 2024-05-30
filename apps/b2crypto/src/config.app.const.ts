@@ -33,6 +33,7 @@ import { UserServiceModule } from 'apps/user-service/src/user-service.module';
 import configuration from 'config/configuration';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { B2CryptoCacheInterceptor } from '@common/common/interceptors/b-2-crypto-cache.interceptor';
 
 export const configApp = {
   imports: [
@@ -85,6 +86,10 @@ export const configApp = {
     {
       provide: APP_INTERCEPTOR,
       useClass: ResponseInterceptor,
+    },
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: B2CryptoCacheInterceptor,
     },
     {
       provide: APP_FILTER,

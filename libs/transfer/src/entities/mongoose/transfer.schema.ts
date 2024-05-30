@@ -1,3 +1,4 @@
+import { Account } from '@account/account/entities/mongoose/account.schema';
 import { Affiliate } from '@affiliate/affiliate/infrastructure/mongoose/affiliate.schema';
 import { Brand } from '@brand/brand/entities/mongoose/brand.schema';
 import { Category } from '@category/category/entities/mongoose/category.schema';
@@ -9,7 +10,7 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { PspAccount } from '@psp-account/psp-account/entities/mongoose/psp-account.schema';
 import { Psp } from '@psp/psp/entities/mongoose/psp.schema';
 import { Status } from '@status/status/entities/mongoose/status.schema';
-import { TransferCrmResponse } from '@transfer/transfer/dto/transfer.crm.response.dto';
+import { TransferAccountResponse } from '@transfer/transfer/dto/transfer.account.response.dto';
 import { PspResponse } from '@transfer/transfer/dto/transfer.latamcashier.response.dto';
 import { TransferEntity } from '@transfer/transfer/entities/transfer.entity';
 import { OperationTransactionType } from '@transfer/transfer/enum/operation.transaction.type.enum';
@@ -86,8 +87,8 @@ export class Transfer extends TransferEntity {
   @Prop({ type: PspResponse })
   responsePayment: PspResponse;
 
-  @Prop()
-  responseCrm: TransferCrmResponse;
+  @Prop({ type: TransferAccountResponse })
+  responseAccount: TransferAccountResponse;
 
   @Prop()
   confirmedAt: Date;
@@ -124,6 +125,9 @@ export class Transfer extends TransferEntity {
 
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'leads' })
   lead: Lead;
+
+  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'accounts' })
+  account: Account;
 
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'affiliates' })
   affiliate: Affiliate;

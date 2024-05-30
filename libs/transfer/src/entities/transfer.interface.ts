@@ -13,6 +13,7 @@ import { OperationTransactionType } from '../enum/operation.transaction.type.enu
 import { AffiliateInterface } from '@affiliate/affiliate/domain/entities/affiliate.interface';
 import { PspResponse } from '../dto/transfer.latamcashier.response.dto';
 import { UserInterface } from '@user/user/entities/user.interface';
+import { AccountEntity } from '@account/account/entities/account.entity';
 
 export interface TransferInterface {
   _id: string;
@@ -41,8 +42,9 @@ export interface TransferInterface {
   descriptionStatusPayment: string;
   urlPayment: string;
   responsePayment: PspResponse;
-  responseCrm: any;
+  responseAccount: any;
   lead: LeadEntity;
+  account: AccountEntity;
   affiliate: AffiliateInterface;
   status: StatusEntity;
   bank: CategoryEntity;

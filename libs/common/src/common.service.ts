@@ -14,6 +14,7 @@ import {
 } from '@nestjs/microservices';
 import { SchedulerRegistry } from '@nestjs/schedule';
 import { QuerySearchAnyDto } from './models/query_search-any.dto';
+import { FetchData } from './models/fetch-data.model';
 
 @Injectable()
 export class CommonService {
@@ -303,5 +304,45 @@ export class CommonService {
     }
     //Logger.log(attrVal, 'End date checkDateAttr');
     return attrVal;
+  }
+
+  static async fetch(fetchData: FetchData) {
+    fetchData.method = fetchData.method ?? 'GET';
+    fetchData.headers = fetchData.headers ?? {
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
+    };
+    const request = {
+      method: fetchData.method,
+      headers: fetchData.headers,
+      body: undefined,
+    };
+    if (fetchData.data) {
+      if (
+        request.method === 'POST' ||
+        request.method === 'PUT' ||
+        request.method === 'PATCH'
+      ) {
+        request.body = JSON.stringify(fetchData.data);
+      } else {
+        const queryParams = new URLSearchParams();
+        Object.entries(fetchData.data).forEach(([key, val]) => {
+          queryParams.append(
+            fetchData.getFormatKey.replace('%key%', key.toString()),
+            val.toString(),
+          );
+        });
+        fetchData.uri += `?${queryParams.toString()}`;
+      }
+    }
+    if (fetchData.token) {
+      request.headers.Authorization = `Bearer ${fetchData.token}`;
+    }
+    const response = await fetch(
+      `${fetchData.urlBase}${fetchData.uri}`,
+      request,
+    );
+    const json = await response.json();
+    return json;
   }
 }

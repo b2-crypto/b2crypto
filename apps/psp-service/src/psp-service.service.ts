@@ -77,6 +77,23 @@ export class PspServiceService {
     return this.lib.removeMany(ids);
   }
 
+  async getPspB2BinPay() {
+    const pspManual = await this.lib.findAll({
+      where: {
+        name: 'B2BinPay',
+      },
+    });
+    if (!!pspManual?.list[0]) {
+      return pspManual.list[0];
+    }
+    return this.lib.create({
+      name: 'B2BinPay',
+      description: 'PSP B2BinPay',
+      status: undefined,
+      groups: [],
+    });
+  }
+
   async getPspManual() {
     const pspManual = await this.lib.findAll({
       where: {

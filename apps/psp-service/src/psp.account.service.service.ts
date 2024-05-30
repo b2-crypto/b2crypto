@@ -19,10 +19,12 @@ import { StatusDocument } from '@status/status/entities/mongoose/status.schema';
 import EventsNamesStatusEnum from 'apps/status-service/src/enum/events.names.status.enum';
 import EventsNamesTransferEnum from 'apps/transfer-service/src/enum/events.names.transfer.enum';
 import EventsNamesPspEnum from './enum/events.names.psp.enum';
+import { PspServiceService } from './psp-service.service';
 
 @Injectable()
 export class PspAccountServiceService {
   constructor(
+    private readonly pspService: PspServiceService,
     @Inject(BuildersService)
     private readonly builder: BuildersService,
     @Inject(PspAccountServiceMongooseService)
@@ -96,6 +98,46 @@ export class PspAccountServiceService {
     return this.lib.create({
       name: 'Manual 1',
       description: 'Psp Account Manual 1',
+      psp: pspManual._id,
+      apiKey: undefined,
+      publicKey: undefined,
+      privateKey: undefined,
+      token: undefined,
+      urlApi: undefined,
+      urlSandbox: undefined,
+      urlDashboard: undefined,
+      accountId: undefined,
+      username: undefined,
+      password: undefined,
+      category: undefined,
+      status: undefined,
+      bank: undefined,
+      creator: undefined,
+      blackListCountries: [],
+      blackListBrands: [],
+      whiteListCountries: [],
+      whiteListBrands: [],
+      idCashier: '',
+    });
+  }
+
+  async getPspB2BinPay() {
+    const pspManual = await this.pspService.getPspManual();
+    /* const pspManual = await this.builder.getPromisePspEventClient(
+      EventsNamesPspEnum.findOneByName,
+      'B2BinPay',
+    ); */
+    const pspAccountManual = await this.lib.findAll({
+      where: {
+        psp: pspManual._id,
+      },
+    });
+    if (!!pspAccountManual?.totalElements) {
+      return pspAccountManual.list[0];
+    }
+    return this.lib.create({
+      name: 'B2BinPay 1',
+      description: 'Psp Account B2BinPay 1',
       psp: pspManual._id,
       apiKey: undefined,
       publicKey: undefined,

@@ -1,9 +1,13 @@
+import { Response } from 'express';
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
   Get,
+  HttpStatus,
   Inject,
+  InternalServerErrorException,
   Logger,
   NotFoundException,
   Param,
@@ -11,8 +15,10 @@ import {
   Patch,
   Post,
   Query,
+  Redirect,
   Req,
   Request,
+  Res,
   UseGuards,
 } from '@nestjs/common';
 import { ApiHeader, ApiResponse, ApiTags } from '@nestjs/swagger';
@@ -61,11 +67,16 @@ import ActionsEnum from '@common/common/enums/ActionEnum';
 import ResourcesEnum from '@common/common/enums/ResourceEnum';
 import EventsNamesAffiliateEnum from 'apps/affiliate-service/src/enum/events.names.affiliate.enum';
 import ResponseB2Crypto from '@response-b2crypto/response-b2crypto/models/ResponseB2Crypto';
+import { NoCache } from '@common/common/decorators/no-cache.decorator';
+import { TransferCreateButtonDto } from './dto/transfer.create.button.dto';
+import { AffiliateServiceService } from 'apps/affiliate-service/src/affiliate-service.service';
 
-@ApiTags('TRANSFER')
-@Controller('transfer')
+@ApiTags('TRANSFERS')
+@Controller('transfers')
 export class TransferServiceController implements GenericServiceController {
   constructor(
+    @Inject(AffiliateServiceService)
+    private readonly affliateService: AffiliateServiceService,
     private readonly transferService: TransferServiceService,
     @Inject(BuildersService)
     private readonly builder: BuildersService,
@@ -80,7 +91,7 @@ export class TransferServiceController implements GenericServiceController {
   @Get('all')
   // @CheckPoliciesAbility(new PolicyHandlerTransferRead())
   async findAll(@Query() query: QuerySearchAnyDto, @Req() req?) {
-    query = await this.filterFromUserPermissions(query, req);
+    //query = await this.filterFromUserPermissions(query, req);
     return this.transferService.getAll(query);
   }
 
@@ -141,651 +152,7 @@ export class TransferServiceController implements GenericServiceController {
     //return this.transferService.checkNumericId();
   }
 
-  @Get('deposit/from-page')
-  @ApiKeyCheck()
-  @ApiTags('Integration Lead')
-  @UseGuards(ApiKeyAffiliateAuthGuard)
-  @ApiHeader({
-    name: 'b2crypto-affiliate-key',
-    description: 'The affiliate secret key',
-  })
-  @ApiResponse({
-    status: 200,
-    description: 'was searched successfully',
-    type: ResponsePaginator<TransferAffiliateResponseDto>,
-  })
-  @ApiResponse(ResponseB2Crypto.getResponseSwagger(400))
-  @ApiResponse(ResponseB2Crypto.getResponseSwagger(403))
-  @ApiResponse(ResponseB2Crypto.getResponseSwagger(404))
-  @ApiResponse(ResponseB2Crypto.getResponseSwagger(500))
-  async findDepositFromPageAffiliate(
-    @Request() req: Request,
-    @Query() query: QuerySearchAnyDto,
-  ) {
-    query = query ?? new QuerySearchAnyDto();
-    query.where = query.where ?? {};
-    query.where.affiliate = await this.transferService.getAffiliateIsAdmin(
-      req['affiliate'],
-    );
-    if (query.where.tpId) {
-      query.where.leadTpId = query.where.tpId;
-      delete query.where.tpId;
-    }
-    query.where.operationType = OperationTransactionType.deposit;
-    query.relations = [
-      'psp',
-      'status',
-      'bank',
-      'department',
-      'typeTransaction',
-      'pspAccount',
-    ];
-    return this.getTransferToAffiliate(
-      await this.transferService.getAll(query),
-    );
-  }
-
-  @Get('withdrawal/from-page')
-  @ApiKeyCheck()
-  @ApiTags('Integration Lead')
-  @UseGuards(ApiKeyAffiliateAuthGuard)
-  @ApiHeader({
-    name: 'b2crypto-affiliate-key',
-    description: 'The affiliate secret key',
-  })
-  @ApiResponse({
-    status: 200,
-    description: 'was searched successfully',
-    type: ResponsePaginator<TransferAffiliateResponseDto>,
-  })
-  @ApiResponse(ResponseB2Crypto.getResponseSwagger(400))
-  @ApiResponse(ResponseB2Crypto.getResponseSwagger(403))
-  @ApiResponse(ResponseB2Crypto.getResponseSwagger(404))
-  @ApiResponse(ResponseB2Crypto.getResponseSwagger(500))
-  async findWithdrawalFromPageAffiliate(
-    @Request() req: Request,
-    @Query() query: QuerySearchAnyDto,
-  ) {
-    query = query ?? new QuerySearchAnyDto();
-    query.where = query.where ?? {};
-    query.where.affiliate = await this.transferService.getAffiliateIsAdmin(
-      req['affiliate'],
-    );
-    if (query.where.tpId) {
-      query.where.leadTpId = query.where.tpId;
-      delete query.where.tpId;
-    }
-    query.where.operationType = OperationTransactionType.withdrawal;
-    query.relations = [
-      'psp',
-      'status',
-      'bank',
-      'department',
-      'typeTransaction',
-      'pspAccount',
-    ];
-    return this.getTransferToAffiliate(
-      await this.transferService.getAll(query),
-    );
-  }
-
-  @Get('credit/from-page')
-  @ApiKeyCheck()
-  @ApiTags('Integration Lead')
-  @UseGuards(ApiKeyAffiliateAuthGuard)
-  @ApiHeader({
-    name: 'b2crypto-affiliate-key',
-    description: 'The affiliate secret key',
-  })
-  @ApiResponse({
-    status: 200,
-    description: 'was searched successfully',
-    type: ResponsePaginator<TransferAffiliateResponseDto>,
-  })
-  @ApiResponse(ResponseB2Crypto.getResponseSwagger(400))
-  @ApiResponse(ResponseB2Crypto.getResponseSwagger(403))
-  @ApiResponse(ResponseB2Crypto.getResponseSwagger(404))
-  @ApiResponse(ResponseB2Crypto.getResponseSwagger(500))
-  async findCreditFromPageAffiliate(
-    @Request() req: Request,
-    @Query() query: QuerySearchAnyDto,
-  ) {
-    query = query ?? new QuerySearchAnyDto();
-    query.where = query.where ?? {};
-    query.where.affiliate = await this.transferService.getAffiliateIsAdmin(
-      req['affiliate'],
-    );
-    if (query.where.tpId) {
-      query.where.leadTpId = query.where.tpId;
-      delete query.where.tpId;
-    }
-    query.where.operationType = OperationTransactionType.credit;
-    query.relations = [
-      'psp',
-      'status',
-      'bank',
-      'department',
-      'typeTransaction',
-      'pspAccount',
-    ];
-    return this.getTransferToAffiliate(
-      await this.transferService.getAll(query),
-    );
-  }
-
-  @Get('debit/from-page')
-  @ApiKeyCheck()
-  @ApiTags('Integration Lead')
-  @UseGuards(ApiKeyAffiliateAuthGuard)
-  @ApiHeader({
-    name: 'b2crypto-affiliate-key',
-    description: 'The affiliate secret key',
-  })
-  @ApiResponse({
-    status: 200,
-    description: 'was searched successfully',
-    type: ResponsePaginator<TransferAffiliateResponseDto>,
-  })
-  @ApiResponse(ResponseB2Crypto.getResponseSwagger(400))
-  @ApiResponse(ResponseB2Crypto.getResponseSwagger(403))
-  @ApiResponse(ResponseB2Crypto.getResponseSwagger(404))
-  @ApiResponse(ResponseB2Crypto.getResponseSwagger(500))
-  async findDebitFromPageAffiliate(
-    @Request() req: Request,
-    @Query() query: QuerySearchAnyDto,
-  ) {
-    query = query ?? new QuerySearchAnyDto();
-    query.where = query.where ?? {};
-    query.where.affiliate = await this.transferService.getAffiliateIsAdmin(
-      req['affiliate'],
-    );
-    if (query.where.tpId) {
-      query.where.leadTpId = query.where.tpId;
-      delete query.where.tpId;
-    }
-    query.where.operationType = OperationTransactionType.debit;
-    query.relations = [
-      'psp',
-      'status',
-      'bank',
-      'department',
-      'typeTransaction',
-      'pspAccount',
-    ];
-    return this.getTransferToAffiliate(
-      await this.transferService.getAll(query),
-    );
-  }
-
-  @Get('chargeback/from-page')
-  @ApiKeyCheck()
-  @ApiTags('Integration Lead')
-  @UseGuards(ApiKeyAffiliateAuthGuard)
-  @ApiHeader({
-    name: 'b2crypto-affiliate-key',
-    description: 'The affiliate secret key',
-  })
-  @ApiResponse({
-    status: 200,
-    description: 'was searched successfully',
-    type: ResponsePaginator<TransferAffiliateResponseDto>,
-  })
-  @ApiResponse(ResponseB2Crypto.getResponseSwagger(400))
-  @ApiResponse(ResponseB2Crypto.getResponseSwagger(403))
-  @ApiResponse(ResponseB2Crypto.getResponseSwagger(404))
-  @ApiResponse(ResponseB2Crypto.getResponseSwagger(500))
-  async findChargebackFromPageAffiliate(
-    @Request() req: Request,
-    @Query() query: QuerySearchAnyDto,
-  ) {
-    query = query ?? new QuerySearchAnyDto();
-    query.where = query.where ?? {};
-    query.where.affiliate = await this.transferService.getAffiliateIsAdmin(
-      req['affiliate'],
-    );
-    if (query.where.tpId) {
-      query.where.leadTpId = query.where.tpId;
-      delete query.where.tpId;
-    }
-    query.where.operationType = OperationTransactionType.chargeback;
-    query.relations = [
-      'psp',
-      'status',
-      'bank',
-      'department',
-      'typeTransaction',
-      'pspAccount',
-    ];
-    return this.getTransferToAffiliate(
-      await this.transferService.getAll(query),
-    );
-  }
-
-  @Get('deposit/from-page/:transferId')
-  @ApiTags('Integration Lead')
-  @ApiKeyCheck()
-  @UseGuards(ApiKeyAffiliateAuthGuard)
-  @ApiHeader({
-    name: 'b2crypto-affiliate-key',
-    description: 'The affiliate secret key',
-  })
-  @ApiResponse({
-    status: 200,
-    description: 'was searched successfully',
-    type: ResponsePaginator<TransferEntity>,
-  })
-  @ApiResponse(ResponseB2Crypto.getResponseSwagger(400))
-  @ApiResponse(ResponseB2Crypto.getResponseSwagger(403))
-  @ApiResponse(ResponseB2Crypto.getResponseSwagger(404))
-  @ApiResponse(ResponseB2Crypto.getResponseSwagger(500))
-  async findDepositOneFromPageAffiliate(
-    @Request() req: Request,
-    @Query() query: QuerySearchAnyDto,
-    @Param('idPayment') idPayment: string,
-  ) {
-    query = query ?? new QuerySearchAnyDto();
-    query.where = query.where ?? {};
-    query.where._id = idPayment;
-    query.where.operationType = OperationTransactionType.deposit;
-    return this.findDepositFromPageAffiliate(req, query);
-  }
-
-  @Get('withdrawal/from-page/:transferId')
-  @ApiTags('Integration Lead')
-  @ApiKeyCheck()
-  @UseGuards(ApiKeyAffiliateAuthGuard)
-  @ApiHeader({
-    name: 'b2crypto-affiliate-key',
-    description: 'The affiliate secret key',
-  })
-  @ApiResponse({
-    status: 200,
-    description: 'was searched successfully',
-    type: ResponsePaginator<TransferEntity>,
-  })
-  @ApiResponse(ResponseB2Crypto.getResponseSwagger(400))
-  @ApiResponse(ResponseB2Crypto.getResponseSwagger(403))
-  @ApiResponse(ResponseB2Crypto.getResponseSwagger(404))
-  @ApiResponse(ResponseB2Crypto.getResponseSwagger(500))
-  async findWithdrawalOneFromPageAffiliate(
-    @Request() req: Request,
-    @Query() query: QuerySearchAnyDto,
-    @Param('idPayment') idPayment: string,
-  ) {
-    query = query ?? new QuerySearchAnyDto();
-    query.where = query.where ?? {};
-    query.where._id = idPayment;
-    query.where.operationType = OperationTransactionType.withdrawal;
-    return this.findWithdrawalFromPageAffiliate(req, query);
-  }
-
-  @Get('credit/from-page/:transferId')
-  @ApiTags('Integration Lead')
-  @ApiKeyCheck()
-  @UseGuards(ApiKeyAffiliateAuthGuard)
-  @ApiHeader({
-    name: 'b2crypto-affiliate-key',
-    description: 'The affiliate secret key',
-  })
-  @ApiResponse({
-    status: 200,
-    description: 'was searched successfully',
-    type: ResponsePaginator<TransferEntity>,
-  })
-  @ApiResponse(ResponseB2Crypto.getResponseSwagger(400))
-  @ApiResponse(ResponseB2Crypto.getResponseSwagger(403))
-  @ApiResponse(ResponseB2Crypto.getResponseSwagger(404))
-  @ApiResponse(ResponseB2Crypto.getResponseSwagger(500))
-  async findCreditOneFromPageAffiliate(
-    @Request() req: Request,
-    @Query() query: QuerySearchAnyDto,
-    @Param('idPayment') idPayment: string,
-  ) {
-    query = query ?? new QuerySearchAnyDto();
-    query.where = query.where ?? {};
-    query.where._id = idPayment;
-    query.where.operationType = OperationTransactionType.credit;
-    return this.findDepositFromPageAffiliate(req, query);
-  }
-
-  @Get('debit/from-page/:transferId')
-  @ApiTags('Integration Lead')
-  @ApiKeyCheck()
-  @UseGuards(ApiKeyAffiliateAuthGuard)
-  @ApiHeader({
-    name: 'b2crypto-affiliate-key',
-    description: 'The affiliate secret key',
-  })
-  @ApiResponse({
-    status: 200,
-    description: 'was searched successfully',
-    type: ResponsePaginator<TransferEntity>,
-  })
-  @ApiResponse(ResponseB2Crypto.getResponseSwagger(400))
-  @ApiResponse(ResponseB2Crypto.getResponseSwagger(403))
-  @ApiResponse(ResponseB2Crypto.getResponseSwagger(404))
-  @ApiResponse(ResponseB2Crypto.getResponseSwagger(500))
-  async findDebitOneFromPageAffiliate(
-    @Request() req: Request,
-    @Query() query: QuerySearchAnyDto,
-    @Param('idPayment') idPayment: string,
-  ) {
-    query = query ?? new QuerySearchAnyDto();
-    query.where = query.where ?? {};
-    query.where._id = idPayment;
-    query.where.operationType = OperationTransactionType.debit;
-    return this.findWithdrawalFromPageAffiliate(req, query);
-  }
-
-  @Get('chargeback/from-page/:transferId')
-  @ApiTags('Integration Lead')
-  @ApiKeyCheck()
-  @UseGuards(ApiKeyAffiliateAuthGuard)
-  @ApiHeader({
-    name: 'b2crypto-affiliate-key',
-    description: 'The affiliate secret key',
-  })
-  @ApiResponse({
-    status: 200,
-    description: 'was searched successfully',
-    type: ResponsePaginator<TransferEntity>,
-  })
-  @ApiResponse(ResponseB2Crypto.getResponseSwagger(400))
-  @ApiResponse(ResponseB2Crypto.getResponseSwagger(403))
-  @ApiResponse(ResponseB2Crypto.getResponseSwagger(404))
-  @ApiResponse(ResponseB2Crypto.getResponseSwagger(500))
-  async findChargebackOneFromPageAffiliate(
-    @Request() req: Request,
-    @Query() query: QuerySearchAnyDto,
-    @Param('idPayment') idPayment: string,
-  ) {
-    query = query ?? new QuerySearchAnyDto();
-    query.where = query.where ?? {};
-    query.where._id = idPayment;
-    query.where.operationType = OperationTransactionType.chargeback;
-    query = await this.filterFromUserPermissions(query, req);
-    return this.findWithdrawalFromPageAffiliate(req, query);
-  }
-
-  @Post('deposit/from-page')
-  @ApiTags('Integration Lead')
-  @ApiKeyCheck()
-  @UseGuards(ApiKeyAffiliateAuthGuard)
-  @ApiHeader({
-    name: 'b2crypto-affiliate-key',
-    description: 'The affiliate secret key',
-  })
-  @ApiResponse({
-    status: 201,
-    description: 'was searched successfully',
-    type: TransferAffiliateResponseDto,
-  })
-  @ApiResponse(ResponseB2Crypto.getResponseSwagger(400))
-  @ApiResponse(ResponseB2Crypto.getResponseSwagger(403))
-  @ApiResponse(ResponseB2Crypto.getResponseSwagger(404))
-  @ApiResponse(ResponseB2Crypto.getResponseSwagger(500))
-  async createDepositOneFromPageAffiliate(
-    @Request() req: Request,
-    @Body() createTransferDto: TransferCreateDto,
-  ) {
-    const transfer = await this.transferService.newDepositFromAffiliate(
-      createTransferDto,
-      req['affiliate'],
-    );
-    return new TransferAffiliateResponseDto(transfer);
-  }
-
-  @Post('withdrawal/from-page')
-  @ApiTags('Integration Lead')
-  @ApiKeyCheck()
-  @UseGuards(ApiKeyAffiliateAuthGuard)
-  @ApiHeader({
-    name: 'b2crypto-affiliate-key',
-    description: 'The affiliate secret key',
-  })
-  @ApiResponse({
-    status: 201,
-    description: 'was searched successfully',
-    type: TransferAffiliateResponseDto,
-  })
-  @ApiResponse(ResponseB2Crypto.getResponseSwagger(400))
-  @ApiResponse(ResponseB2Crypto.getResponseSwagger(403))
-  @ApiResponse(ResponseB2Crypto.getResponseSwagger(404))
-  @ApiResponse(ResponseB2Crypto.getResponseSwagger(500))
-  async createWithdrawalOneFromPageAffiliate(
-    @Request() req: Request,
-    @Body() createTransferDto: TransferCreateDto,
-  ) {
-    const transfer = await this.transferService.newWithdrawalFromAffiliate(
-      createTransferDto,
-      req['affiliate'],
-    );
-    return new TransferAffiliateResponseDto(transfer);
-  }
-
-  @Post('credit/from-page')
-  @ApiTags('Integration Lead')
-  @ApiKeyCheck()
-  @UseGuards(ApiKeyAffiliateAuthGuard)
-  @ApiHeader({
-    name: 'b2crypto-affiliate-key',
-    description: 'The affiliate secret key',
-  })
-  @ApiResponse({
-    status: 201,
-    description: 'was searched successfully',
-    type: TransferAffiliateResponseDto,
-  })
-  @ApiResponse(ResponseB2Crypto.getResponseSwagger(400))
-  @ApiResponse(ResponseB2Crypto.getResponseSwagger(403))
-  @ApiResponse(ResponseB2Crypto.getResponseSwagger(404))
-  @ApiResponse(ResponseB2Crypto.getResponseSwagger(500))
-  async createCreditOneFromPageAffiliate(
-    @Request() req: Request,
-    @Body() createTransferDto: TransferCreateDto,
-  ) {
-    const transfer = await this.transferService.newCreditFromAffiliate(
-      createTransferDto,
-      req['affiliate'],
-    );
-    return new TransferAffiliateResponseDto(transfer);
-  }
-
-  @Post('debit/from-page')
-  @ApiTags('Integration Lead')
-  @ApiKeyCheck()
-  @UseGuards(ApiKeyAffiliateAuthGuard)
-  @ApiHeader({
-    name: 'b2crypto-affiliate-key',
-    description: 'The affiliate secret key',
-  })
-  @ApiResponse({
-    status: 201,
-    description: 'was searched successfully',
-    type: TransferAffiliateResponseDto,
-  })
-  @ApiResponse(ResponseB2Crypto.getResponseSwagger(400))
-  @ApiResponse(ResponseB2Crypto.getResponseSwagger(403))
-  @ApiResponse(ResponseB2Crypto.getResponseSwagger(404))
-  @ApiResponse(ResponseB2Crypto.getResponseSwagger(500))
-  async createDebitOneFromPageAffiliate(
-    @Request() req: Request,
-    @Body() createTransferDto: TransferCreateDto,
-  ) {
-    const transfer = await this.transferService.newDebitFromAffiliate(
-      createTransferDto,
-      req['affiliate'],
-    );
-    return new TransferAffiliateResponseDto(transfer);
-  }
-
-  @Post('chargeback/from-page')
-  @ApiTags('Integration Lead')
-  @ApiKeyCheck()
-  @UseGuards(ApiKeyAffiliateAuthGuard)
-  @ApiHeader({
-    name: 'b2crypto-affiliate-key',
-    description: 'The affiliate secret key',
-  })
-  @ApiResponse({
-    status: 201,
-    description: 'was searched successfully',
-    type: TransferAffiliateResponseDto,
-  })
-  @ApiResponse(ResponseB2Crypto.getResponseSwagger(400))
-  @ApiResponse(ResponseB2Crypto.getResponseSwagger(403))
-  @ApiResponse(ResponseB2Crypto.getResponseSwagger(404))
-  @ApiResponse(ResponseB2Crypto.getResponseSwagger(500))
-  async createChargebackOneFromPageAffiliate(
-    @Request() req: Request,
-    @Body() createTransferDto: TransferCreateDto,
-  ) {
-    const transfer = await this.transferService.newChargebackFromAffiliate(
-      createTransferDto,
-      req['affiliate'],
-    );
-    return new TransferAffiliateResponseDto(transfer);
-  }
-
-  @Patch('deposit/from-page')
-  @ApiTags('Integration Lead')
-  @ApiKeyCheck()
-  @UseGuards(ApiKeyAffiliateAuthGuard)
-  @ApiHeader({
-    name: 'b2crypto-affiliate-key',
-    description: 'The affiliate secret key',
-  })
-  @ApiResponse({
-    status: 200,
-    description: 'was searched successfully',
-    type: TransferEntity,
-  })
-  @ApiResponse(ResponseB2Crypto.getResponseSwagger(400))
-  @ApiResponse(ResponseB2Crypto.getResponseSwagger(403))
-  @ApiResponse(ResponseB2Crypto.getResponseSwagger(404))
-  @ApiResponse(ResponseB2Crypto.getResponseSwagger(500))
-  async updateDepositOneFromPageAffiliate(
-    @Request() req: Request,
-    @Body() updatePaymentTransferDto: TransferUpdateDepositDto,
-  ) {
-    return this.updateOperationTypeOneFromPageAffiliate(
-      req,
-      updatePaymentTransferDto,
-      OperationTransactionType.deposit,
-    );
-  }
-
-  @Patch('withdrawal/from-page')
-  @ApiTags('Integration Lead')
-  @ApiKeyCheck()
-  @UseGuards(ApiKeyAffiliateAuthGuard)
-  @ApiHeader({
-    name: 'b2crypto-affiliate-key',
-    description: 'The affiliate secret key',
-  })
-  @ApiResponse({
-    status: 200,
-    description: 'was searched successfully',
-    type: TransferEntity,
-  })
-  @ApiResponse(ResponseB2Crypto.getResponseSwagger(400))
-  @ApiResponse(ResponseB2Crypto.getResponseSwagger(403))
-  @ApiResponse(ResponseB2Crypto.getResponseSwagger(404))
-  @ApiResponse(ResponseB2Crypto.getResponseSwagger(500))
-  async updateWithdrawalOneFromPageAffiliate(
-    @Request() req: Request,
-    @Body() updatePaymentTransferDto: TransferUpdateWithdrawalDto,
-  ) {
-    return this.updateOperationTypeOneFromPageAffiliate(
-      req,
-      updatePaymentTransferDto,
-      OperationTransactionType.withdrawal,
-    );
-  }
-
-  @Patch('credit/from-page')
-  @ApiTags('Integration Lead')
-  @ApiKeyCheck()
-  @UseGuards(ApiKeyAffiliateAuthGuard)
-  @ApiHeader({
-    name: 'b2crypto-affiliate-key',
-    description: 'The affiliate secret key',
-  })
-  @ApiResponse({
-    status: 200,
-    description: 'was searched successfully',
-    type: TransferEntity,
-  })
-  @ApiResponse(ResponseB2Crypto.getResponseSwagger(400))
-  @ApiResponse(ResponseB2Crypto.getResponseSwagger(403))
-  @ApiResponse(ResponseB2Crypto.getResponseSwagger(404))
-  @ApiResponse(ResponseB2Crypto.getResponseSwagger(500))
-  async updateCreditOneFromPageAffiliate(
-    @Request() req: Request,
-    @Body() updatePaymentTransferDto: TransferUpdateDepositDto,
-  ) {
-    return this.updateOperationTypeOneFromPageAffiliate(
-      req,
-      updatePaymentTransferDto,
-      OperationTransactionType.credit,
-    );
-  }
-  @Patch('debit/from-page')
-  @ApiTags('Integration Lead')
-  @ApiKeyCheck()
-  @UseGuards(ApiKeyAffiliateAuthGuard)
-  @ApiHeader({
-    name: 'b2crypto-affiliate-key',
-    description: 'The affiliate secret key',
-  })
-  @ApiResponse({
-    status: 200,
-    description: 'was searched successfully',
-    type: TransferEntity,
-  })
-  @ApiResponse(ResponseB2Crypto.getResponseSwagger(400))
-  @ApiResponse(ResponseB2Crypto.getResponseSwagger(403))
-  @ApiResponse(ResponseB2Crypto.getResponseSwagger(404))
-  @ApiResponse(ResponseB2Crypto.getResponseSwagger(500))
-  async updateDebitOneFromPageAffiliate(
-    @Request() req: Request,
-    @Body() updatePaymentTransferDto: TransferUpdateWithdrawalDto,
-  ) {
-    return this.updateOperationTypeOneFromPageAffiliate(
-      req,
-      updatePaymentTransferDto,
-      OperationTransactionType.debit,
-    );
-  }
-  @Patch('chargeback/from-page')
-  @ApiTags('Integration Lead')
-  @ApiKeyCheck()
-  @UseGuards(ApiKeyAffiliateAuthGuard)
-  @ApiHeader({
-    name: 'b2crypto-affiliate-key',
-    description: 'The affiliate secret key',
-  })
-  @ApiResponse({
-    status: 200,
-    description: 'was searched successfully',
-    type: TransferEntity,
-  })
-  @ApiResponse(ResponseB2Crypto.getResponseSwagger(400))
-  @ApiResponse(ResponseB2Crypto.getResponseSwagger(403))
-  @ApiResponse(ResponseB2Crypto.getResponseSwagger(404))
-  @ApiResponse(ResponseB2Crypto.getResponseSwagger(500))
-  async updateChargebackOneFromPageAffiliate(
-    @Request() req: Request,
-    @Body() updatePaymentTransferDto: TransferUpdateWithdrawalDto,
-  ) {
-    return this.updateOperationTypeOneFromPageAffiliate(
-      req,
-      updatePaymentTransferDto,
-      OperationTransactionType.chargeback,
-    );
-  }
-
-  @Get('deposit/:transferID')
+  /* @Get('deposit/:transferID')
   // @CheckPoliciesAbility(new PolicyHandlerTransferRead())
   async findOneDeposit(@Param('transferID') id: string) {
     const deposit = await this.transferService.getOne(id);
@@ -793,7 +160,7 @@ export class TransferServiceController implements GenericServiceController {
       return deposit;
     }
     throw new NotFoundException(`Not found deposit "${id}"`);
-  }
+  } */
 
   @Get('credit/:transferID')
   // @CheckPoliciesAbility(new PolicyHandlerTransferRead())
@@ -842,13 +209,10 @@ export class TransferServiceController implements GenericServiceController {
   }
 
   // TODO[hender - 30-01-2024] Add to endpoint list
-  @Get('check-status')
+  @Post('b2binpay/status-deposit')
   // @CheckPoliciesAbility(new PolicyHandlerTransferRead())
-  async checkStatus() {
-    //return this.transferService.checkTransferInCashierByStatus();
-    const sended = this.transferService.checkTransferInCashierSended();
-    const pending = this.transferService.checkTransferInCashierPending();
-    return Promise.all([sended, pending]);
+  async checkStatus(@Body() data: any) {
+    Logger.debug(data);
   }
 
   @Get(':transferID')
@@ -869,6 +233,8 @@ export class TransferServiceController implements GenericServiceController {
     }
     return this.transferService.newTransfer(createTransferDto);
   }
+
+  // ----------------------------
   @Post('deposit')
   // @CheckPoliciesAbility(new PolicyHandlerTransferCreate())
   async createOneDeposit(
@@ -882,6 +248,68 @@ export class TransferServiceController implements GenericServiceController {
     createTransferDto.operationType = OperationTransactionType.deposit;
     return this.transferService.newTransfer(createTransferDto);
   }
+
+  @NoCache()
+  @AllowAnon()
+  @Get('deposit/link')
+  // @CheckPoliciesAbility(new PolicyHandlerTransferCreate())
+  async createOneDepositPaymentPage(
+    @Query() createTransferButtonDto: TransferCreateButtonDto,
+    @Request() req,
+    @Res() res: Response,
+  ) {
+    const createTransferDto: TransferCreateDto = new TransferCreateDto();
+    // Create Lead
+    // Configure CallBack
+    createTransferDto.name = createTransferButtonDto.identifier;
+    createTransferDto.description = createTransferButtonDto.details;
+    createTransferDto.page = req.get('Host');
+    createTransferDto.amount = parseFloat(createTransferButtonDto.amount);
+    createTransferDto.currency = createTransferButtonDto.currency;
+    const list = await this.affliateService.getAll({
+      where: {
+        publicKey: createTransferButtonDto.public_key,
+      },
+    });
+    const affiliate = list.list[0];
+    if (!affiliate) {
+      throw new BadRequestException('Affiliate not found');
+    }
+    if (!affiliate.account) {
+      throw new BadRequestException('Account not found');
+    }
+    createTransferDto.account = affiliate.account.toString();
+    createTransferDto.operationType = OperationTransactionType.deposit;
+    const transfer = await this.transferService.newTransfer(createTransferDto);
+    if (!transfer?.responseAccount?.data?.attributes?.payment_page) {
+      throw new InternalServerErrorException('URL not found');
+    }
+    return res.redirect(
+      transfer?.responseAccount?.data?.attributes?.payment_page,
+    );
+  }
+
+  @NoCache()
+  @AllowAnon()
+  @Get('deposit/page/:id')
+  // @CheckPoliciesAbility(new PolicyHandlerTransferCreate())
+  async paymentPageDeposit(
+    @Param('id') id: string,
+    @Request() req,
+    @Res() res: Response,
+  ) {
+    //createTransferDto.userCreator = req?.user?.id;
+    const transfer = await this.transferService.getOne(id);
+    if (!transfer?.responseAccount?.data?.attributes?.payment_page) {
+      throw new NotFoundException();
+      //throw new InternalServerErrorException('URL not found');
+    }
+    return res.redirect(
+      transfer?.responseAccount?.data?.attributes?.payment_page,
+    );
+  }
+  // ----------------------------
+
   @Post('credit')
   // @CheckPoliciesAbility(new PolicyHandlerTransferCreate())
   async createOneCredit(
@@ -1188,24 +616,6 @@ export class TransferServiceController implements GenericServiceController {
   ) {
     CommonService.ack(ctx);
     //return this.transferService.checkTransferStatsByQuery(query);
-  }
-
-  @AllowAnon()
-  @EventPattern(EventsNamesTransferEnum.checkTransferInCashierByStatus)
-  async checkTransferInCashierByStatus(
-    @Payload() statusId: string,
-    @Ctx() ctx: RmqContext,
-  ) {
-    CommonService.ack(ctx);
-    if (!statusId || statusId === '') {
-      this.transferService.checkTransferInCashierSended();
-      this.transferService.checkTransferInCashierPending();
-      return { message: 'Success' };
-    } else if (isMongoId(statusId)) {
-      this.transferService.checkTransferInCashierByStatus(statusId);
-      return { message: `Success status: ${statusId}` };
-    }
-    throw new NotFoundException(`Not found status "${statusId}"`);
   }
 
   private async filterFromUserPermissions(

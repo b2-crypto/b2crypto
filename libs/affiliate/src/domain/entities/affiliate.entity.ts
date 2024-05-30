@@ -9,6 +9,7 @@ import { TrafficEntity } from '@traffic/traffic/entities/traffic.entity';
 import { UserEntity } from '@user/user/entities/user.entity';
 import { ObjectId } from 'mongodb';
 import { AffiliateInterface } from './affiliate.interface';
+import { AccountEntity } from '@account/account/entities/account.entity';
 
 export class AffiliateEntity implements AffiliateInterface {
   _id?: ObjectId;
@@ -65,6 +66,7 @@ export class AffiliateEntity implements AffiliateInterface {
   user: UserEntity;
   leads: LeadEntity[];
   group: GroupEntity;
+  account: AccountEntity;
   affiliateGroup: GroupEntity;
   integrationGroup: GroupEntity;
   traffic: TrafficEntity;

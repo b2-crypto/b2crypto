@@ -1,3 +1,4 @@
+import { Account } from '@account/account/entities/mongoose/account.schema';
 import { AffiliateEntity } from '@affiliate/affiliate/domain/entities/affiliate.entity';
 import { Brand } from '@brand/brand/entities/mongoose/brand.schema';
 import { Crm } from '@crm/crm/entities/mongoose/crm.schema';
@@ -129,6 +130,9 @@ export class Affiliate extends AffiliateEntity {
 
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'groups' })
   group: Group;
+
+  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'accounts' })
+  account: Account;
 
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'groups' })
   affiliateGroup: Group;

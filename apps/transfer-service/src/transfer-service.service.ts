@@ -1,6 +1,6 @@
+import { AccountDocument } from '@account/account/entities/mongoose/account.schema';
 import { AffiliateDocument } from '@affiliate/affiliate/infrastructure/mongoose/affiliate.schema';
 import { BuildersService } from '@builder/builders';
-import { BrandInterface } from 'libs/brand/src/entities/brand.interface';
 import { CategoryInterface } from '@category/category/entities/category.interface';
 import { CommonService } from '@common/common';
 import { StatusCashierEnum } from '@common/common/enums/StatusCashierEnum';
@@ -12,7 +12,8 @@ import { QuerySearchAnyDto } from '@common/common/models/query_search-any.dto';
 import { UpdateAnyDto } from '@common/common/models/update-any.dto';
 import { CrmInterface } from '@crm/crm/entities/crm.interface';
 import { CrmDocument } from '@crm/crm/entities/mongoose/crm.schema';
-import { LatamCashierPaymentResponse } from '@integration/integration/payment/latam-cashier/domain/latamcashier.payment.response';
+import { IntegrationService } from '@integration/integration';
+import IntegrationCryptoEnum from '@integration/integration/crypto/enums/IntegrationCryptoEnum';
 import { LeadUpdateDto } from '@lead/lead/dto/lead.update.dto';
 import { LeadInterface } from '@lead/lead/entities/lead.interface';
 import { LeadDocument } from '@lead/lead/entities/mongoose/lead.schema';
@@ -35,12 +36,14 @@ import { StatsDateCreateDto } from '@stats/stats/dto/stats.date.create.dto';
 import { StatusDocument } from '@status/status/entities/mongoose/status.schema';
 import { StatusInterface } from '@status/status/entities/status.interface';
 import { TransferServiceMongooseService } from '@transfer/transfer';
+import { DataTransferAccountResponse } from '@transfer/transfer/dto/transfer.account.response.dto';
 import { TransferCreateDto } from '@transfer/transfer/dto/transfer.create.dto';
 import { TransferUpdateDto } from '@transfer/transfer/dto/transfer.update.dto';
 import { TransferUpdateFromLatamCashierDto } from '@transfer/transfer/dto/transfer.update.from.latamcashier.dto';
 import { TransferDocument } from '@transfer/transfer/entities/mongoose/transfer.schema';
 import { TransferPropertiesRelations } from '@transfer/transfer/entities/transfer.interface';
 import { OperationTransactionType } from '@transfer/transfer/enum/operation.transaction.type.enum';
+import { AccountServiceService } from 'apps/account-service/src/account-service.service';
 import EventsNamesAffiliateEnum from 'apps/affiliate-service/src/enum/events.names.affiliate.enum';
 import EventsNamesBrandEnum from 'apps/brand-service/src/enum/events.names.brand.enum';
 import EventsNamesCategoryEnum from 'apps/category-service/src/enum/events.names.category.enum';
@@ -53,11 +56,17 @@ import EventsNamesStatsEnum from 'apps/stats-service/src/enum/events.names.stats
 import EventsNamesStatusEnum from 'apps/status-service/src/enum/events.names.status.enum';
 import axios from 'axios';
 import { isArray, isMongoId } from 'class-validator';
+import { BrandInterface } from 'libs/brand/src/entities/brand.interface';
 import { ObjectId } from 'mongodb';
 import { isObjectIdOrHexString } from 'mongoose';
 import { ApproveOrRejectDepositDto } from '../../../libs/transfer/src/dto/approve.or.reject.deposit.dto';
 import { TransferLeadStatsDto } from './dto/transfer.lead.stat.dto';
 import EventsNamesTransferEnum from './enum/events.names.transfer.enum';
+import { AccountInterface } from '@account/account/entities/account.interface';
+import { AccountUpdateDto } from '@account/account/dto/account.update.dto';
+import { CategoryServiceService } from 'apps/category-service/src/category-service.service';
+import { PspAccountServiceService } from 'apps/psp-service/src/psp.account.service.service';
+import { StatusServiceService } from 'apps/status-service/src/status-service.service';
 
 @Injectable()
 export class TransferServiceService
@@ -66,6 +75,16 @@ export class TransferServiceService
   private eventClient: ClientProxy;
 
   constructor(
+    @Inject(StatusServiceService)
+    private statusService: StatusServiceService,
+    @Inject(PspAccountServiceService)
+    private pspAccountService: PspAccountServiceService,
+    @Inject(CategoryServiceService)
+    private categoryService: CategoryServiceService,
+    @Inject(AccountServiceService)
+    private accountService: AccountServiceService,
+    @Inject(IntegrationService)
+    private integrationService: IntegrationService,
     @Inject(TransferServiceMongooseService)
     private lib: TransferServiceMongooseService,
     @Inject(BuildersService)
@@ -196,38 +215,83 @@ export class TransferServiceService
   async getAll(
     query: QuerySearchAnyDto,
   ): Promise<ResponsePaginator<TransferDocument>> {
-    const statusId = await this.getStatusByName('Inactive');
+    /* const statusId = await this.getStatusByName('Inactive');
     query.where = query.where ?? {};
     if (!query.where.status) {
       query.where.status = {
         $nin: [statusId._id.toString()],
       };
-    }
+    } */
     return this.lib.findAll(query);
   }
 
+  async redirectNewTransfer(transferDto: TransferCreateDto) {
+    const transferSaved = await this.newTransfer(transferDto);
+    return transferSaved.responseAccount.data.attributes.payment_page;
+  }
+
   async newTransfer(transfer: TransferCreateDto) {
-    const data = await this.queryData(transfer);
-    if (data.lead && data.pspAccount && data.typeTransaction) {
-      transfer.leadCountry = data.lead.country;
-      this.checkCountry(transfer, data);
-      if (!data.crm) {
+    const data = await this.queryDataAccount(transfer);
+    if (data.account && data.pspAccount && data.typeTransaction) {
+      this.checkCountryAccount(transfer, data);
+      /* if (!data.crm) {
         data.crm = (await this.getCrmById(
-          data.lead.crm.toString(),
+          data.account.crm.toString(),
         )) as any as CrmInterface;
-      }
-      await this.checkTransfer(transfer, data);
+      } */
+      await this.checkTransferAccount(transfer, data);
       if (transfer.isManualTx) {
         transfer.hasApproved = true;
         transfer.approvedAt = new Date();
         transfer.rejectedAt = null;
       }
-      const transferSaved = await this.lib.create(transfer);
-      if (transfer.hasApproved) {
-        await this.sendTransferToCrm(transferSaved.lead, transferSaved);
+      if (!transfer.account) {
+        throw new BadRequestException('Account is mandatory');
       }
-      await this.updateLead(data.lead, transferSaved);
-      await this.checkStatsPspAndPspAccount(transferSaved);
+      const account: AccountDocument = await this.accountService.findOneById(
+        transfer.account,
+      );
+      if (!account) {
+        throw new BadRequestException('Not found account');
+      }
+      transfer.account = account._id;
+      const transferSaved = await this.lib.create(transfer);
+      try {
+        if (!account.accountId) {
+          throw new BadRequestException('AccountId not found');
+        }
+        const integration = await this.integrationService.getCryptoIntegration(
+          account,
+          IntegrationCryptoEnum.B2BINPAY,
+          transfer.account.url ?? 'https://api.b2binpay.com',
+        );
+        const deposit = await integration.createDeposit({
+          data: {
+            type: 'deposit',
+            attributes: {
+              label: transferSaved.name,
+              tracking_id: transferSaved._id,
+              confirmations_needed: 2,
+              callback_url: 'http://54.241.103.240/b2binpay/status-deposit',
+            },
+            relationships: {
+              wallet: {
+                data: {
+                  type: 'wallet',
+                  id: account.accountId,
+                },
+              },
+            },
+          },
+        });
+        transferSaved.responseAccount = {
+          data: deposit.data as unknown as DataTransferAccountResponse,
+        };
+        await this.updateTransfer(transferSaved);
+      } catch (err) {
+        await this.lib.remove(transferSaved._id);
+        throw new BadRequestException(err);
+      }
       return transferSaved;
     }
     throw new BadRequestException(this.getMessageError(data));
@@ -293,19 +357,17 @@ export class TransferServiceService
     affiliateId: string,
     operationType: OperationTransactionType,
   ) {
-    let lead;
-    if (!transfer.lead) {
-      throw new BadRequestException('Need tpId or id of lead to pay');
+    let account;
+    if (!transfer.account) {
+      throw new BadRequestException('Need tpId or id of account to pay');
     }
     transfer.operationType = operationType;
-    if (isMongoId(transfer.lead)) {
-      lead = await this.getLeadById(transfer.lead);
-    } else {
-      lead = await this.getLeadByTpId(transfer.lead);
+    if (isMongoId(transfer.account)) {
+      account = await this.getAccountById(transfer.account);
     }
-    if (!lead || lead?.affiliate?._id.toString() !== affiliateId) {
+    if (!account || account?.affiliate?._id.toString() !== affiliateId) {
       if (await this.getAffiliateIsAdmin(affiliateId)) {
-        throw new NotFoundException('Not found Lead');
+        throw new NotFoundException('Not found Account');
       }
     }
     const affiliate: AffiliateDocument =
@@ -317,28 +379,27 @@ export class TransferServiceService
     if (transfer.hasApproved || transfer.isManualTx) {
       transfer.userApprover = affiliate.user;
     }
-    transfer.lead = lead;
-    const data = await this.queryData(transfer);
-    //if (data.lead && data.pspAccount && data.typeTransaction) {
-    if (data.lead && data.pspAccount) {
+    transfer.account = account;
+    const data = await this.queryDataAccount(transfer);
+    if (data.account && data.pspAccount) {
       transfer.pspAccount = data.pspAccount._id;
-      transfer.name = transfer.name ?? 'Transaction of ' + lead.name;
+      transfer.name = transfer.name ?? 'Transaction of ' + account.name;
       transfer.description =
         transfer.description ??
         'Transaction of ' +
-          lead.name +
+          account.name +
           ' ' +
           'On PSP ' +
           PspAccount.name +
           (data.typeTransaction
             ? ' ' + 'Of type ' + data.typeTransaction?.name
             : '');
-      transfer.leadCountry = data.lead.country;
+      transfer.leadCountry = data.account.country;
       transfer.country = transfer.country ?? transfer.leadCountry;
       this.checkCountry(transfer, data);
       if (!data.crm) {
         data.crm = (await this.getCrmById(
-          data.lead.crm.toString(),
+          data.account.crm.toString(),
         )) as any as CrmInterface;
       }
       await this.checkTransfer(transfer, data);
@@ -348,8 +409,8 @@ export class TransferServiceService
         transfer.rejectedAt = null;
       }
       const transferSaved = await this.lib.create(transfer);
-      await this.updateLead(data.lead, transferSaved);
-      await this.checkStatsPspAndPspAccount(transferSaved);
+      await this.updateAccount(data.account, transferSaved);
+      //await this.checkStatsPspAndPspAccount(transferSaved);
       const page = await this.getAll({
         where: {
           _id: transferSaved.id,
@@ -364,12 +425,52 @@ export class TransferServiceService
         ],
       });
       const transfer_ = page.list[0];
-      if (transfer.hasApproved) {
+      /* if (transfer.hasApproved) {
         await this.sendTransferToCrm(transfer_.lead, transfer_);
-      }
+      } */
       return transfer_;
     }
     throw new BadRequestException(this.getMessageError(data));
+  }
+
+  async updateAccount(
+    account: AccountInterface,
+    transferSaved: TransferDocument,
+    isNew = true,
+  ) {
+    // TODO[hender-2023-09-6] If the lead's country has a custom rule, take it, if not, take the general rule
+    const ruleCftd = await this.getCategoryByName(
+      'Money to CFTD from lead',
+      TagEnum.RULE,
+    );
+    if (!account.email) {
+      const tmpAccount = await this.getAccountById(account._id);
+      if (!tmpAccount) {
+        throw new BadRequestException(
+          `Account ${account._id ?? account} not found `,
+        );
+      }
+      account = tmpAccount as unknown as AccountInterface;
+    }
+    const accountToUpdate: AccountUpdateDto = {
+      id: account._id,
+      amount: account.amount,
+      quantityTransfer: account.quantityTransfer,
+      affiliate: account.affiliate,
+    };
+
+    if (transferSaved.hasApproved) {
+      let amount = transferSaved.amount;
+      if (transferSaved.operationType === OperationTransactionType.withdrawal) {
+        amount *= -1;
+      }
+      accountToUpdate.amount += amount;
+    }
+    await this.accountService.updateOne(accountToUpdate);
+    /* this.builder.emitLeadEventClient(
+      EventsNamesLeadEnum.updateOne,
+      leadToUpdate,
+    ); */
   }
 
   async updateLead(
@@ -464,10 +565,51 @@ export class TransferServiceService
     lead: LeadInterface | ObjectId,
     transferSaved: TransferDocument,
   ) {
-    this.builder.emitCrmEventClient(EventsNamesCrmEnum.createOneTransferOnCrm, {
+    /* this.builder.emitCrmEventClient(EventsNamesCrmEnum.createOneTransferOnCrm, {
       lead: lead._id ?? lead,
       transfer: transferSaved._id,
+    }); */
+  }
+
+  private async queryDataAccount(transfer: TransferCreateDto): Promise<{
+    account: AccountInterface;
+    pspAccount: PspAccountInterface;
+    typeTransaction: CategoryInterface;
+    status: StatusInterface;
+    department: CategoryInterface;
+    bank: CategoryInterface;
+    brand: BrandInterface;
+    crm: CrmInterface;
+  }> {
+    const promisesByIds = {
+      account: this.getAccountById(transfer.account),
+      pspAccount: this.getPspAccountById(transfer.pspAccount),
+      // TODO[hender] Buscar agregando el tipo de category
+      typeTransaction: this.getCategoryById(transfer.typeTransaction),
+      status: this.getStatusById(transfer.status),
+      department:
+        transfer.department && this.getCategoryById(transfer.department),
+      bank: transfer.bank && this.getCategoryById(transfer.bank),
+      brand: transfer.brand && this.getBrandById(transfer.brand),
+      crm: transfer.crm && this.getCrmById(transfer.crm),
+    };
+    const data = {
+      account: null as AccountInterface,
+      pspAccount: null as PspAccountInterface,
+      typeTransaction: null as CategoryInterface,
+      status: null as StatusInterface,
+      department: null as CategoryInterface,
+      bank: null as CategoryInterface,
+      brand: null as BrandInterface,
+      crm: null as CrmInterface,
+    };
+    const keys = Object.keys(data);
+
+    const valuesIds = await Promise.all(Object.values(promisesByIds));
+    valuesIds.forEach((entry, idx) => {
+      data[keys[idx]] = entry;
     });
+    return data;
   }
 
   private async queryData(transfer: TransferCreateDto): Promise<{
@@ -517,6 +659,30 @@ export class TransferServiceService
     return data;
   }
 
+  private async checkTransferAccount(transfer: TransferCreateDto, data) {
+    transfer.leadCrmName = data.crm?.name;
+    transfer.psp = data.pspAccount?.psp;
+    transfer.affiliate = data.account.affiliate;
+    // Fill status
+    transfer.status = data.status?.name
+      ? data.status
+      : await this.checkStatus(transfer, data.status);
+    // Fill department
+    if (!data.department) {
+      /* transfer.department = data.crm.department
+        ? data.crm.department
+        : await this.getCategoryDepartmentSales();
+      transfer.department = transfer.department?._id || transfer.department; */
+    }
+    // Fill bank
+    transfer.bank = data.bank || data.pspAccount.bank;
+    // Fill brand
+    transfer.brand = data.account.brand;
+    // Fill crm
+    transfer.crm = data.crm?.id || data.account.crm;
+    transfer.account = data.account?._id;
+  }
+
   private async checkTransfer(transfer: TransferCreateDto, data) {
     transfer.leadCrmName = data.crm?.name;
     transfer.leadEmail = data.lead.email;
@@ -542,6 +708,15 @@ export class TransferServiceService
     // Fill crm
     transfer.crm = data.crm?.id || data.lead.crm;
     transfer.lead = data.lead?._id;
+  }
+
+  private async checkCountryAccount(transfer: TransferCreateDto, data) {
+    if (!transfer.leadCountry && data.account?.personalData) {
+      const person = await this.getPersonById(
+        data.account.personalData.toString(),
+      );
+      transfer.leadCountry = person.location?.country;
+    }
   }
 
   private async checkCountry(transfer: TransferCreateDto, data) {
@@ -776,38 +951,71 @@ export class TransferServiceService
   }
 
   private async getStatusSended(): Promise<StatusInterface> {
-    return this.builder.getPromiseStatusEventClient(
+    const list = await this.statusService.getAll({
+      where: {
+        slug: CommonService.getSlug('Sended'),
+      },
+    });
+    return list.list[0];
+    /* return this.builder.getPromiseStatusEventClient(
       EventsNamesStatusEnum.findOneByName,
       'Sended',
-    );
+    ); */
   }
 
   private async getStatusApproved(): Promise<StatusInterface> {
-    return this.builder.getPromiseStatusEventClient(
+    const list = await this.statusService.getAll({
+      where: {
+        slug: CommonService.getSlug(StatusCashierEnum.APPROVED),
+      },
+    });
+    return list.list[0];
+    /* return this.builder.getPromiseStatusEventClient(
       EventsNamesStatusEnum.findOneByName,
       StatusCashierEnum.APPROVED,
-    );
+    ); */
   }
 
   private async getStatusRejected(): Promise<StatusInterface> {
-    return this.builder.getPromiseStatusEventClient(
+    const list = await this.statusService.getAll({
+      where: {
+        slug: CommonService.getSlug(StatusCashierEnum.REJECTED),
+      },
+    });
+    return list.list[0];
+    /* return this.builder.getPromiseStatusEventClient(
       EventsNamesStatusEnum.findOneByName,
       StatusCashierEnum.REJECTED,
-    );
+    ); */
   }
 
   private async getStatusPending(): Promise<StatusInterface> {
-    return this.builder.getPromiseStatusEventClient(
+    const list = await this.statusService.getAll({
+      where: {
+        slug: CommonService.getSlug(StatusCashierEnum.PENDING),
+      },
+    });
+    return list.list[0];
+    /* return this.builder.getPromiseStatusEventClient(
       EventsNamesStatusEnum.findOneByName,
       StatusCashierEnum.PENDING,
-    );
+    ); */
   }
 
   private async getStatusById(id: string): Promise<StatusDocument> {
-    return this.builder.getPromiseStatusEventClient(
+    if (!id) {
+      const listStatusPending = await this.statusService.getAll({
+        where: {
+          slug: CommonService.getSlug(StatusCashierEnum.PENDING),
+        },
+      });
+      return listStatusPending.list[0];
+    }
+    return this.statusService.getOne(id);
+    /* return this.builder.getPromiseStatusEventClient(
       EventsNamesStatusEnum.findOneById,
       id,
-    );
+    ); */
   }
 
   private async getStatusByName(id: string): Promise<StatusDocument> {
@@ -842,14 +1050,36 @@ export class TransferServiceService
   }
 
   private async getCategoryById(id: string): Promise<CategoryInterface> {
-    return this.builder.getPromiseCategoryEventClient(
+    if (!id) {
+      const listTxCrypto = await this.categoryService.getAll({
+        where: {
+          type: TagEnum.MONETARY_TRANSACTION_TYPE,
+          slug: CommonService.getSlug('Crypto'),
+        },
+      });
+      let typeTxDefault = listTxCrypto.list[0];
+      if (!typeTxDefault) {
+        typeTxDefault = await this.categoryService.newCategory({
+          type: TagEnum.MONETARY_TRANSACTION_TYPE,
+          name: 'Crypto',
+        });
+      }
+      id = typeTxDefault._id.toString();
+    }
+    return this.categoryService.getOne(id);
+    /* return this.builder.getPromiseCategoryEventClient(
       EventsNamesCategoryEnum.findOneById,
       id,
-    );
+    ); */
   }
 
-  private async getPspAccountById(id: string): Promise<PspAccountDocument> {
-    if (isMongoId(id)) {
+  private async getPspAccountById(id?: string): Promise<PspAccountDocument> {
+    if (!id) {
+      const pspAccountDefault = await this.pspAccountService.getPspB2BinPay();
+      id = pspAccountDefault._id.toString();
+    }
+    return this.pspAccountService.getOne(id);
+    /* if (isMongoId(id)) {
       return this.builder.getPromisePspAccountEventClient(
         EventsNamesPspAccountEnum.findOneById,
         id,
@@ -858,7 +1088,7 @@ export class TransferServiceService
     return this.builder.getPromisePspAccountEventClient(
       EventsNamesPspAccountEnum.findOneByCode,
       id,
-    );
+    ); */
   }
 
   private async getPspAccountByName(id: string): Promise<PspAccountDocument> {
@@ -873,6 +1103,10 @@ export class TransferServiceService
       EventsNamesPspEnum.findOneById,
       id,
     );
+  }
+
+  private async getAccountById(id: string): Promise<AccountDocument> {
+    return this.accountService.findOneById(id);
   }
 
   private async getLeadById(id: string): Promise<LeadDocument> {
@@ -1152,149 +1386,5 @@ export class TransferServiceService
   async checkStatsPspAccount(transfersLeadStat: Array<TransferLeadStatsDto>) {
     const statDate = new StatsDateCreateDto();
     Logger.debug('checkStatsPspAccount', `${TransferServiceService.name}:902`);
-  }
-
-  async checkTransferInCashierSended() {
-    return this.checkTransferInCashierByStatus('Sended');
-  }
-
-  async checkTransferInCashierPending() {
-    return this.checkTransferInCashierByStatus('Pending', true);
-  }
-
-  async checkTransferInCashierByStatus(
-    statusId?: string,
-    checkedOnCashier = null,
-  ) {
-    let eventName = EventsNamesStatusEnum.findOneById;
-    if (!statusId) {
-      statusId = 'Sended';
-    }
-    if (!isObjectIdOrHexString(statusId)) {
-      eventName = EventsNamesStatusEnum.findOneByName;
-    }
-    const status = await this.builder.getPromiseStatusEventClient(
-      eventName,
-      statusId,
-    );
-    if (!status._id) {
-      throw new BadRequestException('Status not found');
-    }
-    const query = {
-      take: 1000000,
-      where: {
-        status: status._id,
-      } as any,
-    };
-    if (!!checkedOnCashier || checkedOnCashier === false) {
-      query.where['checkedOnCashier'] = !!checkedOnCashier;
-    }
-    const transfers: ResponsePaginator<TransferDocument> = await this.findAll(
-      query,
-    );
-    //TODO[hender] Add url base to send request to cashier
-    const baseUrl = '';
-    const statusApproved = await this.getStatusApproved();
-    const statusRejected = await this.getStatusRejected();
-    const statusPending = await this.getStatusPending();
-    const statuses = {};
-    statuses[statusId.toUpperCase()] = status._id;
-    statuses[StatusCashierEnum.APPROVED] = statusApproved._id;
-    statuses[StatusCashierEnum.REJECTED] = statusRejected._id;
-    statuses[StatusCashierEnum.PENDING] = statusPending._id;
-    for (const tx of transfers.list) {
-      const url = baseUrl + tx.numericId;
-      try {
-        const rta: LatamCashierPaymentResponse = (await axios.get(url))?.data;
-        if (CommonService.getSlug(rta.payload.status) !== status.slug) {
-          if (!statuses[rta.payload.status]) {
-            const statusUpdate = await this.builder.getPromiseStatusEventClient(
-              EventsNamesStatusEnum.findOneByName,
-              rta.payload.status,
-            );
-            statuses[rta.payload.status] = statusUpdate._id;
-          }
-          const txUpdateDto = {
-            id: tx._id,
-            checkedOnCashier: false,
-            statusPayment: rta.payload.status,
-            status: statuses[rta.payload.status],
-            responsePayment: rta,
-          } as TransferUpdateDto;
-          if (
-            statuses[StatusCashierEnum.APPROVED] ===
-            statuses[rta.payload.status]
-          ) {
-            txUpdateDto.approvedAt = new Date(
-              rta.payload.notificationDate + 'Z',
-            );
-            txUpdateDto.confirmedAt = txUpdateDto.approvedAt;
-            txUpdateDto.rejectedAt = null;
-            txUpdateDto.hasApproved = true;
-          } else if (
-            statuses[StatusCashierEnum.REJECTED] ===
-            statuses[rta.payload.status]
-          ) {
-            txUpdateDto.rejectedAt = new Date(
-              rta.payload.notificationDate + 'Z',
-            );
-            txUpdateDto.confirmedAt = txUpdateDto.rejectedAt;
-            txUpdateDto.approvedAt = null;
-            txUpdateDto.hasApproved = false;
-          } else {
-            txUpdateDto.checkedOnCashier = true;
-          }
-          if (!txUpdateDto.checkedOnCashier) {
-            if (tx.hasApproved) {
-              // It was approved before and manually
-              delete txUpdateDto.approvedAt;
-              delete txUpdateDto.rejectedAt;
-              delete txUpdateDto.hasApproved;
-              await this.sendTransferToCrm(tx.lead, tx);
-            }
-            this.builder.emitTransferEventClient(
-              EventsNamesTransferEnum.updateOne,
-              txUpdateDto,
-            );
-            tx.approvedAt = tx.approvedAt ?? txUpdateDto.approvedAt;
-            tx.rejectedAt = tx.rejectedAt ?? txUpdateDto.rejectedAt;
-            tx.hasApproved = tx.hasApproved ?? txUpdateDto.hasApproved;
-            tx.confirmedAt = txUpdateDto.confirmedAt;
-            tx.checkedOnCashier = txUpdateDto.checkedOnCashier;
-            await this.updateLead(
-              tx.lead as unknown as LeadInterface,
-              tx,
-              false,
-            );
-            //await this.sendToCrm({ id: tx._id.toString() });
-            Logger.debug(
-              tx.id,
-              `Send transfer to ${tx.leadCrmName} status ${rta.payload?.status}`,
-            );
-          }
-          Logger.debug(
-            tx.id,
-            `Updated transfer ${url} status ${rta.payload?.status}`,
-          );
-        }
-      } catch (err) {
-        if (err.response?.data?.detail?.message === 'Transaction not found') {
-          Logger.error(err, `Url ${url} - ${tx.statusPayment}`);
-          this.builder.emitTransferEventClient(
-            EventsNamesTransferEnum.updateOne,
-            {
-              id: tx._id,
-              status: statuses[tx.statusPayment ?? StatusCashierEnum.PENDING],
-              checkedOnCashier: false,
-              responsePayment: err,
-            },
-          );
-        } else {
-          Logger.error(err, `Other error - Url ${url} - ${tx.statusPayment}`);
-        }
-        continue;
-      }
-    }
-    return transfers;
   }
 }

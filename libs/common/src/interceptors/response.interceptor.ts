@@ -36,9 +36,10 @@ export class ResponseInterceptor implements NestInterceptor {
           if (isString(data.status)) {
             delete data.status;
           }
+          res.status(data?.statusCode ?? 500);
+          return this.responseB2Crypto.getResponse(data);
         }
-        res.status(data?.statusCode ?? 500);
-        return this.responseB2Crypto.getResponse(data);
+        return data;
       }),
       catchError(this.catchError(context['contextType'])),
     );

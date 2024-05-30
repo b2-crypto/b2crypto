@@ -8,6 +8,7 @@ import { TrafficEntity } from '@traffic/traffic/entities/traffic.entity';
 import { UserEntity } from '@user/user/entities/user.entity';
 import { UserInterface } from '@user/user/entities/user.interface';
 import { ObjectId } from 'mongoose';
+import { AccountInterface } from '@account/account/entities/account.interface';
 
 export interface AffiliateInterface {
   _id?: ObjectId;
@@ -45,6 +46,7 @@ export interface AffiliateInterface {
   user: UserEntity;
   leads: LeadEntity[];
   group: GroupEntity;
+  account: AccountInterface;
   affiliateGroup: GroupEntity;
   integrationGroup: GroupEntity;
   traffic: TrafficEntity;

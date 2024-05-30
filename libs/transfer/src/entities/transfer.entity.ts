@@ -14,6 +14,7 @@ import { OperationTransactionType } from '../enum/operation.transaction.type.enu
 import { AffiliateEntity } from '@affiliate/affiliate/domain/entities/affiliate.entity';
 import { PspResponse } from '../dto/transfer.latamcashier.response.dto';
 import { UserEntity } from '@user/user/entities/user.entity';
+import { AccountEntity } from '@account/account/entities/account.entity';
 
 export class TransferEntity implements TransferInterface {
   @ApiProperty({
@@ -80,8 +81,9 @@ export class TransferEntity implements TransferInterface {
   descriptionStatusPayment: string;
   urlPayment: string;
   responsePayment: PspResponse;
-  responseCrm: any;
+  responseAccount: any;
   lead: LeadEntity;
+  account: AccountEntity;
   affiliate: AffiliateEntity;
   status: StatusEntity;
   bank: CategoryEntity;

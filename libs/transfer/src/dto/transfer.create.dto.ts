@@ -29,15 +29,16 @@ export class TransferCreateDto extends CreateAnyDto {
   searchText: string;
 
   @IsNotEmpty()
-  @IsEnum(CurrencyCodeB2cryptoEnum)
+  /* @IsEnum(CurrencyCodeB2cryptoEnum)
   @ApiProperty({
     required: true,
     enum: CurrencyCodeB2cryptoEnum,
     enumName: 'CurrencyList',
     description: 'Transfer currency',
     example: 'approved',
-  })
-  currency: CurrencyCodeB2cryptoEnum;
+  }) */
+  //currency: CurrencyCodeB2cryptoEnum;
+  currency: string;
 
   @IsEmpty()
   numericId: number;
@@ -70,9 +71,19 @@ export class TransferCreateDto extends CreateAnyDto {
     required: true,
     type: String,
     description: 'Id of lead. Could be an id of a tpId',
-    examples: ['641a11cd77f0460f56d56beb', '987654'],
+    examples: ['641a11cd77f0460f56d56beb'],
   })
   lead: ObjectId;
+
+  @IsString()
+  @IsOptional()
+  @ApiProperty({
+    required: true,
+    type: String,
+    description: 'Id of account',
+    examples: ['641a11cd77f0460f56d56beb'],
+  })
+  account: ObjectId;
 
   @IsEmpty()
   leadEmail: string;

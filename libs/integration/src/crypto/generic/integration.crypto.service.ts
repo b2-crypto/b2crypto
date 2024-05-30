@@ -11,6 +11,8 @@ import { DepositDto } from './dto/deposit.dto';
 import { WalletDto } from './dto/wallet.dto';
 import { IntegrationCryptoInterface } from './integration.crypto.interface';
 import { CryptoRoutesInterface } from './interface/crypto.routes.interface';
+import { AccountDocument } from '@account/account/entities/mongoose/account.schema';
+import { CommonService } from '@common/common';
 
 export class IntegrationCryptoService<
   // DTO
@@ -20,8 +22,6 @@ export class IntegrationCryptoService<
 {
   http: AxiosInstance;
   private routesMap: CryptoRoutesInterface;
-  private username: string;
-  private password: string;
   private urlBase: string;
   private apiKey: string;
   private token: string;
@@ -29,7 +29,10 @@ export class IntegrationCryptoService<
   private urlEncoded = true;
   protected tokenCrm: string;
 
-  constructor(public crm: CrmDocument, protected configService: ConfigService) {
+  constructor(
+    public cryptoAccount: AccountDocument,
+    protected configService: ConfigService,
+  ) {
     this.isProd =
       this.configService.get<string>('ENVIRONMENT') === EnvironmentEnum.prod;
   }
@@ -44,14 +47,6 @@ export class IntegrationCryptoService<
 
   setUrlBase(urlBase: string) {
     this.urlBase = urlBase;
-  }
-
-  setUsername(username: string) {
-    this.username = username;
-  }
-
-  setPassword(password: string) {
-    this.password = password;
   }
 
   setToken(token: string) {
@@ -70,43 +65,30 @@ export class IntegrationCryptoService<
       } as CreateAxiosDefaults;
       if (!!this.token) {
         param.headers['Authorization'] = 'Bearer ' + this.token;
-      } else if (!!this.apiKey) {
-        param.params = {
-          apikey: this.apiKey,
-        };
       } else {
         this.urlEncoded = false;
-        try {
-          const token = await axios.post(`${this.urlBase}token`, {
-            data: {
-              type: 'auth-token',
-              attributes: {
-                username: this.username,
-                password: this.password,
-              },
+        const req = {
+          data: {
+            type: 'auth-token',
+            attributes: {
+              login: this.cryptoAccount.accountName,
+              password: this.cryptoAccount.accountPassword,
             },
-          });
+          },
+        };
+        try {
+          const token = await this.fetch('POST', this.routesMap.auth, req);
           const today = new Date();
-          this.token = token.data?.Token || token.data.token;
+          this.token = token.data?.attributes.access;
           const expireIn = token.data?.expiresIn || token.data?.ExpiresIn;
         } catch (err) {
-          Logger.error(err, IntegrationCryptoService.name);
+          Logger.error(err, `${IntegrationCryptoService.name}:err`);
           Logger.error(
-            'integration.card.service.ts:151 ->',
-            IntegrationCryptoService.name,
+            this.urlBase,
+            `${IntegrationCryptoService.name}:urlBase`,
           );
-          Logger.error(
-            `urlBase -> ${this.urlBase}`,
-            IntegrationCryptoService.name,
-          );
-          Logger.error(
-            `token -> ${JSON.stringify({
-              username: this.username,
-              password: this.password,
-            })}`,
-            IntegrationCryptoService.name,
-          );
-          //throw new BadRequestException(err);
+          Logger.error(req, `${IntegrationCryptoService.name}:token`);
+          throw new BadRequestException(err);
         }
         // Todo[hender] Save token and check if already expire
         //this.dateToExpireToken = today.getTime() + expireIn;
@@ -120,22 +102,40 @@ export class IntegrationCryptoService<
     }
   }
 
-  async searchWallet(walletDto: TWalletDto): Promise<AxiosResponse<any[]>> {
-    const rta = this.http.get(this.routesMap.searchWallets, {
-      params: walletDto,
+  private async fetch(method: string, uri: string, data?: any, headers?) {
+    headers = headers ?? {};
+    headers['Content-type'] = 'application/vnd.api+json';
+    return CommonService.fetch({
+      urlBase: this.urlBase,
+      token: this.token,
+      headers,
+      method,
+      data,
+      uri,
     });
+  }
+
+  async getWallet(walletId: string): Promise<AxiosResponse<any[]>> {
+    const rta = this.http.get(
+      this.routesMap.getWallet.replace('{id}', walletId),
+    );
     return rta;
   }
 
   async createDeposit(depositDto: TDepositDto): Promise<AxiosResponse<any[]>> {
-    const rta = this.http.post(this.routesMap.createDeposit, depositDto);
+    //const rta = this.http.post(this.routesMap.createDeposit, depositDto);
+    const rta = await this.fetch(
+      'POST',
+      this.routesMap.createDeposit,
+      depositDto,
+    );
     return rta;
   }
 
-  async getDeposit(depositDto: TDepositDto): Promise<AxiosResponse<any[]>> {
-    const rta = this.http.get(this.routesMap.searchDeposit, {
-      params: depositDto,
-    });
+  async getDeposit(depositId: string): Promise<AxiosResponse<any[]>> {
+    const rta = this.http.get(
+      this.routesMap.getDeposit.replace('{id}', depositId),
+    );
     return rta;
   }
 }

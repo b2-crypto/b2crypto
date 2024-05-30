@@ -17,6 +17,7 @@ import { ClientCardDto } from './dto/client.card.dto';
 import { AccountDocument } from '@account/account/entities/mongoose/account.schema';
 import { Readable } from 'stream';
 import { URLSearchParams } from 'url';
+import { CommonService } from '@common/common';
 
 export class IntegrationCardService<
   // DTO
@@ -131,40 +132,15 @@ export class IntegrationCardService<
   }
 
   private async fetch(method: string, uri: string, data?: any, headers?) {
-    method = method ?? 'GET';
-    headers = headers ?? {
-      Accept: 'application/json',
-      'Content-Type': 'application/json',
-    };
-    const request = {
-      method: method,
-      headers: headers,
-      body: undefined,
-    };
-    if (data) {
-      if (
-        request.method === 'POST' ||
-        request.method === 'PUT' ||
-        request.method === 'PATCH'
-      ) {
-        request.body = JSON.stringify(data);
-      } else {
-        const queryParams = new URLSearchParams();
-        Object.entries(data).forEach(([key, val]) => {
-          queryParams.append(
-            this.routesMap.getFormatKey.replace('%key%', key.toString()),
-            val.toString(),
-          );
-        });
-        uri += `?${queryParams.toString()}`;
-      }
-    }
-    if (this.token) {
-      request.headers.Authorization = `Bearer ${this.token}`;
-    }
-    const response = await fetch(`${this.client.url}${uri}`, request);
-    const json = await response.json();
-    return json;
+    return CommonService.fetch({
+      getFormatKey: this.routesMap.getFormatKey,
+      urlBase: this.client.url,
+      token: this.token,
+      headers,
+      method,
+      data,
+      uri,
+    });
   }
 
   async getUser(userCard: TUserCardDto): Promise<AxiosResponse<any[], any>> {
