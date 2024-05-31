@@ -12,9 +12,11 @@ RUN npm install --force
 
 COPY . .
 
+RUN npm install -g @nestjs/cli
+
 RUN npm run build-gateway
 
 COPY --from=dev /usr/src/app/dist ./dist
 
-#CMD ["npm", "run", "start-gateway"]
-CMD ["node", "dist/apps/b2crypto/main.gateway.js"]
+CMD ["npm", "run", "dist/apps/b2crypto/main.gateway.js"]
+#CMD ["node", "dist/apps/b2crypto/main.gateway.js"]
