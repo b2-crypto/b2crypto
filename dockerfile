@@ -1,14 +1,4 @@
-FROM node:16.18.1-alpine AS dev
-
-WORKDIR /usr/src/app
-
-COPY package*.json ./
-
-RUN npm install --force
-
-COPY . .
-
-FROM node:16.18.1-alpine as prod
+FROM node:16.18.1-alpine
 
 ARG NODE_ENV=prod
 ENV NODE_ENV=${NODE_ENV}
