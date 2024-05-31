@@ -21,8 +21,8 @@ RUN npm install --force --only=prod
 
 COPY . .
 
-RUN npm run build-gateway
+RUN nest build b2crypto-gateway
 
 COPY --from=dev /usr/src/app/dist ./dist
 
-# CMD ["node", "dist/apps/b2crypto/main.microservice.js"]
+#CMD ["node", "dist/apps/b2crypto/main.gateway.js"]
