@@ -13,6 +13,7 @@ import { IntegrationCryptoInterface } from './integration.crypto.interface';
 import { CryptoRoutesInterface } from './interface/crypto.routes.interface';
 import { AccountDocument } from '@account/account/entities/mongoose/account.schema';
 import { CommonService } from '@common/common';
+import { FetchData } from '@common/common/models/fetch-data.model';
 
 export class IntegrationCryptoService<
   // DTO
@@ -105,14 +106,16 @@ export class IntegrationCryptoService<
   private async fetch(method: string, uri: string, data?: any, headers?) {
     headers = headers ?? {};
     headers['Content-type'] = 'application/vnd.api+json';
-    return CommonService.fetch({
+    const fetchData = {
       urlBase: this.urlBase,
       token: this.token,
       headers,
       method,
       data,
       uri,
-    });
+    } as FetchData;
+    Logger.log(fetchData, 'fetchData');
+    return CommonService.fetch(fetchData);
   }
 
   async getWallet(walletId: string): Promise<AxiosResponse<any[]>> {
@@ -123,7 +126,8 @@ export class IntegrationCryptoService<
   }
 
   async createDeposit(depositDto: TDepositDto): Promise<AxiosResponse<any[]>> {
-    //const rta = this.http.post(this.routesMap.createDeposit, depositDto);
+    Logger.log(depositDto, 'createDeposit');
+    Logger.log(JSON.stringify(depositDto), 'createDeposit');
     const rta = await this.fetch(
       'POST',
       this.routesMap.createDeposit,
