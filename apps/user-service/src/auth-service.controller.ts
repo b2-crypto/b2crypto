@@ -71,7 +71,7 @@ export class AuthServiceController {
   ) {
     CommonService.ack(ctx);
     const g2fa = this.configService.get<string>('GOOGLE_2FA');
-    if (this.configService.get<string>('GOOGLE_2FA') === 'true') {
+    if (g2fa === 'true') {
       if (!!userCodeDto.user.twoFactorIsActive || !!userCodeDto.code) {
         // Get token
         let rta = {

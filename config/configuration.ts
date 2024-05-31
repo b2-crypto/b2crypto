@@ -9,7 +9,7 @@ export default registerAs('config', () => ({
       ? true
       : process.env.GOOGLE_2FA === 'false'
       ? false
-      : true,
+      : false,
   MAX_SECOND_TO_REFRESH: process.env.MAX_SECOND_TO_REFRESH || 60,
   ENVIRONMENT: (process.env.ENVIRONMENT || EnvironmentEnum.prod).toLowerCase(),
   AUTH_SECRET:
