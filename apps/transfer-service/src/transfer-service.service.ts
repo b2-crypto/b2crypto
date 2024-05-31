@@ -267,7 +267,6 @@ export class TransferServiceService
           IntegrationCryptoEnum.B2BINPAY,
           url,
         );
-        Logger.log(integration, 'URL B2BinPay Integration');
         const deposit = await integration.createDeposit({
           data: {
             type: 'deposit',
@@ -276,7 +275,8 @@ export class TransferServiceService
               label: transferSaved.name,
               tracking_id: transferSaved._id,
               confirmations_needed: 2,
-              callback_url: 'http://54.241.103.240/b2binpay/status-deposit',
+              // TODO[hender-2024/05/30] Change callback_url to environment params
+              callback_url: 'http://stage.b2fintech.com/b2binpay/status',
             },
             relationships: {
               wallet: {

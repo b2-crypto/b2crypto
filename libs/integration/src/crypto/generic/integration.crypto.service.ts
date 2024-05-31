@@ -114,7 +114,6 @@ export class IntegrationCryptoService<
       data,
       uri,
     } as FetchData;
-    Logger.log(fetchData, 'fetchData');
     return CommonService.fetch(fetchData);
   }
 
@@ -126,8 +125,6 @@ export class IntegrationCryptoService<
   }
 
   async createDeposit(depositDto: TDepositDto): Promise<AxiosResponse<any[]>> {
-    Logger.log(depositDto, 'createDeposit');
-    Logger.log(JSON.stringify(depositDto), 'createDeposit');
     const rta = await this.fetch(
       'POST',
       this.routesMap.createDeposit,

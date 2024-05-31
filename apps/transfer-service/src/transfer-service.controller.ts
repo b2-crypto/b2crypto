@@ -233,7 +233,21 @@ export class TransferServiceController implements GenericServiceController {
   @AllowAnon()
   @Post('b2binpay/status-deposit')
   // @CheckPoliciesAbility(new PolicyHandlerTransferRead())
-  async checkStatus(@Body() data: any) {
+  async b2binpayStatusDeposit(@Body() data: any) {
+    Logger.debug(data);
+  }
+
+  @AllowAnon()
+  @Post('b2binpay/status')
+  // @CheckPoliciesAbility(new PolicyHandlerTransferRead())
+  async b2binpayStatus(@Body() data: any) {
+    Logger.debug(data);
+  }
+
+  @AllowAnon()
+  @Post('bold/status')
+  // @CheckPoliciesAbility(new PolicyHandlerTransferRead())
+  async boldStatus(@Body() data: any) {
     Logger.debug(data);
   }
 
