@@ -11,6 +11,9 @@ env:
   AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_ACCESS_KEY_SECRET }}
   REGISTRY_ALIAS: ${{ vars.REGISTRY_ALIAS }}
   REPOSITORY_NAME: ${{ vars.REPOSITORY_NAME }}
+  CLUSTER_NAME: ${{ vars.CLUSTER_NAME }}
+  SERVICE_NAME: ${{ vars.SERVICE_NAME }}
+  TASK_NAME: ${{ vars.TASK_NAME }}
 jobs:
   create-docker-image:
     name: Build and push the Docker image to ECR
@@ -59,4 +62,4 @@ jobs:
 
       - name: Update ECS service
         run: |
-          aws ecs update-service --cluster b2crypto_stage_cluster --service b2crypto_stage_cluster_service --task-definition b2crypto_stage_cluster_task --force-new-deployment
+          aws ecs update-service --cluster ${{ env.CLUSTER_NAME }} --service ${{ env.SERVICE_NAME_NAME }} --task-definition ${{ env.TASK_NAME }} --force-new-deployment
