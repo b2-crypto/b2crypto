@@ -15,7 +15,7 @@ COPY . .
 
 RUN npm run build-gateway
 
-COPY /usr/src/app/dist ./dist
+#COPY /usr/src/app/dist ./dist
 
 CMD export $(cat .env) && npm run start-gateway
 #CMD ["node", "dist/apps/b2crypto/main.gateway.js"]
