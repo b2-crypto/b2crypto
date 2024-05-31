@@ -1,0 +1,19 @@
+version: '3.8'
+services:
+  app-gateway:
+    image: app-gateway
+    build:
+      context: .
+      dockerfile: ./apps/b2crypto/dockerfile
+      target: prod
+    #command: node /usr/src/app/dist/apps/activity-service/main.gateway.js
+    command: npm run start-gateway:debug
+    env_file:
+      - .env.prod
+    volumes:
+      - .:/usr/src/app
+      - /usr/src/app/node_modules
+    restart: on-failure
+    ports:
+        - '3000:3000'
+  
