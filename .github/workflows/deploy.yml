@@ -6,11 +6,11 @@ on:
       - main
 
 env:
-  AWS_REGION: eu-west-3
+  AWS_REGION: ${{ env.AWS_REGION }}
   AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-  REGISTRY_ALIAS: b2crypto-alias
-  REPOSITORY_NAME: b2crypto-repo
+  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_ACCESS_KEY_SECRET }}
+  REGISTRY_ALIAS: ${{ env.REGISTRY_ALIAS }}
+  REPOSITORY_NAME: ${{ env.REPOSITORY_NAME }}
 jobs:
   create-docker-image:
     name: Build and push the Docker image to ECR
