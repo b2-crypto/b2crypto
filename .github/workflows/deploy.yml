@@ -29,8 +29,6 @@ jobs:
       - name: Login to Amazon ECR Public
         id: login-ecr-public
         uses: aws-actions/amazon-ecr-login@v2
-        env:
-          AWS_REGION: aws-region-1
         with:
           mask-password: 'false'
           registry-type: public
