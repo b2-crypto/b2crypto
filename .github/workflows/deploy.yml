@@ -23,16 +23,16 @@ jobs:
   
       - name: Login to Amazon ECR Public
         id: login-ecr-public
-        uses: aws-actions/amazon-ecr-login@v1
+        uses: aws-actions/amazon-ecr-login@v2
         with:
           registry-type: public
   
       - name: Build, tag, and push docker image to Amazon ECR Public
         env:
           REGISTRY: ${{ steps.login-ecr-public.outputs.registry }}
-          REGISTRY_ALIAS: b2crypto
-          REPOSITORY: b2crypto
-          IMAGE_TAG: b2crypto
+          REGISTRY_ALIAS: b2crypto-alias
+          REPOSITORY: b2crypto-repo
+          IMAGE_TAG: ${{ github.sha }}
         run: |
           docker build -t $IMAGE_TAG .
           docker tag $IMAGE_TAG:latest $REGISTRY/$REGISTRY_ALIAS/$IMAGE_TAG:latest
