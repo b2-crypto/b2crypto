@@ -24,14 +24,11 @@ jobs:
         with:
           aws-access-key-id: ${{ env.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ env.AWS_SECRET_ACCESS_KEY }}
-          aws-region: aws-region-1
+          aws-region: ${{ env.AWS_REGION }}
   
       - name: Login to Amazon ECR Public
         id: login-ecr-public
         uses: aws-actions/amazon-ecr-login@v2
-        with:
-          mask-password: 'false'
-          registry-type: public
   
       - name: Build, tag, and push docker image to Amazon ECR Public
         env:
