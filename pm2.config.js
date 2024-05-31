@@ -11,7 +11,7 @@ module.exports = {
       env: {
         ENVIRONMENT: 'DEV',
         APP_NAME: 'B2Crypto',
-        GOOGLE_2FA: true,
+        GOOGLE_2FA: false,
         DATABASE_NAME: 'b2crypto',
         DATABASE_URL: 'mongodb://localhost:27017/b2crypto',
         PORT: 3000,
@@ -35,7 +35,7 @@ module.exports = {
       env_prod: {
         ENVIRONMENT: 'PROD',
         APP_NAME: 'B2Crypto',
-        GOOGLE_2FA: true,
+        GOOGLE_2FA: false,
         DATABASE_URL:
           'mongodb+srv://b2crypto:SFh59fK9mmM2ln1L@stage-b2crypto.hwml0km.mongodb.net/?retryWrites=true&w=majority&appName=stage-b2crypto',
         PORT: 8080,
@@ -59,7 +59,7 @@ module.exports = {
       env_stage: {
         ENVIRONMENT: 'STAGE',
         APP_NAME: 'B2Crypto',
-        GOOGLE_2FA: true,
+        GOOGLE_2FA: false,
         DATABASE_URL: '',
         PORT: 8080,
         AUTH_EXPIRE_IN: '8h',
@@ -91,7 +91,7 @@ module.exports = {
       env: {
         ENVIRONMENT: 'DEV',
         APP_NAME: 'B2Crypto',
-        GOOGLE_2FA: true,
+        GOOGLE_2FA: false,
         DATABASE_NAME: 'b2crypto',
         DATABASE_URL: 'mongodb://localhost:27017/b2crypto',
         PORT: 3000,
@@ -115,7 +115,7 @@ module.exports = {
       env_prod: {
         ENVIRONMENT: 'PROD',
         APP_NAME: 'B2Crypto',
-        GOOGLE_2FA: true,
+        GOOGLE_2FA: false,
         DATABASE_URL:
           'mongodb+srv://b2crypto:SFh59fK9mmM2ln1L@stage-b2crypto.hwml0km.mongodb.net/?retryWrites=true&w=majority&appName=stage-b2crypto',
         PORT: 8080,
@@ -139,7 +139,7 @@ module.exports = {
       env_stage: {
         ENVIRONMENT: 'STAGE',
         APP_NAME: 'B2Crypto',
-        GOOGLE_2FA: true,
+        GOOGLE_2FA: false,
         DATABASE_URL: '',
         PORT: 8080,
         AUTH_EXPIRE_IN: '8h',
