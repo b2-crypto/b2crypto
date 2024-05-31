@@ -209,11 +209,6 @@ export class TransferServiceController implements GenericServiceController {
   }
 
   // TODO[hender - 30-01-2024] Add to endpoint list
-  @Post('b2binpay/status-deposit')
-  // @CheckPoliciesAbility(new PolicyHandlerTransferRead())
-  async checkStatus(@Body() data: any) {
-    Logger.debug(data);
-  }
 
   @Get(':transferID')
   // @CheckPoliciesAbility(new PolicyHandlerTransferRead())
@@ -235,6 +230,13 @@ export class TransferServiceController implements GenericServiceController {
   }
 
   // ----------------------------
+  @AllowAnon()
+  @Post('b2binpay/status-deposit')
+  // @CheckPoliciesAbility(new PolicyHandlerTransferRead())
+  async checkStatus(@Body() data: any) {
+    Logger.debug(data);
+  }
+
   @Post('deposit')
   // @CheckPoliciesAbility(new PolicyHandlerTransferCreate())
   async createOneDeposit(

@@ -269,6 +269,7 @@ export class TransferServiceService
           data: {
             type: 'deposit',
             attributes: {
+              target_amount_requested: transferSaved.amount.toString(),
               label: transferSaved.name,
               tracking_id: transferSaved._id,
               confirmations_needed: 2,

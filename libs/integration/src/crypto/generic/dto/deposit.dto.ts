@@ -31,6 +31,9 @@ export class AttributesDepositDto {
   @IsString()
   tracking_id: string;
 
+  @IsString()
+  target_amount_requested: string;
+
   @IsNumber()
   confirmations_needed: number;
 
