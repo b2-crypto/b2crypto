@@ -21,7 +21,9 @@ RUN npm install --force --only=prod
 
 COPY . .
 
-RUN nest build b2crypto-gateway
+RUN npm install -g @nestjs/cli
+
+RUN npm run build-gateway
 
 COPY --from=dev /usr/src/app/dist ./dist
 
