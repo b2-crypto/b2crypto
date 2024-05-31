@@ -260,11 +260,14 @@ export class TransferServiceService
         if (!account.accountId) {
           throw new BadRequestException('AccountId not found');
         }
+        const url = transfer.account.url ?? 'https://api.b2binpay.com';
+        Logger.log(url, 'URL B2BinPay');
         const integration = await this.integrationService.getCryptoIntegration(
           account,
           IntegrationCryptoEnum.B2BINPAY,
-          transfer.account.url ?? 'https://api.b2binpay.com',
+          url,
         );
+        Logger.log(integration, 'URL B2BinPay Integration');
         const deposit = await integration.createDeposit({
           data: {
             type: 'deposit',
@@ -285,6 +288,7 @@ export class TransferServiceService
             },
           },
         });
+        Logger.log(deposit, 'URL B2BinPay Deposit');
         transferSaved.responseAccount = {
           data: deposit.data as unknown as DataTransferAccountResponse,
         };
