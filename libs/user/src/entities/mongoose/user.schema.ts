@@ -22,10 +22,10 @@ export type UserDocument = User & Document;
 })
 export class User extends UserEntity {
   id: ObjectId;
-  @Prop()
+  @Prop({ unique: true })
   email: string;
 
-  @Prop()
+  @Prop({ unique: true })
   slugEmail: string;
 
   @Prop()
@@ -40,10 +40,10 @@ export class User extends UserEntity {
   @Prop()
   description: string;
 
-  @Prop()
+  @Prop({ unique: true })
   username: string;
 
-  @Prop()
+  @Prop({ unique: true })
   slugUsername: string;
 
   @Prop()

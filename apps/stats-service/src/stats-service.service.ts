@@ -52,9 +52,6 @@ export class StatsServiceService {
     @Inject(BuildersService)
     builder: BuildersService,
 
-    @Inject(`${EventClientEnum.LEAD}-CLIENT`)
-    private readonly leadClient: ClientProxy,
-
     @Inject(StatsDateAffiliateServiceMongooseService)
     private libStatsDateAffiliate: StatsDateAffiliateServiceMongooseService,
 

@@ -63,11 +63,11 @@ async function bootstrap() {
   });
   app.getHttpAdapter().getInstance().disable('x-powered-by');
   app.listen(configService.get('PORT') ?? 3000);
-  /* const queueAdminService = app.get<QueueAdminService>(QueueAdminService);
+  const queueAdminService = app.get<QueueAdminService>(QueueAdminService);
   app.connectMicroservice(
-    queueAdminService.getOptions(configService.get('ENVIRONMENT')),
+    await queueAdminService.getOptions(configService.get('ENVIRONMENT')),
   );
-  await app.startAllMicroservices(); */
+  await app.startAllMicroservices();
   if (typeof process.send === 'function') {
     process.send('ready');
   }
