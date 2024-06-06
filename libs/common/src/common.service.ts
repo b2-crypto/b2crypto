@@ -15,6 +15,8 @@ import {
 import { SchedulerRegistry } from '@nestjs/schedule';
 import { QuerySearchAnyDto } from './models/query_search-any.dto';
 import { FetchData } from './models/fetch-data.model';
+import { QueueAdminModule } from './queue-admin-providers/queue.admin.provider.module';
+import * as http from 'http';
 
 @Injectable()
 export class CommonService {
@@ -203,31 +205,11 @@ export class CommonService {
       .replace(/\s+/g, '-');
   }
   static factoryEventClient(name: string) {
-    return (configService: ConfigService) => {
-      const host = configService.get<string>('RABBIT_MQ_HOST');
-      const opts = {
-        username: configService.get<string>('RABBIT_MQ_USERNAME'),
-        password: configService.get<string>('RABBIT_MQ_PASSWORD'),
-        host: host,
-        port: configService.get<string>('RABBIT_MQ_PORT'),
-        //queue: configService.get<string>(`RMQ_${name}_QUEUE`),
-        queue: configService.get<string>('RABBIT_MQ_QUEUE'),
-        //queue: 'DEV',
-        protocol: host === 'localhost' ? 'amqp' : 'amqps',
-      };
-      const clientOptions: RmqOptions = {
-        transport: Transport.RMQ,
-        options: {
-          urls: [
-            `${opts.protocol}://${opts.username}:${opts.password}@${opts.host}:${opts.port}/`,
-          ],
-          queue: opts.queue,
-          persistent: true,
-          queueOptions: {
-            durable: false,
-          },
-        },
-      };
+    return async (configService: ConfigService) => {
+      const clientOptions = await QueueAdminModule.getClientProvider(
+        configService,
+        name,
+      );
       return ClientProxyFactory.create(clientOptions);
     };
   }
@@ -260,15 +242,6 @@ export class CommonService {
   }
 
   static checkDateAttr(attrVal: any, utc = false) {
-    /* Logger.log(process.env.TZ, 'Timezone checkDateAttr');
-    const offset = new Date().getTimezoneOffset();
-    const timezone =
-      (offset >= 0 ? '-' : '+') +
-      offset / 60 +
-      ':' +
-      String(offset % 60).padStart(2, '0');
-    Logger.log(timezone, 'Timezone checkDateAttr'); */
-    //Logger.log(attrVal, 'Init date checkDateAttr');
     if (attrVal['start'] || attrVal['end']) {
       // Is range
       let greater = attrVal['doNotInclude'] ? '$gt' : '$gte';
@@ -344,5 +317,40 @@ export class CommonService {
     );
     const json = await response.json();
     return json;
+  }
+
+  static async getNextOpenPort(startFrom = 3000): Promise<number> {
+    let openPort = null;
+    try {
+      while (startFrom < 65535 || !!openPort) {
+        if (await CommonService.isPortOpen(startFrom)) {
+          openPort = startFrom;
+          break;
+        }
+        startFrom++;
+      }
+      return openPort;
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  static async isPortOpen(port) {
+    return new Promise((resolve, reject) => {
+      try {
+        const s = http.createServer();
+        s.once('error', (err) => {
+          s.close();
+          resolve(err['code'] == 'EADDRINUSE');
+        });
+        s.once('listening', () => {
+          s.close();
+          resolve(true);
+        });
+        s.listen(port);
+      } catch (err) {
+        reject(err);
+      }
+    });
   }
 }

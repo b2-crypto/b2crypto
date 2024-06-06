@@ -146,10 +146,48 @@ export class CardServiceController extends AccountServiceController {
       account.email = account.email ?? user.personalData.email[0] ?? user.email;
       // Validate Affinity Group
       if (!account?.group?.valueGroup) {
-        const affinityGroup = await cardIntegration.getAffinityGroup(
+        /* const affinityGroup = await cardIntegration.getAffinityGroup(
           account.userCardConfig,
         );
-        const afg = affinityGroup.data[0];
+        const afg = affinityGroup.data[0]; */
+        // TODO[hender - 2024/06/05]
+        const afg = {
+          id: 'afg-2arMn990ZksFKAHS5PngRPHqRmS',
+          name: 'B2Crypto COL physical virtual credit nominated',
+          card_type_supported: ['VIRTUAL'],
+          innominate: false,
+          months_to_expiration: 84,
+          issued_account: 9,
+          fee_account: 36,
+          exchange_rate_type: 'none',
+          exchange_rate_amount: 100,
+          non_usd_exchange_rate_amount: 100,
+          dcc_exchange_rate_amount: 0,
+          local_withdrawal_allowed: true,
+          international_withdrawal_allowed: true,
+          local_ecommerce_allowed: true,
+          international_ecommerce_allowed: true,
+          local_purchases_allowed: true,
+          international_purchases_allowed: true,
+          product_id: 'prd-2arLJXW8moDb5CppLToizmmw66q',
+          local_extracash_allowed: true,
+          international_extracash_allowed: true,
+          plastic_model: 1,
+          kit_model: 1,
+          status: 'ACTIVE',
+          embossing_company: 'THALES',
+          courier_company: 'DOMINA',
+          exchange_currency_name: 'COP',
+          activation_code_enabled: false,
+          total_exchange_rate: 4169.8,
+          total_non_usd_exchange_rate: 4169.8,
+          total_dcc_exchange_rate: 4128.51,
+          provider: 'MASTERCARD',
+          custom_name_on_card_enabled: false,
+          provider_algorithm: 'MCHIP',
+          start_date: '2024-01-12',
+          dcvv_enabled: true,
+        };
         if (!afg) {
           throw new BadRequestException('Affinity group list is empty');
         }

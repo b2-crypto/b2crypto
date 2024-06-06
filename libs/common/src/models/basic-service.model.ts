@@ -79,7 +79,8 @@ export class BasicServiceModel<
         });
         return this.model.create(createAnyDto, { session });
       } catch (err) {
-        console.error(err);
+        Logger.error(err, 'CreateMany');
+        throw new BadRequestException(err);
       }
     }
     return this.model.save(createAnyDto, { session });

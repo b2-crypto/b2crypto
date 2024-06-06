@@ -21,6 +21,8 @@ import * as qrcode from 'qrcode';
 import * as speakeasy from 'speakeasy';
 import { UserDocument } from '../../user/src/entities/mongoose/user.schema';
 import { UserLoginDto } from './dto/user.login.dto';
+import { randomUUID } from 'crypto';
+import { UserInterface } from '@user/user/entities/user.interface';
 
 @Injectable()
 export class AuthService {
@@ -42,13 +44,15 @@ export class AuthService {
   async authenticateUser(user) {
     return {
       user: user,
-      access_token: this.jwtService.sign(this.getPayload(user)),
+      access_token: this.jwtService.sign(await this.getPayload(user)),
+      refresh_token: this.jwtService.sign(await this.getPayload(user, true)),
     };
   }
 
   async authenticate(dto: UserLoginDto) {
     return {
       access_token: await this.getTokenUser(dto.email, dto.password),
+      refresh_token: await this.getTokenUser(dto.email, dto.password, true),
     };
   }
 
@@ -97,13 +101,19 @@ export class AuthService {
     });
   }
 
-  async getTokenUser(email, password) {
+  async getTokenUser(email, password, isRefresh = false) {
     return this.jwtService.sign(
-      this.getPayload(await this.getUser(email, password)),
+      this.getPayload(await this.getUser(email, password), isRefresh),
     );
   }
 
-  async getTokenData(data) {
+  async getTokenData(data, isRefresh = false) {
+    if (isRefresh) {
+      data = {
+        ...data,
+        token: randomUUID(),
+      };
+    }
     return this.jwtService.sign(data);
   }
 
@@ -125,10 +135,20 @@ export class AuthService {
       throw new UnauthorizedException();
     }
     const user = await this.userService.findOne(tokenDecode?.id);
-    return this.authenticateUser(user);
+    if (!user || !user._id) {
+      throw new BadRequestException('Not found user');
+    }
+    return this.authenticateUser(user as unknown as UserInterface);
   }
 
-  async getPayload(user) {
+  async getPayload(user, refresh = false) {
+    if (refresh) {
+      return {
+        id: user._id,
+        api: user.apiData,
+        email: user.email,
+      };
+    }
     const affiliate = user.affiliate;
     const crm = affiliate?.crm;
     const payload = {
@@ -151,9 +171,13 @@ export class AuthService {
       permissions: user.permissions,
       //authorizations: user.authorizations,
     };
-    if (user.twoFactorIsActive) {
+    if (
+      this.configService.get('GOOGLE_2FA') === 'false' ||
+      user.twoFactorIsActive
+    ) {
       delete payload.twoFactorQr;
       delete payload.twoFactorSecret;
+      delete user.twoFactorIsActive;
     }
     return payload;
   }

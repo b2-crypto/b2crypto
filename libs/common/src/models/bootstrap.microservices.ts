@@ -18,7 +18,7 @@ export async function bootstrapMicroservice(module, env: EnvironmentEnum) {
   });
   app.useGlobalPipes(validationPipes);
   const queueAdminService = app.get<QueueAdminService>(QueueAdminService);
-  app.connectMicroservice(queueAdminService.getOptions(env));
+  app.connectMicroservice(await queueAdminService.getOptions(env));
   await app.startAllMicroservices();
   if (typeof process.send === 'function') {
     process.send('ready');

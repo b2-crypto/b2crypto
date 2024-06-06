@@ -65,40 +65,4 @@ export class PomeloIntegrationService extends IntegrationCardService<
   setTokenInformationCard(token: string) {
     this.tokenInformationCard = token;
   }
-
-  /* getUser(userCard: UserCardDto): Promise<AxiosResponse<any[], any>> {
-    throw new Error('Method not implemented.');
-  }
-  createUser(userCard: UserCardDto): Promise<AxiosResponse<any[], any>> {
-    throw new Error('Method not implemented.');
-  }
-  updateUser(userCard: UserCardDto): Promise<AxiosResponse<any[], any>> {
-    throw new Error('Method not implemented.');
-  }
-
-  getCards(card: CardDto): Promise<AxiosResponse<any[], any>> {
-    throw new Error('Method not implemented.');
-  }
-  createCards(card: CardDto): Promise<AxiosResponse<any[], any>> {
-    throw new Error('Method not implemented.');
-  }
-  updateCards(card: CardDto): Promise<AxiosResponse<any[], any>> {
-    throw new Error('Method not implemented.');
-  }
-  
-  getAffinityGroup(userCard: CardDto): Promise<AxiosResponse<any[], any>> {
-    throw new Error('Method not implemented.');
-  }
-  getInformationCard(
-    userCard: UserCardDto,
-    card: CardDto,
-  ): Promise<AxiosResponse<any[], any>> {
-    throw new Error('Method not implemented.');
-  }
-  sendPhysicalCard(
-    userCard: UserCardDto,
-    card: CardDto,
-  ): Promise<AxiosResponse<any[], any>> {
-    throw new Error('Method not implemented.');
-  } */
 }

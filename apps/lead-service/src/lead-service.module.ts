@@ -28,8 +28,6 @@ import { CrmModule } from '@crm/crm';
 import { TrafficServiceService } from 'apps/traffic-service/src/traffic-service.service';
 import { TrafficModule } from '@traffic/traffic';
 import { TrafficServiceModule } from 'apps/traffic-service/src/traffic-service.module';
-import { QueueAdminModule } from '@common/common/queue-admin-providers/queue.admin.provider.module';
-import EventClientEnum from '@common/common/enums/EventsNameEnum';
 import { LeadServiceWebsocketGateway } from './lead-service.websocket.gateway';
 
 @Module({
@@ -52,7 +50,6 @@ import { LeadServiceWebsocketGateway } from './lead-service.websocket.gateway';
     TrafficServiceModule,
     CategoryServiceModule,
     BrandServiceModule,
-    QueueAdminModule.register({ name: `${EventClientEnum.LEAD}-CLIENT` }),
   ],
   providers: [
     LeadServiceService,

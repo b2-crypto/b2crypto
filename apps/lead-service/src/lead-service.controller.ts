@@ -70,8 +70,6 @@ import ResponseB2Crypto from '@response-b2crypto/response-b2crypto/models/Respon
 export class LeadServiceController implements GenericServiceController {
   constructor(
     private readonly leadService: LeadServiceService,
-    @Inject(`${EventClientEnum.LEAD}-CLIENT`)
-    private readonly leadClient: ClientProxy,
     @Inject(BuildersService)
     private readonly builder: BuildersService,
   ) {}

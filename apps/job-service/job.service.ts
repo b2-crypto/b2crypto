@@ -48,8 +48,6 @@ export class JobService {
     readonly configService: ConfigService,
     @Inject(BuildersService)
     private readonly builder: BuildersService,
-    @Inject(`${EventClientEnum.TRANSFER}-CLIENT`)
-    private readonly transferClient: ClientProxy,
   ) {
     this.env = configService.get('ENVIRONMENT');
   }

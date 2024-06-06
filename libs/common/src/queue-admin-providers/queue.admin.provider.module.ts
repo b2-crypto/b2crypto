@@ -1,14 +1,20 @@
+import { isEmpty, isString } from 'class-validator';
 import { DynamicModule, Module } from '@nestjs/common';
 import { QueueAdminService } from './queue.admin.provider.service';
-import { ClientsModule, Transport } from '@nestjs/microservices';
+import {
+  ClientProvider,
+  ClientsModule,
+  Transport,
+} from '@nestjs/microservices';
 import { ConfigService } from '@nestjs/config';
-
+import { CommonService } from '../common.service';
+//let portsMap = {};
 @Module({
   providers: [QueueAdminService],
   exports: [QueueAdminService],
 })
 export class QueueAdminModule {
-  static register({ name }: QueueAdminModuleOptions): DynamicModule {
+  static register({ name, queueName }: QueueAdminModuleOptions): DynamicModule {
     return {
       module: QueueAdminModule,
       imports: [
@@ -16,30 +22,10 @@ export class QueueAdminModule {
           {
             name,
             useFactory: (configService: ConfigService) => {
-              const host = configService.get<string>('RABBIT_MQ_HOST');
-              const opts = {
-                username: configService.get<string>('RABBIT_MQ_USERNAME'),
-                password: configService.get<string>('RABBIT_MQ_PASSWORD'),
-                host: host,
-                port: configService.get<string>('RABBIT_MQ_PORT'),
-                //queue: configService.get<string>(`RMQ_${name}_QUEUE`),
-                queue: configService.get<string>('RABBIT_MQ_QUEUE'),
-                //queue: 'DEV',
-                protocol: host === 'localhost' ? 'amqp' : 'amqps',
-              };
-              return {
-                transport: Transport.RMQ,
-                options: {
-                  urls: [
-                    `${opts.protocol}://${opts.username}:${opts.password}@${opts.host}:${opts.port}/`,
-                  ],
-                  queue: opts.queue,
-                  persistent: true,
-                  queueOptions: {
-                    durable: false,
-                  },
-                },
-              };
+              return QueueAdminModule.getClientProvider(
+                configService,
+                queueName,
+              );
             },
             inject: [ConfigService],
           },
@@ -48,8 +34,55 @@ export class QueueAdminModule {
       exports: [ClientsModule],
     };
   }
+
+  static async getClientProvider(
+    configService: ConfigService,
+    queueName = null,
+    noAck = false,
+  ): Promise<ClientProvider> {
+    //queueName = isString(queueName) && !isEmpty(queueName) ? queueName : null;
+    queueName = null;
+    const host = configService.get<string>('RABBIT_MQ_HOST');
+    const opts = {
+      username: configService.get<string>('RABBIT_MQ_USERNAME'),
+      password: configService.get<string>('RABBIT_MQ_PASSWORD'),
+      host: host,
+      port: configService.get<string>('RABBIT_MQ_PORT'),
+      //queue: configService.get<string>(`RMQ_${name}_QUEUE`),
+      queue: queueName ?? configService.get<string>('RABBIT_MQ_QUEUE'),
+      //queue: 'DEV',
+      protocol: host === 'localhost' ? 'amqp' : 'amqps',
+    };
+    return {
+      transport: Transport.RMQ,
+      options: {
+        urls: [
+          `${opts.protocol}://${opts.username}:${opts.password}@${opts.host}:${opts.port}/`,
+        ],
+        queue: opts.queue,
+        persistent: true,
+        noAck,
+        queueOptions: {
+          durable: false,
+        },
+      },
+    };
+    /* if (!portsMap[queueName]) {
+      const initPort =
+        parseInt(configService.get('PORT') ?? '3000') +
+        Object.keys(portsMap).length;
+      portsMap[queueName] = initPort + 1;
+    }
+    return Promise.resolve({
+      transport: Transport.TCP,
+      options: {
+        port: portsMap[queueName],
+      },
+    }); */
+  }
 }
 
 interface QueueAdminModuleOptions {
   name: string;
+  queueName: string;
 }

@@ -18,13 +18,25 @@ class ResponseB2Crypto {
     private page?: any,
   ) {
     if (data.response) {
-      data = data.response;
+      data = {
+        ...data.response,
+        message: data.message ?? data.response.message,
+        status: data.status ?? data.response.status,
+      };
     }
     if (data.response) {
-      data = data.response;
+      data = {
+        ...data.response,
+        message: data.message ?? data.response.message,
+        statusCode: data.statusCode ?? data.response.statusCode,
+      };
     }
     if (data.response) {
-      data = data.response;
+      data = {
+        ...data.response,
+        message: data.message ?? data.response.message,
+        statusCode: data.statusCode ?? data.response.statusCode,
+      };
     }
     this.code = code || this.getCode(data);
     this.action = action;
@@ -89,6 +101,7 @@ class ResponseB2Crypto {
       // TODO[hender] Check if is no code mean is an error
       this.code = 500;
     }
+    message = message ?? this.message;
     if (!message && !this.message) {
       message = MessageResponseB2Crypto.getMessageCode(this.code, this.action);
     } else if (!message) {

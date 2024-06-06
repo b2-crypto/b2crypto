@@ -8,6 +8,7 @@ import {
 } from '@nestjs/swagger/dist/interfaces/open-api-spec.interface';
 import { isNumber } from 'class-validator';
 import * as http from 'http';
+import { CommonService } from '../common.service';
 
 export async function bootstrapGateway(
   module,
@@ -15,7 +16,7 @@ export async function bootstrapGateway(
   port = 3000,
   swaggerConfig?: Array<DocumentSwaggerConfig>,
 ) {
-  port = await getNextOpenPort(port);
+  port = await CommonService.getNextOpenPort(port);
   if (!isNumber(port)) {
     return false;
   }
@@ -93,41 +94,6 @@ function addSwagger(documentConfig: DocumentSwaggerConfig) {
   SwaggerModule.setup(documentConfig.uri, documentConfig.app, document, {
     swaggerOptions: { defaultModelsExpandDepth: -1 },
   });
-}
-
-async function isPortOpen(port) {
-  return new Promise((resolve, reject) => {
-    try {
-      const s = http.createServer();
-      s.once('error', (err) => {
-        s.close();
-        resolve(err['code'] == 'EADDRINUSE');
-      });
-      s.once('listening', () => {
-        s.close();
-        resolve(true);
-      });
-      s.listen(port);
-    } catch (err) {
-      reject(err);
-    }
-  });
-}
-
-async function getNextOpenPort(startFrom = 3000): Promise<number> {
-  let openPort = null;
-  try {
-    while (startFrom < 65535 || !!openPort) {
-      if (await isPortOpen(startFrom)) {
-        openPort = startFrom;
-        break;
-      }
-      startFrom++;
-    }
-    return openPort;
-  } catch (err) {
-    console.error(err);
-  }
 }
 
 const arrayIntersect = (array1: string[], array2: string[]): string[] =>

@@ -3,6 +3,7 @@ import {
   Controller,
   Delete,
   Get,
+  Logger,
   Param,
   ParseArrayPipe,
   Patch,
@@ -27,6 +28,7 @@ import {
   MessagePattern,
   Payload,
   RmqContext,
+  RpcException,
 } from '@nestjs/microservices';
 import { UserChangePasswordDto } from '@user/user/dto/user.change-password.dto';
 import { UserCreateDto } from '@user/user/dto/user.create.dto';
@@ -128,10 +130,23 @@ export class UserServiceController implements GenericServiceController {
 
   @AllowAnon()
   @MessagePattern(EventsNamesUserEnum.createOne)
-  createOneEvent(@Payload() createDto: UserCreateDto, @Ctx() ctx: RmqContext) {
-    const user = this.createOne(createDto);
-    CommonService.ack(ctx);
-    return user;
+  async createOneEvent(
+    @Payload() createDto: UserCreateDto,
+    @Ctx() ctx: RmqContext,
+  ) {
+    try {
+      const user = await this.createOne(createDto);
+      CommonService.ack(ctx);
+      return user;
+    } catch (err) {
+      CommonService.ack(ctx);
+      //throw new RpcException(err);
+      return {
+        data: err,
+        message: err.errmsg,
+        statusCode: err.statusCode,
+      };
+    }
   }
 
   @AllowAnon()

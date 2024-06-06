@@ -476,7 +476,7 @@ export class BuildersService {
     eventName,
     data,
   ): Promise<TResponse> {
-    return await lastValueFrom<TResponse>(
+    return lastValueFrom<TResponse>(
       obs.send(eventName, data).pipe(startWith({})),
     );
   }
