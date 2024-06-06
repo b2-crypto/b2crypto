@@ -5,7 +5,7 @@ module.exports = {
       script: './dist-pm2/apps/b2crypto/main-microservices.js',
       watch: ['./dist-pm2/apps/b2crypto/main-microservices.js'],
       exp_backoff_restart_delay: 100,
-      instances: 'max',
+      instances: '1',
       exec_mode: 'cluster',
       //wait_ready: true,
       env: {
@@ -36,8 +36,7 @@ module.exports = {
         ENVIRONMENT: 'PROD',
         APP_NAME: 'B2Crypto',
         GOOGLE_2FA: false,
-        DATABASE_URL:
-          'mongodb+srv://b2crypto:SFh59fK9mmM2ln1L@stage-b2crypto.hwml0km.mongodb.net/?retryWrites=true&w=majority&appName=stage-b2crypto',
+        DATABASE_URL: '',
         PORT: 8080,
         AUTH_EXPIRE_IN: '8h',
         AUTH_SECRET: 'B2Crypto',
@@ -60,12 +59,14 @@ module.exports = {
         ENVIRONMENT: 'STAGE',
         APP_NAME: 'B2Crypto',
         GOOGLE_2FA: false,
-        DATABASE_URL: '',
+        DATABASE_URL:
+          'mongodb+srv://b2crypto:SFh59fK9mmM2ln1L@stage-b2crypto.hwml0km.mongodb.net/?retryWrites=true&w=majority&appName=stage-b2crypto',
         PORT: 8080,
         AUTH_EXPIRE_IN: '8h',
         AUTH_SECRET: 'B2Crypto',
         AUTH_MAX_SECONDS_TO_REFRESH: '60',
-        RABBIT_MQ_HOST: '',
+        RABBIT_MQ_HOST:
+          'b-4dfa36c9-e0d6-4949-a093-8352b12f782d.mq.us-west-1.amazonaws.com',
         RABBIT_MQ_PORT: 5671,
         RABBIT_MQ_QUEUE: 'STAGE',
         RABBIT_MQ_USERNAME: 'b2crypto',
@@ -116,8 +117,7 @@ module.exports = {
         ENVIRONMENT: 'PROD',
         APP_NAME: 'B2Crypto',
         GOOGLE_2FA: false,
-        DATABASE_URL:
-          'mongodb+srv://b2crypto:SFh59fK9mmM2ln1L@stage-b2crypto.hwml0km.mongodb.net/?retryWrites=true&w=majority&appName=stage-b2crypto',
+        DATABASE_URL: '',
         PORT: 8080,
         AUTH_EXPIRE_IN: '8h',
         AUTH_SECRET: 'B2Crypto',
@@ -140,12 +140,14 @@ module.exports = {
         ENVIRONMENT: 'STAGE',
         APP_NAME: 'B2Crypto',
         GOOGLE_2FA: false,
-        DATABASE_URL: '',
+        DATABASE_URL:
+          'mongodb+srv://b2crypto:SFh59fK9mmM2ln1L@stage-b2crypto.hwml0km.mongodb.net/?retryWrites=true&w=majority&appName=stage-b2crypto',
         PORT: 8080,
         AUTH_EXPIRE_IN: '8h',
         AUTH_SECRET: 'B2Crypto',
         AUTH_MAX_SECONDS_TO_REFRESH: '60',
-        RABBIT_MQ_HOST: '',
+        RABBIT_MQ_HOST:
+          'b-4dfa36c9-e0d6-4949-a093-8352b12f782d.mq.us-west-1.amazonaws.com',
         RABBIT_MQ_PORT: 5671,
         RABBIT_MQ_QUEUE: 'STAGE',
         RABBIT_MQ_USERNAME: 'b2crypto',

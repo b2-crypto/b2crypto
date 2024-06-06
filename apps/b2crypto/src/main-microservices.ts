@@ -4,6 +4,7 @@ import { NestFactory } from '@nestjs/core';
 import { AppHttpModule } from './app.http.module';
 import { EnvironmentEnum } from '@common/common/enums/environment.enum';
 import { ConfigService } from '@nestjs/config';
+import { QueueAdminModule } from '@common/common/queue-admin-providers/queue.admin.provider.module';
 
 async function bootstrap() {
   Logger.log(process.env.TZ, 'Timezone Microservice');
@@ -21,9 +22,9 @@ async function bootstrap() {
     },
   });
   app.useGlobalPipes(validationPipes);
-  const queueAdminService = app.get<QueueAdminService>(QueueAdminService);
   app.connectMicroservice(
-    await queueAdminService.getOptions(
+    await QueueAdminModule.getClientProvider(
+      configService,
       configService.get('ENVIRONMENT') ?? EnvironmentEnum.dev,
     ),
   );

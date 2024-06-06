@@ -15,7 +15,6 @@ import {
 import { SchedulerRegistry } from '@nestjs/schedule';
 import { QuerySearchAnyDto } from './models/query_search-any.dto';
 import { FetchData } from './models/fetch-data.model';
-import { QueueAdminModule } from './queue-admin-providers/queue.admin.provider.module';
 import * as http from 'http';
 
 @Injectable()
@@ -203,15 +202,6 @@ export class CommonService {
       .trim()
       .replace(/[^a-z0-9 ]/g, '') // remove all chars not letters, numbers and spaces (to be replaced)
       .replace(/\s+/g, '-');
-  }
-  static factoryEventClient(name: string) {
-    return async (configService: ConfigService) => {
-      const clientOptions = await QueueAdminModule.getClientProvider(
-        configService,
-        name,
-      );
-      return ClientProxyFactory.create(clientOptions);
-    };
   }
 
   static addTimeout(

@@ -3,6 +3,7 @@ import { DynamicModule, Module } from '@nestjs/common';
 import { QueueAdminService } from './queue.admin.provider.service';
 import {
   ClientProvider,
+  ClientProxyFactory,
   ClientsModule,
   Transport,
 } from '@nestjs/microservices';
@@ -35,12 +36,21 @@ export class QueueAdminModule {
     };
   }
 
+  static factoryEventClient(name: string) {
+    return async (configService: ConfigService) => {
+      const clientOptions = await QueueAdminModule.getClientProvider(
+        configService,
+        name,
+      );
+      return ClientProxyFactory.create(clientOptions);
+    };
+  }
+
   static async getClientProvider(
     configService: ConfigService,
     queueName = null,
     noAck = false,
   ): Promise<ClientProvider> {
-    //queueName = isString(queueName) && !isEmpty(queueName) ? queueName : null;
     queueName = null;
     const host = configService.get<string>('RABBIT_MQ_HOST');
     const opts = {
@@ -67,18 +77,6 @@ export class QueueAdminModule {
         },
       },
     };
-    /* if (!portsMap[queueName]) {
-      const initPort =
-        parseInt(configService.get('PORT') ?? '3000') +
-        Object.keys(portsMap).length;
-      portsMap[queueName] = initPort + 1;
-    }
-    return Promise.resolve({
-      transport: Transport.TCP,
-      options: {
-        port: portsMap[queueName],
-      },
-    }); */
   }
 }
 
