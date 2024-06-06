@@ -4,7 +4,6 @@ import { ActivityServiceService } from './activity-service.service';
 import { BuildersModule } from '@builder/builders';
 import { ActivityModule } from '@activity/activity';
 import { CommonModule } from '@common/common';
-import { QueueAdminModule } from '@common/common/queue-admin-providers/queue.admin.provider.module';
 import configuration from '@config/config';
 import { ConfigModule } from '@nestjs/config';
 import { ResponseB2CryptoModule } from '@response-b2crypto/response-b2crypto';
@@ -22,7 +21,6 @@ describe('ActivityServiceController', () => {
         CommonModule,
         BuildersModule,
         ActivityModule,
-        QueueAdminModule,
         ResponseB2CryptoModule,
       ],
       controllers: [ActivityServiceController],

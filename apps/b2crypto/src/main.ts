@@ -19,6 +19,7 @@ import { OpenAPIObject } from '@nestjs/swagger';
 import { PathsObject } from '@nestjs/swagger/dist/interfaces/open-api-spec.interface';
 import { TransferServiceModule } from 'apps/transfer-service/src/transfer-service.module';
 import { QueueAdminService } from '@common/common/queue-admin-providers/queue.admin.provider.service';
+import { QueueAdminModule } from '@common/common/queue-admin-providers/queue.admin.provider.module';
 
 async function bootstrap() {
   Logger.log(process.env.TZ, 'Timezone');
@@ -63,9 +64,11 @@ async function bootstrap() {
   });
   app.getHttpAdapter().getInstance().disable('x-powered-by');
   app.listen(configService.get('PORT') ?? 3000);
-  const queueAdminService = app.get<QueueAdminService>(QueueAdminService);
   app.connectMicroservice(
-    await queueAdminService.getOptions(configService.get('ENVIRONMENT')),
+    await QueueAdminModule.getClientProvider(
+      configService,
+      configService.get('ENVIRONMENT'),
+    ),
   );
   await app.startAllMicroservices();
   if (typeof process.send === 'function') {

@@ -2,6 +2,8 @@ import { EnvironmentEnum } from '@common/common/enums/environment.enum';
 import { QueueAdminService } from '@common/common/queue-admin-providers/queue.admin.provider.service';
 import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
+import { QueueAdminModule } from '../queue-admin-providers/queue.admin.provider.module';
+import { ConfigService } from '@nestjs/config';
 
 export async function bootstrapMicroservice(module, env: EnvironmentEnum) {
   const app = await NestFactory.create(module, {
@@ -17,8 +19,10 @@ export async function bootstrapMicroservice(module, env: EnvironmentEnum) {
     },
   });
   app.useGlobalPipes(validationPipes);
-  const queueAdminService = app.get<QueueAdminService>(QueueAdminService);
-  app.connectMicroservice(await queueAdminService.getOptions(env));
+  const configService = app.get<ConfigService>(ConfigService);
+  app.connectMicroservice(
+    await QueueAdminModule.getClientProvider(configService, env),
+  );
   await app.startAllMicroservices();
   if (typeof process.send === 'function') {
     process.send('ready');

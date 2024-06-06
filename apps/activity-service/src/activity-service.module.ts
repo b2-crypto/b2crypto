@@ -4,7 +4,6 @@ import { CommonModule } from '@common/common';
 import { ResponseHttpExceptionFilter } from '@common/common/exceptions/response.exception';
 import { ResponseInterceptor } from '@common/common/interceptors/response.interceptor';
 import { IProvider } from '@common/common/interfaces/i.provider.interface';
-import { QueueAdminModule } from '@common/common/queue-admin-providers/queue.admin.provider.module';
 import configuration from '@config/config';
 import { CacheInterceptor, CacheModule, Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
@@ -28,7 +27,6 @@ import { ActivityServiceWebsocketGateway } from './activity-service.websocket.ga
     CommonModule,
     BuildersModule,
     ActivityModule,
-    QueueAdminModule,
     ResponseB2CryptoModule,
   ],
   controllers: [ActivityServiceController],

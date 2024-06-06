@@ -5,7 +5,6 @@ import { CommonModule } from '@common/common';
 import { ResponseHttpExceptionFilter } from '@common/common/exceptions/response.exception';
 import { ResponseInterceptor } from '@common/common/interceptors/response.interceptor';
 import { IProvider } from '@common/common/interfaces/i.provider.interface';
-import { QueueAdminModule } from '@common/common/queue-admin-providers/queue.admin.provider.module';
 import configuration from '@config/config';
 import { GroupModule } from '@group/group';
 import {
@@ -41,7 +40,6 @@ import { WalletServiceController } from './wallet-service.controller';
     CommonModule,
     BuildersModule,
     AccountModule,
-    QueueAdminModule,
     ResponseB2CryptoModule,
     IntegrationModule,
     //
