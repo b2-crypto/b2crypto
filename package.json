@@ -91,7 +91,7 @@
     "start:prod": "npm install && npm run prebuild && npm run build-all && npm run copy:pm2 && pm2 restart pm2.config.js --env prod",
     "start:fake": "npm install && npm run prebuild && npm run build-all && pm2 restart pm2.config.js --env fake",
     "start-user:prod": "npm install && npm run prebuild && npm run build-all && pm2 restart pm2.config.js --env prod",
-    "start:stage": "npm install && npm run prebuild && npm run build-all && pm2 restart pm2.config.js --env stage",
+    "start:stage": "npm install && npm run prebuild && npm run build-all && npm run copy:pm2 && pm2 restart pm2.config.js --env stage",
     "start:pm2": "npm run prebuild && nest build b2crypto-microservices && nest build b2crypto-gateway && npm run copy:pm2",
     "copy:pm2": "cp -vr dist/* dist-pm2/",
     "lint": "./node_modules/.bin/eslint \\\"{src,apps,libs,test}/**/*.ts\\\" --fix",
