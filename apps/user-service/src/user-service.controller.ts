@@ -4,6 +4,7 @@ import {
   Delete,
   Get,
   Logger,
+  NotFoundException,
   Param,
   ParseArrayPipe,
   Patch,
@@ -40,6 +41,7 @@ import EventsNamesUserEnum from './enum/events.names.user.enum';
 import { UserServiceService } from './user-service.service';
 import GenericServiceController from '@common/common/interfaces/controller.generic.interface';
 import ResponseB2Crypto from '@response-b2crypto/response-b2crypto/models/ResponseB2Crypto';
+import { ApiKeyCheck } from '@auth/auth/decorators/api-key-check.decorator';
 
 @ApiTags('USER')
 @Controller('users')
@@ -50,6 +52,25 @@ export class UserServiceController implements GenericServiceController {
   // @CheckPoliciesAbility(new PolicyHandlerUserRead())
   async findAll(@Query() query: QuerySearchAnyDto) {
     return this.userService.getAll(query);
+  }
+
+  @ApiKeyCheck()
+  @Get('email/:userEmail')
+  // @CheckPoliciesAbility(new PolicyHandlerUserRead())
+  async findOneByEmail(@Param('userEmail') email: string) {
+    const query = {
+      where: {
+        email: email,
+      },
+    };
+    const rta = await this.userService.getAll(query);
+    if (!rta.list[0]) {
+      throw new NotFoundException('Email not found');
+    }
+    return {
+      statusCode: 200,
+      message: 'Email founded',
+    };
   }
 
   @Get(':userID')
