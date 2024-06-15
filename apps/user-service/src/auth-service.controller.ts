@@ -312,7 +312,7 @@ export class AuthServiceController {
     );
   }
 
-  private async generateOtp(user: UserDocument, msOTP = 30000) {
+  private async generateOtp(user: UserDocument, msOTP = 60000) {
     let otpSended = await this.getOtpGenerated(user.email);
     if (!otpSended) {
       otpSended = CommonService.randomIntNumber(999999);
