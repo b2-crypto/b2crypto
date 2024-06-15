@@ -10,6 +10,7 @@ import {
   IsOptional,
   IsString,
 } from 'class-validator';
+import { VarsMessageTemplate } from '@message/message/entities/mongoose/message.schema';
 
 export class MessageCreateDto extends CreateAnyDto {
   @IsString()
@@ -28,19 +29,31 @@ export class MessageCreateDto extends CreateAnyDto {
   @IsMongoId()
   category: ObjectId;
 
-  @IsNotEmpty()
+  @IsOptional()
   @Type(() => ScopeDto)
   origin: ScopeDto;
 
-  @IsNotEmpty()
+  @IsString()
+  @IsOptional()
+  originText: string;
+
+  @IsOptional()
   @Type(() => ScopeDto)
   destiny: ScopeDto;
+
+  @IsOptional()
+  @Type(() => VarsMessageTemplate)
+  vars: VarsMessageTemplate;
+
+  @IsString()
+  @IsOptional()
+  destinyText: string;
 
   @IsNotEmpty()
   @IsMongoId()
   status: ObjectId;
 
-  @IsNotEmpty()
+  @IsOptional()
   @IsMongoId()
   creator: ObjectId;
 

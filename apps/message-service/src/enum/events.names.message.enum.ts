@@ -13,7 +13,8 @@ enum EventsNamesMessageEnum {
   deleteMany = 'MESSAGE.DELETE.MANY',
   deleteOneById = 'MESSAGE.DELETE.ONE.BY.ID',
 
-  sendEmail = 'MESSAGE.SEND.EMAIL',
+  sendEmailOtpNotification = 'MESSAGE.SEND.EMAIL.OTP.NOTIFICATION',
+  sendEmailDisclaimer = 'MESSAGE.SEND.EMAIL.DISCLAIMER',
 }
 
 export default EventsNamesMessageEnum;

@@ -64,7 +64,7 @@ export class ResponseInterceptor implements NestInterceptor {
         if (contextType === 'rpc') {
           return new RpcException(err);
         }
-        return new BadGatewayException(err);
+        return err;
       });
     };
   }

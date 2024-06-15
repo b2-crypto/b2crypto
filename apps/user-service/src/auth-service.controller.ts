@@ -39,6 +39,11 @@ import EventsNamesActivityEnum from 'apps/activity-service/src/enum/events.names
 import { Cache } from 'cache-manager';
 import EventsNamesUserEnum from './enum/events.names.user.enum';
 import { BadRequestError } from 'passport-headerapikey';
+import { RestorePasswordDto } from '@auth/auth/dto/restore.password.dto';
+import EventsNamesMessageEnum from 'apps/message-service/src/enum/events.names.message.enum';
+import { MessageCreateDto } from '@message/message/dto/message.create.dto';
+import TransportEnum from '@common/common/enums/TransportEnum';
+import { UserDocument } from '@user/user/entities/mongoose/user.schema';
 
 @ApiTags('AUTHENTICATION')
 @Controller('auth')
@@ -55,45 +60,81 @@ export class AuthServiceController {
     this.eventClient = this.builder.getEventClient();
   }
 
-  @AllowAnon()
+  @ApiKeyCheck()
   @Post('identify/link')
   async sumsubToken() {
     throw new ForbiddenException();
   }
 
-  @AllowAnon()
-  @Get('otp/:email')
-  async getOtp(@Param('email') email: string) {
-    let otpSended = await this.cacheManager.get(email);
-    if (!otpSended) {
-      const user = await this.builder.getPromiseUserEventClient(
-        EventsNamesUserEnum.findAll,
+  @ApiKeyCheck()
+  @Post('restore-password')
+  async restorePassword(@Body() restorePasswordDto: RestorePasswordDto) {
+    const users = await this.builder.getPromiseUserEventClient(
+      EventsNamesUserEnum.findAll,
+      {
+        where: {
+          email: `/${restorePasswordDto.email}/gi`,
+        },
+      },
+    );
+    // Validate user
+    if (!users.list[0]) {
+      throw new BadRequestException('User not found');
+    }
+    if (
+      restorePasswordDto.otp &&
+      restorePasswordDto.password &&
+      restorePasswordDto.password2
+    ) {
+      // Validate password
+      if (restorePasswordDto.password !== restorePasswordDto.password2) {
+        throw new BadRequestException('Bad password');
+      }
+      const otpSended = await this.getOtpGenerated(restorePasswordDto.email);
+      // Validate OTP
+      if (!otpSended) {
+        throw new BadRequestException('Expired OTP');
+      } else if (restorePasswordDto.otp !== otpSended) {
+        throw new BadRequestException('Bad OTP');
+      }
+      await this.deleteOtpGenerated(restorePasswordDto.email);
+      await this.builder.getPromiseUserEventClient(
+        EventsNamesUserEnum.updateOne,
         {
-          where: {
-            email: email,
-          },
+          id: users.list[0]._id,
+          password: CommonService.getHash(restorePasswordDto.password),
         },
       );
-      if (!user.list[0]) {
-        throw new NotFoundException(`Email ${email} not found`);
-      }
-      otpSended = CommonService.randomIntNumber(999999);
-      await this.cacheManager.set(email, otpSended, 30000);
+      return {
+        statusCode: 200,
+        message: 'Password updated',
+      };
     }
+    // send otp
+    await this.generateOtp({ email: restorePasswordDto.email } as any);
+    return {
+      statusCode: 201,
+      message: 'OTP generated',
+    };
+  }
+
+  @ApiKeyCheck()
+  @Get('otp/:email')
+  async getOtp(@Param('email') email: string) {
+    await this.generateOtp({ email } as any);
     // Enviar OTP al user
-    Logger.debug(otpSended, `OTP ${email}`);
     return {
       statusCode: 201,
       message: 'OTP Sended',
     };
   }
 
-  @AllowAnon()
+  @ApiKeyCheck()
   @Get('otp/:email/:otp')
   async validateOtp(@Param('email') email: string, @Param('otp') otp: string) {
-    const otpSended = await this.cacheManager.get(email);
+    const otpSended = await this.getOtpGenerated(email);
     if (!otpSended) {
-      const user = await this.builder.getPromiseUserEventClient(
+      /* const user = await this.builder.getPromiseUserEventClient(
         EventsNamesUserEnum.findAll,
         {
           where: {
@@ -103,13 +144,13 @@ export class AuthServiceController {
       );
       if (!user.list[0]) {
         throw new NotFoundException(`Email ${email} not found`);
-      }
-      throw new NotFoundException('Time out OTP');
+      } */
+      throw new NotFoundException('Expired OTP');
     }
     if (otpSended.toString() !== otp) {
       throw new BadRequestError('Not valid OTP');
     }
-    await this.cacheManager.del(email);
+    await this.deleteOtpGenerated(email);
     return {
       statusCode: 200,
       message: 'OTP is valid',
@@ -269,6 +310,47 @@ export class AuthServiceController {
       EventsNamesActivityEnum.registerActivity,
       data,
     );
+  }
+
+  private async generateOtp(user: UserDocument, msOTP = 60000) {
+    let otpSended = await this.getOtpGenerated(user.email);
+    if (!otpSended) {
+      otpSended = CommonService.randomIntNumber(999999);
+      await this.cacheManager.set(user.email, otpSended, msOTP);
+    }
+    const data = {
+      name: `OTP to ${user.email}`,
+      body: `The OTP is ${otpSended}`,
+      originText: `System`,
+      destinyText: user.email,
+      transport: TransportEnum.EMAIL,
+      destiny: null,
+      vars: {
+        name: user.name ?? user.email,
+        lastname: '',
+        otp: otpSended,
+      },
+    };
+    if (user._id) {
+      data.destiny = {
+        resourceId: user._id,
+        resourceName: ResourcesEnum.USER,
+      };
+    }
+    this.builder.emitMessageEventClient(
+      EventsNamesMessageEnum.sendEmailOtpNotification,
+      data,
+    );
+    Logger.debug(JSON.stringify(otpSended), `OTP ${user} (${msOTP})`);
+    return otpSended;
+  }
+
+  private async getOtpGenerated(email: string) {
+    return this.cacheManager.get(email);
+  }
+
+  private async deleteOtpGenerated(email: string) {
+    return this.cacheManager.del(email);
   }
 }
 

@@ -13,9 +13,12 @@ export class MessageEntity implements MessageInterface {
   description: string;
   searchText: string;
   body: string;
+  vars: any;
   category: CategoryEntity;
   origin: ScopeEntity;
+  originText: string;
   destiny: ScopeEntity;
+  destinyText: string;
   status: StatusEntity;
   creator: UserEntity;
   transport: TransportEnum;

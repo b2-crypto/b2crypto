@@ -33,10 +33,9 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
         incomingMessage?.headers['b2crypto-affiliate-key'] || // Affiliate apiKey
         incomingMessage?.query['b2crypto-affiliate-key']) // Affiliate apiKey
     ) {
-      context['args'][0].body = context['args'][0].body ?? {};
-      context['args'][0].body.checkApiKey = true;
+      incomingMessage.headers.checkApiKey = true;
     }
-    if (isPublic || isRefresh || context['args'][0].body.checkApiKey) {
+    if (isPublic || isRefresh || incomingMessage.headers.checkApiKey) {
       return true;
     }
     return super.canActivate(context);
