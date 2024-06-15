@@ -36,10 +36,9 @@ export class PoliciesGuard implements CanActivate {
       (incomingMessage?.headers['b2crypto-key'] ||
         incomingMessage?.headers['b2crypto-affiliate-key'])
     ) {
-      context['args'][0].body = context['args'][0].body ?? {};
-      context['args'][0].body.checkApiKey = true;
+      incomingMessage.headers.checkApiKey = true;
     }
-    if (isPublic || isRefresh || context['args'][0].body.checkApiKey) {
+    if (isPublic || isRefresh || incomingMessage.headers.checkApiKey) {
       return true;
     }
     const policyHandlers =

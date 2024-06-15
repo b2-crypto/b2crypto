@@ -8,6 +8,7 @@ import * as mongoose from 'mongoose';
 import { Document, ObjectId } from 'mongoose';
 import { MessageEntity } from '../message.entity';
 
+export class VarsMessageTemplate {}
 export type MessageDocument = Message & Document;
 
 @Schema({
@@ -31,14 +32,25 @@ export class Message extends MessageEntity {
   @Prop()
   body: string;
 
+  @Prop({
+    type: () => VarsMessageTemplate,
+  })
+  vars: VarsMessageTemplate;
+
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'categories' })
   category: Category;
 
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'scopes' })
   origin: Scope;
 
+  @Prop()
+  originText: string;
+
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'scopes' })
   destiny: Scope;
+
+  @Prop()
+  destinyText: string;
 
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'statuses' })
   status: Status;

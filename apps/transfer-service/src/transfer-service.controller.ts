@@ -553,8 +553,8 @@ export class TransferServiceController implements GenericServiceController {
     @Payload() createTransferDto: TransferCreateDto,
     @Ctx() ctx: RmqContext,
   ) {
-    const transfer = await this.transferService.newTransfer(createTransferDto);
     CommonService.ack(ctx);
+    const transfer = await this.transferService.newTransfer(createTransferDto);
     return transfer;
   }
 

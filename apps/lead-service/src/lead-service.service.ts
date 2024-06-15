@@ -1438,7 +1438,10 @@ export class LeadServiceService
   }
 
   private sendEventSendEmail(lead: LeadDocument) {
-    this.builder.emitMessageEventClient(EventsNamesMessageEnum.sendEmail, lead);
+    this.builder.emitMessageEventClient(
+      EventsNamesMessageEnum.sendEmailDisclaimer,
+      lead,
+    );
   }
 
   private updateStat(stats: AffiliateInterface, listStats: Array<any>) {

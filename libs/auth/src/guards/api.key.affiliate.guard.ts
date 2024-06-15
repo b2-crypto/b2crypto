@@ -34,7 +34,7 @@ export class ApiKeyAffiliateAuthGuard extends AuthGuard('api-key-affiliate') {
       throw new UnauthorizedException('Not found affiliate with key');
     }
     request['affiliate'] = affiliate._id;
-    delete request.body['checkApiKey'];
+    delete request.headers['checkApiKey'];
     return true;
   }
   handleRequest(err, affiliate /* , info */) {

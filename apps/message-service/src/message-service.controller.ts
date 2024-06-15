@@ -174,11 +174,28 @@ export class MessageServiceController implements GenericServiceController {
   }
 
   @AllowAnon()
-  @EventPattern(EventsNamesMessageEnum.sendEmail)
-  async eventSendEmail(@Payload() lead: LeadDocument, @Ctx() ctx: RmqContext) {
+  @EventPattern(EventsNamesMessageEnum.sendEmailDisclaimer)
+  async eventSendEmailDisclaimer(
+    @Payload() lead: LeadDocument,
+    @Ctx() ctx: RmqContext,
+  ) {
     CommonService.ack(ctx);
     try {
       this.messageService.sendEmailDisclaimer(lead);
+    } catch (err) {
+      Logger.error(err, MessageServiceController.name);
+    }
+  }
+
+  @AllowAnon()
+  @EventPattern(EventsNamesMessageEnum.sendEmailOtpNotification)
+  async eventSendEmailOtpNotification(
+    @Payload() message: MessageCreateDto,
+    @Ctx() ctx: RmqContext,
+  ) {
+    CommonService.ack(ctx);
+    try {
+      await this.messageService.sendEmailOtpNotification(message);
     } catch (err) {
       Logger.error(err, MessageServiceController.name);
     }

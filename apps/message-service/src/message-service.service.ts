@@ -6,11 +6,15 @@ import { LeadDocument } from '@lead/lead/entities/mongoose/lead.schema';
 import { MessageServiceMongooseService } from '@message/message';
 import { MessageCreateDto } from '@message/message/dto/message.create.dto';
 import { MessageUpdateDto } from '@message/message/dto/message.update.dto';
+import { MailerService } from '@nestjs-modules/mailer';
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import EventsNamesCrmEnum from 'apps/crm-service/src/enum/events.names.crm.enum';
 import EventsNamesLeadEnum from 'apps/lead-service/src/enum/events.names.lead.enum';
 import axios from 'axios';
+import * as pug from 'pug';
+import TemplatesMessageEnum from './enum/templates.message.enum';
+import { isEmail } from 'class-validator';
 
 @Injectable()
 export class MessageServiceService {
@@ -23,6 +27,7 @@ export class MessageServiceService {
     private readonly builder: BuildersService,
     @Inject(MessageServiceMongooseService)
     private lib: MessageServiceMongooseService,
+    private mailerService: MailerService,
   ) {
     this.apiKey = configService.getOrThrow('API_KEY_EMAIL_APP');
     this.url = configService.getOrThrow('URL_API_EMAIL_APP');
@@ -66,6 +71,34 @@ export class MessageServiceService {
   async download() {
     // TODO[hender] Not implemented download
     return Promise.resolve(undefined);
+  }
+
+  async sendEmailOtpNotification(message: MessageCreateDto) {
+    return this.sendEmail(message, TemplatesMessageEnum.otpNotification);
+  }
+
+  async sendEmail(message: MessageCreateDto, template: TemplatesMessageEnum) {
+    let from = message.originText;
+    if (!isEmail(from)) {
+      from = await this.configService.get(
+        'AWS_SES_FROM_DEFAULT',
+        'noreply@email.com',
+      );
+      message.originText = from;
+    }
+    const msg = await this.newMessage(message);
+    //send email
+    Logger.debug(msg, `${template}`);
+    await this.mailerService.sendMail({
+      to: msg.destinyText,
+      from,
+      subject: msg.name,
+      html: this.compileHtml(message.vars ?? message, template),
+    });
+    return msg;
+  }
+  private compileHtml(vars: any, path: TemplatesMessageEnum) {
+    return pug.renderFile(path, vars);
   }
 
   async sendEmailDisclaimer(lead: LeadDocument) {
