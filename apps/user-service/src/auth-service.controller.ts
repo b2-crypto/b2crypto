@@ -341,7 +341,6 @@ export class AuthServiceController {
       EventsNamesMessageEnum.sendEmailOtpNotification,
       data,
     );
-    Logger.debug(JSON.stringify(otpSended), `OTP ${user} (${msOTP})`);
     return otpSended;
   }
 
