@@ -88,7 +88,6 @@ export class MessageServiceService {
     }
     const msg = await this.newMessage(message);
     //send email
-    Logger.debug(msg, `${template}`);
     await this.mailerService.sendMail({
       to: msg.destinyText,
       from,
