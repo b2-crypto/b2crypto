@@ -121,7 +121,7 @@ export class AuthServiceController {
   @ApiKeyCheck()
   @Get('otp/:email')
   async getOtp(@Param('email') email: string) {
-    await this.generateOtp({ email } as any, 10000);
+    await this.generateOtp({ email } as any);
     // Enviar OTP al user
     return {
       statusCode: 201,
@@ -145,7 +145,7 @@ export class AuthServiceController {
       if (!user.list[0]) {
         throw new NotFoundException(`Email ${email} not found`);
       } */
-      throw new NotFoundException('No found OTP');
+      throw new NotFoundException('Expired OTP');
     }
     if (otpSended.toString() !== otp) {
       throw new BadRequestError('Not valid OTP');
