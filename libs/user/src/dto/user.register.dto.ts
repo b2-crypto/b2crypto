@@ -38,6 +38,12 @@ export class UserRegisterDto extends UserChangePasswordDto {
   active = true;
 
   @ApiProperty({
+    description: 'If User is individual or corporate',
+  })
+  @IsBoolean()
+  individual = true;
+
+  @ApiProperty({
     description: 'Confirm Password User',
     minLength: 6,
     maxLength: 50,
@@ -63,6 +69,7 @@ export class UserRegisterDto extends UserChangePasswordDto {
     description: 'Name User',
   })
   @IsString()
+  @IsOptional()
   name: string;
 
   @IsMongoId()
