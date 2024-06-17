@@ -20,6 +20,7 @@ export interface UserInterface {
   password: string;
   confirmPassword?: string;
   active: boolean;
+  individual: boolean;
   isClientAPI: boolean;
   apiKey: string;
   configuration: JSON;
