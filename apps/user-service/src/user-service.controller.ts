@@ -82,6 +82,8 @@ export class UserServiceController implements GenericServiceController {
   @Post()
   // @CheckPoliciesAbility(new PolicyHandlerUserCreate())
   async createOne(@Body() createUserDto: UserRegisterDto) {
+    createUserDto.name =
+      createUserDto.name ?? createUserDto.email.split('@')[0];
     return this.userService.newUser(createUserDto);
   }
 

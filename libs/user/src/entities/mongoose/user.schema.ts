@@ -55,6 +55,9 @@ export class User extends UserEntity {
   @Prop({ default: true })
   active: boolean;
 
+  @Prop({ default: true })
+  individual: boolean;
+
   @Prop()
   isClientAPI: boolean;
 

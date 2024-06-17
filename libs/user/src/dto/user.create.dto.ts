@@ -18,6 +18,7 @@ import { UserCardDto } from '@integration/integration/card/generic/dto/user.card
 
 export class UserCreateDto extends UserChangePasswordDto {
   @IsString()
+  @IsOptional()
   name: string;
 
   @IsString()
@@ -30,6 +31,10 @@ export class UserCreateDto extends UserChangePasswordDto {
   @IsBoolean()
   @IsNotEmpty()
   active = false;
+
+  @IsBoolean()
+  @IsNotEmpty()
+  individual = true;
 
   @IsMongoId()
   role: ObjectId;
