@@ -24,7 +24,7 @@ import {
   Query,
   Req,
 } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiHeader, ApiTags } from '@nestjs/swagger';
 import { User } from '@user/user/entities/mongoose/user.schema';
 import { CategoryServiceService } from 'apps/category-service/src/category-service.service';
 import { GroupServiceService } from 'apps/group-service/src/group-service.service';
@@ -54,6 +54,11 @@ export class CardServiceController extends AccountServiceController {
   }
 
   @Get('all')
+  @ApiTags('Stakey Card')
+  @ApiHeader({
+    name: 'b2crypto-key',
+    description: 'The apiKey',
+  })
   findAll(@Query() query: QuerySearchAnyDto, req?: any) {
     query = query ?? {};
     query.where = query.where ?? {};
@@ -62,6 +67,11 @@ export class CardServiceController extends AccountServiceController {
   }
 
   @Post('create')
+  @ApiTags('Stakey Card')
+  @ApiHeader({
+    name: 'b2crypto-key',
+    description: 'The apiKey',
+  })
   async createOne(@Body() createDto: CardCreateDto, @Req() req?: any) {
     const user: User = (
       await this.userService.getAll({

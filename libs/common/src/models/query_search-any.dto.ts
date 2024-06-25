@@ -54,27 +54,12 @@ export class QuerySearchAnyDto {
       {
         summary: 'Search by regex',
         description: 'Find using Regular expressions (regex) to refined search',
-        value: { name: '/exactly/ig' },
+        value: { name: '/eXaCtLy/ig' },
       },
       {
-        summary: 'Search by status G - New',
-        description: 'Find by status G - New',
-        value: { status: 'G - New' },
-      },
-      {
-        summary: 'Search by status Moved',
-        description: 'Find by status Moved',
-        value: { status: 'Moved' },
-      },
-      {
-        summary: 'Search by status Contacted',
-        description: 'Find using Regular expressions (regex) to refined search',
-        value: { status: 'contacted' },
-      },
-      {
-        summary: 'Search by status FTD',
-        description: 'Find using the name of status',
-        value: { status: 'ftd' },
+        summary: 'Search by status Active',
+        description: 'Find by status Active',
+        value: { status: 'Active' },
       },
       {
         summary: 'Search by date (ISO8601)',
@@ -82,42 +67,6 @@ export class QuerySearchAnyDto {
         value: {
           start: new Date(new Date().setUTCHours(0, 0, 0, 0)).toISOString(),
           end: new Date(new Date().setUTCHours(23, 59, 59, 999)).toISOString(),
-        },
-      },
-      {
-        summary: 'Search by status Active date (ISO8601)',
-        description: 'Date must be a Iso8601. Search Active status date',
-        value: {
-          active: {
-            start: new Date(new Date().setUTCHours(0, 0, 0, 0)).toISOString(),
-            end: new Date(
-              new Date().setUTCHours(23, 59, 59, 999),
-            ).toISOString(),
-          },
-        },
-      },
-      {
-        summary: 'Search by status Contacted date (ISO8601)',
-        description: 'Date must be a Iso8601. Search Contacted status date',
-        value: {
-          contacted: {
-            start: new Date(new Date().setUTCHours(0, 0, 0, 0)).toISOString(),
-            end: new Date(
-              new Date().setUTCHours(23, 59, 59, 999),
-            ).toISOString(),
-          },
-        },
-      },
-      {
-        summary: 'Search by status FTD date (ISO8601)',
-        description: 'Date must be a Iso8601. Search FTD status date',
-        value: {
-          ftd: {
-            start: new Date(new Date().setUTCHours(0, 0, 0, 0)).toISOString(),
-            end: new Date(
-              new Date().setUTCHours(23, 59, 59, 999),
-            ).toISOString(),
-          },
         },
       },
       {
@@ -129,69 +78,12 @@ export class QuerySearchAnyDto {
         },
       },
       {
-        summary: 'Search by status active date (ISO8601) - Alias',
-        description: 'Date must be a Iso8601. Search Active status date',
-        value: {
-          active: {
-            from: new Date(new Date().setUTCHours(0, 0, 0, 0)).toISOString(),
-            to: new Date(new Date().setUTCHours(23, 59, 59, 999)).toISOString(),
-          },
-        },
-      },
-      {
-        summary: 'Search by status contacted date (ISO8601) - Alias',
-        description: 'Date must be a Iso8601. Search Contacted status date',
-        value: {
-          contacted: {
-            from: new Date(new Date().setUTCHours(0, 0, 0, 0)).toISOString(),
-            to: new Date(new Date().setUTCHours(23, 59, 59, 999)).toISOString(),
-          },
-        },
-      },
-      {
-        summary: 'Search by status FTD date (ISO8601) - Alias',
-        description: 'Date must be a Iso8601. Search FTD status date',
-        value: {
-          ftd: {
-            from: new Date(new Date().setUTCHours(0, 0, 0, 0)).toISOString(),
-            to: new Date(new Date().setUTCHours(23, 59, 59, 999)).toISOString(),
-          },
-        },
-      },
-      {
         summary: 'Search by status date combined 1',
         description:
           'Date must be a Iso8601. Search Contacted status with Active status date between start and end',
         value: {
-          status: 'contacted',
-          active: { start: '2023-03-31', end: '2023-03-31' },
-        },
-      },
-      {
-        summary: 'Search by status date combined 2',
-        description:
-          'Date must be a Iso8601. Search FTD status with Contacted status date between start and end',
-        value: {
-          status: 'ftd',
-          contacted: { start: '2023-03-31', end: '2023-03-31' },
-        },
-      },
-      {
-        summary: 'Search by status date combined 1 - Alias',
-        description:
-          'Date must be a Iso8601. Search Contacted status with Active status date between start and end',
-        value: {
-          status: 'contacted',
-          active: { from: '2023-03-31', to: '2023-03-31' },
-        },
-      },
-      {
-        summary: 'Search by status date combined 2 - Alias',
-        description:
-          'Date must be a Iso8601. Search FTD status with Contacted status date between start and end',
-        value: {
-          status: 'ftd',
-          contacted: { from: '2023-03-31', to: '2023-03-31' },
+          status: 'blocked',
+          createdAt: { start: '2023-03-31', end: '2023-03-31' },
         },
       },
     ],

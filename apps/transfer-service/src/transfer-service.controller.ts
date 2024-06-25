@@ -21,7 +21,7 @@ import {
   Res,
   UseGuards,
 } from '@nestjs/common';
-import { ApiHeader, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiHeader, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 
 import { AllowAnon } from '@auth/auth/decorators/allow-anon.decorator';
 import { ApiKeyCheck } from '@auth/auth/decorators/api-key-check.decorator';
@@ -332,6 +332,14 @@ export class TransferServiceController implements GenericServiceController {
 
   @NoCache()
   @AllowAnon()
+  @ApiTags('Stakey Deposit')
+  @ApiHeader({
+    name: 'b2crypto-key',
+    description: 'The apiKey',
+  })
+  @ApiQuery({
+    name: 'identifier',
+  })
   @Get('deposit/link')
   // @CheckPoliciesAbility(new PolicyHandlerTransferCreate())
   async createOneDepositPaymentPage(
