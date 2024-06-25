@@ -32,7 +32,7 @@ import {
   Payload,
   RmqContext,
 } from '@nestjs/microservices';
-import { ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiHeader, ApiResponse, ApiTags } from '@nestjs/swagger';
 import ResponseB2Crypto from '@response-b2crypto/response-b2crypto/models/ResponseB2Crypto';
 import { UserRegisterDto } from '@user/user/dto/user.register.dto';
 import EventsNamesActivityEnum from 'apps/activity-service/src/enum/events.names.activity.enum';
@@ -67,6 +67,11 @@ export class AuthServiceController {
   }
 
   @ApiKeyCheck()
+  @ApiTags('Stakey Security')
+  @ApiHeader({
+    name: 'b2crypto-key',
+    description: 'The apiKey',
+  })
   @Post('restore-password')
   async restorePassword(@Body() restorePasswordDto: RestorePasswordDto) {
     const users = await this.builder.getPromiseUserEventClient(
@@ -119,6 +124,11 @@ export class AuthServiceController {
   }
 
   @ApiKeyCheck()
+  @ApiTags('Stakey Security')
+  @ApiHeader({
+    name: 'b2crypto-key',
+    description: 'The apiKey',
+  })
   @Get('otp/:email')
   async getOtp(@Param('email') email: string) {
     await this.generateOtp({ email } as any);
@@ -130,6 +140,11 @@ export class AuthServiceController {
   }
 
   @ApiKeyCheck()
+  @ApiTags('Stakey Security')
+  @ApiHeader({
+    name: 'b2crypto-key',
+    description: 'The apiKey',
+  })
   @Get('otp/:email/:otp')
   async validateOtp(@Param('email') email: string, @Param('otp') otp: string) {
     const otpSended = await this.getOtpGenerated(email);
@@ -158,6 +173,21 @@ export class AuthServiceController {
   }
 
   @AllowAnon()
+  @ApiKeyCheck()
+  @ApiTags('Stakey Security')
+  @ApiHeader({
+    name: 'b2crypto-key',
+    description: 'The apiKey',
+  })
+  /* @ApiResponse({
+    status: 201,
+    description: 'was searched successfully',
+    type: LeadResponseDto,
+  })
+  @ApiResponse(ResponseB2Crypto.getResponseSwagger(401, ActionsEnum.LOGIN))
+  @ApiResponse(ResponseB2Crypto.getResponseSwagger(403, ActionsEnum.LOGIN))
+  @ApiResponse(ResponseB2Crypto.getResponseSwagger(404, ActionsEnum.LOGIN))
+  @ApiResponse(ResponseB2Crypto.getResponseSwagger(500, ActionsEnum.LOGIN)) */
   @Post('registry')
   async registryUser(@Body() userDto: UserRegisterDto) {
     return this.builder.getPromiseUserEventClient(
@@ -169,6 +199,11 @@ export class AuthServiceController {
   @IsRefresh()
   @ApiKeyCheck()
   @Post('refresh-token')
+  @ApiTags('Stakey Security')
+  @ApiHeader({
+    name: 'b2crypto-key',
+    description: 'The apiKey',
+  })
   @ApiResponse(ResponseB2Crypto.getResponseSwagger(200))
   @ApiResponse(ResponseB2Crypto.getResponseSwagger(400))
   @ApiResponse(ResponseB2Crypto.getResponseSwagger(403))
@@ -187,6 +222,11 @@ export class AuthServiceController {
   @ApiKeyCheck()
   @Post('sign-in')
   @UseGuards(LocalAuthGuard)
+  @ApiTags('Stakey Security')
+  @ApiHeader({
+    name: 'b2crypto-key',
+    description: 'The apiKey',
+  })
   @ApiResponse(ResponseB2Crypto.getResponseSwagger(200))
   @ApiResponse(ResponseB2Crypto.getResponseSwagger(400))
   @ApiResponse(ResponseB2Crypto.getResponseSwagger(403))

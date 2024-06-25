@@ -78,11 +78,6 @@ export class LeadServiceController implements GenericServiceController {
   @AllowAnon()
   @ApiTags('Affiliate Lead')
   @ApiTags('Integration Lead')
-  @ApiResponse({
-    status: 200,
-    description: 'was created successfully',
-    type: LeadResponseDto,
-  })
   @ApiResponse(ResponseB2Crypto.getResponseSwagger(400, ActionsEnum.CREATE))
   @ApiResponse(ResponseB2Crypto.getResponseSwagger(403, ActionsEnum.CREATE))
   @ApiResponse(ResponseB2Crypto.getResponseSwagger(404, ActionsEnum.CREATE))

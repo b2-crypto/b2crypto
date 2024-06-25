@@ -1,10 +1,13 @@
+import { CardDepositCreateDto } from '@account/account/dto/card-deposit.create.dto';
 import { CardCreateDto } from '@account/account/dto/card.create.dto';
 import { Card } from '@account/account/entities/mongoose/card.schema';
 import { UserCard } from '@account/account/entities/mongoose/user-card.schema';
+import TypesAccountEnum from '@account/account/enum/types.account.enum';
 import { BuildersService } from '@builder/builders';
 import { CommonService } from '@common/common';
 import ResourcesEnum from '@common/common/enums/ResourceEnum';
 import TagEnum from '@common/common/enums/TagEnum';
+import { QuerySearchAnyDto } from '@common/common/models/query_search-any.dto';
 import { IntegrationService } from '@integration/integration';
 import IntegrationCardEnum from '@integration/integration/card/enums/IntegrationCardEnum';
 import { UserCardDto } from '@integration/integration/card/generic/dto/user.card.dto';
@@ -21,7 +24,7 @@ import {
   Query,
   Req,
 } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiHeader, ApiTags } from '@nestjs/swagger';
 import { User } from '@user/user/entities/mongoose/user.schema';
 import { CategoryServiceService } from 'apps/category-service/src/category-service.service';
 import { GroupServiceService } from 'apps/group-service/src/group-service.service';
@@ -29,10 +32,6 @@ import { StatusServiceService } from 'apps/status-service/src/status-service.ser
 import { UserServiceService } from 'apps/user-service/src/user-service.service';
 import { AccountServiceController } from './account-service.controller';
 import { AccountServiceService } from './account-service.service';
-import { RechargeCreateDto } from '@account/account/dto/recharge.create.dto';
-import { AccountUpdateDto } from '@account/account/dto/account.update.dto';
-import { QuerySearchAnyDto } from '@common/common/models/query_search-any.dto';
-import TypesAccountEnum from '@account/account/enum/types.account.enum';
 
 @ApiTags('CARD')
 @Controller('cards')
@@ -55,6 +54,11 @@ export class CardServiceController extends AccountServiceController {
   }
 
   @Get('all')
+  @ApiTags('Stakey Card')
+  @ApiHeader({
+    name: 'b2crypto-key',
+    description: 'The apiKey',
+  })
   findAll(@Query() query: QuerySearchAnyDto, req?: any) {
     query = query ?? {};
     query.where = query.where ?? {};
@@ -63,6 +67,11 @@ export class CardServiceController extends AccountServiceController {
   }
 
   @Post('create')
+  @ApiTags('Stakey Card')
+  @ApiHeader({
+    name: 'b2crypto-key',
+    description: 'The apiKey',
+  })
   async createOne(@Body() createDto: CardCreateDto, @Req() req?: any) {
     const user: User = (
       await this.userService.getAll({
@@ -274,7 +283,7 @@ export class CardServiceController extends AccountServiceController {
   }
 
   @Post('recharge')
-  async rechargeOne(@Body() createDto: RechargeCreateDto, @Req() req?: any) {
+  async rechargeOne(@Body() createDto: CardDepositCreateDto, @Req() req?: any) {
     const user: User = (
       await this.userService.getAll({
         relations: ['personalData'],

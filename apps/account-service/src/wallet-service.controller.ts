@@ -1,6 +1,9 @@
+import { WalletDepositCreateDto } from '@account/account/dto/wallet-deposit.create.dto';
 import { WalletCreateDto } from '@account/account/dto/wallet.create.dto';
+import TypesAccountEnum from '@account/account/enum/types.account.enum';
 import { BuildersService } from '@builder/builders';
 import { CommonService } from '@common/common';
+import { QuerySearchAnyDto } from '@common/common/models/query_search-any.dto';
 import {
   BadRequestException,
   Body,
@@ -18,10 +21,6 @@ import { User } from '@user/user/entities/mongoose/user.schema';
 import { UserServiceService } from 'apps/user-service/src/user-service.service';
 import { AccountServiceController } from './account-service.controller';
 import { AccountServiceService } from './account-service.service';
-import { RechargeCreateDto } from '@account/account/dto/recharge.create.dto';
-import { AccountUpdateDto } from '@account/account/dto/account.update.dto';
-import TypesAccountEnum from '@account/account/enum/types.account.enum';
-import { QuerySearchAnyDto } from '@common/common/models/query_search-any.dto';
 
 @ApiTags('E-WALLET')
 @Controller('wallets')
@@ -67,7 +66,10 @@ export class WalletServiceController extends AccountServiceController {
   }
 
   @Post('recharge')
-  async rechargeOne(@Body() createDto: RechargeCreateDto, @Req() req?: any) {
+  async rechargeOne(
+    @Body() createDto: WalletDepositCreateDto,
+    @Req() req?: any,
+  ) {
     const user: User = (
       await this.userService.getAll({
         relations: ['personalData'],

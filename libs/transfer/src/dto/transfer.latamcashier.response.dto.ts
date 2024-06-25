@@ -16,6 +16,8 @@ class PayloadLatamCashierResponse {
   @IsString()
   @IsOptional()
   type: string;
+
+  data: any;
 }
 
 export class PspResponse {

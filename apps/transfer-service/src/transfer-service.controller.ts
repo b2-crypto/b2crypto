@@ -21,7 +21,7 @@ import {
   Res,
   UseGuards,
 } from '@nestjs/common';
-import { ApiHeader, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiHeader, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 
 import { AllowAnon } from '@auth/auth/decorators/allow-anon.decorator';
 import { ApiKeyCheck } from '@auth/auth/decorators/api-key-check.decorator';
@@ -70,6 +70,8 @@ import ResponseB2Crypto from '@response-b2crypto/response-b2crypto/models/Respon
 import { NoCache } from '@common/common/decorators/no-cache.decorator';
 import { TransferCreateButtonDto } from './dto/transfer.create.button.dto';
 import { AffiliateServiceService } from 'apps/affiliate-service/src/affiliate-service.service';
+import { BoldTransferRequestDto } from './dto/bold.transfer.request.dto';
+import { BoldStatusEnum } from './enum/bold.status.enum';
 
 @ApiTags('TRANSFERS')
 @Controller('transfers')
@@ -82,6 +84,69 @@ export class TransferServiceController implements GenericServiceController {
     private readonly builder: BuildersService,
   ) {}
 
+  @AllowAnon()
+  @Post('bold/webhook')
+  // @CheckPoliciesAbility(new PolicyHandlerTransferRead())
+  async boldWebhook(@Body() transferBold: BoldTransferRequestDto) {
+    if (
+      !transferBold.link_id ||
+      !transferBold.payment_status ||
+      !transferBold.reference_id
+    ) {
+      throw new BadRequestException();
+    }
+    const txs = await this.transferService.getAll({
+      where: {
+        _id: transferBold.reference_id,
+      },
+    });
+    const tx = txs.list[0];
+    if (
+      tx.statusPayment === BoldStatusEnum.APPROVED ||
+      tx.statusPayment === BoldStatusEnum.NO_TRANSACTION_FOUND ||
+      tx.statusPayment === BoldStatusEnum.REJECTED
+    ) {
+      Logger.debug(
+        JSON.stringify(transferBold),
+        'Transaction has finish before',
+      );
+      throw new BadRequestException('transfer has finish before');
+    }
+    tx.statusPayment = transferBold.payment_status;
+    tx.responsePayment = {
+      success: true,
+      message: transferBold.description,
+      payload: {
+        url: transferBold.link_id,
+        message: transferBold.payer_email ?? 'N/A',
+        type: transferBold.payment_status,
+        data: transferBold,
+      },
+    };
+    /* switch (tx.statusPayment) {
+      case BoldStatusEnum.APPROVED:
+        break;
+      case BoldStatusEnum.FAILED:
+        break;
+      case BoldStatusEnum.REJECTED:
+        break;
+      case BoldStatusEnum.PENDING:
+        break;
+      case BoldStatusEnum.PROCESSING:
+        break;
+      case BoldStatusEnum.NO_TRANSACTION_FOUND:
+        break;
+    } */
+    this.builder.emitTransferEventClient(EventsNamesTransferEnum.updateOne, {
+      id: tx._id,
+      statusPayment: tx.statusPayment,
+      responsePayment: tx.responsePayment,
+    });
+    return {
+      statusCode: 200,
+      message: 'Transaction updated',
+    };
+  }
   @Get('searchText')
   // @CheckPoliciesAbility(new PolicyHandlerTransferRead())
   async searchText(@Query() query: QuerySearchAnyDto, @Req() req?) {
@@ -267,6 +332,14 @@ export class TransferServiceController implements GenericServiceController {
 
   @NoCache()
   @AllowAnon()
+  @ApiTags('Stakey Deposit')
+  @ApiHeader({
+    name: 'b2crypto-key',
+    description: 'The apiKey',
+  })
+  @ApiQuery({
+    name: 'identifier',
+  })
   @Get('deposit/link')
   // @CheckPoliciesAbility(new PolicyHandlerTransferCreate())
   async createOneDepositPaymentPage(

@@ -10,7 +10,7 @@ import {
   Post,
   Query,
 } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiHeader, ApiTags } from '@nestjs/swagger';
 
 import { AllowAnon } from '@auth/auth/decorators/allow-anon.decorator';
 import { PolicyHandlerPersonCreate } from '@auth/auth/policy/person/policity.handler.person.create';
@@ -56,6 +56,11 @@ export class PersonServiceController implements GenericServiceController {
   }
 
   @Post()
+  @ApiTags('Stakey Profile')
+  @ApiHeader({
+    name: 'b2crypto-key',
+    description: 'The apiKey',
+  })
   // @CheckPoliciesAbility(new PolicyHandlerPersonCreate())
   async createOne(@Body() createPersonDto: PersonCreateDto) {
     createPersonDto.name = createPersonDto.firstName;
