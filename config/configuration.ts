@@ -57,9 +57,9 @@ export default registerAs('config', () => ({
   RABBIT_MQ_PASSWORD: process.env.RABBIT_MQ_PASSWORD ?? 'admin',
   TESTING: process.env.TESTING ?? true,
   TZ: process.env.TZ,
-  AWS_SES_FROM_DEFAULT: process.env.AWS_SES_FROM_DEFAULT,
   AWS_SES_HOST: process.env.AWS_SES_HOST,
   AWS_SES_PORT: process.env.AWS_SES_PORT,
-  AWS_SES_SMTP_USERNAME: process.env.AWS_SES_SMTP_USERNAME,
-  AWS_SES_SMTP_PASSWORD: process.env.AWS_SES_SMTP_PASSWORD,
+  AWS_SES_USERNAME: process.env.AWS_SES_USERNAME,
+  AWS_SES_PASSWORD: process.env.AWS_SES_PASSWORD,
+  AWS_SES_FROM_DEFAULT: process.env.AWS_SES_FROM_DEFAULT,
 }));
