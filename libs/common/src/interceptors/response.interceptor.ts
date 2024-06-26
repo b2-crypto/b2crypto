@@ -48,7 +48,11 @@ export class ResponseInterceptor implements NestInterceptor {
   private getStatusCode(data, res) {
     return (
       data?.statusCode ??
-      (data.access_token || data.id || isArray(data.list) || isArray(data)
+      (data.access_token ||
+      data.id ||
+      data._id ||
+      isArray(data.list) ||
+      isArray(data)
         ? 201
         : !!data.response
         ? data.response?.statusCode
