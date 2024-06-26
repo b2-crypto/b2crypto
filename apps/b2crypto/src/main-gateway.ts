@@ -15,6 +15,8 @@ import { AppHttpModule } from './app.http.module';
 import { OpenAPIObject } from '@nestjs/swagger';
 import { PathsObject } from '@nestjs/swagger/dist/interfaces/open-api-spec.interface';
 import { TransferServiceModule } from 'apps/transfer-service/src/transfer-service.module';
+import { PersonServiceModule } from 'apps/person-service/src/person-service.module';
+import { AccountServiceModule } from 'apps/account-service/src/account-service.module';
 
 async function bootstrap(port?: number | string) {
   Logger.log(process.env.TZ, 'Timezone Gateway');
@@ -37,6 +39,7 @@ async function bootstrap(port?: number | string) {
   addSwaggerGlobal(app);
   addSwaggerLead(app);
   addSwaggerIntegration(app);
+  addSwaggerStakeyCard(app);
 
   app.enableCors({
     origin: '*',
@@ -52,6 +55,38 @@ async function bootstrap(port?: number | string) {
   if (typeof process.send === 'function') {
     process.send('ready');
   }
+}
+
+function addSwaggerStakeyCard(app: INestApplication) {
+  const config = new DocumentBuilder()
+    .setTitle('B2crypto Api Stakey Card')
+    .setDescription('The b2crypto api stakey card endpoints')
+    .setVersion('1.0')
+    .addTag('Stakey Security')
+    .addTag('Stakey Profile')
+    .addTag('Stakey Deposit')
+    .addTag('Stakey Card')
+    /* .addApiKey(
+      {
+        type: 'apiKey',
+        description: 'ApiKey to endpoints',
+      },
+      'b2crypto-key',
+    ) */
+    .build();
+  const stakeyCardDocument = SwaggerModule.createDocument(app, config, {
+    include: [
+      UserServiceModule,
+      PersonServiceModule,
+      TransferServiceModule,
+      AccountServiceModule,
+    ],
+  });
+
+  stakeyCardDocument.paths = filterDocumentsPathsByTags(stakeyCardDocument);
+  SwaggerModule.setup('api/stakey-card', app, stakeyCardDocument, {
+    swaggerOptions: { defaultModelsExpandDepth: -1 },
+  });
 }
 
 function addSwaggerLead(app: INestApplication) {

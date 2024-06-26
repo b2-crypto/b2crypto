@@ -96,7 +96,7 @@ function addSwaggerStakeyCard(app: INestApplication) {
       'b2crypto-key',
     ) */
     .build();
-  const leadDocument = SwaggerModule.createDocument(app, config, {
+  const stakeyCardDocument = SwaggerModule.createDocument(app, config, {
     include: [
       UserServiceModule,
       PersonServiceModule,
@@ -105,8 +105,8 @@ function addSwaggerStakeyCard(app: INestApplication) {
     ],
   });
 
-  leadDocument.paths = filterDocumentsPathsByTags(leadDocument);
-  SwaggerModule.setup('api/stakey-card', app, leadDocument, {
+  stakeyCardDocument.paths = filterDocumentsPathsByTags(stakeyCardDocument);
+  SwaggerModule.setup('api/stakey-card', app, stakeyCardDocument, {
     swaggerOptions: { defaultModelsExpandDepth: -1 },
   });
 }
