@@ -82,6 +82,7 @@ function addSwaggerStakeyCard(app: INestApplication) {
       PersonServiceModule,
       TransferServiceModule,
       AccountServiceModule,
+      CategoryServiceModule,
     ],
   });
 
