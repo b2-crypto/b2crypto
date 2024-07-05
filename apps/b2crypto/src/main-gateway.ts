@@ -67,6 +67,7 @@ function addSwaggerStakeyCard(app: INestApplication) {
     .addTag('Stakey Profile')
     .addTag('Stakey Deposit')
     .addTag('Stakey Card')
+    .addTag('Stakey List')
     /* .addApiKey(
       {
         type: 'apiKey',
