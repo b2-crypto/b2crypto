@@ -7,6 +7,7 @@ import { ConfigService } from '@nestjs/config';
 
 export async function bootstrapMicroservice(module, env: EnvironmentEnum) {
   const app = await NestFactory.create(module, {
+    logger: false,
     cors: true,
   });
 

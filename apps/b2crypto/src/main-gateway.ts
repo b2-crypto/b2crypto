@@ -22,6 +22,7 @@ async function bootstrap(port?: number | string) {
   Logger.log(process.env.TZ, 'Timezone Gateway');
   port = port ?? process.env.PORT ?? 3000;
   const app = await NestFactory.create(AppHttpModule, {
+    logger: false,
     cors: true,
   });
 

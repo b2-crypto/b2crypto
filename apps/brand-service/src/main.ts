@@ -2,7 +2,9 @@ import { BrandServiceModule } from './brand-service.module';
 import { NestFactory } from '@nestjs/core';
 
 async function bootstrap() {
-  const app = await NestFactory.create(BrandServiceModule);
+  const app = await NestFactory.create(BrandServiceModule, {
+    logger: false,
+  });
   app.enableCors();
   await app.listen(process.env.PORT ?? 3000);
   if (typeof process.send === 'function') {

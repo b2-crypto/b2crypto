@@ -2,7 +2,9 @@ import { PspServiceModule } from './psp-service.module';
 import { NestFactory } from '@nestjs/core';
 
 async function bootstrap() {
-  const app = await NestFactory.create(PspServiceModule);
+  const app = await NestFactory.create(PspServiceModule, {
+    logger: false,
+  });
   app.enableCors();
   await app.listen(process.env.PORT ?? 3000);
   if (typeof process.send === 'function') {

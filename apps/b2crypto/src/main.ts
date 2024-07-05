@@ -26,6 +26,7 @@ import { AccountServiceModule } from 'apps/account-service/src/account-service.m
 async function bootstrap() {
   Logger.log(process.env.TZ, 'Timezone');
   const app = await NestFactory.create(AppHttpModule, {
+    logger: false,
     cors: true,
   });
   const configService = app.get(ConfigService);
@@ -81,13 +82,14 @@ async function bootstrap() {
 
 function addSwaggerStakeyCard(app: INestApplication) {
   const config = new DocumentBuilder()
-    .setTitle('B2crypto Api Stakey Card')
+    .setTitle('B2Crypto Api Stakey Card')
     .setDescription('The b2crypto api stakey card endpoints')
     .setVersion('1.0')
     .addTag('Stakey Security')
     .addTag('Stakey Profile')
     .addTag('Stakey Deposit')
     .addTag('Stakey Card')
+    .addTag('Stakey list')
     /* .addApiKey(
       {
         type: 'apiKey',
@@ -102,6 +104,7 @@ function addSwaggerStakeyCard(app: INestApplication) {
       PersonServiceModule,
       TransferServiceModule,
       AccountServiceModule,
+      CategoryServiceModule,
     ],
   });
 
