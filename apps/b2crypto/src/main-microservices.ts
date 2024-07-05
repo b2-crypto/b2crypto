@@ -9,6 +9,7 @@ import { QueueAdminModule } from '@common/common/queue-admin-providers/queue.adm
 async function bootstrap() {
   Logger.log(process.env.TZ, 'Timezone Microservice');
   const app = await NestFactory.create(AppHttpModule, {
+    logger: false,
     cors: true,
   });
   const configService = app.get(ConfigService);

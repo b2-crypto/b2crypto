@@ -6,7 +6,9 @@ import { NestFactory } from '@nestjs/core';
 let server: Handler;
 
 async function bootstrap(): Promise<Handler> {
-  const app = await NestFactory.create(LeadServiceModule);
+  const app = await NestFactory.create(LeadServiceModule, {
+    logger: false,
+  });
   app.enableCors();
   await app.init();
   const expressApp = app.getHttpAdapter().getInstance();

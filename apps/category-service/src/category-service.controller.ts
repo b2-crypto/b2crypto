@@ -133,6 +133,7 @@ export class CategoryServiceController implements GenericServiceController {
   @Get('/country')
   @ApiTags('Affiliate Category')
   @ApiTags('Integration Category')
+  @ApiTags('Stakey list')
   @ApiKeyCheck()
   @UseGuards(ApiKeyAffiliateAuthGuard)
   @ApiHeader({

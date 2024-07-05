@@ -2,7 +2,9 @@ import { AffiliateServiceModule } from './affiliate-service.module';
 import { NestFactory } from '@nestjs/core';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AffiliateServiceModule);
+  const app = await NestFactory.create(AffiliateServiceModule, {
+    logger: false,
+  });
   app.enableCors();
   await app.listen(process.env.PORT ?? 3000);
   if (typeof process.send === 'function') {
