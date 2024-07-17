@@ -356,6 +356,16 @@ export class BuildersService {
       data,
     );
   }
+  emitAccountEventClient<TResponse = any>(
+    eventName: EventsNamesAccountEnum,
+    data: any,
+  ): void {
+    this.emitEventClient<TResponse>(
+      this.getAccountEventClient(),
+      eventName,
+      data,
+    );
+  }
   emitPspEventClient<TResponse = any>(
     eventName: EventsNamesPspEnum,
     data: any,
