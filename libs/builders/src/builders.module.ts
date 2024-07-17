@@ -23,6 +23,11 @@ import { QueueAdminModule } from '@common/common/queue-admin-providers/queue.adm
       inject: [ConfigService],
     },
     {
+      provide: EventClientEnum.ACCOUNT,
+      useFactory: QueueAdminModule.factoryEventClient(EventClientEnum.ACCOUNT),
+      inject: [ConfigService],
+    },
+    {
       provide: EventClientEnum.GROUP,
       useFactory: QueueAdminModule.factoryEventClient(EventClientEnum.GROUP),
       inject: [ConfigService],
