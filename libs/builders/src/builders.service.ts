@@ -1,6 +1,7 @@
 import EventClientEnum from '@common/common/enums/EventsNameEnum';
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
+import EventsNamesAccountEnum from 'apps/account-service/src/enum/events.names.account.enum';
 import EventsNamesActivityEnum from 'apps/activity-service/src/enum/events.names.activity.enum';
 import EventsNamesAffiliateEnum from 'apps/affiliate-service/src/enum/events.names.affiliate.enum';
 import EventsNamesBrandEnum from 'apps/brand-service/src/enum/events.names.brand.enum';
@@ -27,6 +28,8 @@ export class BuildersService {
   constructor(
     @Inject(EventClientEnum.SERVICE_NAME)
     private eventClient: ClientProxy,
+    @Inject(EventClientEnum.ACCOUNT)
+    private accountClient: ClientProxy,
     @Inject(EventClientEnum.ACTIVITY)
     private activityClient: ClientProxy,
     @Inject(EventClientEnum.BRAND)
@@ -77,6 +80,10 @@ export class BuildersService {
 
   getPspEventClient(): ClientProxy {
     return this.pspClient;
+  }
+
+  getAccountEventClient(): ClientProxy {
+    return this.accountClient;
   }
 
   getCategoryEventClient(): ClientProxy {
@@ -164,6 +171,16 @@ export class BuildersService {
   ): Promise<TResponse> {
     return this.getPromiseFromObserver(
       this.getActivityEventClient(),
+      eventName,
+      data,
+    );
+  }
+  async getPromiseAccountEventClient<TResponse = any>(
+    eventName: EventsNamesAccountEnum,
+    data: any,
+  ): Promise<TResponse> {
+    return this.getPromiseFromObserver(
+      this.getAccountEventClient(),
       eventName,
       data,
     );
@@ -335,6 +352,16 @@ export class BuildersService {
   ): void {
     this.emitEventClient<TResponse>(
       this.getTransferEventClient(),
+      eventName,
+      data,
+    );
+  }
+  emitAccountEventClient<TResponse = any>(
+    eventName: EventsNamesAccountEnum,
+    data: any,
+  ): void {
+    this.emitEventClient<TResponse>(
+      this.getAccountEventClient(),
       eventName,
       data,
     );

@@ -11,6 +11,7 @@ enum EventClientEnum {
   LEAD = 'LEAD',
   CARD = 'CARD',
   ACTIVITY = 'ACTIVITY',
+  ACCOUNT = 'ACCOUNT',
   TRANSFER = 'TRANSFER',
   USER = 'USER',
   ROLE = 'ROLE',
