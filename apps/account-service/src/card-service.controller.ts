@@ -345,13 +345,17 @@ export class CardServiceController extends AccountServiceController {
 
   @EventPattern(EventsNamesAccountEnum.updateAmount)
   async updateAmount(@Ctx() ctx: RmqContext, @Payload() data: CardDepositCreateDto) {
-    const card = await this.cardService.findAll({
+    const cardList = await this.cardService.findAll({
       where: {
         cardConfig: {
           id: data.id,
         }
       },
     });
+    const card = cardList.list[0];
+    if(!card) {
+      throw new BadRequestException('Card not found');
+    }
     await this.cardService.customUpdateOne({
       id: card._id,
       $inc: {
