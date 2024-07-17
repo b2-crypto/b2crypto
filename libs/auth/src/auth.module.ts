@@ -13,6 +13,11 @@ import { BuildersModule } from '@builder/builders';
 import { ApiKeyAffiliateStrategy } from './strategies/api.key.affiliate.strategy';
 import { CaslAbilityFactory } from './casl-ability.factory';
 import { PermissionModule } from '@permission/permission';
+import { IntegrationModule } from '@integration/integration';
+import { Constants } from 'apps/integration-service/src/utils/pomelo.integration.process.constants';
+import { SignatureUtils } from 'apps/integration-service/src/utils/pomelo.integration.process.signature';
+import { HttpUtils } from 'apps/integration-service/src/utils/pomelo.integration.process.http.utils';
+import { SignatureGuard } from './guards/pomelo.signature.guard';
 
 @Module({
   imports: [
@@ -28,6 +33,7 @@ import { PermissionModule } from '@permission/permission';
         expiresIn: jwtConstants.expiresIn,
       },
     }),
+    IntegrationModule,
   ],
   providers: [
     AuthService,
@@ -36,7 +42,10 @@ import { PermissionModule } from '@permission/permission';
     ApiKeyStrategy,
     LocalStrategy,
     JwtStrategy,
+    Constants,
+    SignatureUtils,
+    HttpUtils,
   ],
-  exports: [AuthService, CaslAbilityFactory],
+  exports: [AuthService, CaslAbilityFactory, SignatureGuard],
 })
 export class AuthModule {}
