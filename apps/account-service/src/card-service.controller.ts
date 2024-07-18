@@ -33,8 +33,15 @@ import { UserServiceService } from 'apps/user-service/src/user-service.service';
 import { AccountServiceController } from './account-service.controller';
 import { AccountServiceService } from './account-service.service';
 import EventsNamesAccountEnum from './enum/events.names.account.enum';
-import { Ctx, EventPattern, MessagePattern, Payload, RmqContext } from '@nestjs/microservices';
+import {
+  Ctx,
+  EventPattern,
+  MessagePattern,
+  Payload,
+  RmqContext,
+} from '@nestjs/microservices';
 import { TransferUpdateDto } from '@transfer/transfer/dto/transfer.update.dto';
+import CardTypesAccountEnum from '@account/account/enum/card.types.account.enum';
 
 @ApiTags('CARD')
 @Controller('cards')
@@ -76,6 +83,8 @@ export class CardServiceController extends AccountServiceController {
     description: 'The apiKey',
   })
   async createOne(@Body() createDto: CardCreateDto, @Req() req?: any) {
+    createDto.accountType =
+      createDto.accountType ?? CardTypesAccountEnum.VIRTUAL;
     const user: User = (
       await this.userService.getAll({
         relations: ['personalData'],
@@ -344,16 +353,19 @@ export class CardServiceController extends AccountServiceController {
   }
 
   @EventPattern(EventsNamesAccountEnum.updateAmount)
-  async updateAmount(@Ctx() ctx: RmqContext, @Payload() data: CardDepositCreateDto) {
+  async updateAmount(
+    @Ctx() ctx: RmqContext,
+    @Payload() data: CardDepositCreateDto,
+  ) {
     const cardList = await this.cardService.findAll({
       where: {
         cardConfig: {
           id: data.id,
-        }
+        },
       },
     });
     const card = cardList.list[0];
-    if(!card) {
+    if (!card) {
       throw new BadRequestException('Card not found');
     }
     await this.cardService.customUpdateOne({
@@ -365,16 +377,19 @@ export class CardServiceController extends AccountServiceController {
   }
 
   @MessagePattern(EventsNamesAccountEnum.athorizationTx)
-  async authorizationTx(@Ctx() ctx: RmqContext, @Payload() data: TransferUpdateDto) {
+  async authorizationTx(
+    @Ctx() ctx: RmqContext,
+    @Payload() data: TransferUpdateDto,
+  ) {
     const cardList = await this.cardService.findAll({
       where: {
         cardConfig: {
           id: data.id,
-        }
+        },
       },
     });
     const card = cardList.list[0];
-    if(!card) {
+    if (!card) {
       throw new BadRequestException('Card not found');
     }
     if (data.amount > card.amount) {
@@ -388,4 +403,3 @@ export class CardServiceController extends AccountServiceController {
     });
   }
 }
-

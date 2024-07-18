@@ -25,12 +25,16 @@ import CountryCodeEnum from '@common/common/enums/country.code.b2crypto.enum';
 
 export class PersonCreateDto extends CreateAnyDto {
   @ApiProperty({
+    required: true,
     description: 'Person number of document id',
   })
   @IsString()
   numDocId: string;
 
   @ApiProperty({
+    required: true,
+    enum: DocIdTypeEnum,
+    enumName: 'DocIdType',
     description: 'Person number of document id',
   })
   @IsString()
@@ -38,6 +42,7 @@ export class PersonCreateDto extends CreateAnyDto {
   typeDocId: DocIdTypeEnum;
 
   @ApiProperty({
+    required: true,
     description: 'Person name',
   })
   @IsString()
@@ -47,6 +52,7 @@ export class PersonCreateDto extends CreateAnyDto {
   name: string;
 
   @ApiProperty({
+    required: false,
     description: 'Person description',
   })
   @IsString()
@@ -79,6 +85,7 @@ export class PersonCreateDto extends CreateAnyDto {
   birth: Date;
 
   @ApiProperty({
+    required: false,
     description: 'Emails arrayList',
     isArray: true,
   })
@@ -89,6 +96,8 @@ export class PersonCreateDto extends CreateAnyDto {
   emails: string[];
 
   @ApiProperty({
+    required: false,
+    type: String,
     description: 'One email to emails',
   })
   @IsString()
@@ -98,6 +107,7 @@ export class PersonCreateDto extends CreateAnyDto {
   email: string;
 
   @ApiProperty({
+    required: false,
     description: 'Person telephones arrayList',
     isArray: true,
   })
@@ -108,6 +118,7 @@ export class PersonCreateDto extends CreateAnyDto {
   telephones: TelephoneDto[];
 
   @ApiProperty({
+    required: false,
     description: 'PhoneNumber to telephones',
   })
   @IsString()
@@ -115,15 +126,19 @@ export class PersonCreateDto extends CreateAnyDto {
   phoneNumber: string;
 
   @ApiProperty({
+    required: false,
+    type: LocationDto,
     description: 'Person location',
   })
-  @IsObject()
   @ValidateNested()
   @Type(() => LocationDto)
   location: LocationDto;
 
   @ApiProperty({
-    description: 'The country to location',
+    required: true,
+    enum: CountryCodeEnum,
+    enumName: 'CountryCode',
+    description: 'The country person lives in',
   })
   @IsEnum(CountryCodeEnum)
   country: CountryCodeEnum;
@@ -133,6 +148,7 @@ export class PersonCreateDto extends CreateAnyDto {
   //kyc :KyCModel,
 
   @ApiProperty({
+    required: true,
     description: 'User ID',
   })
   @IsMongoId()

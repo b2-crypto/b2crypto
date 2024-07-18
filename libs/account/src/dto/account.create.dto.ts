@@ -27,6 +27,8 @@ export class AccountCreateDto extends CreateAnyDto implements AccountInterface {
   id: ObjectId;
   slug: string;
   @ApiProperty({
+    required: true,
+    type: String,
     description: 'account name',
   })
   @IsString()
@@ -34,8 +36,11 @@ export class AccountCreateDto extends CreateAnyDto implements AccountInterface {
   name: string;
 
   @IsEnum(TypesAccountEnum)
+  @IsNotEmpty()
   @ApiProperty({
-    type: String,
+    required: true,
+    enum: TypesAccountEnum,
+    enumName: 'TypesAccount',
     description: 'Type account (Bank, E-Wallet, Card)',
   })
   type: TypesAccountEnum;
@@ -43,18 +48,21 @@ export class AccountCreateDto extends CreateAnyDto implements AccountInterface {
   @IsString()
   @IsNotEmpty()
   @ApiProperty({
+    required: true,
     type: String,
     description: 'Type of type account',
   })
   accountType: string;
 
   @ApiProperty({
+    required: false,
     type: String,
     description: 'Param firstName',
   })
   firstName?: string;
 
   @ApiProperty({
+    required: false,
     type: String,
     description: 'Param lastName',
   })
@@ -64,6 +72,7 @@ export class AccountCreateDto extends CreateAnyDto implements AccountInterface {
   searchText: string;
 
   @ApiProperty({
+    required: false,
     description: 'Account DocId',
   })
   @IsOptional()
@@ -74,6 +83,10 @@ export class AccountCreateDto extends CreateAnyDto implements AccountInterface {
   secret: string;
 
   @IsNumber({ maxDecimalPlaces: 0, allowNaN: false, allowInfinity: false })
+  @ApiProperty({
+    required: false,
+    description: 'Account pin',
+  })
   pin: number;
 
   @ApiProperty({
@@ -104,6 +117,7 @@ export class AccountCreateDto extends CreateAnyDto implements AccountInterface {
   description: string;
 
   @ApiProperty({
+    required: false,
     description: 'ID Account',
   })
   @IsString()
@@ -111,6 +125,7 @@ export class AccountCreateDto extends CreateAnyDto implements AccountInterface {
   accountId?: string;
 
   @ApiProperty({
+    required: false,
     description: 'AccountName',
   })
   @IsString()
@@ -122,6 +137,7 @@ export class AccountCreateDto extends CreateAnyDto implements AccountInterface {
   hasSendDisclaimer = false;
 
   @ApiProperty({
+    required: false,
     description: 'Account password',
   })
   @IsString()
