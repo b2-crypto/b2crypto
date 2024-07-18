@@ -10,7 +10,7 @@ import {
 import { PomeloCache } from '@integration/integration/util/pomelo.integration.process.cache';
 
 @Injectable()
-export class PomeloIntegrationService {
+export class PomeloIntegrationProcessService {
   constructor(
     private readonly chache: PomeloCache,
     private readonly currencyConversion: FiatIntegrationClient,

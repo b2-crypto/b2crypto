@@ -1,3 +1,11 @@
+import { SignatureGuard } from '@auth/auth/guards/pomelo.signature.guard';
+import { SignatureInterceptor } from '@common/common/interceptors/pomelo.signature.interceptor';
+import {
+  AdjustmentDto,
+  AuthorizationDto,
+  NotificationDto,
+} from '@integration/integration/dto/pomelo.process.body.dto';
+import { PomeloEnum } from '@integration/integration/enum/pomelo.enum';
 import {
   Body,
   Controller,
@@ -7,20 +15,12 @@ import {
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
-import { PomeloEnum } from './enum/pomelo.enum';
-import { SignatureGuard } from '@auth/auth/guards/pomelo.signature.guard';
-import { SignatureInterceptor } from '@common/common/interceptors/pomelo.signature.interceptor';
-import {
-  AdjustmentDto,
-  AuthorizationDto,
-  NotificationDto,
-} from './dto/pomelo.process.body.dto';
-import { PomeloIntegrationService } from './services/pomelo.integration.process.service';
+import { PomeloIntegrationProcessService } from './services/pomelo.integration.process.service';
 
 @Controller()
 export class PomeloIntegrationServiceController {
   constructor(
-    private readonly integrationServiceService: PomeloIntegrationService,
+    private readonly integrationServiceService: PomeloIntegrationProcessService,
   ) {}
 
   @Post(PomeloEnum.POMELO_NOTIFICATION_PATH)

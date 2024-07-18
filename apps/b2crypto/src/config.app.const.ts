@@ -34,6 +34,7 @@ import configuration from 'config/configuration';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { B2CryptoCacheInterceptor } from '@common/common/interceptors/b-2-crypto-cache.interceptor';
+import { IntegrationServiceModule } from 'apps/integration-service/src/integration-service.module';
 
 export const configApp = {
   imports: [
@@ -75,6 +76,7 @@ export const configApp = {
     StatsServiceModule,
     QueueAdminModule,
     //SeedModule,
+    IntegrationServiceModule,
   ],
   controllers: [AppController],
   providers: [
