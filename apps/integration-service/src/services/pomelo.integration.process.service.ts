@@ -7,6 +7,7 @@ import {
 import { PomeloCache } from '../clients/pomelo.integration.process.cache';
 import { FiatIntegrationClient } from '../clients/pomelo.fiat.integration.client';
 import { BuildersService } from '@builder/builders';
+import EventsNamesAccountEnum from 'apps/account-service/src/enum/events.names.account.enum';
 
 @Injectable()
 export class PomeloIntegrationService {
@@ -22,20 +23,87 @@ export class PomeloIntegrationService {
     );
 
     if (type == this.TYPE_OF_OPERATION.AUTHORIZATION.toString()) {
+      return await this.processPurchase(process, amountInUSD);
     } else {
-      //Process adjustment
+      return await this.processAdjustmentMovement(
+        process,
+        amountInUSD,
+        'debit',
+      );
     }
   }
 
   private async processCredit(process: any, type: string) {
-    const amountInUSD = await this.currencyConversion.getCurrencyConversion(
-      process,
-    );
+    try {
+      const amountInUSD = await this.currencyConversion.getCurrencyConversion(
+        process,
+      );
+      await this.processAdjustmentMovement(process, amountInUSD, 'credit');
+      if (type == this.TYPE_OF_OPERATION.AUTHORIZATION.toString()) {
+        return {
+          statusCode: 200,
+          body: {
+            status: 'APPROVED',
+            message: `Transaction ${process.transaction.id} has been approved`,
+            status_detail: 'APPROVED',
+          },
+        };
+      } else {
+        return {
+          statusCode: 204,
+          body: {},
+        };
+      }
+    } catch (error) {}
+  }
 
-    if (type == this.TYPE_OF_OPERATION.AUTHORIZATION.toString()) {
-      //Process purchase.
-    } else {
-      //Process adjustment
+  private async processAdjustmentMovement(
+    process: any,
+    amountInUSD: number,
+    movement: string,
+  ) {
+    try {
+      await this.builder.getPromiseAccountEventClient(
+        EventsNamesAccountEnum.updateAmount,
+        {
+          id: process?.card?.id || '',
+          amount: amountInUSD,
+          movement: movement,
+        },
+      );
+      return {
+        statusCode: 204,
+        body: {},
+      };
+    } catch (error) {}
+  }
+
+  private async processPurchase(process: any, amountInUSD: number) {
+    try {
+      await this.builder.getPromiseAccountEventClient(
+        EventsNamesAccountEnum.athorizationTx,
+        {
+          id: process?.card?.id || '',
+          amount: amountInUSD,
+        },
+      );
+      return {
+        statusCode: 200,
+        body: {
+          status: 'APPROVED',
+          message: `Transaction ${process.transaction.id} has been approved`,
+          status_detail: 'APPROVED',
+        },
+      };
+    } catch (error) {
+      return {
+        statusCode: 200,
+        body: {
+          status: 'REJECTED',
+          message: `Transaction ${process.transaction.id} has been rejected: ${error}`,
+          status_detail: 'INSUFFICIENT_FUNDS',
+        },
+      };
     }
   }
 

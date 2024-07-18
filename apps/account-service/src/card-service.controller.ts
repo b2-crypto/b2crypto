@@ -33,8 +33,15 @@ import { UserServiceService } from 'apps/user-service/src/user-service.service';
 import { AccountServiceController } from './account-service.controller';
 import { AccountServiceService } from './account-service.service';
 import EventsNamesAccountEnum from './enum/events.names.account.enum';
-import { Ctx, EventPattern, MessagePattern, Payload, RmqContext } from '@nestjs/microservices';
+import {
+  Ctx,
+  EventPattern,
+  MessagePattern,
+  Payload,
+  RmqContext,
+} from '@nestjs/microservices';
 import { TransferUpdateDto } from '@transfer/transfer/dto/transfer.update.dto';
+import { ConfigService } from '@nestjs/config';
 
 @ApiTags('CARD')
 @Controller('cards')
@@ -52,9 +59,13 @@ export class CardServiceController extends AccountServiceController {
     @Inject(BuildersService)
     readonly cardBuilder: BuildersService,
     private readonly integration: IntegrationService,
+    private readonly configService: ConfigService,
   ) {
     super(cardService, cardBuilder);
   }
+
+  private readonly BLOCK_BALANCE_PERCENTAGE: number =
+    this.configService.get<number>('BLOCK_BALANCE_PERCENTAGE');
 
   @Get('all')
   @ApiTags('Stakey Card')
@@ -344,40 +355,51 @@ export class CardServiceController extends AccountServiceController {
   }
 
   @EventPattern(EventsNamesAccountEnum.updateAmount)
-  async updateAmount(@Ctx() ctx: RmqContext, @Payload() data: CardDepositCreateDto) {
+  async updateAmount(
+    @Ctx() ctx: RmqContext,
+    @Payload() data: CardDepositCreateDto,
+  ) {
     const cardList = await this.cardService.findAll({
       where: {
         cardConfig: {
           id: data.id,
-        }
+        },
       },
     });
     const card = cardList.list[0];
-    if(!card) {
+    if (!card) {
       throw new BadRequestException('Card not found');
     }
+    const amount =
+      data.movement == 'debit'
+        ? card.amount - data.amount
+        : card.amount + data.amount;
     await this.cardService.customUpdateOne({
       id: card._id,
       $inc: {
-        amount: data.amount,
+        amount: amount,
       },
     });
   }
 
   @MessagePattern(EventsNamesAccountEnum.athorizationTx)
-  async authorizationTx(@Ctx() ctx: RmqContext, @Payload() data: TransferUpdateDto) {
+  async authorizationTx(
+    @Ctx() ctx: RmqContext,
+    @Payload() data: TransferUpdateDto,
+  ) {
     const cardList = await this.cardService.findAll({
       where: {
         cardConfig: {
           id: data.id,
-        }
+        },
       },
     });
     const card = cardList.list[0];
-    if(!card) {
+    if (!card) {
       throw new BadRequestException('Card not found');
     }
-    if (data.amount > card.amount) {
+    const allowedBalance = card.amount * (1.0 - this.BLOCK_BALANCE_PERCENTAGE);
+    if (allowedBalance <= data.amount) {
       throw new BadRequestException('Not enough balance');
     }
     await this.cardService.customUpdateOne({
@@ -388,4 +410,3 @@ export class CardServiceController extends AccountServiceController {
     });
   }
 }
-

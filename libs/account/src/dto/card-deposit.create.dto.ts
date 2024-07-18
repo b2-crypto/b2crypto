@@ -18,4 +18,7 @@ export class CardDepositCreateDto extends CreateAnyDto {
     allowInfinity: false,
   })
   amount: number;
+
+  @IsString()
+  movement?: string;
 }
