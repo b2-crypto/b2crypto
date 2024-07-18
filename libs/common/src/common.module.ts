@@ -4,9 +4,11 @@ import { databaseProviders } from './database-providers/database-providers.servi
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import configuration from 'config/configuration';
 import { IntegrationModule } from '@integration/integration';
-import { SignatureUtils } from 'apps/integration-service/src/utils/pomelo.integration.process.signature';
-import { HttpUtils } from 'apps/integration-service/src/utils/pomelo.integration.process.http.utils';
 import { SignatureInterceptor } from './interceptors/pomelo.signature.interceptor';
+import { SignatureUtils } from './utils/pomelo.integration.process.signature';
+import { HttpUtils } from './utils/pomelo.integration.process.http.utils';
+import { PomeloCache } from '@integration/integration/util/pomelo.integration.process.cache';
+import { Constants } from './utils/pomelo.integration.process.constants';
 
 @Module({
   providers: [
@@ -15,6 +17,9 @@ import { SignatureInterceptor } from './interceptors/pomelo.signature.intercepto
     IntegrationModule,
     SignatureUtils,
     HttpUtils,
+    SignatureInterceptor,
+    PomeloCache,
+    Constants,
   ],
   exports: [CommonService, ...databaseProviders, SignatureInterceptor],
 })

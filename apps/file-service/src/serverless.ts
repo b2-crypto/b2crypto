@@ -7,7 +7,7 @@ let server: Handler;
 
 async function bootstrap(): Promise<Handler> {
   const app = await NestFactory.create(FileServiceModule, {
-    logger: false,
+    // logger: false,
   });
   app.enableCors();
   await app.init();

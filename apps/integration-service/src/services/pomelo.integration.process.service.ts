@@ -1,13 +1,13 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { FiatIntegrationClient } from '../clients/pomelo.fiat.integration.client';
+import { BuildersService } from '@builder/builders';
+import EventsNamesAccountEnum from 'apps/account-service/src/enum/events.names.account.enum';
 import {
   AdjustmentDto,
   AuthorizationDto,
   NotificationDto,
-} from '../dto/pomelo.process.body.dto';
-import { PomeloCache } from '../clients/pomelo.integration.process.cache';
-import { FiatIntegrationClient } from '../clients/pomelo.fiat.integration.client';
-import { BuildersService } from '@builder/builders';
-import EventsNamesAccountEnum from 'apps/account-service/src/enum/events.names.account.enum';
+} from '@integration/integration/dto/pomelo.process.body.dto';
+import { PomeloCache } from '@integration/integration/util/pomelo.integration.process.cache';
 
 @Injectable()
 export class PomeloIntegrationService {

@@ -26,7 +26,7 @@ import { AccountServiceModule } from 'apps/account-service/src/account-service.m
 async function bootstrap() {
   Logger.log(process.env.TZ, 'Timezone');
   const app = await NestFactory.create(AppHttpModule, {
-    logger: false,
+    // logger: false,
     cors: true,
   });
   const configService = app.get(ConfigService);

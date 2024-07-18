@@ -8,11 +8,11 @@ import {
 import { Reflector } from '@nestjs/core';
 import { PATH_METADATA } from '@nestjs/common/constants';
 import * as ipaddr from 'ipaddr.js';
-import { SignatureUtils } from 'apps/integration-service/src/utils/pomelo.integration.process.signature';
-import { Constants } from 'apps/integration-service/src/utils/pomelo.integration.process.constants';
-import { HttpUtils } from 'apps/integration-service/src/utils/pomelo.integration.process.http.utils';
-import { PomeloEnum } from 'apps/integration-service/src/enum/pomelo.enum';
-import { ProcessHeaderDto } from 'apps/integration-service/src/dto/pomelo.process.header.dto';
+import { SignatureUtils } from '@common/common/utils/pomelo.integration.process.signature';
+import { Constants } from '@common/common/utils/pomelo.integration.process.constants';
+import { HttpUtils } from '@common/common/utils/pomelo.integration.process.http.utils';
+import { PomeloEnum } from '@integration/integration/enum/pomelo.enum';
+import { ProcessHeaderDto } from '@integration/integration/dto/pomelo.process.header.dto';
 
 @Injectable()
 export class SignatureGuard implements CanActivate {

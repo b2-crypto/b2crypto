@@ -3,7 +3,7 @@ import { SecurityServiceModule } from './security-service.module';
 
 async function bootstrap() {
   const app = await NestFactory.create(SecurityServiceModule, {
-    logger: false,
+    // logger: false,
   });
   app.enableCors();
   await app.listen(process.env.PORT ?? 3000);

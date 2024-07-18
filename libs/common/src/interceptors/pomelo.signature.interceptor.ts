@@ -4,12 +4,12 @@ import {
   Injectable,
   NestInterceptor,
 } from '@nestjs/common';
-import { ProcessHeaderDto } from 'apps/integration-service/src/dto/pomelo.process.header.dto';
-import { PomeloEnum } from 'apps/integration-service/src/enum/pomelo.enum';
-import { HttpUtils } from 'apps/integration-service/src/utils/pomelo.integration.process.http.utils';
-import { SignatureUtils } from 'apps/integration-service/src/utils/pomelo.integration.process.signature';
 import { Observable } from 'rxjs';
 import { map, tap } from 'rxjs/operators';
+import { SignatureUtils } from '../utils/pomelo.integration.process.signature';
+import { HttpUtils } from '../utils/pomelo.integration.process.http.utils';
+import { ProcessHeaderDto } from '@integration/integration/dto/pomelo.process.header.dto';
+import { PomeloEnum } from '@integration/integration/enum/pomelo.enum';
 
 @Injectable()
 export class SignatureInterceptor implements NestInterceptor {
