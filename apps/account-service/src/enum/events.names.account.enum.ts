@@ -13,6 +13,7 @@ enum EventsNamesAccountEnum {
   createOne = 'CARD.CREATE.ONE',
   updateMany = 'CARD.UPDATE.MANY',
   updateOne = 'CARD.UPDATE.ONE',
+  updateAmount = 'CARD.UPDATE.AMOUNT',
   updateOneByTpId = 'CARD.UPDATE.ONE.BY.TP.ID',
   findAll = 'FILE.CARD.ALL',
   findOneById = 'CARD.FIND.ONE.BY.ID',
@@ -29,6 +30,8 @@ enum EventsNamesAccountEnum {
   checkCardsStatusInCrm = 'CARD.CHECK.STATUS.IN.CRM',
   //
   checkStatsDateAll = 'CARD.CHECK.STATS.DATE.ALL',
+
+  athorizationTx = 'CARD.AUTHORIZATION.TX',
 }
 
 export default EventsNamesAccountEnum;
