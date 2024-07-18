@@ -19,6 +19,7 @@
     "build-crm": "nest build crm-service",
     "build-file": "nest build file-service",
     "build-group": "nest build group-service",
+    "build-integration": "nest build integration-service",
     "build-ip-address": "nest start build-address-service",
     "build-lead": "nest build lead-service",
     "build-message": "nest build message-service",
