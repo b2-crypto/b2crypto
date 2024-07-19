@@ -7,6 +7,11 @@ import { AccountCreateDto } from './account.create.dto';
 export class CardCreateDto extends AccountCreateDto {
   @IsString()
   @IsEmpty()
+  @ApiProperty({
+    type: String,
+    description: 'Account Card',
+    example: 'CARD',
+  })
   type = TypesAccountEnum.CARD;
 
   @IsEnum(CardTypesAccountEnum)
