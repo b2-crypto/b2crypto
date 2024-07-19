@@ -151,6 +151,7 @@ export class PersonCreateDto extends CreateAnyDto {
     required: true,
     description: 'User ID',
   })
+  @IsOptional()
   @IsMongoId()
   user: ObjectId;
 }

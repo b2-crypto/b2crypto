@@ -29,7 +29,7 @@ export class AccountCreateDto extends CreateAnyDto implements AccountInterface {
   @ApiProperty({
     required: true,
     type: String,
-    description: 'account name',
+    description: 'Account name by user',
   })
   @IsString()
   @IsNotEmpty()
@@ -126,7 +126,7 @@ export class AccountCreateDto extends CreateAnyDto implements AccountInterface {
 
   @ApiProperty({
     required: false,
-    description: 'AccountName',
+    description: 'Tecnical account name',
   })
   @IsString()
   @IsOptional()
@@ -148,6 +148,7 @@ export class AccountCreateDto extends CreateAnyDto implements AccountInterface {
   accountDepartment?: ObjectId;
 
   @ApiProperty({
+    required: false,
     description: 'Account referral',
   })
   @IsString()
@@ -166,6 +167,7 @@ export class AccountCreateDto extends CreateAnyDto implements AccountInterface {
   country: CountryCodeEnum;
 
   @ApiProperty({
+    required: false,
     example: 'GOOGLE',
     description: 'Account referral type',
   })
@@ -218,6 +220,7 @@ export class AccountCreateDto extends CreateAnyDto implements AccountInterface {
   affiliate: ObjectId;
 
   @ApiProperty({
+    required: false,
     type: String,
     description: 'Param userIp',
   })
@@ -226,6 +229,7 @@ export class AccountCreateDto extends CreateAnyDto implements AccountInterface {
   userIp?: string;
 
   @ApiProperty({
+    required: false,
     type: String,
     description: 'Param funnelName',
   })
