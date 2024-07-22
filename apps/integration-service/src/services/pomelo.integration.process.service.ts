@@ -115,6 +115,7 @@ export class PomeloIntegrationProcessService {
     let cachedResult = await this.chache.getResponse(idempotency);
     if (cachedResult == null) {
       cachedResult = await this.chache.setTooEarly(idempotency);
+
       // Save notification record.
 
       const response = await this.OPERATION[process.transaction.type](
@@ -160,7 +161,8 @@ export class PomeloIntegrationProcessService {
       cachedResult = await this.chache.setTooEarly(
         notification.idempotency_key,
       );
-      // Save notification record.
+
+      // Save notification record on activity
 
       cachedResult = await this.chache.setResponseReceived(
         notification.idempotency_key,

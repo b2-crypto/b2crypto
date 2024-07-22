@@ -1,3 +1,6 @@
+import { Type } from "class-transformer";
+import { IsNotEmpty, IsOptional, IsString, ValidateNested } from "class-validator";
+
 class Transaction {
   id: string;
   type: string;
@@ -71,15 +74,26 @@ class ExtraData {
 }
 
 class EventDetail {
+  // TODO[hender-2024/07/22] Validate properties
+  @IsOptional()
   transaction: Transaction;
+  @IsOptional()
   merchant: Merchant;
+  @IsOptional()
   card: Card;
+  @IsOptional()
   installments: Installments;
+  @IsOptional()
   user: User;
+  @IsOptional()
   amount: Amount;
+  @IsOptional()
   status: string;
+  @IsOptional()
   status_detail: string;
+  @IsOptional()
   extra_detail: string;
+  @IsOptional()
   extra_data: ExtraData;
 }
 
@@ -101,8 +115,15 @@ class Authorization implements ProcessBodyI {
 }
 
 export class NotificationDto implements ProcessBodyI {
+  @IsNotEmpty()
+  @IsString()
   event_id: string;
+  @IsNotEmpty()
+  @IsString()
   idempotency_key: string;
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => EventDetail)
   event_detail: EventDetail;
 }
 
