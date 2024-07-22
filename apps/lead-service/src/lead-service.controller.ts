@@ -886,6 +886,8 @@ export class LeadServiceController implements GenericServiceController {
       CommonService.ack(ctx);
       return leadRta;
     } catch (err) {
+      Logger.error(err, 'CREATING LEAD');
+      CommonService.ack(ctx);
       return err;
     }
   }
