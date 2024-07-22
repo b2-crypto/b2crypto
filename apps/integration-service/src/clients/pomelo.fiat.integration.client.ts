@@ -30,14 +30,14 @@ export class FiatIntegrationClient {
     let total = 0;
 
     const axiosInstance = this.buildAxiosInstance();
-    axiosInstance
+    return axiosInstance
       .get('', {}, { params: this.buildRequestParams(amount, from) })
       .then((response) => {
         total = response['_body'].result;
+        return total;
       })
       .catch((error) => {
         Logger.error('CurrencyConversion', error);
       });
-    return total;
   }
 }

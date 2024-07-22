@@ -20,44 +20,44 @@ export class PomeloIntegrationProcessService {
     private readonly builder: BuildersService,
   ) {}
 
-  private async processDebit(process: any, type: string) {
-    const amountInUSD = await this.currencyConversion.getCurrencyConversion(
-      process,
-    );
+  private processDebit(currencyConv: FiatIntegrationClient) {
+    return async (process: any, type: string) => {
+      const amountInUSD = await currencyConv.getCurrencyConversion(process);
 
-    if (type == this.TYPE_OF_OPERATION.AUTHORIZATION.toString()) {
-      return await this.processPurchase(process, amountInUSD);
-    } else {
-      return await this.processAdjustmentMovement(
-        process,
-        amountInUSD,
-        'debit',
-      );
-    }
+      if (type == this.TYPE_OF_OPERATION.AUTHORIZATION.toString()) {
+        return await this.processPurchase(process, amountInUSD);
+      } else {
+        return await this.processAdjustmentMovement(
+          process,
+          amountInUSD,
+          'debit',
+        );
+      }
+    };
   }
 
-  private async processCredit(process: any, type: string) {
-    try {
-      const amountInUSD = await this.currencyConversion.getCurrencyConversion(
-        process,
-      );
-      await this.processAdjustmentMovement(process, amountInUSD, 'credit');
-      if (type == this.TYPE_OF_OPERATION.AUTHORIZATION.toString()) {
-        return {
-          statusCode: 200,
-          body: {
-            status: 'APPROVED',
-            message: `Transaction ${process.transaction.id} has been approved`,
-            status_detail: 'APPROVED',
-          },
-        };
-      } else {
-        return {
-          statusCode: 204,
-          body: {},
-        };
-      }
-    } catch (error) {}
+  private processCredit(currencyConv: FiatIntegrationClient) {
+    return async (process: any, type: string) => {
+      try {
+        const amountInUSD = await currencyConv.getCurrencyConversion(process);
+        await this.processAdjustmentMovement(process, amountInUSD, 'credit');
+        if (type == this.TYPE_OF_OPERATION.AUTHORIZATION.toString()) {
+          return {
+            statusCode: 200,
+            body: {
+              status: 'APPROVED',
+              message: `Transaction ${process.transaction.id} has been approved`,
+              status_detail: 'APPROVED',
+            },
+          };
+        } else {
+          return {
+            statusCode: 204,
+            body: {},
+          };
+        }
+      } catch (error) {}
+    };
   }
 
   private async processAdjustmentMovement(
@@ -121,20 +121,16 @@ export class PomeloIntegrationProcessService {
 
       // Save notification record.
 
-      /* const response = await this.OPERATION[process.transaction.type](
+      const response = await this.OPERATION[process.transaction.type](
         process,
         type,
-      ); */
-      const headersResponse = {};
-      /* headersResponse[PomeloEnum.POMELO_IDEMPOTENCY_HEADER] = '';
-      headersResponse[PomeloEnum.POMELO_APIKEY_HEADER] = '';
-      headersResponse[PomeloEnum.POMELO_SIGNATURE_HEADER] = '';
-      headersResponse[PomeloEnum.POMELO_TIMESTAMP_HEADER] = '';
-      headersResponse[PomeloEnum.POMELO_ENDPOINT_HEADER] = ''; */
-      const response = {
-        statusCode: 204,
-        data: {},
-      };
+      );
+      /* const response = {
+        statusCode: 200,
+        message: 'APPROVED',
+        status_detail: 'APPROVED',
+        status: 'APPROVED'
+      }; */
       await this.chache.setResponse(idempotency, response);
       return response;
     }
@@ -146,8 +142,8 @@ export class PomeloIntegrationProcessService {
   };
 
   private TYPE_OF_ADJUSTMENT = {
-    PAYMENT: this.processDebit,
-    REFUND: this.processCredit,
+    PAYMENT: this.processDebit(this.currencyConversion),
+    REFUND: this.processCredit(this.currencyConversion),
     UNDEFINED: undefined,
   };
 
