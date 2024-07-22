@@ -107,7 +107,9 @@ export class AffiliateServiceMongooseService extends BasicServiceModel<
           }
           // TODO[hender] Add the telephone to person.telephone
           await person.save();
-          user = await this.userService.findOne(person.user.toString());
+          if (person.user) {
+            user = await this.userService.findOne(person.user.toString());
+          }
           person.user = user;
         } else {
           // No Person finded. Create Person
@@ -116,6 +118,10 @@ export class AffiliateServiceMongooseService extends BasicServiceModel<
           dto.personalData.email = dto.user.email;
           person = await this.personService.create(dto.personalData);
           // Create User
+          dto.user.slugEmail = CommonService.getSlug(dto.user.email);
+          dto.user.username =
+            dto.user.username ?? CommonService.getSlug(dto.user.name);
+          dto.user.slugUsername = CommonService.getSlug(dto.user.username);
           user = await this.userService.create(dto.user);
           user.personalData = person.id || person;
           person.user = user;

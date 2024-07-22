@@ -57,7 +57,7 @@ export class SeedService {
     const countLeads = await this.leadRepo.count();
     const countBrand = await this.brandRepo.count();
     const countTraffic = await this.trafficRepo.count();
-    const countTransfers = await this.transferRepo.count();
+    //const countTransfers = await this.transferRepo.count();
     const countStatuses = await this.statusRepo.count();
     const countCategories = await this.categoryRepo.count();
     const countAffiliates = await this.affiliateRepo.count();
@@ -76,8 +76,8 @@ export class SeedService {
       !countPspAccount ||
       !countCategories ||
       !countAffiliates ||
-      !countPermissions ||
-      !countTransfers
+      !countPermissions /*||
+      !countTransfers*/
     ) {
       await this.clearStats();
       await this.clearActivities();
@@ -93,7 +93,7 @@ export class SeedService {
       await this.seedPspAccounts();
       await this.seedAffiliates();
       await this.seedLeads();
-      await this.seedTransfers();
+      //await this.seedTransfers();
     }
     return {
       statusCode: 200,

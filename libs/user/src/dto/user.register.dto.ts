@@ -65,12 +65,24 @@ export class UserRegisterDto extends UserChangePasswordDto {
   @IsEmail()
   email: string;
 
+  @IsEmpty()
+  @IsEmail()
+  slugEmail: string;
+
   @ApiProperty({
     description: 'Name User',
   })
   @IsString()
   @IsOptional()
   name: string;
+
+  @IsString()
+  @IsEmpty()
+  username: string;
+
+  @IsEmpty()
+  @IsString()
+  slugUsername: string;
 
   @IsMongoId()
   @IsOptional()

@@ -45,11 +45,16 @@ import EventsNamesCrmEnum from './enum/events.names.crm.enum';
 import { LeadsToCheckStatusDto } from './dto/leads.to.check.status.dto';
 import { CheckLeadStatusOnCrmDto } from './dto/check.lead.status.on.crm.dto';
 import ResponseB2Crypto from '@response-b2crypto/response-b2crypto/models/ResponseB2Crypto';
+import { ConfigService } from '@nestjs/config';
+import { EnvironmentEnum } from '@common/common/enums/environment.enum';
 
 @ApiTags('CRM')
 @Controller('crm')
 export class CrmServiceController implements GenericServiceController {
-  constructor(private readonly crmService: CrmServiceService) {}
+  constructor(
+    private readonly crmService: CrmServiceService,
+    private readonly configService: ConfigService,
+  ) {}
 
   @Get('all/retention')
   // @CheckPoliciesAbility(new PolicyHandlerCategoryRead())
@@ -303,7 +308,12 @@ export class CrmServiceController implements GenericServiceController {
     @Ctx() ctx: RmqContext,
   ) {
     CommonService.ack(ctx);
-    return this.crmService.createOneLeadOnCrm(data);
+    if (this.configService.get('ENVIRONMENT') === EnvironmentEnum.prod) {
+      return this.crmService.createOneLeadOnCrm(data);
+    }
+    return {
+      error: false,
+    };
   }
   @AllowAnon()
   @MessagePattern(EventsNamesCrmEnum.moveOneLeadOnCrm)

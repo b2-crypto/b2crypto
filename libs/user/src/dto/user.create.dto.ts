@@ -28,6 +28,9 @@ export class UserCreateDto extends UserChangePasswordDto {
   @IsEmail()
   email: string;
 
+  @IsEmail()
+  slugEmail: string;
+
   @IsBoolean()
   @IsNotEmpty()
   active = false;

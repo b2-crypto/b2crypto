@@ -7,6 +7,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { ObjectId } from 'mongodb';
 import { ClientProxy } from '@nestjs/microservices';
 import { BuildersService } from '@builder/builders';
+import { CommonService } from '@common/common';
 
 @Injectable()
 export class UserServiceService {
@@ -29,6 +30,9 @@ export class UserServiceService {
   }
 
   async newUser(user: UserRegisterDto) {
+    user.slugEmail = CommonService.getSlug(user.email);
+    user.username = user.username ?? CommonService.getSlug(user.name);
+    user.slugUsername = CommonService.getSlug(user.username);
     return this.lib.create(user);
   }
 
