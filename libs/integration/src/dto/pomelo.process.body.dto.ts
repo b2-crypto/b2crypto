@@ -97,21 +97,36 @@ class EventDetail {
   extra_data: ExtraData;
 }
 
-class Adjustment implements ProcessBodyI {
+export class Adjustment implements ProcessBodyI {
+  @IsOptional()
   transaction: Transaction;
+  @IsOptional()
   merchant: Merchant;
+  @IsOptional()
   card: Card;
+  @IsOptional()
   user: User;
+  @IsOptional()
   amount: Amount;
+  @IsOptional()
+  idempotency?: string;
 }
 
-class Authorization implements ProcessBodyI {
+export class Authorization implements ProcessBodyI {
+  @IsOptional()
   transaction: Transaction;
+  @IsOptional()
   merchant: Merchant;
+  @IsOptional()
   card: Card;
+  @IsOptional()
   user: User;
+  @IsOptional()
   amount: Amount;
+  @IsOptional()
   extra_data: ExtraData;
+  @IsOptional()
+  idempotency?: string;
 }
 
 export class NotificationDto implements ProcessBodyI {

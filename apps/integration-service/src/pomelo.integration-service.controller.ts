@@ -1,7 +1,9 @@
 import { SignatureGuard } from '@auth/auth/guards/pomelo.signature.guard';
 import { SignatureInterceptor } from '@common/common/interceptors/pomelo.signature.interceptor';
 import {
+  Adjustment,
   AdjustmentDto,
+  Authorization,
   AuthorizationDto,
   NotificationDto,
 } from '@integration/integration/dto/pomelo.process.body.dto';
@@ -9,6 +11,7 @@ import { PomeloEnum } from '@integration/integration/enum/pomelo.enum';
 import {
   Body,
   Controller,
+  Headers,
   HttpCode,
   Logger,
   Post,
@@ -40,7 +43,11 @@ export class PomeloIntegrationServiceController {
   @UseGuards(SignatureGuard)
   @UseInterceptors(SignatureInterceptor)
   @HttpCode(204)
-  async processAdjustment(@Body() adjustment: AdjustmentDto): Promise<any> {
+  async processAdjustment(
+    @Body() adjustment: Adjustment,
+    @Headers(PomeloEnum.POMELO_IDEMPOTENCY_HEADER) idempotency: string,
+  ): Promise<any> {
+    adjustment.idempotency = idempotency;
     return await this.integrationServiceService.processAdjustment(adjustment);
   }
 
@@ -49,8 +56,11 @@ export class PomeloIntegrationServiceController {
   @UseInterceptors(SignatureInterceptor)
   @HttpCode(200)
   async processAuthorization(
-    @Body() authorization: AuthorizationDto,
+    @Body() authorization: Authorization,
+    @Headers() headers: any,
+    @Headers(PomeloEnum.POMELO_IDEMPOTENCY_HEADER) idempotency: string,
   ): Promise<any> {
+    authorization.idempotency = idempotency;
     return await this.integrationServiceService.processAuthorization(
       authorization,
     );

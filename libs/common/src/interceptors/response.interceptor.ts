@@ -46,8 +46,10 @@ export class ResponseInterceptor implements NestInterceptor {
   }
 
   private getStatusCode(data, res) {
+    // TODO[hender - 2024/07/22] Check double request
+    const statusCode = data.statusCode ?? data.data?.statusCode;
     return (
-      data?.statusCode ??
+      statusCode ??
       (data.access_token ||
       data.id ||
       data._id ||

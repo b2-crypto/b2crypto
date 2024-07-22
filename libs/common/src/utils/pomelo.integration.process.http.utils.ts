@@ -45,13 +45,14 @@ export class HttpUtils {
   }
 
   extractResponseHeaders(context: ExecutionContext): ProcessHeaderDto {
-    const request = context.switchToHttp().getResponse();
+    const response = context.switchToHttp().getResponse();
+    response.headers = response.headers ?? response._headers;
     const headers: ProcessHeaderDto = {
-      idempotency: request.headers[PomeloEnum.POMELO_IDEMPOTENCY_HEADER],
-      apiKey: request.headers[PomeloEnum.POMELO_APIKEY_HEADER],
-      signature: request.headers[PomeloEnum.POMELO_SIGNATURE_HEADER],
-      timestamp: request.headers[PomeloEnum.POMELO_TIMESTAMP_HEADER],
-      endpoint: request.headers[PomeloEnum.POMELO_ENDPOINT_HEADER],
+      idempotency: response.headers[PomeloEnum.POMELO_IDEMPOTENCY_HEADER],
+      apiKey: response.headers[PomeloEnum.POMELO_APIKEY_HEADER],
+      signature: response.headers[PomeloEnum.POMELO_SIGNATURE_HEADER],
+      timestamp: response.headers[PomeloEnum.POMELO_TIMESTAMP_HEADER],
+      endpoint: response.headers[PomeloEnum.POMELO_ENDPOINT_HEADER],
     };
     return headers;
   }

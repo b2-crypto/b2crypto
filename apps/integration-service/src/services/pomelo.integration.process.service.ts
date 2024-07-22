@@ -3,11 +3,14 @@ import { FiatIntegrationClient } from '../clients/pomelo.fiat.integration.client
 import { BuildersService } from '@builder/builders';
 import EventsNamesAccountEnum from 'apps/account-service/src/enum/events.names.account.enum';
 import {
+  Adjustment,
   AdjustmentDto,
+  Authorization,
   AuthorizationDto,
   NotificationDto,
 } from '@integration/integration/dto/pomelo.process.body.dto';
 import { PomeloCache } from '@integration/integration/util/pomelo.integration.process.cache';
+import { PomeloEnum } from '@integration/integration/enum/pomelo.enum';
 
 @Injectable()
 export class PomeloIntegrationProcessService {
@@ -118,10 +121,20 @@ export class PomeloIntegrationProcessService {
 
       // Save notification record.
 
-      const response = await this.OPERATION[process.transaction.type](
+      /* const response = await this.OPERATION[process.transaction.type](
         process,
         type,
-      );
+      ); */
+      const headersResponse = {};
+      /* headersResponse[PomeloEnum.POMELO_IDEMPOTENCY_HEADER] = '';
+      headersResponse[PomeloEnum.POMELO_APIKEY_HEADER] = '';
+      headersResponse[PomeloEnum.POMELO_SIGNATURE_HEADER] = '';
+      headersResponse[PomeloEnum.POMELO_TIMESTAMP_HEADER] = '';
+      headersResponse[PomeloEnum.POMELO_ENDPOINT_HEADER] = ''; */
+      const response = {
+        statusCode: 204,
+        data: {},
+      };
       await this.chache.setResponse(idempotency, response);
       return response;
     }
@@ -172,17 +185,19 @@ export class PomeloIntegrationProcessService {
     return cachedResult;
   }
 
-  async processAdjustment(adjustment: AdjustmentDto): Promise<any> {
+  async processAdjustment(adjustment: Adjustment): Promise<any> {
+    adjustment.idempotency = adjustment.idempotency;
     return await this.process(
-      adjustment.body,
+      adjustment,
       this.TYPE_OF_OPERATION.ADJUSTMENT.toString(),
       adjustment.idempotency,
     );
   }
 
-  async processAuthorization(authorization: AuthorizationDto): Promise<any> {
+  async processAuthorization(authorization: Authorization): Promise<any> {
+    authorization.idempotency = authorization.idempotency;
     return await this.process(
-      authorization.body,
+      authorization,
       this.TYPE_OF_OPERATION.ADJUSTMENT.toString(),
       authorization.idempotency,
     );
