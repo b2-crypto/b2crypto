@@ -21,6 +21,11 @@ import { Constants } from './utils/pomelo.integration.process.constants';
     PomeloCache,
     Constants,
   ],
-  exports: [CommonService, ...databaseProviders, SignatureInterceptor],
+  exports: [
+    CommonService,
+    ...databaseProviders,
+    SignatureInterceptor,
+    HttpUtils,
+  ],
 })
 export class CommonModule {}

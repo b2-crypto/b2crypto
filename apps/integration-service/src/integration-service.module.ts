@@ -1,5 +1,5 @@
 import { AuthModule } from '@auth/auth';
-import { BuildersService } from '@builder/builders';
+import { BuildersModule, BuildersService } from '@builder/builders';
 import { CommonModule } from '@common/common';
 import { Constants } from '@common/common/utils/pomelo.integration.process.constants';
 import { HttpUtils } from '@common/common/utils/pomelo.integration.process.http.utils';
@@ -13,14 +13,13 @@ import { PomeloIntegrationServiceController } from './pomelo.integration-service
 import { PomeloIntegrationProcessService } from './services/pomelo.integration.process.service';
 
 @Module({
-  imports: [AuthModule, CommonModule, IntegrationModule],
+  imports: [AuthModule, CommonModule, IntegrationModule, BuildersModule],
   controllers: [PomeloIntegrationServiceController],
   providers: [
     Constants,
     HttpUtils,
     PomeloCache,
     SignatureUtils,
-    BuildersService,
     FiatIntegrationClient,
     IntegrationServiceService,
     PomeloIntegrationProcessService,
