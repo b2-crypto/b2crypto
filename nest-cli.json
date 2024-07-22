@@ -431,6 +431,15 @@
       "compilerOptions": {
         "tsConfigPath": "libs/transfer/tsconfig.lib.json"
       }
+    },
+    "integration-service": {
+      "type": "application",
+      "root": "apps/integration-service",
+      "entryFile": "main",
+      "sourceRoot": "apps/integration-service/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/integration-service/tsconfig.app.json"
+      }
     }
   }
 }

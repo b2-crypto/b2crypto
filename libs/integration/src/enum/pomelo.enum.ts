@@ -1,0 +1,14 @@
+export enum PomeloEnum {
+  POMELO_NOTIFICATION_PATH = '/transactions/v1/notifications',
+  POMELO_ADJUSTMENT_PATH = '/transactions/adjustments/:type',
+  POMELO_AUTHORIZATION_PATH = '/transactions/authorizations',
+  POMELO_CLIENT_PROXY = 'POMELO.CLIENT.PROXY',
+  POMELO_NOTIFICATION_QUEUE = 'process-notification',
+  POMELO_ADJUSTMENT_QUEUE = 'process-adjustment',
+  POMELO_AUTHORIZATION_QUEUE = 'process-authorization',
+  POMELO_IDEMPOTENCY_HEADER = 'x-idempotency-key',
+  POMELO_APIKEY_HEADER = 'x-api-key',
+  POMELO_SIGNATURE_HEADER = 'x-signature',
+  POMELO_TIMESTAMP_HEADER = 'x-timestamp',
+  POMELO_ENDPOINT_HEADER = 'x-endpoint',
+}

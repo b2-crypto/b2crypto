@@ -42,6 +42,7 @@ import {
 } from '@nestjs/microservices';
 import { TransferUpdateDto } from '@transfer/transfer/dto/transfer.update.dto';
 import CardTypesAccountEnum from '@account/account/enum/card.types.account.enum';
+import { ConfigService } from '@nestjs/config';
 
 @ApiTags('CARD')
 @Controller('cards')
@@ -59,9 +60,13 @@ export class CardServiceController extends AccountServiceController {
     @Inject(BuildersService)
     readonly cardBuilder: BuildersService,
     private readonly integration: IntegrationService,
+    private readonly configService: ConfigService,
   ) {
     super(cardService, cardBuilder);
   }
+
+  private readonly BLOCK_BALANCE_PERCENTAGE: number =
+    this.configService.get<number>('BLOCK_BALANCE_PERCENTAGE');
 
   @Get('all')
   @ApiTags('Stakey Card')
@@ -368,10 +373,14 @@ export class CardServiceController extends AccountServiceController {
     if (!card) {
       throw new BadRequestException('Card not found');
     }
+    const amount =
+      data.movement == 'debit'
+        ? card.amount - data.amount
+        : card.amount + data.amount;
     await this.cardService.customUpdateOne({
       id: card._id,
       $inc: {
-        amount: data.amount,
+        amount: amount,
       },
     });
   }
@@ -392,7 +401,8 @@ export class CardServiceController extends AccountServiceController {
     if (!card) {
       throw new BadRequestException('Card not found');
     }
-    if (data.amount > card.amount) {
+    const allowedBalance = card.amount * (1.0 - this.BLOCK_BALANCE_PERCENTAGE);
+    if (allowedBalance <= data.amount) {
       throw new BadRequestException('Not enough balance');
     }
     await this.cardService.customUpdateOne({
