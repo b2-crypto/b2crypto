@@ -3,7 +3,6 @@ import {
   Controller,
   Delete,
   Get,
-  Logger,
   NotFoundException,
   Param,
   ParseArrayPipe,
@@ -14,13 +13,10 @@ import {
 import { ApiHeader, ApiResponse, ApiTags } from '@nestjs/swagger';
 
 import { AllowAnon } from '@auth/auth/decorators/allow-anon.decorator';
-import { CheckPoliciesAbility } from '@auth/auth/policy/policy.handler.ability';
-import { PolicyHandlerUserCreate } from '@auth/auth/policy/user/policity.handler.user.create';
-import { PolicyHandlerUserDelete } from '@auth/auth/policy/user/policity.handler.user.delete';
-import { PolicyHandlerUserRead } from '@auth/auth/policy/user/policity.handler.user.read';
-import { PolicyHandlerUserUpdate } from '@auth/auth/policy/user/policity.handler.user.update';
+import { ApiKeyCheck } from '@auth/auth/decorators/api-key-check.decorator';
 import { CommonService } from '@common/common';
 import ActionsEnum from '@common/common/enums/ActionEnum';
+import GenericServiceController from '@common/common/interfaces/controller.generic.interface';
 import { QuerySearchAnyDto } from '@common/common/models/query_search-any.dto';
 import { UpdateAnyDto } from '@common/common/models/update-any.dto';
 import {
@@ -29,8 +25,8 @@ import {
   MessagePattern,
   Payload,
   RmqContext,
-  RpcException,
 } from '@nestjs/microservices';
+import ResponseB2Crypto from '@response-b2crypto/response-b2crypto/models/ResponseB2Crypto';
 import { UserChangePasswordDto } from '@user/user/dto/user.change-password.dto';
 import { UserCreateDto } from '@user/user/dto/user.create.dto';
 import { UserRegisterDto } from '@user/user/dto/user.register.dto';
@@ -39,9 +35,6 @@ import { UserEntity } from '@user/user/entities/user.entity';
 import { ObjectId } from 'mongodb';
 import EventsNamesUserEnum from './enum/events.names.user.enum';
 import { UserServiceService } from './user-service.service';
-import GenericServiceController from '@common/common/interfaces/controller.generic.interface';
-import ResponseB2Crypto from '@response-b2crypto/response-b2crypto/models/ResponseB2Crypto';
-import { ApiKeyCheck } from '@auth/auth/decorators/api-key-check.decorator';
 
 @ApiTags('USER')
 @Controller('users')
@@ -159,7 +152,7 @@ export class UserServiceController implements GenericServiceController {
   @AllowAnon()
   @MessagePattern(EventsNamesUserEnum.createOne)
   async createOneEvent(
-    @Payload() createDto: UserCreateDto,
+    @Payload() createDto: UserRegisterDto,
     @Ctx() ctx: RmqContext,
   ) {
     try {
@@ -180,7 +173,7 @@ export class UserServiceController implements GenericServiceController {
   @AllowAnon()
   @MessagePattern(EventsNamesUserEnum.createMany)
   createManyEvent(
-    @Payload() createsDto: UserCreateDto[],
+    @Payload() createsDto: UserRegisterDto[],
     @Ctx() ctx: RmqContext,
   ) {
     const user = this.createMany(createsDto);
