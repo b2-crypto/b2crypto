@@ -94,6 +94,18 @@ module.exports = {
         AWS_SES_PORT: '587',
         AWS_SES_SMTP_USERNAME: 'AKIA2YTTBOKD2OUQQSM3',
         AWS_SES_SMTP_PASSWORD: 'BDRqFuz7sRh4uO+HG+P4WqgyS1J0Muac6tdICZuTRpJ/',
+        // Pomelo
+        API_SECRET_KEY_DIC: {
+          'sKQq91g4ctRkLElI86vMeRNIPbhUc2qyEWxgbt6CGP8=':
+            'hByKl5U+zzpMibm7MiEnjEsnBHC4ntATnEhjzKRw2fw=',
+        },
+        POMELO_WHITELISTED_IPS:
+          '34.226.254.178, 44.198.3.59, 34.223.185.46, 100.20.205.117',
+        BLOCK_BALANCE_PERCENTAGE: 0.1,
+        // API for Currency conversion
+        API_KEY_CURRENCY: '79e1291da641abba50546e9f29986759',
+        URL: 'https://api.exchangeratesapi.io/v1/convert',
+        DEFAULT_CURRENCY_TO_CONVERT: 'USD',
       },
     },
     {
@@ -132,6 +144,17 @@ module.exports = {
         AWS_SES_PORT: '587',
         AWS_SES_SMTP_USERNAME: 'AKIA2YTTBOKD2OUQQSM3',
         AWS_SES_SMTP_PASSWORD: 'BDRqFuz7sRh4uO+HG+P4WqgyS1J0Muac6tdICZuTRpJ/',
+
+        API_SECRET_KEY_DIC: {
+          'sKQq91g4ctRkLElI86vMeRNIPbhUc2qyEWxgbt6CGP8=':
+            'hByKl5U+zzpMibm7MiEnjEsnBHC4ntATnEhjzKRw2fw=',
+        },
+        POMELO_WHITELISTED_IPS:
+          '34.226.254.178, 44.198.3.59, 34.223.185.46, 100.20.205.117',
+        BLOCK_BALANCE_PERCENTAGE: 0.1,
+        API_KEY_CURRENCY: '79e1291da641abba50546e9f29986759',
+        URL: 'https://api.exchangeratesapi.io/v1/convert',
+        DEFAULT_CURRENCY_TO_CONVERT: 'USD',
       },
       env_prod: {
         ENVIRONMENT: 'PROD',
@@ -160,6 +183,16 @@ module.exports = {
         AWS_SES_PORT: '587',
         AWS_SES_SMTP_USERNAME: 'AKIA2YTTBOKD2OUQQSM3',
         AWS_SES_SMTP_PASSWORD: 'BDRqFuz7sRh4uO+HG+P4WqgyS1J0Muac6tdICZuTRpJ/',
+        API_SECRET_KEY_DIC: {
+          'sKQq91g4ctRkLElI86vMeRNIPbhUc2qyEWxgbt6CGP8=':
+            'hByKl5U+zzpMibm7MiEnjEsnBHC4ntATnEhjzKRw2fw=',
+        },
+        POMELO_WHITELISTED_IPS:
+          '34.226.254.178, 44.198.3.59, 34.223.185.46, 100.20.205.117',
+        BLOCK_BALANCE_PERCENTAGE: 0.1,
+        API_KEY_CURRENCY: '79e1291da641abba50546e9f29986759',
+        URL: 'https://api.exchangeratesapi.io/v1/convert',
+        DEFAULT_CURRENCY_TO_CONVERT: 'USD',
       },
       env_stage: {
         ENVIRONMENT: 'STAGE',
@@ -190,6 +223,18 @@ module.exports = {
         AWS_SES_PORT: '587',
         AWS_SES_SMTP_USERNAME: 'AKIA2YTTBOKD2OUQQSM3',
         AWS_SES_SMTP_PASSWORD: 'BDRqFuz7sRh4uO+HG+P4WqgyS1J0Muac6tdICZuTRpJ/',
+        // Pomelo
+        API_SECRET_KEY_DIC: {
+          'sKQq91g4ctRkLElI86vMeRNIPbhUc2qyEWxgbt6CGP8=':
+            'hByKl5U+zzpMibm7MiEnjEsnBHC4ntATnEhjzKRw2fw=',
+        },
+        POMELO_WHITELISTED_IPS:
+          '34.226.254.178, 44.198.3.59, 34.223.185.46, 100.20.205.117',
+        BLOCK_BALANCE_PERCENTAGE: 0.1,
+        // API for Currency conversion
+        API_KEY_CURRENCY: '79e1291da641abba50546e9f29986759',
+        URL: 'https://api.exchangeratesapi.io/v1/convert',
+        DEFAULT_CURRENCY_TO_CONVERT: 'USD',
       },
     },
   ],
