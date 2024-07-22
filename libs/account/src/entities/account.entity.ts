@@ -76,17 +76,17 @@ export class AccountEntity implements AccountInterface {
   telephone: string;
   @ApiProperty({
     type: String,
-    description: 'TpId of the account in Crm',
+    description: 'AccountId of the account in integration',
   })
   accountId: string;
   @ApiProperty({
     type: String,
-    description: 'AccountId of the account in Crm',
+    description: 'Accountname of the account in integration',
   })
   accountName: string;
   @ApiProperty({
     type: String,
-    description: 'Account password of the account in Crm',
+    description: 'Account password of the account in integration',
   })
   accountPassword: string;
   @ApiProperty({

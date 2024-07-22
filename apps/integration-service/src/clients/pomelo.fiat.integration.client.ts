@@ -29,6 +29,32 @@ export class FiatIntegrationClient {
     const amount = process.amount.local.total;
     let total = 0;
 
+    //const axiosInstance = axios.create({ baseURL: process.env.URL });
+    const axiosInstance = axios.create({
+      baseURL: 'https://api.exchangeratesapi.io/v1/convert',
+    });
+    const queryParams = {
+      //access_key: process.env.API_KEY_CURRENCY,
+      access_key: '79e1291da641abba50546e9f29986759',
+      from,
+      //to: process.env.DEFAULT_CURRENCY_TO_CONVERT,
+      to: 'USD',
+      amount,
+    };
+
+    return axiosInstance
+      .get('', { params: queryParams })
+      .then((response) => {
+        total = response['_body'].result;
+        return total;
+      })
+      .catch((error) => {
+        Logger.error('CurrencyConversion', error);
+      });
+    /* const from = process.amount.local.currency;
+    const amount = process.amount.local.total;
+    let total = 0;
+
     const axiosInstance = this.buildAxiosInstance();
     return axiosInstance
       .get('', {}, { params: this.buildRequestParams(amount, from) })
@@ -38,6 +64,6 @@ export class FiatIntegrationClient {
       })
       .catch((error) => {
         Logger.error('CurrencyConversion', error);
-      });
+      }); */
   }
 }

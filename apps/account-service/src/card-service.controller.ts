@@ -362,11 +362,10 @@ export class CardServiceController extends AccountServiceController {
     @Ctx() ctx: RmqContext,
     @Payload() data: CardDepositCreateDto,
   ) {
+    CommonService.ack(ctx);
     const cardList = await this.cardService.findAll({
       where: {
-        cardConfig: {
-          id: data.id,
-        },
+        accountId: data.id,
       },
     });
     const card = cardList.list[0];
@@ -390,6 +389,7 @@ export class CardServiceController extends AccountServiceController {
     @Ctx() ctx: RmqContext,
     @Payload() data: TransferUpdateDto,
   ) {
+    CommonService.ack(ctx);
     const cardList = await this.cardService.findAll({
       where: {
         cardConfig: {
