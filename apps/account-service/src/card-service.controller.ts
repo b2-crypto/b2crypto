@@ -373,9 +373,7 @@ export class CardServiceController extends AccountServiceController {
       throw new BadRequestException('Card not found');
     }
     const amount =
-      data.movement == 'debit'
-        ? card.amount - data.amount
-        : card.amount + data.amount;
+      data.movement == 'debit' ? data.amount ?? 0 : data.amount ?? 0;
     await this.cardService.customUpdateOne({
       id: card._id,
       $inc: {
