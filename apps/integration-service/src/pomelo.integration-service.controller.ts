@@ -60,6 +60,7 @@ export class PomeloIntegrationServiceController {
     @Headers() headers: any,
     @Headers(PomeloEnum.POMELO_IDEMPOTENCY_HEADER) idempotency: string,
   ): Promise<any> {
+    Logger.log(`Idempotency: ${idempotency}`, 'AuthorizationHandler');
     authorization.idempotency = idempotency;
     return await this.integrationServiceService.processAuthorization(
       authorization,

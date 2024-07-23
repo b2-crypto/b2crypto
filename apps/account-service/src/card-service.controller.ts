@@ -388,17 +388,20 @@ export class CardServiceController extends AccountServiceController {
     @Payload() data: TransferUpdateDto,
   ) {
     CommonService.ack(ctx);
+    Logger.log(`Looking for card: ${data.id}`, 'CardController');
     const cardList = await this.cardService.findAll({
       where: {
-        cardConfig: {
-          id: data.id,
-        },
+        'cardConfig.id': `${data.id}`,
       },
     });
     const card = cardList.list[0];
     if (!card) {
       throw new BadRequestException('Card not found');
     }
+    Logger.log(
+      `Card balance: ${card.amount} | Movement amount: ${data.amount}`,
+      'CardController',
+    );
     const allowedBalance = card.amount * (1.0 - this.BLOCK_BALANCE_PERCENTAGE);
     if (allowedBalance <= data.amount) {
       throw new BadRequestException('Not enough balance');
