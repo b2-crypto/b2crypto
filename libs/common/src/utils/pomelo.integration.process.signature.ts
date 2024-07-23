@@ -15,14 +15,14 @@ export class SignatureUtils {
     body: ProcessBodyI,
   ): Promise<boolean> {
     if (headers && body) {
-      Logger.log('Check Signature', `Headers: ${JSON.stringify(headers)}`);
+      Logger.log(`Headers: ${JSON.stringify(headers)}`, 'Check Signature');
       let signature = headers.signature;
       if (headers.signature.startsWith('hmac-sha256')) {
         signature = signature.replace('hmac-sha256 ', '');
       } else {
         Logger.error(
-          'Check Signature',
           `Unsupported signature algorithm, expecting hmac-sha256, got ${signature}`,
+          'Check Signature',
         );
         const response = await this.cache.setInvalidSignature(
           headers.idempotency,
@@ -51,13 +51,13 @@ export class SignatureUtils {
         signatureBytes,
       );
 
-      /* if (!signaturesMatch) {
+      if (!signaturesMatch) {
         Logger.error(
-          'Check Signature',
           `Signature mismatch. Received: ${signature}. Calculated: ${hashResult}`,
+          'Check Signature',
         );
         return true;
-      } */
+      }
       return true;
     }
     return true;
