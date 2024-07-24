@@ -99,12 +99,16 @@ export class PomeloIntegrationProcessService {
         },
       };
     } catch (error) {
+      Logger.error(
+        `Error during authorization: ${error.message}. Check balance or card.`,
+        'AuthorizationProcess',
+      );
       return {
         statusCode: 200,
         body: {
           status: 'REJECTED',
-          message: `Transaction ${process.transaction.id} has been rejected: ${error}`,
-          status_detail: 'INSUFFICIENT_FUNDS',
+          message: `Transaction ${process.transaction.id} has been rejected.`,
+          status_detail: 'REJECTED',
         },
       };
     }
@@ -125,12 +129,6 @@ export class PomeloIntegrationProcessService {
         process,
         type,
       );
-      /* const response = {
-        statusCode: 200,
-        message: 'APPROVED',
-        status_detail: 'APPROVED',
-        status: 'APPROVED'
-      }; */
       await this.chache.setResponse(idempotency, response);
       return response;
     }
@@ -182,7 +180,6 @@ export class PomeloIntegrationProcessService {
   }
 
   async processAdjustment(adjustment: Adjustment): Promise<any> {
-    adjustment.idempotency = adjustment.idempotency;
     return await this.process(
       adjustment,
       this.TYPE_OF_OPERATION.ADJUSTMENT.toString(),
@@ -191,10 +188,9 @@ export class PomeloIntegrationProcessService {
   }
 
   async processAuthorization(authorization: Authorization): Promise<any> {
-    authorization.idempotency = authorization.idempotency;
     return await this.process(
       authorization,
-      this.TYPE_OF_OPERATION.ADJUSTMENT.toString(),
+      this.TYPE_OF_OPERATION.AUTHORIZATION.toString(),
       authorization.idempotency,
     );
   }

@@ -65,7 +65,12 @@ export class PersonCreateDto extends CreateAnyDto {
   })
   @IsString()
   lastName: string;
-
+  @ApiProperty({
+    required: true,
+    enum: GenderEnum,
+    enumName: 'Gender',
+    description: 'The gender person',
+  })
   @IsEnum(GenderEnum)
   gender: GenderEnum;
 

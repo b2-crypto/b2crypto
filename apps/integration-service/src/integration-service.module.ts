@@ -11,9 +11,16 @@ import { FiatIntegrationClient } from './clients/pomelo.fiat.integration.client'
 import { IntegrationServiceService } from './integration-service.service';
 import { PomeloIntegrationServiceController } from './pomelo.integration-service.controller';
 import { PomeloIntegrationProcessService } from './services/pomelo.integration.process.service';
+import { HttpModule } from '@nestjs/axios';
 
 @Module({
-  imports: [AuthModule, CommonModule, IntegrationModule, BuildersModule],
+  imports: [
+    AuthModule,
+    CommonModule,
+    IntegrationModule,
+    BuildersModule,
+    HttpModule,
+  ],
   controllers: [PomeloIntegrationServiceController],
   providers: [
     Constants,
