@@ -59,14 +59,14 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
         ?.toString() || '';
     //const headers = this.utils.extractRequestHeaders(context);
     const headers = this.extractRequestHeaders(context);
-    /* if (
+    if (
       this.checkWhitelistedIps(context) &&
       this.checkValidEndpoint(path, headers)
     ) {
       return true;
-      } */
-    return true;
-    //return false;
+    }
+    //return true;
+    return false;
   }
 
   private checkValidEndpoint(path: string, headers: ProcessHeaderDto): boolean {

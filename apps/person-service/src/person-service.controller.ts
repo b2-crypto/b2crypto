@@ -9,6 +9,7 @@ import {
   Patch,
   Post,
   Query,
+  Req,
 } from '@nestjs/common';
 import { ApiHeader, ApiTags } from '@nestjs/swagger';
 
@@ -33,6 +34,7 @@ import { PersonUpdateDto } from '@person/person/dto/person.update.dto';
 import EventsNamesPersonEnum from './enum/events.names.person.enum';
 import { PersonServiceService } from './person-service.service';
 import { UserServiceService } from 'apps/user-service/src/user-service.service';
+import { BadRequestError } from 'passport-headerapikey';
 
 @ApiTags('PERSON')
 @Controller('persons')
@@ -62,7 +64,7 @@ export class PersonServiceController implements GenericServiceController {
     description: 'The apiKey',
   })
   // @CheckPoliciesAbility(new PolicyHandlerPersonCreate())
-  async createOne(@Body() createPersonDto: PersonCreateDto) {
+  async createOne(@Body() createPersonDto: PersonCreateDto, @Req() req?) {
     createPersonDto.name = createPersonDto.firstName;
     createPersonDto.nationality =
       createPersonDto.nationality ?? createPersonDto.country;
@@ -71,6 +73,20 @@ export class PersonServiceController implements GenericServiceController {
     createPersonDto.taxIdentificationValue =
       createPersonDto.taxIdentificationValue ??
       parseInt(createPersonDto.numDocId);
+    if (!createPersonDto.user) {
+      const user = await this.userService.getOne(req.user.id);
+      if (!user._id) {
+        throw new BadRequestError('User not found');
+      }
+      if (user.personalData) {
+        throw new BadRequestError('User already has personal data');
+      }
+      createPersonDto.user = user._id;
+    } else if (createPersonDto.user !== req.user.id) {
+      throw new BadRequestError(
+        `Only have create to User user ${req.user.email}`,
+      );
+    }
     const personalData = await this.personService.newPerson(createPersonDto);
     if (personalData.user) {
       await this.userService.updateUser({
