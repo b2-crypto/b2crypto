@@ -5,6 +5,7 @@ import { Module } from '@nestjs/common';
 
 @Module({
   imports: [
+    HttpModule,
     BuildersModule,
     HttpModule.registerAsync({
       useFactory: () => ({

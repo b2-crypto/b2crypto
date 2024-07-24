@@ -2,6 +2,8 @@ export enum PomeloEnum {
   POMELO_NOTIFICATION_PATH = '/transactions/v1/notifications',
   POMELO_ADJUSTMENT_PATH = '/transactions/adjustments/:type',
   POMELO_AUTHORIZATION_PATH = '/transactions/authorizations',
+  POMELO_INTEGRATION_CONTROLLER = '/pomelo',
+  POMELO_SENSITIVE_INFO_PATH = '/sensitive-information/:cardId',
   POMELO_CLIENT_PROXY = 'POMELO.CLIENT.PROXY',
   POMELO_NOTIFICATION_QUEUE = 'process-notification',
   POMELO_ADJUSTMENT_QUEUE = 'process-adjustment',

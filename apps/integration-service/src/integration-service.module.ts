@@ -12,21 +12,31 @@ import { IntegrationServiceService } from './integration-service.service';
 import { PomeloIntegrationServiceController } from './pomelo.integration-service.controller';
 import { PomeloIntegrationProcessService } from './services/pomelo.integration.process.service';
 import { HttpModule } from '@nestjs/axios';
+import { PomeloSensitiveInfoController } from './pomelo.sensitive-info.controller';
+import { PomeloRestClient } from '@integration/integration/client/pomelo.integration.client';
+import { AccountModule } from '@account/account/account.module';
+import { AccountServiceService } from 'apps/account-service/src/account-service.service';
 
 @Module({
   imports: [
     AuthModule,
     CommonModule,
+    AccountModule,
     IntegrationModule,
     BuildersModule,
     HttpModule,
   ],
-  controllers: [PomeloIntegrationServiceController],
+  controllers: [
+    PomeloIntegrationServiceController,
+    PomeloSensitiveInfoController,
+  ],
   providers: [
     Constants,
     HttpUtils,
     PomeloCache,
     SignatureUtils,
+    PomeloRestClient,
+    AccountServiceService,
     FiatIntegrationClient,
     IntegrationServiceService,
     PomeloIntegrationProcessService,
