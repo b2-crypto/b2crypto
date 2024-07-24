@@ -391,7 +391,7 @@ export class CardServiceController extends AccountServiceController {
     Logger.log(`Looking for card: ${data.id}`, 'CardController');
     const cardList = await this.cardService.findAll({
       where: {
-        'cardConfig.id': `${data.id}`,
+        'cardConfig.id': data.id,
       },
     });
     const card = cardList.list[0];

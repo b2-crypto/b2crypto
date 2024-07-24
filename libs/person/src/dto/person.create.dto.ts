@@ -1,12 +1,15 @@
+import DocIdTypeEnum from '@common/common/enums/DocIdTypeEnum';
+import GenderEnum from '@common/common/enums/GenderEnum';
+import CountryCodeEnum from '@common/common/enums/country.code.b2crypto.enum';
 import { CreateAnyDto } from '@common/common/models/create-any.dto';
+import { ApiProperty } from '@nestjs/swagger';
+import { Transform, Type } from 'class-transformer';
 import {
   IsArray,
   IsDate,
-  IsDateString,
   IsEmpty,
   IsEnum,
   IsMongoId,
-  IsNotEmpty,
   IsNumber,
   IsObject,
   IsOptional,
@@ -15,13 +18,8 @@ import {
   ValidateNested,
 } from 'class-validator';
 import { ObjectId } from 'mongodb';
-import { ApiProperty } from '@nestjs/swagger';
-import { Transform, Type } from 'class-transformer';
-import TelephoneDto from './telephone.dto';
 import LocationDto from './location.dto';
-import DocIdTypeEnum from '@common/common/enums/DocIdTypeEnum';
-import GenderEnum from '@common/common/enums/GenderEnum';
-import CountryCodeEnum from '@common/common/enums/country.code.b2crypto.enum';
+import TelephoneDto from './telephone.dto';
 
 export class PersonCreateDto extends CreateAnyDto {
   @ApiProperty({
@@ -65,7 +63,12 @@ export class PersonCreateDto extends CreateAnyDto {
   })
   @IsString()
   lastName: string;
-
+  @ApiProperty({
+    required: true,
+    enum: GenderEnum,
+    enumName: 'Gender',
+    description: 'The gender person',
+  })
   @IsEnum(GenderEnum)
   gender: GenderEnum;
 
