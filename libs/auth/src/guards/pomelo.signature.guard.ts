@@ -34,7 +34,7 @@ export class SignatureGuard implements CanActivate {
       this.checkWhitelistedIps(context) &&
       this.checkValidEndpoint(path, headers)
     ) {
-      Logger.log(`Authorizing request.`, 'InvalidSignature');
+      Logger.log(`Authorizing request.`, 'SignatureGuard');
       if (
         path == PomeloEnum.POMELO_AUTHORIZATION_PATH.toString() &&
         !this.checkSignatureIsNotExpired(headers.timestamp)
@@ -57,6 +57,7 @@ export class SignatureGuard implements CanActivate {
       }
       return isValid;
     }
+    Logger.log('Not Authorized', 'SignatureGuard');
     return false;
   }
 
@@ -67,12 +68,18 @@ export class SignatureGuard implements CanActivate {
       request?.connection?.remoteAddress ||
       '';
     Logger.log(`IpCaller: ${caller}`, 'SignatureGuard');
-    const whitelisted = process.env.POMELO_WHITELISTED_IPS;
-    //return whitelisted?.split(',')?.includes(caller) || false;
+    //const whitelisted = process.env.POMELO_WHITELISTED_IPS;
+    //return whitelisted?.replace(/\s/g, '')?.split(',')?.includes(caller) || false;
     return true;
   }
 
   private checkValidEndpoint(path: string, headers: ProcessHeaderDto): boolean {
+    Logger.log(
+      `Path: ${path} | Endpoint: ${headers.endpoint} | Result: ${
+        path === headers.endpoint
+      }`,
+      'SignatureGuard',
+    );
     if (path !== PomeloEnum.POMELO_ADJUSTMENT_PATH)
       return path === headers.endpoint;
 
