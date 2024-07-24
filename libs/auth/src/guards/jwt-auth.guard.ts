@@ -82,9 +82,15 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
       ipaddr.process(request?.connection?.remoteAddress).toString() ||
       request?.connection?.remoteAddress ||
       '';
-    Logger.log('SignatureGuard', `IpCaller: ${caller}`);
+    Logger.log(`IpCaller: ${caller}`, 'JwtAuthGuard');
     const whitelisted = process.env.POMELO_WHITELISTED_IPS;
-    return whitelisted?.split(',')?.includes(caller) || false;
+    Logger.log(
+      `Is allowed: ${whitelisted?.trim()?.split(',')}`,
+      'JwtAuthGuard',
+    );
+    return (
+      whitelisted?.replace(/\s/g, '')?.split(',')?.includes(caller) || false
+    );
   }
   private headersToLowercase(context: ExecutionContext) {
     const req = context.switchToHttp().getRequest();
