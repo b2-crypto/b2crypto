@@ -63,13 +63,24 @@ export class SignatureUtils {
     return true;
   }
 
-  signResponse(headers: ProcessHeaderDto, body: any): string {
-    const signatureString = JSON.stringify(this.API_DIC[headers.apiKey]);
+  signResponse(headers: ProcessHeaderDto, body?: any): string {
+    const secret = JSON.stringify(this.API_DIC[headers.apiKey]);
+    const key = Buffer.from(secret, 'base64');
     const hash = crypto
-      .createHmac('sha256', signatureString)
+      .createHmac('sha256', key)
       .update(headers.timestamp.toString())
       .update(headers.endpoint);
-    hash.update(Buffer.from(JSON.stringify(body)));
+
+    let message = '';
+    if (body) {
+      hash.update(Buffer.from(JSON.stringify(body)));
+      message = `String: ${headers.timestamp}${
+        headers.endpoint
+      }${JSON.stringify(body)}`;
+    } else {
+      message = `String: ${headers.timestamp}${headers.endpoint}`;
+    }
+    Logger.log(message, 'SignResponse');
 
     const hashResult = hash.digest('base64'); // calculated signature result
     return 'hmac-sha256 ' + hashResult;

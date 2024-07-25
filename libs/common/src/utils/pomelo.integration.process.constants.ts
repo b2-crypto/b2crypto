@@ -17,7 +17,7 @@ export class Constants {
   };
 
   public readonly RESPONSE_RECEIVED = {
-    statusCode: 200,
+    statusCode: 204,
     body: null,
   };
 
