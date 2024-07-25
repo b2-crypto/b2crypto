@@ -29,7 +29,7 @@ export class ResponseInterceptor implements NestInterceptor {
 
     return next.handle().pipe(
       map((data) => {
-        if (res.headers[PomeloEnum.POMELO_APIKEY_HEADER]) {
+        if (this.checkPomeloHooksResponse(res)) {
           return data?.data || data;
         }
         if (context['contextType'] === 'rpc') {
@@ -47,6 +47,13 @@ export class ResponseInterceptor implements NestInterceptor {
       }),
       catchError(this.catchError(context['contextType'])),
     );
+  }
+
+  private checkPomeloHooksResponse(res): boolean {
+    try {
+      return res.headers[PomeloEnum.POMELO_APIKEY_HEADER] || false;
+    } catch (error) {}
+    return false;
   }
 
   private getStatusCode(data, res) {
