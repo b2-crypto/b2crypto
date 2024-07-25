@@ -73,16 +73,26 @@ export class SignatureUtils {
 
     let message = '';
     if (body) {
+      body = this.fixResponseBody(body);
+      Logger.log(JSON.stringify(body), 'SignResponse');
       hash.update(Buffer.from(JSON.stringify(body)));
-      message = `String: ${headers.timestamp}${
-        headers.endpoint
-      }${JSON.stringify(body)}`;
+      message = `${headers.timestamp}${headers.endpoint}${JSON.stringify(
+        body,
+      )}`;
     } else {
-      message = `String: ${headers.timestamp}${headers.endpoint}`;
+      message = `${headers.timestamp}${headers.endpoint}`;
     }
-    Logger.log(message, 'SignResponse');
+    Logger.log(`Message: ${message}`, 'SignResponse');
 
     const hashResult = hash.digest('base64'); // calculated signature result
     return 'hmac-sha256 ' + hashResult;
+  }
+
+  private fixResponseBody(data: any): any {
+    let body = data?.data || data;
+    while (body.data) {
+      body = body.data || body;
+    }
+    return body;
   }
 }
