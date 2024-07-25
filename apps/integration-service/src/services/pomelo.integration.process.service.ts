@@ -42,7 +42,6 @@ export class PomeloIntegrationProcessService {
         const amountInUSD = await currencyConv.getCurrencyConversion(process);
         await this.processAdjustmentMovement(process, amountInUSD, 'credit');
         if (type == this.TYPE_OF_OPERATION.AUTHORIZATION.toString()) {
-          Logger.log('<<<processCredit>>>');
           return {
             status: 'APPROVED',
             message: `Transaction approved`,
@@ -88,7 +87,6 @@ export class PomeloIntegrationProcessService {
           amount: amountInUSD,
         },
       );
-      Logger.log('<<<processPurchase>>>');
       return {
         status: 'APPROVED',
         message: `Transaction approved`,
