@@ -42,13 +42,11 @@ export class PomeloIntegrationProcessService {
         const amountInUSD = await currencyConv.getCurrencyConversion(process);
         await this.processAdjustmentMovement(process, amountInUSD, 'credit');
         if (type == this.TYPE_OF_OPERATION.AUTHORIZATION.toString()) {
+          Logger.log('<<<processCredit>>>');
           return {
-            statusCode: 200,
-            body: {
-              status: 'APPROVED',
-              message: `Transaction ${process.transaction.id} has been approved`,
-              status_detail: 'APPROVED',
-            },
+            status: 'APPROVED',
+            message: `Transaction approved`,
+            status_detail: 'APPROVED',
           };
         } else {
           return {
@@ -90,13 +88,11 @@ export class PomeloIntegrationProcessService {
           amount: amountInUSD,
         },
       );
+      Logger.log('<<<processPurchase>>>');
       return {
-        statusCode: 200,
-        body: {
-          status: 'APPROVED',
-          message: `Transaction ${process.transaction.id} has been approved`,
-          status_detail: 'APPROVED',
-        },
+        status: 'APPROVED',
+        message: `Transaction approved`,
+        status_detail: 'APPROVED',
       };
     } catch (error) {
       Logger.error(
@@ -104,12 +100,9 @@ export class PomeloIntegrationProcessService {
         'AuthorizationProcess',
       );
       return {
-        statusCode: 200,
-        body: {
-          status: 'REJECTED',
-          message: `Transaction ${process.transaction.id} has been rejected.`,
-          status_detail: 'REJECTED',
-        },
+        status: 'REJECTED',
+        message: `Transaction rejected.`,
+        status_detail: 'REJECTED',
       };
     }
   }
@@ -188,10 +181,15 @@ export class PomeloIntegrationProcessService {
   }
 
   async processAuthorization(authorization: Authorization): Promise<any> {
-    return await this.process(
+    const response = await this.process(
       authorization,
       this.TYPE_OF_OPERATION.AUTHORIZATION.toString(),
       authorization.idempotency,
     );
+    Logger.log(
+      `Autorization response: ${JSON.stringify(response)}`,
+      'AuthorizationProcess',
+    );
+    return response;
   }
 }

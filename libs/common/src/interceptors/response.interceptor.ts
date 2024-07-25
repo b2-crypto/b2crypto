@@ -1,3 +1,4 @@
+import { PomeloEnum } from '@integration/integration/enum/pomelo.enum';
 import {
   BadGatewayException,
   CallHandler,
@@ -28,6 +29,9 @@ export class ResponseInterceptor implements NestInterceptor {
 
     return next.handle().pipe(
       map((data) => {
+        if (res.headers[PomeloEnum.POMELO_APIKEY_HEADER]) {
+          return data?.data || data;
+        }
         if (context['contextType'] === 'rpc') {
           return data;
         }
