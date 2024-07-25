@@ -100,7 +100,7 @@ export class PomeloIntegrationProcessService {
       return {
         status: 'REJECTED',
         message: `Transaction rejected.`,
-        status_detail: 'REJECTED',
+        status_detail: 'INSUFFICIENT_FUNDS',
       };
     }
   }
