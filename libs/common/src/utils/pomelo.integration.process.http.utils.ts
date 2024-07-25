@@ -60,7 +60,7 @@ export class HttpUtils {
   public signResponse(
     context: ExecutionContext,
     headers: ProcessHeaderDto,
-    body: any,
+    body?: any,
   ) {
     context
       .switchToHttp()
