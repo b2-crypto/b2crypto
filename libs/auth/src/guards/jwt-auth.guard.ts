@@ -84,10 +84,6 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
       '';
     Logger.log(`IpCaller: ${caller}`, 'JwtAuthGuard');
     const whitelisted = process.env.POMELO_WHITELISTED_IPS;
-    Logger.log(
-      `Is allowed: ${whitelisted?.trim()?.split(',')}`,
-      'JwtAuthGuard',
-    );
     return (
       whitelisted?.replace(/\s/g, '')?.split(',')?.includes(caller) || false
     );

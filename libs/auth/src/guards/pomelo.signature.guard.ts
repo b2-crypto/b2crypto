@@ -74,12 +74,6 @@ export class SignatureGuard implements CanActivate {
   }
 
   private checkValidEndpoint(path: string, headers: ProcessHeaderDto): boolean {
-    Logger.log(
-      `Path: ${path} | Endpoint: ${headers.endpoint} | Result: ${
-        path === headers.endpoint
-      }`,
-      'SignatureGuard',
-    );
     if (path !== PomeloEnum.POMELO_ADJUSTMENT_PATH)
       return path === headers.endpoint;
 

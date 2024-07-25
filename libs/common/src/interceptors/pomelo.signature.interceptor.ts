@@ -2,6 +2,7 @@ import {
   CallHandler,
   ExecutionContext,
   Injectable,
+  Logger,
   NestInterceptor,
 } from '@nestjs/common';
 import { Observable } from 'rxjs';
@@ -48,6 +49,7 @@ export class SignatureInterceptor implements NestInterceptor {
       PomeloEnum.POMELO_AUTHORIZATION_PATH === path
         ? this.signatureUtil.signResponse(headers, data)
         : this.signatureUtil.signResponse(headers);
+    Logger.log(`Body to sign: ${JSON.stringify(data)}`, 'SignatureInterceptor');
     context
       .switchToHttp()
       .getResponse()
