@@ -18,13 +18,17 @@ import { AccountDocument } from '@account/account/entities/mongoose/account.sche
 import { Readable } from 'stream';
 import { URLSearchParams } from 'url';
 import { CommonService } from '@common/common';
+import { ShippingDto } from './dto/shipping.dto';
+import { ShippingResultInterface } from './interface/shipping-result.interface';
 
 export class IntegrationCardService<
   // DTO
   TUserCardDto = UserCardDto,
   TCardDto = CardDto,
+  TShippingDto = ShippingDto,
   // Results
   TUserResponse = UserResponseDto,
+  TShippingResponse = ShippingResultInterface,
 > implements IntegrationCardInterface<TUserCardDto, TCardDto, TUserResponse>
 {
   http: AxiosInstance;
@@ -36,8 +40,8 @@ export class IntegrationCardService<
   protected tokenInformationCard: string;
 
   constructor(
-    public account: AccountDocument,
     protected configService: ConfigService,
+    public account?: AccountDocument,
   ) {
     this.isProd =
       this.configService.get<string>('ENVIRONMENT') === EnvironmentEnum.prod;
@@ -160,7 +164,26 @@ export class IntegrationCardService<
   }
   async createCard(card: TCardDto): Promise<AxiosResponse<any[], any>> {
     //return this.http.post(this.routesMap.createCard, card);
-    return this.fetch('POST', this.routesMap.createCard, card);
+    return this.fetch('POST', this.routesMap.createCard, card, {
+      Authorization: `Bearer ${this.token}`,
+    });
+  }
+  async shippingPhysicalCard(
+    shipping: TShippingDto,
+  ): Promise<AxiosResponse<TShippingResponse, any>> {
+    //TODO [hender-2024/07/25] Certification Pomelo
+    //return this.http.post(this.routesMap.createCard, card);
+    return this.fetch('POST', this.routesMap.createShippingCard, shipping);
+  }
+  async getShippingPhysicalCard(
+    idShipping: string,
+  ): Promise<AxiosResponse<TShippingResponse, any>> {
+    //TODO [hender-2024/07/25] Certification Pomelo
+    //return this.http.post(this.routesMap.createCard, card);
+    return this.fetch(
+      'GET',
+      this.routesMap.searchShippingCard + `/${idShipping}`,
+    );
   }
   async updateCard(card: TCardDto): Promise<AxiosResponse<any[], any>> {
     return this.http.patch(this.routesMap.updateCard, card);

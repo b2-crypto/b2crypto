@@ -1,15 +1,16 @@
+import { AccountInterface } from '@account/account/entities/account.interface';
 import { AffiliateEntity } from '@affiliate/affiliate/domain/entities/affiliate.entity';
-import { BrandEntity } from 'libs/brand/src/entities/brand.entity';
 import { CategoryEntity } from '@category/category/entities/category.entity';
 import CountryCodeB2cryptoEnum from '@common/common/enums/country.code.b2crypto.enum';
 import { CrmEntity } from '@crm/crm/entities/crm.entity';
 import { GroupEntity } from '@group/group/entities/group.entity';
-import { AccountInterface } from '@account/account/entities/account.interface';
+import { ShippingResult } from '@integration/integration/card/generic/interface/shipping-result.interface';
 import { ApiProperty } from '@nestjs/swagger';
 import { PersonEntity } from '@person/person/entities/person.entity';
 import { StatusEntity } from '@status/status/entities/status.entity';
 import { TransferEntity } from '@transfer/transfer/entities/transfer.entity';
 import { UserEntity } from '@user/user/entities/user.entity';
+import { BrandEntity } from 'libs/brand/src/entities/brand.entity';
 import { ObjectId } from 'mongodb';
 import TypesAccountEnum from '../enum/types.account.enum';
 
@@ -99,7 +100,7 @@ export class AccountEntity implements AccountInterface {
     description: 'Url source of the account is coming',
   })
   referral: string;
-  integration: UserEntity;
+  owner: UserEntity;
   totalTransfer: number;
   quantityTransfer: number;
   showToAffiliate: boolean;
@@ -156,7 +157,13 @@ export class AccountEntity implements AccountInterface {
     type: String,
     description: 'Response account integration',
   })
-  responseCreation?: string;
+  responseCreation?: any;
+
+  @ApiProperty({
+    type: String,
+    description: 'Response shipping integration',
+  })
+  responseShipping?: any;
   @ApiProperty({
     type: AccountEntity,
     description: 'Account previous',

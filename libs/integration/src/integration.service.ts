@@ -25,8 +25,8 @@ export class IntegrationService {
   }
 
   async getCardIntegration(
-    account: AccountDocument,
     cardCategoryName: IntegrationCardEnum,
+    account?: AccountDocument,
   ): Promise<IntegrationCardService> {
     const cardType = this.getCardType(cardCategoryName, account);
     await cardType.generateHttp();
@@ -97,12 +97,12 @@ export class IntegrationService {
 
   private getCardType(
     cardCategoryName: string,
-    card: AccountDocument,
+    card?: AccountDocument,
   ): IntegrationCardService {
     let cardType: IntegrationCardService;
     switch (cardCategoryName.toUpperCase()) {
       case IntegrationCardEnum.POMELO:
-        cardType = new PomeloIntegrationService(card, this.configService);
+        cardType = new PomeloIntegrationService(this.configService, card);
         break;
     }
     if (!cardType) {

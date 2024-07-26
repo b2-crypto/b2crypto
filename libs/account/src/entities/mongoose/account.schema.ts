@@ -1,23 +1,21 @@
+import { AccountEntity } from '@account/account/entities/account.entity';
+import TypesAccountEnum from '@account/account/enum/types.account.enum';
 import { Affiliate } from '@affiliate/affiliate/infrastructure/mongoose/affiliate.schema';
 import { Brand } from '@brand/brand/entities/mongoose/brand.schema';
 import { Category } from '@category/category/entities/mongoose/category.schema';
 import CountryCodeB2cryptoEnum from '@common/common/enums/country.code.b2crypto.enum';
 import { Crm } from '@crm/crm/entities/mongoose/crm.schema';
 import { Group } from '@group/group/entities/mongoose/group.schema';
-import { AccountEntity } from '@account/account/entities/account.entity';
-import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { ShippingResult } from '@integration/integration/card/generic/interface/shipping-result.interface';
+import { Prop, raw, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Person } from '@person/person/entities/mongoose/person.schema';
 import { Status } from '@status/status/entities/mongoose/status.schema';
-import { Transfer } from '@transfer/transfer/entities/mongoose/transfer.schema';
 import { User } from '@user/user/entities/mongoose/user.schema';
+import { Type } from 'class-transformer';
 import * as mongoose from 'mongoose';
 import { Document, ObjectId } from 'mongoose';
-import { CardDto } from '@integration/integration/card/generic/dto/card.dto';
-import { UserCardDto } from '@integration/integration/card/generic/dto/user.card.dto';
-import { UserCard, UserCardSchema } from './user-card.schema';
 import { Card, CardSchema } from './card.schema';
-import { AddressSchema } from '@person/person/entities/mongoose/address.schema';
-import TypesAccountEnum from '@account/account/enum/types.account.enum';
+import { UserCard, UserCardSchema } from './user-card.schema';
 
 export type AccountDocument = Account & Document;
 
@@ -76,7 +74,7 @@ export class Account extends AccountEntity {
   referral: string;
 
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'users' })
-  integration: User;
+  owner: User;
 
   @Prop({ default: 0 })
   totalPayed: number;
@@ -140,6 +138,9 @@ export class Account extends AccountEntity {
 
   @Prop()
   responseCreation?: string;
+
+  @Prop(raw(ShippingResult))
+  responseShipping?: ShippingResult;
 
   @Prop({ type: UserCardSchema })
   userCardConfig?: UserCard;
