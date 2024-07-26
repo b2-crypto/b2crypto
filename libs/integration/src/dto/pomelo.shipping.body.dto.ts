@@ -22,9 +22,6 @@ export class ShippingNotifications {
   status_detail: string;
   @IsNotEmpty()
   @IsString()
-  request_status: string;
-  @IsNotEmpty()
-  @IsString()
   updated_at: string;
   @ValidateNested()
   @Type(() => ShippingMeta)
