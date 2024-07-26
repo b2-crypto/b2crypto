@@ -15,7 +15,7 @@ import { PomeloEnum } from '@integration/integration/enum/pomelo.enum';
 @Injectable()
 export class PomeloIntegrationProcessService {
   constructor(
-    private readonly chache: PomeloCache,
+    private readonly cache: PomeloCache,
     private readonly currencyConversion: FiatIntegrationClient,
     private readonly builder: BuildersService,
   ) {}
@@ -110,9 +110,9 @@ export class PomeloIntegrationProcessService {
     type: string,
     idempotency: string,
   ): Promise<any> {
-    let cachedResult = await this.chache.getResponse(idempotency);
+    let cachedResult = await this.cache.getResponse(idempotency);
     if (cachedResult == null) {
-      cachedResult = await this.chache.setTooEarly(idempotency);
+      cachedResult = await this.cache.setTooEarly(idempotency);
 
       // Save notification record.
 
@@ -120,7 +120,7 @@ export class PomeloIntegrationProcessService {
         process,
         type,
       );
-      await this.chache.setResponse(idempotency, response);
+      await this.cache.setResponse(idempotency, response);
       return response;
     }
   }
@@ -152,17 +152,15 @@ export class PomeloIntegrationProcessService {
 
   async processNotification(notification: NotificationDto): Promise<any> {
     Logger.log('ProcessNotification', 'Message Received');
-    let cachedResult = await this.chache.getResponse(
+    let cachedResult = await this.cache.getResponse(
       notification.idempotency_key,
     );
     if (cachedResult == null) {
-      cachedResult = await this.chache.setTooEarly(
-        notification.idempotency_key,
-      );
+      cachedResult = await this.cache.setTooEarly(notification.idempotency_key);
 
       // Save notification record on activity
 
-      cachedResult = await this.chache.setResponseReceived(
+      cachedResult = await this.cache.setResponseReceived(
         notification.idempotency_key,
       );
       return cachedResult;
