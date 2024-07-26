@@ -5,7 +5,7 @@ export enum PomeloEnum {
   POMELO_INTEGRATION_CONTROLLER = '/pomelo',
   POMELO_SENSITIVE_INFO_PATH = '/sensitive-information',
   POMELO_SHIPPING_NOTIFICATION_PATH = '/pomelo/shipping/updates',
-  POMELO_SHIPPING_CARD_EVENTS = 'pomelo/cards/v1/cards/events',
+  POMELO_SHIPPING_CARD_EVENTS = '/pomelo/cards/v1/cards/events',
   POMELO_CLIENT_PROXY = 'POMELO.CLIENT.PROXY',
   POMELO_NOTIFICATION_QUEUE = 'process-notification',
   POMELO_ADJUSTMENT_QUEUE = 'process-adjustment',
