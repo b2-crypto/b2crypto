@@ -33,7 +33,8 @@ export class AddressShipping {
   region: string;
   neighborhood: string;
   country: string;
-  additional_info: string;
+  additional_info?: string;
+  apartment: string;
 }
 
 export interface ReceiverShipping {

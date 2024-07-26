@@ -164,9 +164,7 @@ export class IntegrationCardService<
   }
   async createCard(card: TCardDto): Promise<AxiosResponse<any[], any>> {
     //return this.http.post(this.routesMap.createCard, card);
-    return this.fetch('POST', this.routesMap.createCard, card, {
-      Authorization: `Bearer ${this.token}`,
-    });
+    return this.fetch('POST', this.routesMap.createCard, card);
   }
   async shippingPhysicalCard(
     shipping: TShippingDto,

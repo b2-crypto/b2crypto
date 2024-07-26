@@ -277,6 +277,9 @@ export class CardServiceController extends AccountServiceController {
       throw new NotFoundException('User not found');
     }
     const card = await this.cardService.findOneById(idCard);
+    if (!card) {
+      throw new BadRequestException('Card has not found');
+    }
     if (!card.responseShipping) {
       throw new BadRequestException('Card has not shipping');
     }
@@ -328,7 +331,7 @@ export class CardServiceController extends AccountServiceController {
         region: 'MEDELLIN',
         neighborhood: 'ANTIOQUIA',
         country: 'COL',
-        additional_info: 'Apartamento 706',
+        apartment: '706',
       },
       receiver: {
         full_name: 'Hender Orlando',
