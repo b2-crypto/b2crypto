@@ -67,7 +67,7 @@ export class BankServiceController extends AccountServiceController {
     if (!user.personalData) {
       throw new BadRequestException('Need the personal data to continue');
     }
-    createDto.integration = user.id;
+    createDto.user = user.id;
     createDto.pin =
       createDto.pin ??
       parseInt(

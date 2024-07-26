@@ -5,20 +5,22 @@ import { CardDto } from '../generic/dto/card.dto';
 import { UserCardDto } from '../generic/dto/user.card.dto';
 import { UserResponseDto } from '../generic/dto/user.response.dto';
 import { IntegrationCardService } from '../generic/integration.card.service';
+import { ShippingDto } from '../generic/dto/shipping.dto';
 
 export class PomeloIntegrationService extends IntegrationCardService<
   UserCardDto,
   CardDto,
+  ShippingDto,
   UserResponseDto
 > {
   http: AxiosInstance;
   protected tokenInformationCard: string;
 
   constructor(
-    _account: AccountDocument,
     protected configService: ConfigService,
+    _account?: AccountDocument,
   ) {
-    super(_account, configService);
+    super(configService, _account);
     this.setClient({
       id: 'BPdaVjhdJAyzPW43JI7YUM1czNoTPh2G',
       secret:

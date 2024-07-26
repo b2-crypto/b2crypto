@@ -3,6 +3,7 @@ import { CategoryInterface } from '@category/category/entities/category.interfac
 import CountryCodeB2cryptoEnum from '@common/common/enums/country.code.b2crypto.enum';
 import { CrmInterface } from '@crm/crm/entities/crm.interface';
 import { GroupInterface } from '@group/group/entities/group.interface';
+import { ShippingResultInterface } from '@integration/integration/card/generic/interface/shipping-result.interface';
 import { PersonInterface } from '@person/person/entities/PersonInterface';
 import { StatusInterface } from '@status/status/entities/status.interface';
 import { UserInterface } from '@user/user/entities/user.interface';
@@ -26,7 +27,7 @@ export interface AccountInterface {
   accountDepartment?: CategoryInterface;
   accountStatus?: StatusInterface[];
   referral: string;
-  integration?: UserInterface;
+  owner?: UserInterface;
   totalTransfer: number;
   quantityTransfer: number;
   showToAffiliate: boolean;
@@ -44,7 +45,8 @@ export interface AccountInterface {
   firstName?: string;
   lastName?: string;
   type?: string;
-  responseCreation?: string;
+  responseCreation?: any;
+  responseShipping?: any;
   prevAccount?: AccountInterface;
   amount?: number;
   amountBlocked?: number;

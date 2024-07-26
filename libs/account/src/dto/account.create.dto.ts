@@ -157,7 +157,7 @@ export class AccountCreateDto extends CreateAnyDto implements AccountInterface {
 
   //@IsEmpty()
   @IsOptional()
-  integration?: ObjectId;
+  owner?: ObjectId;
 
   @ApiProperty({
     description: 'Account country',
@@ -238,7 +238,9 @@ export class AccountCreateDto extends CreateAnyDto implements AccountInterface {
   sourceId?: string;
 
   @IsEmpty()
-  responseCreation?: string;
+  responseCreation?: any;
+  @IsEmpty()
+  responseShipping?: any;
   @IsEmpty()
   totalTransfer: number;
   @IsEmpty()
