@@ -16,6 +16,10 @@ import { PomeloSensitiveInfoController } from './pomelo.sensitive-info.controlle
 import { PomeloRestClient } from '@integration/integration/client/pomelo.integration.client';
 import { AccountModule } from '@account/account/account.module';
 import { AccountServiceService } from 'apps/account-service/src/account-service.service';
+import { PomeloShippingController } from './pomelo.shipping.controller';
+import { PomeloIntegrationShippingService } from './services/pomelo.integration.shipping.service';
+import { UserServiceService } from 'apps/user-service/src/user-service.service';
+import { UserModule } from '@user/user';
 
 @Module({
   imports: [
@@ -24,11 +28,13 @@ import { AccountServiceService } from 'apps/account-service/src/account-service.
     AccountModule,
     IntegrationModule,
     BuildersModule,
+    UserModule,
     HttpModule,
   ],
   controllers: [
     PomeloIntegrationServiceController,
     PomeloSensitiveInfoController,
+    PomeloShippingController,
   ],
   providers: [
     Constants,
@@ -37,9 +43,11 @@ import { AccountServiceService } from 'apps/account-service/src/account-service.
     SignatureUtils,
     PomeloRestClient,
     AccountServiceService,
+    UserServiceService,
     FiatIntegrationClient,
     IntegrationServiceService,
     PomeloIntegrationProcessService,
+    PomeloIntegrationShippingService,
   ],
 })
 export class IntegrationServiceModule {}

@@ -5,33 +5,39 @@ import {
   Controller,
   Get,
   HttpCode,
+  Inject,
   Logger,
   Param,
+  Request,
 } from '@nestjs/common';
 import { AccountServiceService } from 'apps/account-service/src/account-service.service';
+import { UserServiceService } from 'apps/user-service/src/user-service.service';
 
 @Controller(PomeloEnum.POMELO_INTEGRATION_CONTROLLER)
 export class PomeloSensitiveInfoController {
   constructor(
+    @Inject(UserServiceService)
+    private readonly userService: UserServiceService,
     private readonly pomeloClient: PomeloRestClient,
-    private readonly cardService: AccountServiceService,
   ) {}
 
   @Get(PomeloEnum.POMELO_SENSITIVE_INFO_PATH)
   @HttpCode(200)
-  async issuePomeloPrivateInfoToken(@Param('cardId') cardId): Promise<any> {
-    Logger.log(`Looking for card: ${cardId}`, 'PomeloSensitiveInfoController');
-    const cardList = await this.cardService.findAll({
-      where: {
-        'cardConfig.id': `${cardId}`,
-      },
-    });
-    const card = cardList.list[0];
-    if (!card) {
-      throw new BadRequestException('Card not found');
-    }
-    return await this.pomeloClient.getSensitiveInfoToken(
-      card.cardConfig?.user_id || '',
+  async issuePomeloPrivateInfoToken(@Request() req: any): Promise<any> {
+    Logger.log(
+      `Looking for user: ${req.user}`,
+      'PomeloSensitiveInfoController',
     );
+    // HARD CODED USER ID
+    const user = await this.userService.getOne('66855fed6e4f611aac8c7ab3');
+    if (!user) {
+      throw new BadRequestException('User not found');
+    }
+    const pomeloUser = user?.userCard?.id || '';
+    Logger.log(
+      `User: ${user?.email || 'NOT FOUND'}`,
+      'PomeloSensitiveInfoController',
+    );
+    return await this.pomeloClient.getSensitiveInfoToken(pomeloUser);
   }
 }
