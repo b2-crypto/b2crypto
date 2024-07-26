@@ -23,21 +23,17 @@ export class PomeloSensitiveInfoController {
 
   @Get(PomeloEnum.POMELO_SENSITIVE_INFO_PATH)
   @HttpCode(200)
-  async issuePomeloPrivateInfoToken(@Request() req: any): Promise<any> {
+  async issuePomeloPrivateInfoToken(@Request() req: Request): Promise<any> {
+    const b2cryptoUser = req['user']?.id || '';
     Logger.log(
-      `Looking for user: ${req.user}`,
+      `Looking for user: ${b2cryptoUser}`,
       'PomeloSensitiveInfoController',
     );
-    // HARD CODED USER ID
-    const user = await this.userService.getOne('66855fed6e4f611aac8c7ab3');
+    const user = await this.userService.getOne(b2cryptoUser);
     if (!user) {
       throw new BadRequestException('User not found');
     }
     const pomeloUser = user?.userCard?.id || '';
-    Logger.log(
-      `User: ${user?.email || 'NOT FOUND'}`,
-      'PomeloSensitiveInfoController',
-    );
     return await this.pomeloClient.getSensitiveInfoToken(pomeloUser);
   }
 }
