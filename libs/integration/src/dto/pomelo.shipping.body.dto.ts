@@ -1,53 +1,42 @@
 import { Type } from 'class-transformer';
-import { IsNotEmpty, IsString, ValidateNested } from 'class-validator';
+import { IsOptional, ValidateNested } from 'class-validator';
 
 class ShippingMeta {
-  @IsNotEmpty()
-  @IsString()
+  @IsOptional()
   resource_url: string;
 }
 
 export class ShippingNotifications {
-  @IsNotEmpty()
-  @IsString()
+  @IsOptional()
   event_id: string;
-  @IsNotEmpty()
-  @IsString()
+  @IsOptional()
   shipment_id: string;
-  @IsNotEmpty()
-  @IsString()
+  @IsOptional()
   status: string;
-  @IsNotEmpty()
-  @IsString()
+  @IsOptional()
   status_detail: string;
-  @IsNotEmpty()
-  @IsString()
+  @IsOptional()
+  request_status: string;
+  @IsOptional()
   updated_at: string;
   @ValidateNested()
   @Type(() => ShippingMeta)
   meta: ShippingMeta;
-  @IsNotEmpty()
-  @IsString()
+  @IsOptional()
   idempotency_key: string;
 }
 
 export class CardEvents {
-  @IsNotEmpty()
-  @IsString()
+  @IsOptional()
   event_id: string;
-  @IsNotEmpty()
-  @IsString()
+  @IsOptional()
   id: string;
-  @IsNotEmpty()
-  @IsString()
+  @IsOptional()
   updated_at: string;
-  @IsNotEmpty()
-  @IsString()
+  @IsOptional()
   user_id: string;
-  @IsNotEmpty()
-  @IsString()
+  @IsOptional()
   event: string;
-  @IsNotEmpty()
-  @IsString()
+  @IsOptional()
   idempotency_key: string;
 }
