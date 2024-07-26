@@ -33,7 +33,10 @@ export class PomeloIntegrationServiceController {
   async processNotification(
     @Body() notification: NotificationDto,
   ): Promise<any> {
-    Logger.log('ProcessNotification', notification);
+    Logger.log(
+      `Idempotency: ${notification.idempotency_key}`,
+      'NotificationHandler',
+    );
     return await this.integrationServiceService.processNotification(
       notification,
     );
@@ -47,6 +50,7 @@ export class PomeloIntegrationServiceController {
     @Body() adjustment: Adjustment,
     @Headers(PomeloEnum.POMELO_IDEMPOTENCY_HEADER) idempotency: string,
   ): Promise<any> {
+    Logger.log(`Idempotency: ${idempotency}`, 'AdjustmentHandler');
     adjustment.idempotency = idempotency;
     return await this.integrationServiceService.processAdjustment(adjustment);
   }
