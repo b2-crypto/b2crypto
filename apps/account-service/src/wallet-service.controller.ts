@@ -56,7 +56,7 @@ export class WalletServiceController extends AccountServiceController {
     if (!user.personalData) {
       throw new BadRequestException('Need the personal data to continue');
     }
-    createDto.user = user.id;
+    createDto.owner = user.id;
     createDto.pin =
       createDto.pin ??
       parseInt(

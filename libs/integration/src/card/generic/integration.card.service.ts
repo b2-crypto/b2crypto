@@ -1,24 +1,20 @@
+import { AccountDocument } from '@account/account/entities/mongoose/account.schema';
+import { CommonService } from '@common/common';
 import { EnvironmentEnum } from '@common/common/enums/environment.enum';
-import { CrmDocument } from '@crm/crm/entities/mongoose/crm.schema';
 import { BadRequestException, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import axios, {
   AxiosInstance,
-  AxiosRequestConfig,
   AxiosResponse,
   CreateAxiosDefaults,
 } from 'axios';
+import { CardDto } from './dto/card.dto';
+import { ClientCardDto } from './dto/client.card.dto';
+import { ShippingDto } from './dto/shipping.dto';
 import { UserCardDto } from './dto/user.card.dto';
 import { UserResponseDto } from './dto/user.response.dto';
 import { IntegrationCardInterface } from './integration.card.interface';
 import { CardRoutesInterface } from './interface/card.routes.interface';
-import { CardDto } from './dto/card.dto';
-import { ClientCardDto } from './dto/client.card.dto';
-import { AccountDocument } from '@account/account/entities/mongoose/account.schema';
-import { Readable } from 'stream';
-import { URLSearchParams } from 'url';
-import { CommonService } from '@common/common';
-import { ShippingDto } from './dto/shipping.dto';
 import { ShippingResultInterface } from './interface/shipping-result.interface';
 
 export class IntegrationCardService<

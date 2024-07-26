@@ -105,7 +105,7 @@ export class CardServiceController extends AccountServiceController {
     if (!user.personalData) {
       throw new BadRequestException('Need the personal data to continue');
     }
-    createDto.user = user.id;
+    createDto.owner = user.id;
     createDto.pin =
       createDto.pin ??
       parseInt(
@@ -328,8 +328,8 @@ export class CardServiceController extends AccountServiceController {
         street_name: 'Calle 6Sur #70-215',
         street_number: ' ',
         city: 'MEDELLIN',
-        region: 'MEDELLIN',
-        neighborhood: 'ANTIOQUIA',
+        region: 'ANTIOQUIA',
+        neighborhood: 'BELEN',
         country: 'COL',
         apartment: '706',
       },
@@ -347,7 +347,7 @@ export class CardServiceController extends AccountServiceController {
         responseShipping: rtaShippingCard.data,
         address: rtaShippingCard.data.address as any,
         personalData: user.personalData,
-        owner: user._id,
+        owner: user._id ?? user.id,
       } as AccountCreateDto);
       return account;
     }

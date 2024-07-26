@@ -377,6 +377,7 @@ export class AuthServiceController {
         resourceName: ResourcesEnum.USER,
       };
     }
+    Logger.log(data, 'OTP Sended');
     this.builder.emitMessageEventClient(
       EventsNamesMessageEnum.sendEmailOtpNotification,
       data,
