@@ -290,6 +290,7 @@ export class CardServiceController extends AccountServiceController {
     const rtaGetShipping = await cardIntegration.getShippingPhysicalCard(
       card.responseShipping.id,
     );
+    Logger.log(rtaGetShipping, 'Shipping');
     return card.responseShipping;
   }
 
@@ -319,7 +320,7 @@ export class CardServiceController extends AccountServiceController {
       shipment_type: 'CARD_FROM_WAREHOUSE',
       affinity_group_id: 'afg-2jc1143Egwfm4SUOaAwBz9IfZKb',
       country: 'COL',
-      user_id: 'usr-2jA87gizPvyTorby5m2mciIVgOb',
+      user_id: user.userCard.id,
       address: {
         street_name: 'Calle 6Sur #70-215',
         street_number: ' ',
@@ -340,7 +341,7 @@ export class CardServiceController extends AccountServiceController {
     if (rtaShippingCard.data.id) {
       const account = await this.cardService.createOne({
         accountType: CardTypesAccountEnum.PHYSICAL,
-        responseShipping: rtaShippingCard,
+        responseShipping: rtaShippingCard.data,
         address: rtaShippingCard.data.address as any,
         personalData: user.personalData,
         owner: user._id,
