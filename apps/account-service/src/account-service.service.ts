@@ -43,7 +43,6 @@ export class AccountServiceService
     createDto: AccountCreateDto,
     context?: any,
   ): Promise<AccountDocument> {
-    createDto.owner = createDto.user;
     return this.lib.create(createDto);
   }
   async createMany(
