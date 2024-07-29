@@ -155,10 +155,6 @@ export class AccountCreateDto extends CreateAnyDto implements AccountInterface {
   @IsOptional()
   referral: string;
 
-  //@IsEmpty()
-  @IsOptional()
-  integration?: ObjectId;
-
   @ApiProperty({
     description: 'Account country',
   })
@@ -201,7 +197,7 @@ export class AccountCreateDto extends CreateAnyDto implements AccountInterface {
 
   @IsOptional()
   @IsMongoId()
-  user?: ObjectId;
+  owner?: ObjectId;
 
   @IsMongoId({ each: true })
   @IsOptional()
@@ -238,7 +234,9 @@ export class AccountCreateDto extends CreateAnyDto implements AccountInterface {
   sourceId?: string;
 
   @IsEmpty()
-  responseCreation?: string;
+  responseCreation?: any;
+  @IsEmpty()
+  responseShipping?: any;
   @IsEmpty()
   totalTransfer: number;
   @IsEmpty()
