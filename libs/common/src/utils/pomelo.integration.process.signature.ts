@@ -56,11 +56,11 @@ export class SignatureUtils {
           `Signature mismatch. Received: ${signature}. Calculated: ${hashResult}`,
           'Check Signature',
         );
-        return true;
+        return false;
       }
       return true;
     }
-    return true;
+    return false;
   }
 
   signResponse(headers: ProcessHeaderDto, body?: any): string {
