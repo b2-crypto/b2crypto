@@ -14,78 +14,80 @@ export class SignatureUtils {
     headers: ProcessHeaderDto,
     body: ProcessBodyI,
   ): Promise<boolean> {
-    if (headers && body) {
-      Logger.log(`Headers: ${JSON.stringify(headers)}`, 'Check Signature');
-      let signature = headers.signature;
-      if (headers.signature.startsWith('hmac-sha256')) {
-        signature = signature.replace('hmac-sha256 ', '');
-      } else {
-        Logger.error(
-          `Unsupported signature algorithm, expecting hmac-sha256, got ${signature}`,
-          'Check Signature',
-        );
-        const response = await this.cache.setInvalidSignature(
-          headers.idempotency,
-        );
-        return false;
+    let isValid = false;
+    try {
+      if (headers && body) {
+        Logger.log(`Headers: ${JSON.stringify(headers)}`, 'Check Signature');
+        let signature = headers.signature;
+        if (headers.signature.startsWith('hmac-sha256')) {
+          signature = signature.replace('hmac-sha256 ', '');
+
+          const secret = JSON.stringify(this.API_DIC[headers.apiKey]);
+          const key = Buffer.from(secret, 'base64');
+
+          const hmac = crypto
+            .createHmac('sha256', key)
+            .update(headers.timestamp.toString())
+            .update(headers.endpoint)
+            .update(Buffer.from(JSON.stringify(body)));
+
+          const hashResult = hmac.digest('base64'); // calculated signature result
+          const hashResultBytes = Buffer.from(hashResult, 'base64'); // bytes representation
+
+          // compare signatures using a cryptographically secure function
+          // for that you normally need the signature bytes, so decode from base64
+          const signatureBytes = Buffer.from(signature, 'base64');
+          const signaturesMatch = crypto.timingSafeEqual(
+            hashResultBytes,
+            signatureBytes,
+          );
+
+          if (!signaturesMatch) {
+            Logger.error(
+              `Signature mismatch. Received: ${signature}. Calculated: ${hashResult}`,
+              'Check Signature',
+            );
+            isValid = false;
+          }
+          isValid = true;
+        } else {
+          Logger.error(
+            `Unsupported signature algorithm, expecting hmac-sha256, got ${signature}`,
+            'Check Signature',
+          );
+          const response = await this.cache.setInvalidSignature(
+            headers.idempotency,
+          );
+          isValid = false;
+        }
       }
-
-      const rawBody = Buffer.from(JSON.stringify(body));
-      const signatureString = JSON.stringify(this.API_DIC[headers.apiKey]);
-      const rawSignature = Buffer.from(signatureString, 'base64');
-
-      const hmac = crypto
-        .createHmac('sha256', rawSignature)
-        .update(headers.timestamp.toString())
-        .update(headers.endpoint)
-        .update(rawBody);
-
-      const hashResult = hmac.digest('base64'); // calculated signature result
-      const hashResultBytes = Buffer.from(hashResult, 'base64'); // bytes representation
-
-      // compare signatures using a cryptographically secure function
-      // for that you normally need the signature bytes, so decode from base64
-      const signatureBytes = Buffer.from(signature, 'base64');
-      const signaturesMatch = crypto.timingSafeEqual(
-        hashResultBytes,
-        signatureBytes,
-      );
-
-      if (!signaturesMatch) {
-        Logger.error(
-          `Signature mismatch. Received: ${signature}. Calculated: ${hashResult}`,
-          'Check Signature',
-        );
-        return false;
-      }
-      return true;
+    } catch (error) {
+      isValid = false;
+      Logger.error(error, 'Check Signature');
     }
-    return false;
+    return isValid;
   }
 
   signResponse(headers: ProcessHeaderDto, body?: any): string {
-    const secret = JSON.stringify(this.API_DIC[headers.apiKey]);
-    const key = Buffer.from(secret, 'base64');
-    const hash = crypto
-      .createHmac('sha256', key)
-      .update(headers.timestamp.toString())
-      .update(headers.endpoint);
+    try {
+      const secret = JSON.stringify(this.API_DIC[headers.apiKey]);
+      const key = Buffer.from(secret, 'base64');
+      const hash = crypto
+        .createHmac('sha256', key)
+        .update(headers.timestamp.toString())
+        .update(headers.endpoint);
 
-    let message = '';
-    if (body) {
-      body = this.fixResponseBody(body);
-      Logger.log(JSON.stringify(body), 'SignResponse');
-      hash.update(Buffer.from(JSON.stringify(body)));
-      message = `${headers.timestamp}${headers.endpoint}${JSON.stringify(
-        body,
-      )}`;
-    } else {
-      message = `${headers.timestamp}${headers.endpoint}`;
+      if (body) {
+        body = this.fixResponseBody(body);
+        hash.update(Buffer.from(JSON.stringify(body)));
+      }
+
+      const hashResult = hash.digest('base64');
+      return 'hmac-sha256 ' + hashResult;
+    } catch (error) {
+      Logger.error(error);
+      return '';
     }
-    Logger.log(`Message: ${message}`, 'SignResponse');
-
-    const hashResult = hash.digest('base64'); // calculated signature result
-    return 'hmac-sha256 ' + hashResult;
   }
 
   private fixResponseBody(data: any): any {
