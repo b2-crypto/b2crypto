@@ -7,6 +7,7 @@ import {
   IsEmail,
   IsEmpty,
   IsMongoId,
+  IsNotEmpty,
   IsOptional,
   IsString,
   Matches,
@@ -61,11 +62,11 @@ export class UserRegisterDto extends UserChangePasswordDto {
   @ApiProperty({
     description: 'Email User',
   })
-  @IsString()
+  @IsNotEmpty()
   @IsEmail()
   email: string;
 
-  @IsEmpty()
+  @IsOptional()
   @IsEmail()
   slugEmail: string;
 
@@ -77,11 +78,11 @@ export class UserRegisterDto extends UserChangePasswordDto {
   name: string;
 
   @IsString()
-  @IsEmpty()
+  @IsOptional()
   username: string;
 
-  @IsEmpty()
   @IsString()
+  @IsOptional()
   slugUsername: string;
 
   @IsMongoId()
