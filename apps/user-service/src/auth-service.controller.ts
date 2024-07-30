@@ -190,6 +190,13 @@ export class AuthServiceController {
   @ApiResponse(ResponseB2Crypto.getResponseSwagger(500, ActionsEnum.LOGIN)) */
   @Post('registry')
   async registryUser(@Body() userDto: UserRegisterDto) {
+    if (!userDto.name && !userDto.username) {
+      throw new BadRequestError('Name or Username are required');
+    }
+    userDto.slugEmail = CommonService.getSlug(userDto.email);
+    userDto.username = userDto.username ?? userDto.name;
+    userDto.name = userDto.name ?? userDto.username;
+    userDto.slugUsername = CommonService.getSlug(userDto.username);
     return this.builder.getPromiseUserEventClient(
       EventsNamesUserEnum.createOne,
       userDto,
