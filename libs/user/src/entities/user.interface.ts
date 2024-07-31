@@ -1,5 +1,6 @@
 import { AffiliateInterface } from '@affiliate/affiliate/domain/entities/affiliate.interface';
 import { CategoryInterface } from '@category/category/entities/category.interface';
+import CurrencyCodeB2cryptoEnum from '@common/common/enums/currency-code-b2crypto.enum';
 import { FileInterface } from '@file/file/entities/file.interface';
 import { PermissionInterface } from '@permission/permission/entities/permission.interface';
 import { PersonInterface } from '@person/person/entities/PersonInterface';
@@ -27,6 +28,8 @@ export interface UserInterface {
   twoFactorSecret: string;
   twoFactorQr: string;
   twoFactorIsActive: boolean;
+  amountCustodial: number;
+  currencyCustodial: CurrencyCodeB2cryptoEnum;
   image: FileInterface;
   role: RoleInterface;
   permissions: Array<PermissionInterface>;

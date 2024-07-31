@@ -1,9 +1,10 @@
 import {
   Body,
+  CACHE_MANAGER,
   Controller,
   Delete,
   Get,
-  Logger,
+  Inject,
   NotFoundException,
   Param,
   ParseArrayPipe,
@@ -14,13 +15,8 @@ import {
 import { ApiExcludeEndpoint, ApiResponse, ApiTags } from '@nestjs/swagger';
 
 import { AllowAnon } from '@auth/auth/decorators/allow-anon.decorator';
-import { PolicyHandlerCategoryRead } from '@auth/auth/policy/category/policity.handler.category.read';
-import { PolicyHandlerCrmCreate } from '@auth/auth/policy/crm/policity.handler.crm.create';
-import { PolicyHandlerCrmDelete } from '@auth/auth/policy/crm/policity.handler.crm.delete';
-import { PolicyHandlerCrmRead } from '@auth/auth/policy/crm/policity.handler.crm.read';
-import { PolicyHandlerCrmUpdate } from '@auth/auth/policy/crm/policity.handler.crm.update';
-import { CheckPoliciesAbility } from '@auth/auth/policy/policy.handler.ability';
 import { CommonService } from '@common/common';
+import { EnvironmentEnum } from '@common/common/enums/environment.enum';
 import GenericServiceController from '@common/common/interfaces/controller.generic.interface';
 import { QuerySearchAnyDto } from '@common/common/models/query_search-any.dto';
 import { UpdateAnyDto } from '@common/common/models/update-any.dto';
@@ -28,6 +24,8 @@ import { CrmCreateDto } from '@crm/crm/dto/crm.create.dto';
 import { CrmUpdateDto } from '@crm/crm/dto/crm.update.dto';
 import { CrmEntity } from '@crm/crm/entities/crm.entity';
 import { CrmDocument } from '@crm/crm/entities/mongoose/crm.schema';
+import { Cache, CacheKey, CacheTTL } from '@nestjs/cache-manager';
+import { ConfigService } from '@nestjs/config';
 import {
   Ctx,
   EventPattern,
@@ -35,23 +33,21 @@ import {
   Payload,
   RmqContext,
 } from '@nestjs/microservices';
+import ResponseB2Crypto from '@response-b2crypto/response-b2crypto/models/ResponseB2Crypto';
 import { ConfigCheckStatsDto } from '@stats/stats/dto/config.check.stats.dto';
 import { TransferInterface } from '@transfer/transfer/entities/transfer.interface';
 import { CrmServiceService } from './crm-service.service';
 import { AutologinLeadFromAffiliateDto } from './dto/autologin.lead.from.affiliate.dto';
+import { CheckLeadStatusOnCrmDto } from './dto/check.lead.status.on.crm.dto';
 import { CreateLeadOnCrmDto } from './dto/create.lead.on.crm.dto';
 import { CreateTransferOnCrmDto } from './dto/create.transfer.on.crm.dto';
 import EventsNamesCrmEnum from './enum/events.names.crm.enum';
-import { LeadsToCheckStatusDto } from './dto/leads.to.check.status.dto';
-import { CheckLeadStatusOnCrmDto } from './dto/check.lead.status.on.crm.dto';
-import ResponseB2Crypto from '@response-b2crypto/response-b2crypto/models/ResponseB2Crypto';
-import { ConfigService } from '@nestjs/config';
-import { EnvironmentEnum } from '@common/common/enums/environment.enum';
 
 @ApiTags('CRM')
 @Controller('crm')
 export class CrmServiceController implements GenericServiceController {
   constructor(
+    @Inject(CACHE_MANAGER) private cacheManager: Cache,
     private readonly crmService: CrmServiceService,
     private readonly configService: ConfigService,
   ) {}
@@ -132,6 +128,26 @@ export class CrmServiceController implements GenericServiceController {
   @ApiResponse(ResponseB2Crypto.getResponseSwagger(500))
   async findOneById(@Param('crmID') id: string) {
     return this.crmService.getOne(id);
+  }
+
+  @Get('/name/:crmName')
+  // @CheckPoliciesAbility(new PolicyHandlerCrmRead())
+  @ApiResponse({
+    status: 200,
+    description: 'was searched successfully',
+    type: String,
+  })
+  @CacheTTL(5)
+  async getIdCrmByName(@Param('crmName') name: string) {
+    const list = await this.crmService.getAll({
+      where: {
+        slug: CommonService.getSlug(name),
+      },
+    });
+    if (list.totalElements) {
+      return list.list[0]._id;
+    }
+    throw new NotFoundException('Not found Crm');
   }
 
   @Post()
@@ -297,6 +313,25 @@ export class CrmServiceController implements GenericServiceController {
     });
     if (crms.totalElements) {
       return crms.list[0];
+    }
+    throw new NotFoundException('Not found Crm');
+  }
+  @AllowAnon()
+  @CacheTTL(5)
+  @CacheKey(EventsNamesCrmEnum.getIdCrmByNameCached)
+  @MessagePattern(EventsNamesCrmEnum.getIdCrmByNameCached)
+  async getIdCrmEventByNameCached(
+    @Payload() crmName: string,
+    @Ctx() ctx: RmqContext,
+  ): Promise<string> {
+    CommonService.ack(ctx);
+    const crms = await this.crmService.getAll({
+      where: {
+        slug: CommonService.getSlug(crmName),
+      },
+    });
+    if (crms.totalElements) {
+      return crms.list[0]._id;
     }
     throw new NotFoundException('Not found Crm');
   }

@@ -439,7 +439,7 @@ export class StatsAffiliateServiceService
             break;
         }
         const amount = transfer.amount * sign;
-        if (transfer.hasApproved) {
+        if (transfer.isApprove) {
           documentStats.totalLeads += amount;
           documentStats.maxTotalLeads =
             documentStats.maxTotalLeads < amount

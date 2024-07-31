@@ -4,13 +4,14 @@ import { ObjectId } from 'mongoose';
 
 export class CardDepositCreateDto extends CreateAnyDto {
   @IsMongoId()
-  id: ObjectId;
+  to: ObjectId;
 
   @IsMongoId()
   @IsOptional()
   from?: ObjectId;
 
   @IsString()
+  @IsOptional()
   pin: string;
 
   @IsNumber({
@@ -20,5 +21,6 @@ export class CardDepositCreateDto extends CreateAnyDto {
   amount: number;
 
   @IsString()
+  @IsOptional()
   movement?: string;
 }

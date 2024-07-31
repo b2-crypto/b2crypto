@@ -23,6 +23,7 @@ import { MessagePattern, RmqContext } from '@nestjs/microservices';
 import { AccountServiceService } from './account-service.service';
 import EventsNamesAccountEnum from './enum/events.names.account.enum';
 import { ActivityCreateDto } from '@activity/activity/dto/activity.create.dto';
+import { CommonService } from '@common/common';
 
 @ApiTags('ACCOUNT')
 @Controller('accounts')
@@ -39,6 +40,12 @@ export class AccountServiceController implements GenericServiceController {
 
   @Get('all')
   findAll(@Query() query: QuerySearchAnyDto, req?: any) {
+    return this.accountService.findAll(query);
+  }
+
+  @Get('me')
+  findAllMe(@Query() query: QuerySearchAnyDto, req?: any) {
+    query = CommonService.getQueryWithUserId(query, req, 'owner');
     return this.accountService.findAll(query);
   }
 

@@ -1,5 +1,4 @@
 import {
-  BadRequestException,
   Injectable,
   InternalServerErrorException,
   Logger,
@@ -16,7 +15,6 @@ import { PomeloCache } from '@integration/integration/util/pomelo.integration.pr
 import { PomeloProcessEnum } from '../enums/pomelo.process.enum';
 import { CardsEnum } from '@common/common/enums/messages.enum';
 import EventsNamesCrmEnum from 'apps/crm-service/src/enum/events.names.crm.enum';
-import { TransferDocument } from '@transfer/transfer/entities/mongoose/transfer.schema';
 import EventsNamesTransferEnum from 'apps/transfer-service/src/enum/events.names.transfer.enum';
 
 @Injectable()
@@ -123,17 +121,18 @@ export class PomeloIntegrationProcessService {
     return response;
   }
 
-  private async createTransferRecord(process: any) {
+  private async createTransferRecord(process: any, headers: any) {
     const crm = await this.builder.getPromiseCrmEventClient(
       EventsNamesCrmEnum.findOneByName,
       'pomelo',
     );
 
-    const transfer =
-      await this.builder.getPromiseTransferEventClient<TransferDocument>(
-        EventsNamesTransferEnum.createOne,
-        {},
-      );
+    const transfer = await this.builder.getPromiseTransferEventClient(
+      EventsNamesTransferEnum.createOne,
+      {
+        crm,
+      },
+    );
   }
 
   async processNotification(notification: NotificationDto): Promise<any> {

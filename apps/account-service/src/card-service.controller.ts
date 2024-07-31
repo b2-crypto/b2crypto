@@ -85,6 +85,19 @@ export class CardServiceController extends AccountServiceController {
     query.where.type = TypesAccountEnum.CARD;
     return this.cardService.findAll(query);
   }
+  @Get('me')
+  @ApiTags('Stakey Card')
+  @ApiHeader({
+    name: 'b2crypto-key',
+    description: 'The apiKey',
+  })
+  findAllMe(@Query() query: QuerySearchAnyDto, @Req() req?: any) {
+    query = query ?? {};
+    query.where = query.where ?? {};
+    query.where.type = TypesAccountEnum.CARD;
+    query = CommonService.getQueryWithUserId(query, req, 'owner');
+    return this.cardService.findAll(query);
+  }
 
   @Post('create')
   @ApiTags('Stakey Card')
@@ -99,7 +112,7 @@ export class CardServiceController extends AccountServiceController {
       await this.userService.getAll({
         relations: ['personalData'],
         where: {
-          _id: req?.user.id,
+          _id: CommonService.getUserId(req),
         },
       })
     ).list[0];
@@ -375,7 +388,7 @@ export class CardServiceController extends AccountServiceController {
       throw new BadRequestException('I need a wallet to recharge card');
     }
     const to = await this.getAccountService().findOneById(
-      createDto.id.toString(),
+      createDto.to.toString(),
     );
     if (to.type != TypesAccountEnum.CARD) {
       throw new BadRequestException('Card not found');
@@ -387,14 +400,14 @@ export class CardServiceController extends AccountServiceController {
       throw new BadRequestException('Wallet not found');
     }
     if (!from) {
-      throw new BadRequestException('Wallet is not valid1');
+      throw new BadRequestException('Wallet is not valid');
     }
     if (from.amount < createDto.amount) {
       throw new BadRequestException('Wallet with enough balance');
     }
     return Promise.all([
       this.cardService.customUpdateOne({
-        id: createDto.id,
+        id: createDto.to,
         $inc: {
           amount: createDto.amount,
         },

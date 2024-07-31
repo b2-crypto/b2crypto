@@ -1,4 +1,5 @@
-import { BrandEntity } from 'libs/brand/src/entities/brand.entity';
+import { AccountEntity } from '@account/account/entities/account.entity';
+import { AffiliateEntity } from '@affiliate/affiliate/domain/entities/affiliate.entity';
 import { CategoryEntity } from '@category/category/entities/category.entity';
 import CountryCodeEnum from '@common/common/enums/country.code.b2crypto.enum';
 import CurrencyCodeB2cryptoEnum from '@common/common/enums/currency-code-b2crypto.enum';
@@ -9,12 +10,15 @@ import { PspAccountEntity } from '@psp-account/psp-account/entities/psp-account.
 import { PspEntity } from '@psp/psp/entities/psp.entity';
 import { StatusEntity } from '@status/status/entities/status.entity';
 import { TransferInterface } from '@transfer/transfer/entities/transfer.interface';
-import { ObjectId } from 'mongodb';
-import { OperationTransactionType } from '../enum/operation.transaction.type.enum';
-import { AffiliateEntity } from '@affiliate/affiliate/domain/entities/affiliate.entity';
-import { PspResponse } from '../dto/transfer.latamcashier.response.dto';
 import { UserEntity } from '@user/user/entities/user.entity';
-import { AccountEntity } from '@account/account/entities/account.entity';
+import { BrandEntity } from 'libs/brand/src/entities/brand.entity';
+import { ObjectId } from 'mongodb';
+import { PspResponse } from '../dto/transfer.latamcashier.response.dto';
+import {
+  TransferRequestBodyJsonDto,
+  TransferRequestHeadersJsonDto,
+} from '../dto/transfer.request.dto';
+import { OperationTransactionType } from '../enum/operation.transaction.type.enum';
 
 export class TransferEntity implements TransferInterface {
   @ApiProperty({
@@ -34,6 +38,7 @@ export class TransferEntity implements TransferInterface {
     description: 'Transfer currency',
   })
   currency: CurrencyCodeB2cryptoEnum;
+  currencyCustodial: CurrencyCodeB2cryptoEnum;
   operationType: OperationTransactionType;
   @ApiProperty({
     enum: CountryCodeEnum,
@@ -47,6 +52,7 @@ export class TransferEntity implements TransferInterface {
   })
   // Amount in minimal units
   amount: number;
+  amountCustodial: number;
   leadEmail: string;
   leadTpId: string;
   leadAccountId: string;
@@ -80,6 +86,8 @@ export class TransferEntity implements TransferInterface {
   })
   descriptionStatusPayment: string;
   urlPayment: string;
+  requestBodyJson: TransferRequestBodyJsonDto;
+  requestHeadersJson: TransferRequestHeadersJsonDto;
   responsePayment: PspResponse;
   responseAccount: any;
   lead: LeadEntity;
@@ -99,7 +107,7 @@ export class TransferEntity implements TransferInterface {
   brand: BrandEntity;
   confirmedAt: Date;
   hasChecked: boolean;
-  hasApproved: boolean;
+  isApprove: boolean;
   checkedOnCashier: boolean;
   approvedAt: Date;
   rejectedAt: Date;

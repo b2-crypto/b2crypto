@@ -2,6 +2,7 @@ import {
   UserCard,
   UserCardSchema,
 } from '@account/account/entities/mongoose/user-card.schema';
+import CurrencyCodeB2cryptoEnum from '@common/common/enums/currency-code-b2crypto.enum';
 import { FileInterface } from '@file/file/entities/file.interface';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Permission } from '@permission/permission/entities/mongoose/permission.schema';
@@ -75,6 +76,12 @@ export class User extends UserEntity {
 
   @Prop()
   twoFactorIsActive: boolean;
+
+  @Prop()
+  amountCustodial: number;
+
+  @Prop({ type: String })
+  currencyCustodial: CurrencyCodeB2cryptoEnum;
 
   @Prop({ type: [String] })
   authorizations: Array<string>;
