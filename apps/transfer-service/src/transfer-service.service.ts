@@ -241,7 +241,7 @@ export class TransferServiceService
       } */
       await this.checkTransferAccount(transfer, data);
       if (transfer.isManualTx) {
-        transfer.hasApproved = true;
+        transfer.isApprove = true;
         transfer.approvedAt = new Date();
         transfer.rejectedAt = null;
       }
@@ -381,7 +381,7 @@ export class TransferServiceService
         affiliateId,
       );
     transfer.userCreator = affiliate.user;
-    if (transfer.hasApproved || transfer.isManualTx) {
+    if (transfer.isApprove || transfer.isManualTx) {
       transfer.userApprover = affiliate.user;
     }
     transfer.account = account;
@@ -409,7 +409,7 @@ export class TransferServiceService
       }
       await this.checkTransfer(transfer, data);
       if (transfer.isManualTx) {
-        transfer.hasApproved = true;
+        transfer.isApprove = true;
         transfer.approvedAt = new Date();
         transfer.rejectedAt = null;
       }
@@ -430,7 +430,7 @@ export class TransferServiceService
         ],
       });
       const transfer_ = page.list[0];
-      /* if (transfer.hasApproved) {
+      /* if (transfer.isApprove) {
         await this.sendTransferToCrm(transfer_.lead, transfer_);
       } */
       return transfer_;
@@ -464,7 +464,7 @@ export class TransferServiceService
       affiliate: account.affiliate,
     };
 
-    if (transferSaved.hasApproved) {
+    if (transferSaved.isApprove) {
       let amount = transferSaved.amount;
       if (transferSaved.operationType === OperationTransactionType.withdrawal) {
         amount *= -1;
@@ -509,8 +509,8 @@ export class TransferServiceService
         transferSaved.confirmedAt ?? transferSaved.approvedAt;
       leadToUpdate.partialFtdAmount = transferSaved.amount;
     }
-    // TODO[hender - 07/02/2024] Check the hasApproved
-    if (transferSaved.hasApproved) {
+    // TODO[hender - 07/02/2024] Check the isApprove
+    if (transferSaved.isApprove) {
       const totalPayed: number = lead.totalPayed + transferSaved.amount;
       leadToUpdate.totalPayed = totalPayed;
       if (!lead.dateCFTD) {
@@ -538,7 +538,7 @@ export class TransferServiceService
         Logger.debug(
           'Saving on CRM',
           `Num ${transferSaved.numericId} - ${
-            transferSaved.hasApproved ? 'Approved' : transferSaved.statusPayment
+            transferSaved.isApprove ? 'Approved' : transferSaved.statusPayment
           }`,
         );
         //await this.sendTransferToCrm(lead, transferSaved);
@@ -835,7 +835,7 @@ export class TransferServiceService
         'APPROVED',
       );
       transfer.status = statusApproved._id;
-      transfer.hasApproved = true;
+      transfer.isApprove = true;
       transfer.approvedAt = new Date();
       transfer.confirmedAt = transfer.approvedAt;
     } else if (transfer.statusPayment === StatusCashierEnum.REJECTED) {
@@ -844,7 +844,7 @@ export class TransferServiceService
         'REJECTED',
       );
       transfer.status = statusRejected._id;
-      transfer.hasApproved = false;
+      transfer.isApprove = false;
       transfer.rejectedAt = new Date();
     }
     return transfer.save();
@@ -878,7 +878,7 @@ export class TransferServiceService
 
   async sendToCrm(transfer: ApproveOrRejectDepositDto) {
     const transferDoc = await this.lib.findOne(transfer.id.toString());
-    if (transferDoc?.hasApproved) {
+    if (transferDoc?.isApprove) {
       await this.sendTransferToCrm(transferDoc.lead, transferDoc);
       await this.checkStatsPspAndPspAccount(transferDoc);
       // TODO[hender - 15/feb/2024]: Update send tx to crm

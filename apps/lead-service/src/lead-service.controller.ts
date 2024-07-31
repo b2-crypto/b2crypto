@@ -459,7 +459,7 @@ export class LeadServiceController implements GenericServiceController {
       });
       for (const lead of leads.list) {
         const firstTransferPayed = lead.transfers.filter((transfer) => {
-          return transfer.hasApproved;
+          return transfer.isApprove;
         })[0];
         if (firstTransferPayed) {
           Logger.log(`Updated ${lead.email} partial FTD`);
@@ -528,10 +528,10 @@ export class LeadServiceController implements GenericServiceController {
               listTransfers.list.length &&
               listTransfers.list.reduce((a, b) => {
                 let tmp = 0;
-                if (a.hasApproved) {
+                if (a.isApprove) {
                   tmp += a.amount;
                 }
-                if (b.hasApproved) {
+                if (b.isApprove) {
                   tmp += b.amount;
                 }
                 return tmp;

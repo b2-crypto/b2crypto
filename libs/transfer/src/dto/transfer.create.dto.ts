@@ -41,6 +41,9 @@ export class TransferCreateDto extends CreateAnyDto {
   currency: string;
 
   @IsEmpty()
+  currencyCustodial: string;
+
+  @IsEmpty()
   numericId: number;
   @IsEmpty()
   @ApiProperty({
@@ -61,6 +64,9 @@ export class TransferCreateDto extends CreateAnyDto {
     example: 100,
   })
   amount: number;
+
+  @IsEmpty()
+  amountCustodial: number;
 
   @IsOptional()
   country?: CountryCodeEnum;
@@ -175,7 +181,7 @@ export class TransferCreateDto extends CreateAnyDto {
 
   @IsBoolean()
   @IsOptional()
-  hasApproved: boolean;
+  isApprove: boolean;
 
   @IsMongoId()
   @IsOptional()
@@ -186,6 +192,12 @@ export class TransferCreateDto extends CreateAnyDto {
 
   @IsEmpty()
   responsePayment?: any;
+
+  @IsOptional()
+  requestBodyJson?: any;
+
+  @IsOptional()
+  requestHeadersJson?: any;
 
   @IsEmpty()
   responseCrm?: any;

@@ -100,7 +100,7 @@ export class Transfer extends TransferEntity {
   rejectedAt: Date;
 
   @Prop()
-  hasApproved: boolean;
+  isApprove: boolean;
 
   @Prop({ default: true })
   checkedOnCashier: boolean;

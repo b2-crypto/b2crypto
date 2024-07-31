@@ -283,12 +283,9 @@ export class TransferServiceController implements GenericServiceController {
 
   @Post()
   // @CheckPoliciesAbility(new PolicyHandlerTransferCreate())
-  async createOne(
-    @Body() createTransferDto: TransferCreateDto,
-    @Request() req,
-  ) {
+  async createOne(@Body() createTransferDto: TransferCreateDto, @Req() req) {
     createTransferDto.userCreator = req?.user?.id;
-    if (createTransferDto.hasApproved || createTransferDto.isManualTx) {
+    if (createTransferDto.isApprove || createTransferDto.isManualTx) {
       createTransferDto.userApprover = req?.user?.id;
     }
     return this.transferService.newTransfer(createTransferDto);
@@ -320,10 +317,10 @@ export class TransferServiceController implements GenericServiceController {
   // @CheckPoliciesAbility(new PolicyHandlerTransferCreate())
   async createOneDeposit(
     @Body() createTransferDto: TransferCreateDto,
-    @Request() req,
+    @Req() req,
   ) {
     createTransferDto.userCreator = req?.user?.id;
-    if (createTransferDto.hasApproved || createTransferDto.isManualTx) {
+    if (createTransferDto.isApprove || createTransferDto.isManualTx) {
       createTransferDto.userApprover = req?.user?.id;
     }
     createTransferDto.operationType = OperationTransactionType.deposit;
@@ -344,12 +341,13 @@ export class TransferServiceController implements GenericServiceController {
   // @CheckPoliciesAbility(new PolicyHandlerTransferCreate())
   async createOneDepositPaymentPage(
     @Query() createTransferButtonDto: TransferCreateButtonDto,
-    @Request() req,
+    @Req() req,
     @Res() res: Response,
   ) {
     const createTransferDto: TransferCreateDto = new TransferCreateDto();
     // Create Lead
     // Configure CallBack
+    createTransferDto.userCreator = req?.user?.id;
     createTransferDto.name = createTransferButtonDto.identifier;
     createTransferDto.description = createTransferButtonDto.details;
     createTransferDto.page = req.get('Host');
@@ -406,7 +404,7 @@ export class TransferServiceController implements GenericServiceController {
     @Request() req,
   ) {
     createTransferDto.userCreator = req?.user?.id;
-    if (createTransferDto.hasApproved || createTransferDto.isManualTx) {
+    if (createTransferDto.isApprove || createTransferDto.isManualTx) {
       createTransferDto.userApprover = req?.user?.id;
     }
     createTransferDto.operationType = OperationTransactionType.credit;
@@ -419,7 +417,7 @@ export class TransferServiceController implements GenericServiceController {
     @Request() req,
   ) {
     createTransferDto.userCreator = req?.user?.id;
-    if (createTransferDto.hasApproved || createTransferDto.isManualTx) {
+    if (createTransferDto.isApprove || createTransferDto.isManualTx) {
       createTransferDto.userApprover = req?.user?.id;
     }
     createTransferDto.operationType = OperationTransactionType.withdrawal;
@@ -432,7 +430,7 @@ export class TransferServiceController implements GenericServiceController {
     @Request() req,
   ) {
     createTransferDto.userCreator = req?.user?.id;
-    if (createTransferDto.hasApproved || createTransferDto.isManualTx) {
+    if (createTransferDto.isApprove || createTransferDto.isManualTx) {
       createTransferDto.userApprover = req?.user?.id;
     }
     createTransferDto.operationType = OperationTransactionType.debit;
@@ -445,7 +443,7 @@ export class TransferServiceController implements GenericServiceController {
     @Request() req,
   ) {
     createTransferDto.userCreator = req?.user?.id;
-    if (createTransferDto.hasApproved || createTransferDto.isManualTx) {
+    if (createTransferDto.isApprove || createTransferDto.isManualTx) {
       createTransferDto.userApprover = req?.user?.id;
     }
     createTransferDto.operationType = OperationTransactionType.chargeback;
@@ -461,7 +459,7 @@ export class TransferServiceController implements GenericServiceController {
   ) {
     for (const createTransferDto of createTransfersDto) {
       createTransferDto.userCreator = req?.user?.id;
-      if (createTransferDto.hasApproved || createTransferDto.isManualTx) {
+      if (createTransferDto.isApprove || createTransferDto.isManualTx) {
         createTransferDto.userApprover = req?.user?.id;
       }
     }

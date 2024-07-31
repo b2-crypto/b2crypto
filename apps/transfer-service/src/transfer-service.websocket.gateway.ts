@@ -100,7 +100,7 @@ export class TransferServiceWebsocketGateway extends BasicWebsocketGateway<Trans
       APPROVE_DATE: item.confirmedAt
         ? CommonService.getDate(new Date(item.approvedAt), false)
         : '',
-      STATUS_TRANSACTION: item.hasApproved ? 'Approved' : 'Pending',
+      STATUS_TRANSACTION: item.isApprove ? 'Approved' : 'Pending',
     };
   }
 }

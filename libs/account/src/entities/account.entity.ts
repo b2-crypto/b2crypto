@@ -176,6 +176,11 @@ export class AccountEntity implements AccountInterface {
   amount: number;
   @ApiProperty({
     type: AccountEntity,
+    description: 'Currency available',
+  })
+  currency: number;
+  @ApiProperty({
+    type: AccountEntity,
     description: 'Amount blocked',
   })
   amountBlocked: number;

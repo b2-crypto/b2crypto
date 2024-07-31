@@ -53,6 +53,14 @@ export class BankServiceController extends AccountServiceController {
     query.where.type = TypesAccountEnum.BANK;
     return this.bankAccountService.findAll(query);
   }
+  @Get('me')
+  findAllMe(@Query() query: QuerySearchAnyDto, @Req() req?: any) {
+    query = query ?? {};
+    query.where = query.where ?? {};
+    query.where.type = TypesAccountEnum.BANK;
+    query = CommonService.updateQueryWithUserId(query, req, 'owner');
+    return this.bankAccountService.findAll(query);
+  }
 
   @Post('create')
   async createOne(@Body() createDto: BankCreateDto, @Req() req?: any) {
@@ -60,7 +68,7 @@ export class BankServiceController extends AccountServiceController {
       await this.userService.getAll({
         relations: ['personalData'],
         where: {
-          _id: req?.user.id,
+          _id: CommonService.getUserId(req),
         },
       })
     ).list[0];

@@ -343,4 +343,22 @@ export class CommonService {
       }
     });
   }
+  static getUserId(req?: any) {
+    const userId = req?.user?.id;
+    if (userId) {
+      return userId;
+    }
+    throw new BadRequestException('User not found');
+  }
+  static updateQueryWithUserId(
+    query?: QuerySearchAnyDto,
+    req?: any,
+    attrName = 'user',
+  ) {
+    const userId = CommonService.getUserId(req);
+    query = query ?? {};
+    query.where = query.where ?? {};
+    query.where[attrName] = userId;
+    return query;
+  }
 }
