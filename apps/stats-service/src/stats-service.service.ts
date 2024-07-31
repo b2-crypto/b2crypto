@@ -1264,7 +1264,7 @@ export class StatsServiceService {
     // Start MAX
     stats[`maxTotal${attrName}`] = stats[`maxTotal${attrName}`] ?? 0;
     // Start MIN
-    stats[`minTotal${attrName}`] = [`minTotal${attrName}`] || Infinity;
+    stats[`minTotal${attrName}`] = stats[`minTotal${attrName}`] ?? Infinity;
     // Start QUANTITY
     stats[`quantity${attrName}`] = stats[`quantity${attrName}`] ?? 0;
     // Start TOTAL
