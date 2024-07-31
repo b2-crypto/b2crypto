@@ -1,4 +1,9 @@
-import { Injectable, Logger } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  InternalServerErrorException,
+  Logger,
+} from '@nestjs/common';
 import { FiatIntegrationClient } from '../clients/pomelo.fiat.integration.client';
 import { BuildersService } from '@builder/builders';
 import EventsNamesAccountEnum from 'apps/account-service/src/enum/events.names.account.enum';
@@ -25,15 +30,11 @@ export class PomeloIntegrationProcessService {
     authorize: boolean,
   ): Promise<any> {
     let response;
-    try {
-      response = await this.cache.getResponse(idempotency);
-      if (response == null) {
-        response = await this.cache.setTooEarly(idempotency);
-        response = await this.executeProcess(process, authorize);
-        await this.cache.setResponse(idempotency, response);
-      }
-    } catch (error) {
-      Logger.error(error, 'PomeloProcess');
+    response = await this.cache.getResponse(idempotency);
+    if (response == null) {
+      response = await this.cache.setTooEarly(idempotency);
+      response = await this.executeProcess(process, authorize);
+      await this.cache.setResponse(idempotency, response);
     }
     return response;
   }
@@ -46,7 +47,10 @@ export class PomeloIntegrationProcessService {
       const cardId = process?.card?.id || '';
       const movement = PomeloProcessEnum[process?.transaction?.type];
       if (amountInUSD <= 0) {
-        return CardsEnum.CARD_PROCESS_INVALID_AMOUNT;
+        return this.buildErrorResponse(
+          CardsEnum.CARD_PROCESS_INVALID_AMOUNT,
+          authorize,
+        );
       }
       const processResult = await this.builder.getPromiseAccountEventClient(
         EventsNamesAccountEnum.pomeloTransaction,
@@ -57,9 +61,10 @@ export class PomeloIntegrationProcessService {
           authorize,
         },
       );
+      return this.buildProcessResponse(processResult, authorize);
     } catch (error) {
       Logger.error(error, 'PomeloProcess');
-      return CardsEnum.CARD_PROCESS_FAILURE;
+      throw new InternalServerErrorException(error);
     }
   }
 
@@ -77,9 +82,8 @@ export class PomeloIntegrationProcessService {
         statusCode: 204,
         body: {},
       };
-    } else {
-      return this.buildErrorResponse(result, authorize);
     }
+    return this.buildErrorResponse(result, authorize);
   }
 
   private buildErrorResponse(result: CardsEnum, authorize: boolean): any {
@@ -111,7 +115,11 @@ export class PomeloIntegrationProcessService {
     }
     if (!authorize) {
       // If it is processing an adjustment it must respond with a different status code.
-      response['statusCode'] = 500;
+      response = {
+        statusCode: 500,
+        body: response,
+      };
+      throw new InternalServerErrorException(result);
     }
     return response;
   }

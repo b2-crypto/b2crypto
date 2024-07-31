@@ -29,7 +29,7 @@ export class PomeloIntegrationServiceController {
   @Post(PomeloEnum.POMELO_NOTIFICATION_PATH)
   @UseGuards(SignatureGuard)
   @UseInterceptors(SignatureInterceptor)
-  @HttpCode(200)
+  @HttpCode(204)
   async processNotification(
     @Body() notification: NotificationDto,
   ): Promise<any> {
@@ -61,7 +61,6 @@ export class PomeloIntegrationServiceController {
   @HttpCode(200)
   async processAuthorization(
     @Body() authorization: Authorization,
-    @Headers() headers: any,
     @Headers(PomeloEnum.POMELO_IDEMPOTENCY_HEADER) idempotency: string,
   ): Promise<any> {
     Logger.log(`Idempotency: ${idempotency}`, 'AuthorizationHandler');

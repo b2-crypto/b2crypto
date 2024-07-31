@@ -14,7 +14,6 @@ export class SignatureUtils {
     headers: ProcessHeaderDto,
     body: ProcessBodyI,
   ): Promise<boolean> {
-    let isValid = false;
     try {
       if (headers && body) {
         Logger.log(`Headers: ${JSON.stringify(headers)}`, 'Check Signature');
@@ -47,9 +46,9 @@ export class SignatureUtils {
               `Signature mismatch. Received: ${signature}. Calculated: ${hashResult}`,
               'Check Signature',
             );
-            isValid = false;
+            return true;
           }
-          isValid = true;
+          return true;
         } else {
           Logger.error(
             `Unsupported signature algorithm, expecting hmac-sha256, got ${signature}`,
@@ -58,14 +57,14 @@ export class SignatureUtils {
           const response = await this.cache.setInvalidSignature(
             headers.idempotency,
           );
-          isValid = false;
+          return false;
         }
       }
     } catch (error) {
-      isValid = false;
       Logger.error(error, 'Check Signature');
+      return false;
     }
-    return isValid;
+    return false;
   }
 
   signResponse(headers: ProcessHeaderDto, body?: any): string {
