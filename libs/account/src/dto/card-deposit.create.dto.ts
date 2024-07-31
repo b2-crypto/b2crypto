@@ -21,5 +21,6 @@ export class CardDepositCreateDto extends CreateAnyDto {
   amount: number;
 
   @IsString()
+  @IsOptional()
   movement?: string;
 }

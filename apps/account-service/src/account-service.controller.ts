@@ -45,7 +45,7 @@ export class AccountServiceController implements GenericServiceController {
 
   @Get('me')
   findAllMe(@Query() query: QuerySearchAnyDto, req?: any) {
-    query = CommonService.updateQueryWithUserId(query, req, 'owner');
+    query = CommonService.getQueryWithUserId(query, req, 'owner');
     return this.accountService.findAll(query);
   }
 
