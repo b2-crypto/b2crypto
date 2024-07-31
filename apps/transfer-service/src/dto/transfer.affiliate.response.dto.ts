@@ -57,7 +57,7 @@ export class TransferAffiliateResponseDto {
     this.page = transfer.page;
     this.confirmedAt = transfer.confirmedAt;
     this.hasChecked = transfer.hasChecked;
-    this.hasApproved = transfer.hasApproved;
+    this.isApprove = transfer.isApprove;
     this.approvedAt = transfer.approvedAt;
     //TODO[hender - 2024/02/19] ConfirmedAt updated to response
     //this.confirmedAt = transfer.confirmedAt;
@@ -263,7 +263,7 @@ export class TransferAffiliateResponseDto {
     description: 'If was approved (true) or rejected (false) transfer',
     example: false,
   })
-  hasApproved: boolean;
+  isApprove: boolean;
 
   @ApiProperty({
     required: false,

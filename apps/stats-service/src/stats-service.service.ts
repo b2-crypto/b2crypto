@@ -779,7 +779,7 @@ export class StatsServiceService {
     if (!hasCountedLead) {
       //Logger.debug(lead.email, 'Lead email counted');
       documentStats.quantityLeads++;
-      if (transfer.hasApproved) {
+      if (transfer.isApprove) {
         if (lead?.crmDepartment.toString() === retentionDpt._id.toString()) {
           // Is Retention
           documentStats.quantityRetention++;
@@ -806,7 +806,7 @@ export class StatsServiceService {
     ) {
       documentStats.quantityTransfer++;
     }
-    if (transfer.hasApproved) {
+    if (transfer.isApprove) {
       documentStats.totalLeads += amount;
       documentStats.maxTotalLeads =
         documentStats.maxTotalLeads < amount
@@ -1021,7 +1021,7 @@ export class StatsServiceService {
             break;
         }
         const amount = transfer.amount * sign;
-        if (transfer.hasApproved) {
+        if (transfer.isApprove) {
           documentStats.totalLeads += amount;
           documentStats.maxTotalLeads =
             documentStats.maxTotalLeads < amount

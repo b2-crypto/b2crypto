@@ -60,7 +60,7 @@ export interface TransferInterface {
   brand: BrandInterface;
   confirmedAt: Date;
   hasChecked: boolean;
-  hasApproved: boolean;
+  isApprove: boolean;
   checkedOnCashier: boolean;
   approvedAt: Date;
   rejectedAt: Date;
@@ -107,7 +107,7 @@ export const TransferPropertiesBasic = [
   'page',
   'confirmedAt',
   'hasChecked',
-  'hasApproved',
+  'isApprove',
   'checkedOnCashier',
   'approvedAt',
   'rejectedAt',

@@ -115,7 +115,7 @@ export class TransferServiceMongooseService extends BasicServiceModel<
       rta = await this.model.updateOne(
         { _id: transfer.id },
         {
-          hasApproved: !!transfer.approve,
+          isApprove: !!transfer.approve,
           approvedAt: transfer.approve ? new Date() : null,
           rejectedAt: transfer.approve ? null : new Date(),
         },
@@ -124,7 +124,7 @@ export class TransferServiceMongooseService extends BasicServiceModel<
       rta = await this.model.update(transfer.id, transfer);
     }
     if (rta.modifiedCount) {
-      transferDoc.hasApproved = transfer.approve;
+      transferDoc.isApprove = transfer.approve;
       transferDoc.approvedAt = transfer.approve ? new Date() : null;
       transferDoc.rejectedAt = transfer.approve ? null : new Date();
       return transferDoc;
