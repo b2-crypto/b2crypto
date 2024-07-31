@@ -13,6 +13,7 @@ enum EventsNamesCrmEnum {
   deleteOne = 'CRM.DELETE.ONE',
   deleteMany = 'CRM.DELETE.MANY',
   findOneByName = 'CRM.FIND.ONE.BY.NAME',
+  getIdCrmByNameCached = 'CRM.FIND.ONE.BY.NAME.CACHED',
   createOneLeadOnCrm = 'CRM.CREATE.ONE.LEAD',
   moveOneLeadOnCrm = 'CRM.MOVE.ONE.LEAD',
   autologinLeadOnCrm = 'CRM.AUTOLOGIN.LEAD',
