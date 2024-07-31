@@ -43,6 +43,15 @@ export class WalletServiceController extends AccountServiceController {
     return this.walletService.findAll(query);
   }
 
+  @Get('me')
+  findAllMe(@Query() query: QuerySearchAnyDto, @Req() req?: any) {
+    query = query ?? {};
+    query.where = query.where ?? {};
+    query.where.type = TypesAccountEnum.WALLET;
+    query = CommonService.updateQueryWithUserId(query, req, 'owner');
+    return this.walletService.findAll(query);
+  }
+
   @Post('create')
   async createOne(@Body() createDto: WalletCreateDto, @Req() req?: any) {
     const user: User = (
