@@ -15,6 +15,9 @@ import {
 import { PomeloCache } from '@integration/integration/util/pomelo.integration.process.cache';
 import { PomeloProcessEnum } from '../enums/pomelo.process.enum';
 import { CardsEnum } from '@common/common/enums/messages.enum';
+import EventsNamesCrmEnum from 'apps/crm-service/src/enum/events.names.crm.enum';
+import { TransferDocument } from '@transfer/transfer/entities/mongoose/transfer.schema';
+import EventsNamesTransferEnum from 'apps/transfer-service/src/enum/events.names.transfer.enum';
 
 @Injectable()
 export class PomeloIntegrationProcessService {
@@ -115,13 +118,22 @@ export class PomeloIntegrationProcessService {
     }
     if (!authorize) {
       // If it is processing an adjustment it must respond with a different status code.
-      response = {
-        statusCode: 500,
-        body: response,
-      };
       throw new InternalServerErrorException(result);
     }
     return response;
+  }
+
+  private async createTransferRecord(process: any) {
+    const crm = await this.builder.getPromiseCrmEventClient(
+      EventsNamesCrmEnum.findOneByName,
+      'pomelo',
+    );
+
+    const transfer =
+      await this.builder.getPromiseTransferEventClient<TransferDocument>(
+        EventsNamesTransferEnum.createOne,
+        {},
+      );
   }
 
   async processNotification(notification: NotificationDto): Promise<any> {
