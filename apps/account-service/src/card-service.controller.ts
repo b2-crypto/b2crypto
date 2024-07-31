@@ -47,6 +47,7 @@ import { ConfigService } from '@nestjs/config';
 import { AccountCreateDto } from '@account/account/dto/account.create.dto';
 import { IntegrationCardService } from '@integration/integration/card/generic/integration.card.service';
 import { AccountDocument } from '@account/account/entities/mongoose/account.schema';
+import { CardsEnum } from '@common/common/enums/messages.enum';
 
 @ApiTags('CARD')
 @Controller('cards')
@@ -412,61 +413,49 @@ export class CardServiceController extends AccountServiceController {
     return this.getAccountService().deleteOneById(id);
   }
 
-  @EventPattern(EventsNamesAccountEnum.updateAmount)
-  async updateAmount(
-    @Ctx() ctx: RmqContext,
-    @Payload() data: CardDepositCreateDto,
-  ) {
+  @MessagePattern(EventsNamesAccountEnum.pomeloTransaction)
+  async processPomeloTransaction(@Ctx() ctx: RmqContext, @Payload() data: any) {
     CommonService.ack(ctx);
-    const cardList = await this.cardService.findAll({
-      where: {
-        accountId: data.id,
-      },
-    });
-    const card = cardList.list[0];
-    if (!card) {
-      throw new BadRequestException('Card not found');
+    try {
+      let txnAmount = 0;
+      Logger.log(`Looking for card: ${data.id}`, 'CardController');
+      const cardList = await this.cardService.findAll({
+        where: {
+          'cardConfig.id': data.id,
+        },
+      });
+      const card = cardList.list[0];
+      if (!card) {
+        return CardsEnum.CARD_PROCESS_CARD_NOT_FOUND;
+      }
+      if (data.authorize) {
+        Logger.log(
+          `Card balance: ${card.amount} | Movement amount: ${data.amount}`,
+          'CardController',
+        );
+        const allowedBalance =
+          card.amount * (1.0 - this.BLOCK_BALANCE_PERCENTAGE);
+        if (allowedBalance <= data.amount) {
+          return CardsEnum.CARD_PROCESS_INSUFFICIENT_FUNDS;
+        }
+        txnAmount = data.amount * -1;
+      } else {
+        txnAmount =
+          data.movement.toUpperCase() === 'DEBIT'
+            ? data.amount * -1
+            : data.amount * 1;
+      }
+      await this.cardService.customUpdateOne({
+        id: card._id,
+        $inc: {
+          amount: txnAmount,
+        },
+      });
+      return CardsEnum.CARD_PROCESS_OK;
+    } catch (error) {
+      Logger.error(error, 'CardController');
+      return CardsEnum.CARD_PROCESS_FAILURE;
     }
-    const amount =
-      data.movement == 'debit' ? data.amount ?? 0 : data.amount ?? 0;
-    await this.cardService.customUpdateOne({
-      id: card._id,
-      $inc: {
-        amount: amount,
-      },
-    });
-  }
-
-  @MessagePattern(EventsNamesAccountEnum.athorizationTx)
-  async authorizationTx(
-    @Ctx() ctx: RmqContext,
-    @Payload() data: TransferUpdateDto,
-  ) {
-    CommonService.ack(ctx);
-    Logger.log(`Looking for card: ${data.id}`, 'CardController');
-    const cardList = await this.cardService.findAll({
-      where: {
-        'cardConfig.id': data.id,
-      },
-    });
-    const card = cardList.list[0];
-    if (!card) {
-      throw new BadRequestException('Card not found');
-    }
-    Logger.log(
-      `Card balance: ${card.amount} | Movement amount: ${data.amount}`,
-      'CardController',
-    );
-    const allowedBalance = card.amount * (1.0 - this.BLOCK_BALANCE_PERCENTAGE);
-    if (allowedBalance <= data.amount) {
-      throw new BadRequestException('Not enough balance');
-    }
-    await this.cardService.customUpdateOne({
-      id: card._id,
-      $inc: {
-        amount: data.amount * -1,
-      },
-    });
   }
 
   private async getUserCard(

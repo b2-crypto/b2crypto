@@ -4,13 +4,12 @@ import { BuildersService } from '@builder/builders';
 import EventsNamesAccountEnum from 'apps/account-service/src/enum/events.names.account.enum';
 import {
   Adjustment,
-  AdjustmentDto,
   Authorization,
-  AuthorizationDto,
   NotificationDto,
 } from '@integration/integration/dto/pomelo.process.body.dto';
 import { PomeloCache } from '@integration/integration/util/pomelo.integration.process.cache';
-import { PomeloEnum } from '@integration/integration/enum/pomelo.enum';
+import { PomeloProcessEnum } from '../enums/pomelo.process.enum';
+import { CardsEnum } from '@common/common/enums/messages.enum';
 
 @Injectable()
 export class PomeloIntegrationProcessService {
@@ -20,135 +19,102 @@ export class PomeloIntegrationProcessService {
     private readonly builder: BuildersService,
   ) {}
 
-  private processDebit(currencyConv: FiatIntegrationClient) {
-    return async (process: any, type: string) => {
-      const amountInUSD = await currencyConv.getCurrencyConversion(process);
-
-      if (type == this.TYPE_OF_OPERATION.AUTHORIZATION.toString()) {
-        return await this.processPurchase(process, amountInUSD);
-      } else {
-        return await this.processAdjustmentMovement(
-          process,
-          amountInUSD,
-          'debit',
-        );
-      }
-    };
-  }
-
-  private processCredit(currencyConv: FiatIntegrationClient) {
-    return async (process: any, type: string) => {
-      try {
-        const amountInUSD = await currencyConv.getCurrencyConversion(process);
-        await this.processAdjustmentMovement(process, amountInUSD, 'credit');
-        if (type == this.TYPE_OF_OPERATION.AUTHORIZATION.toString()) {
-          return {
-            status: 'APPROVED',
-            message: `Transaction approved`,
-            status_detail: 'APPROVED',
-          };
-        } else {
-          return {
-            statusCode: 204,
-            body: {},
-          };
-        }
-      } catch (error) {}
-    };
-  }
-
-  private async processAdjustmentMovement(
+  private async process(
     process: any,
-    amountInUSD: number,
-    movement: string,
-  ) {
+    idempotency: string,
+    authorize: boolean,
+  ): Promise<any> {
+    let response;
     try {
-      await this.builder.getPromiseAccountEventClient(
-        EventsNamesAccountEnum.updateAmount,
+      response = await this.cache.getResponse(idempotency);
+      if (response == null) {
+        response = await this.cache.setTooEarly(idempotency);
+        response = await this.executeProcess(process, authorize);
+        await this.cache.setResponse(idempotency, response);
+      }
+    } catch (error) {
+      Logger.error(error, 'PomeloProcess');
+    }
+    return response;
+  }
+
+  private async executeProcess(process: any, authorize: boolean): Promise<any> {
+    try {
+      const amountInUSD = await this.currencyConversion.getCurrencyConversion(
+        process,
+      );
+      const cardId = process?.card?.id || '';
+      const movement = PomeloProcessEnum[process?.transaction?.type];
+      if (amountInUSD <= 0) {
+        return CardsEnum.CARD_PROCESS_INVALID_AMOUNT;
+      }
+      const processResult = await this.builder.getPromiseAccountEventClient(
+        EventsNamesAccountEnum.pomeloTransaction,
         {
-          id: process?.card?.id || '',
+          id: cardId,
           amount: amountInUSD,
-          movement: movement,
+          movement,
+          authorize,
         },
       );
+    } catch (error) {
+      Logger.error(error, 'PomeloProcess');
+      return CardsEnum.CARD_PROCESS_FAILURE;
+    }
+  }
+
+  private buildProcessResponse(result: CardsEnum, authorize: boolean): any {
+    if (authorize) {
+      if (result === CardsEnum.CARD_PROCESS_OK) {
+        return {
+          status: CardsEnum.CARD_PROCESS_OK,
+          message: `Transaction rejected.`,
+          status_detail: CardsEnum.CARD_PROCESS_OK,
+        };
+      }
+    } else if (result === CardsEnum.CARD_PROCESS_OK) {
       return {
         statusCode: 204,
         body: {},
       };
-    } catch (error) {}
+    } else {
+      return this.buildErrorResponse(result, authorize);
+    }
   }
 
-  private async processPurchase(process: any, amountInUSD: number) {
-    try {
-      await this.builder.getPromiseAccountEventClient(
-        EventsNamesAccountEnum.athorizationTx,
-        {
-          id: process?.card?.id || '',
-          amount: amountInUSD,
-        },
-      );
-      return {
-        status: 'APPROVED',
-        message: `Transaction approved`,
-        status_detail: 'APPROVED',
-      };
-    } catch (error) {
-      Logger.error(
-        `Error during authorization: ${error.message}. Check balance or card.`,
-        'AuthorizationProcess',
-      );
-      return {
-        status: 'REJECTED',
+  private buildErrorResponse(result: CardsEnum, authorize: boolean): any {
+    let response = {};
+    if (result === CardsEnum.CARD_PROCESS_INVALID_AMOUNT) {
+      response = {
+        status: CardsEnum.CARD_PROCESS_REJECTED,
         message: `Transaction rejected.`,
-        status_detail: 'INSUFFICIENT_FUNDS',
+        status_detail: CardsEnum.CARD_PROCESS_INVALID_AMOUNT,
+      };
+    } else if (result === CardsEnum.CARD_PROCESS_FAILURE) {
+      response = {
+        status: CardsEnum.CARD_PROCESS_REJECTED,
+        message: `Transaction rejected.`,
+        status_detail: CardsEnum.CARD_PROCESS_SYSTEM_ERROR,
+      };
+    } else if (result === CardsEnum.CARD_PROCESS_CARD_NOT_FOUND) {
+      response = {
+        status: CardsEnum.CARD_PROCESS_REJECTED,
+        message: `Transaction rejected.`,
+        status_detail: CardsEnum.CARD_PROCESS_OTHER,
+      };
+    } else if (result === CardsEnum.CARD_PROCESS_INSUFFICIENT_FUNDS) {
+      response = {
+        status: CardsEnum.CARD_PROCESS_REJECTED,
+        message: `Transaction rejected.`,
+        status_detail: CardsEnum.CARD_PROCESS_INSUFFICIENT_FUNDS,
       };
     }
-  }
-
-  private async process(
-    process: any,
-    type: string,
-    idempotency: string,
-  ): Promise<any> {
-    let cachedResult = await this.cache.getResponse(idempotency);
-    if (cachedResult == null) {
-      cachedResult = await this.cache.setTooEarly(idempotency);
-
-      // Save notification record.
-
-      const response = await this.OPERATION[process.transaction.type](
-        process,
-        type,
-      );
-      await this.cache.setResponse(idempotency, response);
-      return response;
+    if (!authorize) {
+      // If it is processing an adjustment it must respond with a different status code.
+      response['statusCode'] = 500;
     }
+    return response;
   }
-
-  private TYPE_OF_OPERATION = {
-    AUTHORIZATION: 0,
-    ADJUSTMENT: 1,
-  };
-
-  private TYPE_OF_ADJUSTMENT = {
-    PAYMENT: this.processDebit(this.currencyConversion),
-    REFUND: this.processCredit(this.currencyConversion),
-    UNDEFINED: undefined,
-  };
-
-  OPERATION = {
-    ['PURCHASE']: this.TYPE_OF_ADJUSTMENT.PAYMENT,
-    ['WITHDRAWAL']: this.TYPE_OF_ADJUSTMENT.PAYMENT,
-    ['EXTRACASH']: this.TYPE_OF_ADJUSTMENT.PAYMENT,
-    ['BALANCE_INQUIRY']: this.TYPE_OF_ADJUSTMENT.UNDEFINED,
-    ['REFUND']: this.TYPE_OF_ADJUSTMENT.REFUND,
-    ['PAYMENT']: this.TYPE_OF_ADJUSTMENT.PAYMENT,
-    ['REVERSAL_PURCHASE']: this.TYPE_OF_ADJUSTMENT.REFUND,
-    ['REVERSAL_WITHDRAWAL']: this.TYPE_OF_ADJUSTMENT.REFUND,
-    ['REVERSAL_EXTRACASH']: this.TYPE_OF_ADJUSTMENT.REFUND,
-    ['REVERSAL_REFUND']: this.TYPE_OF_ADJUSTMENT.PAYMENT,
-    ['REVERSAL_PAYMENT']: this.TYPE_OF_ADJUSTMENT.REFUND,
-  };
 
   async processNotification(notification: NotificationDto): Promise<any> {
     Logger.log('ProcessNotification', 'Message Received');
@@ -169,23 +135,10 @@ export class PomeloIntegrationProcessService {
   }
 
   async processAdjustment(adjustment: Adjustment): Promise<any> {
-    return await this.process(
-      adjustment,
-      this.TYPE_OF_OPERATION.ADJUSTMENT.toString(),
-      adjustment.idempotency,
-    );
+    return await this.process(adjustment, adjustment.idempotency, false);
   }
 
   async processAuthorization(authorization: Authorization): Promise<any> {
-    const response = await this.process(
-      authorization,
-      this.TYPE_OF_OPERATION.AUTHORIZATION.toString(),
-      authorization.idempotency,
-    );
-    Logger.log(
-      `Autorization response: ${JSON.stringify(response)}`,
-      'AuthorizationProcess',
-    );
-    return response;
+    return await this.process(authorization, authorization.idempotency, true);
   }
 }

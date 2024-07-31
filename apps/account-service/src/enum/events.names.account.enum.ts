@@ -32,6 +32,7 @@ enum EventsNamesAccountEnum {
   checkStatsDateAll = 'CARD.CHECK.STATS.DATE.ALL',
 
   athorizationTx = 'CARD.AUTHORIZATION.TX',
+  pomeloTransaction = 'CARD.POMELO.TRANSACTION',
 }
 
 export default EventsNamesAccountEnum;
