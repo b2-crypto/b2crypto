@@ -350,7 +350,7 @@ export class CommonService {
     }
     throw new BadRequestException('User not found');
   }
-  static updateQueryWithUserId(
+  static getQueryWithUserId(
     query?: QuerySearchAnyDto,
     req?: any,
     attrName = 'user',

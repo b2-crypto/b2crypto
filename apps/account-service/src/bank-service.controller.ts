@@ -58,7 +58,7 @@ export class BankServiceController extends AccountServiceController {
     query = query ?? {};
     query.where = query.where ?? {};
     query.where.type = TypesAccountEnum.BANK;
-    query = CommonService.updateQueryWithUserId(query, req, 'owner');
+    query = CommonService.getQueryWithUserId(query, req, 'owner');
     return this.bankAccountService.findAll(query);
   }
 

@@ -9,6 +9,7 @@ import {
   Patch,
   Post,
   Query,
+  Req,
 } from '@nestjs/common';
 import { ApiHeader, ApiResponse, ApiTags } from '@nestjs/swagger';
 
@@ -28,7 +29,6 @@ import {
 } from '@nestjs/microservices';
 import ResponseB2Crypto from '@response-b2crypto/response-b2crypto/models/ResponseB2Crypto';
 import { UserChangePasswordDto } from '@user/user/dto/user.change-password.dto';
-import { UserCreateDto } from '@user/user/dto/user.create.dto';
 import { UserRegisterDto } from '@user/user/dto/user.register.dto';
 import { UserUpdateDto } from '@user/user/dto/user.update.dto';
 import { UserEntity } from '@user/user/entities/user.entity';
@@ -44,6 +44,13 @@ export class UserServiceController implements GenericServiceController {
   @Get('all')
   // @CheckPoliciesAbility(new PolicyHandlerUserRead())
   async findAll(@Query() query: QuerySearchAnyDto) {
+    return this.userService.getAll(query);
+  }
+
+  @Get('me')
+  // @CheckPoliciesAbility(new PolicyHandlerUserRead())
+  async findAllMe(@Req() req, @Query() query: QuerySearchAnyDto) {
+    query = CommonService.getQueryWithUserId(query, req, '_id');
     return this.userService.getAll(query);
   }
 

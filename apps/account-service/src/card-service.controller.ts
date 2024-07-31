@@ -94,7 +94,7 @@ export class CardServiceController extends AccountServiceController {
     query = query ?? {};
     query.where = query.where ?? {};
     query.where.type = TypesAccountEnum.CARD;
-    query = CommonService.updateQueryWithUserId(query, req, 'owner');
+    query = CommonService.getQueryWithUserId(query, req, 'owner');
     return this.cardService.findAll(query);
   }
 
@@ -399,7 +399,7 @@ export class CardServiceController extends AccountServiceController {
       throw new BadRequestException('Wallet not found');
     }
     if (!from) {
-      throw new BadRequestException('Wallet is not valid1');
+      throw new BadRequestException('Wallet is not valid');
     }
     if (from.amount < createDto.amount) {
       throw new BadRequestException('Wallet with enough balance');

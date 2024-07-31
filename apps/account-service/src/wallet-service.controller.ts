@@ -48,7 +48,7 @@ export class WalletServiceController extends AccountServiceController {
     query = query ?? {};
     query.where = query.where ?? {};
     query.where.type = TypesAccountEnum.WALLET;
-    query = CommonService.updateQueryWithUserId(query, req, 'owner');
+    query = CommonService.getQueryWithUserId(query, req, 'owner');
     return this.walletService.findAll(query);
   }
 

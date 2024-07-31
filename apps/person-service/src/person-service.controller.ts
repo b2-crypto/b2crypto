@@ -51,6 +51,13 @@ export class PersonServiceController implements GenericServiceController {
     return this.personService.getAll(query);
   }
 
+  @Get('me')
+  // @CheckPoliciesAbility(new PolicyHandlerPersonRead())
+  async findAllMe(@Req() req, @Query() query: QuerySearchAnyDto) {
+    query = CommonService.getQueryWithUserId(query, req);
+    return this.personService.getAll(query);
+  }
+
   @Get(':personID')
   // @CheckPoliciesAbility(new PolicyHandlerPersonRead())
   async findOneById(@Param('personID') id: string) {
