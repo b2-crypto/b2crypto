@@ -1,5 +1,6 @@
 import { CategoryEntity } from '@category/category/entities/category.entity';
 import { CommonService } from '@common/common';
+import CurrencyCodeB2cryptoEnum from '@common/common/enums/currency-code-b2crypto.enum';
 import { FileEntity } from '@file/file/entities/file.entity';
 import { PermissionEntity } from '@permission/permission/entities/permission.entity';
 import { PersonEntity } from '@person/person/entities/person.entity';
@@ -30,6 +31,8 @@ export class UserEntity implements UserInterface {
   twoFactorSecret: string;
   twoFactorQr: string;
   twoFactorIsActive: boolean;
+  amountCustodial: number;
+  currencyCustodial: CurrencyCodeB2cryptoEnum;
   image: FileEntity;
   role: RoleEntity;
   permissions: Array<PermissionEntity>;
