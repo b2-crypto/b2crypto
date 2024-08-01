@@ -72,6 +72,9 @@ import { TransferCreateButtonDto } from './dto/transfer.create.button.dto';
 import { AffiliateServiceService } from 'apps/affiliate-service/src/affiliate-service.service';
 import { BoldTransferRequestDto } from './dto/bold.transfer.request.dto';
 import { BoldStatusEnum } from './enum/bold.status.enum';
+import EventsNamesCrmEnum from 'apps/crm-service/src/enum/events.names.crm.enum';
+import EventsNamesStatusEnum from 'apps/status-service/src/enum/events.names.status.enum';
+import EventsNamesAccountEnum from 'apps/account-service/src/enum/events.names.account.enum';
 
 @ApiTags('TRANSFERS')
 @Controller('transfers')
@@ -635,6 +638,79 @@ export class TransferServiceController implements GenericServiceController {
     CommonService.ack(ctx);
     const transfer = await this.transferService.newTransfer(createTransferDto);
     return transfer;
+  }
+
+  @AllowAnon()
+  @EventPattern(EventsNamesTransferEnum.createOneWebhok)
+  async createOneWebhook(
+    @Payload() webhookTransferDto: any,
+    @Ctx() ctx: RmqContext,
+  ) {
+    try {
+      CommonService.ack(ctx);
+
+      const crm = await this.builder.getPromiseCrmEventClient(
+        EventsNamesCrmEnum.findOneByName,
+        webhookTransferDto.integration,
+      );
+      if (!crm) {
+        Logger.error(
+          `CRM ${webhookTransferDto.integration} was not found`,
+          'WebhookTransfer',
+        );
+        return;
+      }
+
+      const status = await this.builder.getPromiseStatusEventClient(
+        EventsNamesStatusEnum.findOneByName,
+        webhookTransferDto.status,
+      );
+      if (!status) {
+        Logger.error(
+          `Status ${webhookTransferDto.status} was not found`,
+          'WebhookTransfer',
+        );
+        return;
+      }
+
+      const cardId = webhookTransferDto?.requestBodyJson?.card?.id ?? '';
+
+      const account = await this.builder.getPromiseAccountEventClient(
+        EventsNamesAccountEnum.findOneByCardId,
+        {
+          id: cardId,
+        },
+      );
+      if (!account) {
+        Logger.error(
+          `Account by card ${cardId} was not found`,
+          'WebhookTransfer',
+        );
+        return;
+      }
+
+      const transferDto: TransferCreateDto = new TransferCreateDto();
+      transferDto.crm = crm;
+      transferDto.status = status;
+      transferDto.account = account;
+      transferDto.userAccount = account.owner;
+      transferDto.amount = webhookTransferDto.amount;
+      transferDto.amountCustodial = webhookTransferDto.amountCustodial;
+      transferDto.currency = webhookTransferDto.currency;
+      transferDto.currencyCustodial = webhookTransferDto.currencyCustodial;
+      transferDto.statusPayment = webhookTransferDto.status;
+      transferDto.description = webhookTransferDto.description;
+      transferDto.operationType = webhookTransferDto.operationType;
+      transferDto.requestBodyJson = webhookTransferDto.requestBodyJson;
+      transferDto.requestHeadersJson = webhookTransferDto.requestHeadersJson;
+      transferDto.descriptionStatusPayment =
+        webhookTransferDto.descriptionStatusPayment;
+      transferDto.confirmedAt = new Date();
+
+      await this.transferService.newTransfer(transferDto);
+    } catch (error) {
+      Logger.error(error, 'WebhookTransfer');
+    }
   }
 
   @AllowAnon()
