@@ -239,6 +239,9 @@ export class TransferServiceService
           data.account.crm.toString(),
         )) as any as CrmInterface;
       } */
+      if (!transfer.userCreator && !transfer.userAccount) {
+        throw new BadRequestException('Unknown user account or user creator');
+      }
       await this.checkTransferAccount(transfer, data);
       if (transfer.isManualTx) {
         transfer.isApprove = true;
@@ -255,47 +258,65 @@ export class TransferServiceService
         throw new BadRequestException('Not found account');
       }
       transfer.account = account._id;
+      transfer.userCreator = transfer.userCreator ?? transfer.userAccount;
+      transfer.userAccount = transfer.userAccount ?? transfer.userCreator;
       const transferSaved = await this.lib.create(transfer);
-      try {
-        if (!account.accountId) {
-          throw new BadRequestException('AccountId not found');
-        }
-        const url = transfer.account.url ?? 'https://api.b2binpay.com';
-        Logger.log(url, 'URL B2BinPay');
-        const integration = await this.integrationService.getCryptoIntegration(
-          account,
-          IntegrationCryptoEnum.B2BINPAY,
-          url,
+      const depositLinkCategory =
+        await this.builder.getPromiseCategoryEventClient(
+          EventsNamesCategoryEnum.findOneByNameType,
+          {
+            slug: 'deposit-link',
+            type: TagEnum.MONETARY_TRANSACTION_TYPE,
+          },
         );
-        const deposit = await integration.createDeposit({
-          data: {
-            type: 'deposit',
-            attributes: {
-              target_amount_requested: transferSaved.amount.toString(),
-              label: transferSaved.name,
-              tracking_id: transferSaved._id,
-              confirmations_needed: 2,
-              // TODO[hender-2024/05/30] Change callback_url to environment params
-              callback_url: 'http://stage.b2fintech.com/b2binpay/status',
-            },
-            relationships: {
-              wallet: {
-                data: {
-                  type: 'wallet',
-                  id: account.accountId,
+      if (!depositLinkCategory) {
+        throw new BadRequestException(
+          'Not found deposit link monetary transaction type',
+        );
+      }
+      if (transferSaved.typeTransaction === depositLinkCategory._id) {
+        try {
+          if (!account.accountId) {
+            throw new BadRequestException('AccountId not found');
+          }
+          const url = transfer.account.url ?? 'https://api.b2binpay.com';
+          Logger.log(url, 'URL B2BinPay');
+          const integration =
+            await this.integrationService.getCryptoIntegration(
+              account,
+              IntegrationCryptoEnum.B2BINPAY,
+              url,
+            );
+          const deposit = await integration.createDeposit({
+            data: {
+              type: 'deposit',
+              attributes: {
+                target_amount_requested: transferSaved.amount.toString(),
+                label: transferSaved.name,
+                tracking_id: transferSaved._id,
+                confirmations_needed: 2,
+                // TODO[hender-2024/05/30] Change callback_url to environment params
+                callback_url: 'http://stage.b2fintech.com/b2binpay/status',
+              },
+              relationships: {
+                wallet: {
+                  data: {
+                    type: 'wallet',
+                    id: account.accountId,
+                  },
                 },
               },
             },
-          },
-        });
-        Logger.log(deposit, 'URL B2BinPay Deposit');
-        transferSaved.responseAccount = {
-          data: deposit.data as unknown as DataTransferAccountResponse,
-        };
-        await this.updateTransfer(transferSaved);
-      } catch (err) {
-        await this.lib.remove(transferSaved._id);
-        throw new BadRequestException(err);
+          });
+          Logger.log(deposit, 'URL B2BinPay Deposit');
+          transferSaved.responseAccount = {
+            data: deposit.data as unknown as DataTransferAccountResponse,
+          };
+          await this.updateTransfer(transferSaved);
+        } catch (err) {
+          await this.lib.remove(transferSaved._id);
+          throw new BadRequestException(err);
+        }
       }
       return transferSaved;
     }
