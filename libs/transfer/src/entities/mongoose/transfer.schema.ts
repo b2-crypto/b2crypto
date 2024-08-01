@@ -161,6 +161,9 @@ export class Transfer extends TransferEntity {
   crm: Crm;
 
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'users' })
+  userAccount: User;
+
+  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'users' })
   userCreator: User;
 
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'users' })

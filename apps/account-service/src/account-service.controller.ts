@@ -9,6 +9,7 @@ import {
   Patch,
   Post,
   Query,
+  Req,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 
@@ -24,6 +25,7 @@ import { AccountServiceService } from './account-service.service';
 import EventsNamesAccountEnum from './enum/events.names.account.enum';
 import { ActivityCreateDto } from '@activity/activity/dto/activity.create.dto';
 import { CommonService } from '@common/common';
+import EventsNamesUserEnum from 'apps/user-service/src/enum/events.names.user.enum';
 
 @ApiTags('ACCOUNT')
 @Controller('accounts')
@@ -44,7 +46,7 @@ export class AccountServiceController implements GenericServiceController {
   }
 
   @Get('me')
-  findAllMe(@Query() query: QuerySearchAnyDto, req?: any) {
+  findAllMe(@Query() query: QuerySearchAnyDto, @Req() req?: any) {
     query = CommonService.getQueryWithUserId(query, req, 'owner');
     return this.accountService.findAll(query);
   }
@@ -133,5 +135,19 @@ export class AccountServiceController implements GenericServiceController {
   @MessagePattern(EventsNamesAccountEnum.deleteOneById)
   deleteOneByIdEvent(id: string, ctx: RmqContext) {
     return this.accountService.deleteOneByIdEvent(id, ctx);
+  }
+
+  protected async getUser(userId) {
+    return (
+      await this.builder.getPromiseUserEventClient(
+        EventsNamesUserEnum.findAll,
+        {
+          relations: ['personalData'],
+          where: {
+            _id: userId,
+          },
+        },
+      )
+    ).list[0];
   }
 }
