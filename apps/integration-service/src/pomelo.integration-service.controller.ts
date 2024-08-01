@@ -49,10 +49,14 @@ export class PomeloIntegrationServiceController {
   async processAdjustment(
     @Body() adjustment: Adjustment,
     @Headers(PomeloEnum.POMELO_IDEMPOTENCY_HEADER) idempotency: string,
+    @Headers() headers: any,
   ): Promise<any> {
     Logger.log(`Idempotency: ${idempotency}`, 'AdjustmentHandler');
     adjustment.idempotency = idempotency;
-    return await this.integrationServiceService.processAdjustment(adjustment);
+    return await this.integrationServiceService.processAdjustment(
+      adjustment,
+      headers,
+    );
   }
 
   @Post(PomeloEnum.POMELO_AUTHORIZATION_PATH)
@@ -62,11 +66,13 @@ export class PomeloIntegrationServiceController {
   async processAuthorization(
     @Body() authorization: Authorization,
     @Headers(PomeloEnum.POMELO_IDEMPOTENCY_HEADER) idempotency: string,
+    @Headers() headers: any,
   ): Promise<any> {
     Logger.log(`Idempotency: ${idempotency}`, 'AuthorizationHandler');
     authorization.idempotency = idempotency;
     return await this.integrationServiceService.processAuthorization(
       authorization,
+      headers,
     );
   }
 }

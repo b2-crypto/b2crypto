@@ -17,6 +17,7 @@ enum EventsNamesAccountEnum {
   updateOneByTpId = 'CARD.UPDATE.ONE.BY.TP.ID',
   findAll = 'FILE.CARD.ALL',
   findOneById = 'CARD.FIND.ONE.BY.ID',
+  findOneByCardId = 'CARD.FIND.ONE.BY.CARD.ID',
   deleteMany = 'CARD.DELETE.MANY',
   deleteOneById = 'CARD.DELETE.ONE.BY.ID',
 

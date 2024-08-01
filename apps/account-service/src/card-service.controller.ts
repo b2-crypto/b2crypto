@@ -471,6 +471,25 @@ export class CardServiceController extends AccountServiceController {
     }
   }
 
+  @MessagePattern(EventsNamesAccountEnum.findOneByCardId)
+  async findByCardId(@Ctx() ctx: RmqContext, @Payload() data: any) {
+    CommonService.ack(ctx);
+    try {
+      Logger.log(`Looking for card: ${data.id}`, 'CardController');
+      const cardList = await this.cardService.findAll({
+        where: {
+          'cardConfig.id': data.id,
+        },
+      });
+      if (!cardList || !cardList.list[0]) {
+        throw new NotFoundException(`Card ${data.id} was not found`);
+      }
+      return cardList.list[0];
+    } catch (error) {
+      Logger.error(error, 'CardController');
+    }
+  }
+
   private async getUserCard(
     cardIntegration: IntegrationCardService,
     user: User,

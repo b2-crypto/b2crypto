@@ -6,12 +6,21 @@ import { lastValueFrom } from 'rxjs';
 export class FiatIntegrationClient {
   constructor(private httpService: HttpService) {}
 
-  async getCurrencyConversion(txnProcess: any): Promise<any> {
+  async getCurrencyConversionCustodial(
+    from: string,
+    amount: number,
+  ): Promise<any> {
+    const to = process.env.DEFAULT_CURRENCY_TO_CONVERT;
+    return this.getCurrencyConversion(to, from, amount);
+  }
+
+  async getCurrencyConversion(
+    to: string,
+    from: string,
+    amount: number,
+  ): Promise<any> {
     const apiURL = process.env.URL;
     const apiKey = process.env.API_KEY_CURRENCY;
-    const to = process.env.DEFAULT_CURRENCY_TO_CONVERT;
-    const from = txnProcess.amount.local.currency;
-    const amount = txnProcess.amount.local.total;
 
     const url = `${apiURL}?access_key=${apiKey}&from=${from}&to=${to}&amount=${amount}`;
 

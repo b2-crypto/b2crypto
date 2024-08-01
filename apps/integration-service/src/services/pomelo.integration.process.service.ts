@@ -14,8 +14,8 @@ import {
 import { PomeloCache } from '@integration/integration/util/pomelo.integration.process.cache';
 import { PomeloProcessEnum } from '../enums/pomelo.process.enum';
 import { CardsEnum } from '@common/common/enums/messages.enum';
-import EventsNamesCrmEnum from 'apps/crm-service/src/enum/events.names.crm.enum';
 import EventsNamesTransferEnum from 'apps/transfer-service/src/enum/events.names.transfer.enum';
+import { OperationTransactionType } from '@transfer/transfer/enum/operation.transaction.type.enum';
 
 @Injectable()
 export class PomeloIntegrationProcessService {
@@ -29,25 +29,75 @@ export class PomeloIntegrationProcessService {
     process: any,
     idempotency: string,
     authorize: boolean,
+    headers: any,
   ): Promise<any> {
     let response;
     response = await this.cache.getResponse(idempotency);
     if (response == null) {
       response = await this.cache.setTooEarly(idempotency);
-      response = await this.executeProcess(process, authorize);
+      const amount = await this.getAmount(process);
+      response = await this.executeProcess(process, authorize, amount.usd);
       await this.cache.setResponse(idempotency, response);
+      this.createTransferRecord(process, headers, response, amount);
     }
     return response;
   }
 
-  private async executeProcess(process: any, authorize: boolean): Promise<any> {
+  private createTransferRecord(
+    process: any,
+    headers: any,
+    response: any,
+    amount: any,
+  ) {
+    this.builder.emitTransferEventClient(
+      EventsNamesTransferEnum.createOneWebhok,
+      {
+        integration: 'Pomelo',
+        requestBodyJson: process,
+        requestHeadersJson: headers,
+        operationType: OperationTransactionType[process?.transaction?.type],
+        status: response?.status ?? CardsEnum.CARD_PROCESS_OK,
+        descriptionStatusPayment:
+          response?.status_detail ?? CardsEnum.CARD_PROCESS_OK,
+        description: response?.message ?? '',
+        amount: amount.amount,
+        amountCustodial: amount.usd,
+        currency: amount.from,
+        currencyCustodial: amount.to,
+      },
+    );
+  }
+
+  private async getAmount(txn: any): Promise<any> {
     try {
-      const amountInUSD = await this.currencyConversion.getCurrencyConversion(
-        process,
+      const to = process.env.DEFAULT_CURRENCY_TO_CONVERT;
+      const from = txn.amount.local.currency;
+      const amount = txn.amount.local.total;
+      const usd = await this.currencyConversion.getCurrencyConversionCustodial(
+        from,
+        amount,
       );
+      return {
+        to,
+        from,
+        amount,
+        usd,
+      };
+    } catch (error) {
+      Logger.error(error, 'PomeloProcess');
+      throw new InternalServerErrorException(error);
+    }
+  }
+
+  private async executeProcess(
+    process: any,
+    authorize: boolean,
+    usdAmount: number,
+  ): Promise<any> {
+    try {
       const cardId = process?.card?.id || '';
       const movement = PomeloProcessEnum[process?.transaction?.type];
-      if (amountInUSD <= 0) {
+      if (usdAmount <= 0) {
         return this.buildErrorResponse(
           CardsEnum.CARD_PROCESS_INVALID_AMOUNT,
           authorize,
@@ -57,7 +107,7 @@ export class PomeloIntegrationProcessService {
         EventsNamesAccountEnum.pomeloTransaction,
         {
           id: cardId,
-          amount: amountInUSD,
+          amount: usdAmount,
           movement,
           authorize,
         },
@@ -121,20 +171,6 @@ export class PomeloIntegrationProcessService {
     return response;
   }
 
-  private async createTransferRecord(process: any, headers: any) {
-    const crm = await this.builder.getPromiseCrmEventClient(
-      EventsNamesCrmEnum.findOneByName,
-      'pomelo',
-    );
-
-    const transfer = await this.builder.getPromiseTransferEventClient(
-      EventsNamesTransferEnum.createOne,
-      {
-        crm,
-      },
-    );
-  }
-
   async processNotification(notification: NotificationDto): Promise<any> {
     Logger.log('ProcessNotification', 'Message Received');
     let cachedResult = await this.cache.getResponse(
@@ -153,11 +189,24 @@ export class PomeloIntegrationProcessService {
     return cachedResult;
   }
 
-  async processAdjustment(adjustment: Adjustment): Promise<any> {
-    return await this.process(adjustment, adjustment.idempotency, false);
+  async processAdjustment(adjustment: Adjustment, headers: any): Promise<any> {
+    return await this.process(
+      adjustment,
+      adjustment.idempotency,
+      false,
+      headers,
+    );
   }
 
-  async processAuthorization(authorization: Authorization): Promise<any> {
-    return await this.process(authorization, authorization.idempotency, true);
+  async processAuthorization(
+    authorization: Authorization,
+    headers: any,
+  ): Promise<any> {
+    return await this.process(
+      authorization,
+      authorization.idempotency,
+      true,
+      headers,
+    );
   }
 }
