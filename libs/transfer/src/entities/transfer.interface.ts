@@ -53,6 +53,7 @@ export interface TransferInterface {
   pspAccount: PspAccountInterface;
   psp: PspInterface;
   crm: CrmInterface;
+  userAccount: UserInterface;
   userCreator: UserInterface;
   userApprover: UserInterface;
   userRejecter: UserInterface;

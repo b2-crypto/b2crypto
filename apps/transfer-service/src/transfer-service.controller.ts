@@ -160,6 +160,14 @@ export class TransferServiceController implements GenericServiceController {
     return this.transferService.getAll(query);
   }
 
+  @Get('me')
+  // @CheckPoliciesAbility(new PolicyHandlerTransferRead())
+  async findAllMe(@Query() query: QuerySearchAnyDto, @Req() req?) {
+    //query = await this.filterFromUserPermissions(query, req);
+    query = CommonService.getQueryWithUserId(query, req, 'userAccount');
+    return this.transferService.getAll(query);
+  }
+
   @Get('deposit')
   // @CheckPoliciesAbility(new PolicyHandlerTransferRead())
   async findDeposit(@Query() query: QuerySearchAnyDto, @Req() req?) {

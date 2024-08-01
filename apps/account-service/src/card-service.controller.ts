@@ -47,6 +47,7 @@ import { ConfigService } from '@nestjs/config';
 import { AccountCreateDto } from '@account/account/dto/account.create.dto';
 import { IntegrationCardService } from '@integration/integration/card/generic/integration.card.service';
 import { AccountDocument } from '@account/account/entities/mongoose/account.schema';
+import EventsNamesUserEnum from 'apps/user-service/src/enum/events.names.user.enum';
 
 @ApiTags('CARD')
 @Controller('cards')
@@ -107,14 +108,12 @@ export class CardServiceController extends AccountServiceController {
   async createOne(@Body() createDto: CardCreateDto, @Req() req?: any) {
     createDto.accountType =
       createDto.accountType ?? CardTypesAccountEnum.VIRTUAL;
-    const user: User = (
-      await this.userService.getAll({
-        relations: ['personalData'],
-        where: {
-          _id: CommonService.getUserId(req),
-        },
-      })
-    ).list[0];
+    if (createDto.accountType === CardTypesAccountEnum.PHYSICAL) {
+      throw new BadRequestException(
+        'You must be use "/cards/shipping" to get a PHYSICAL card',
+      );
+    }
+    const user: User = await this.getUser(req?.user?.id);
     if (!user.personalData) {
       throw new BadRequestException('Need the personal data to continue');
     }
@@ -278,14 +277,7 @@ export class CardServiceController extends AccountServiceController {
     @Param('idCard') idCard: string,
     @Req() req?: any,
   ) {
-    const user: User = (
-      await this.userService.getAll({
-        relations: ['personalData'],
-        where: {
-          _id: req?.user.id,
-        },
-      })
-    ).list[0];
+    const user: User = await this.getUser(req?.user?.id);
     if (!user) {
       throw new NotFoundException('User not found');
     }
@@ -312,14 +304,7 @@ export class CardServiceController extends AccountServiceController {
 
   @Post('shipping')
   async shippingPhysicalCard(@Req() req?: any) {
-    const user: User = (
-      await this.userService.getAll({
-        relations: ['personalData'],
-        where: {
-          _id: req?.user.id,
-        },
-      })
-    ).list[0];
+    const user: User = await this.getUser(req?.user?.id);
     if (!user) {
       throw new NotFoundException('User not found');
     }
@@ -369,14 +354,7 @@ export class CardServiceController extends AccountServiceController {
 
   @Post('recharge')
   async rechargeOne(@Body() createDto: CardDepositCreateDto, @Req() req?: any) {
-    const user: User = (
-      await this.userService.getAll({
-        relations: ['personalData'],
-        where: {
-          _id: req?.user.id,
-        },
-      })
-    ).list[0];
+    const user: User = await this.getUser(req?.user?.id);
     if (!user.personalData) {
       throw new BadRequestException('Need the personal data to continue');
     }
@@ -404,6 +382,7 @@ export class CardServiceController extends AccountServiceController {
     if (from.amount < createDto.amount) {
       throw new BadRequestException('Wallet with enough balance');
     }
+    // Create
     return Promise.all([
       this.cardService.customUpdateOne({
         id: createDto.to,
@@ -529,10 +508,13 @@ export class CardServiceController extends AccountServiceController {
       }
       userCardConfig = userCard.data as unknown as UserCard;
     }
-    await this.userService.updateUser({
-      id: user._id,
-      userCard: userCardConfig,
-    });
+    await this.cardBuilder.getPromiseUserEventClient(
+      EventsNamesUserEnum.updateOne,
+      {
+        id: user._id,
+        userCard: userCardConfig,
+      },
+    );
     return userCardConfig;
   }
 }

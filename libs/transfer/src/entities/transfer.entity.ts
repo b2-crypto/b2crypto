@@ -100,6 +100,7 @@ export class TransferEntity implements TransferInterface {
   pspAccount: PspAccountEntity;
   psp: PspEntity;
   crm: CrmEntity;
+  userAccount: UserEntity;
   userCreator: UserEntity;
   userApprover: UserEntity;
   userRejecter: UserEntity;
