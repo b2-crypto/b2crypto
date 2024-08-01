@@ -12,6 +12,10 @@ import { Psp } from '@psp/psp/entities/mongoose/psp.schema';
 import { Status } from '@status/status/entities/mongoose/status.schema';
 import { TransferAccountResponse } from '@transfer/transfer/dto/transfer.account.response.dto';
 import { PspResponse } from '@transfer/transfer/dto/transfer.latamcashier.response.dto';
+import {
+  TransferRequestBodyJsonDto,
+  TransferRequestHeadersJsonDto,
+} from '@transfer/transfer/dto/transfer.request.dto';
 import { TransferEntity } from '@transfer/transfer/entities/transfer.entity';
 import { OperationTransactionType } from '@transfer/transfer/enum/operation.transaction.type.enum';
 import { User } from '@user/user/entities/mongoose/user.schema';
@@ -44,6 +48,9 @@ export class Transfer extends TransferEntity {
   // Amount in minimal units
   @Prop()
   amount: number;
+
+  @Prop()
+  amountCustodial: number;
 
   @Prop({ type: String, enum: CountryCodeEnum })
   country: CountryCodeEnum;
@@ -90,6 +97,12 @@ export class Transfer extends TransferEntity {
   @Prop({ type: TransferAccountResponse })
   responseAccount: TransferAccountResponse;
 
+  @Prop({ type: TransferRequestBodyJsonDto })
+  requestBodyJson: TransferRequestBodyJsonDto;
+
+  @Prop({ type: TransferRequestHeadersJsonDto })
+  requestHeadersJson: TransferRequestHeadersJsonDto;
+
   @Prop()
   confirmedAt: Date;
 
@@ -116,6 +129,9 @@ export class Transfer extends TransferEntity {
 
   @Prop({ type: String, enum: CurrencyCodeB2cryptoEnum })
   currency: CurrencyCodeB2cryptoEnum;
+
+  @Prop({ type: String, enum: CurrencyCodeB2cryptoEnum })
+  currencyCustodial: CurrencyCodeB2cryptoEnum;
 
   @Prop({ type: String, enum: OperationTransactionType })
   operationType: OperationTransactionType;
