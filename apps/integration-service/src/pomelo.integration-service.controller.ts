@@ -32,6 +32,7 @@ export class PomeloIntegrationServiceController {
   @HttpCode(204)
   async processNotification(
     @Body() notification: NotificationDto,
+    @Headers() headers: any,
   ): Promise<any> {
     Logger.log(
       `Idempotency: ${notification.idempotency_key}`,
@@ -39,6 +40,7 @@ export class PomeloIntegrationServiceController {
     );
     return await this.integrationServiceService.processNotification(
       notification,
+      headers,
     );
   }
 
