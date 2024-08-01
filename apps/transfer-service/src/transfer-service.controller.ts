@@ -693,6 +693,7 @@ export class TransferServiceController implements GenericServiceController {
       transferDto.crm = crm;
       transferDto.status = status;
       transferDto.account = account;
+      transferDto.userAccount = account.owner;
       transferDto.amount = webhookTransferDto.amount;
       transferDto.amountCustodial = webhookTransferDto.amountCustodial;
       transferDto.currency = webhookTransferDto.currency;

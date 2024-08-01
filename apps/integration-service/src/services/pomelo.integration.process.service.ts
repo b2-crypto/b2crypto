@@ -125,7 +125,7 @@ export class PomeloIntegrationProcessService {
       if (result === CardsEnum.CARD_PROCESS_OK) {
         return {
           status: CardsEnum.CARD_PROCESS_OK,
-          message: `Transaction rejected.`,
+          message: `Transaction approved.`,
           status_detail: CardsEnum.CARD_PROCESS_OK,
         };
       }
