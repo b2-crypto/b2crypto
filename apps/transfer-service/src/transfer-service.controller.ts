@@ -75,6 +75,9 @@ import { BoldStatusEnum } from './enum/bold.status.enum';
 import EventsNamesCrmEnum from 'apps/crm-service/src/enum/events.names.crm.enum';
 import EventsNamesStatusEnum from 'apps/status-service/src/enum/events.names.status.enum';
 import EventsNamesAccountEnum from 'apps/account-service/src/enum/events.names.account.enum';
+import EventsNamesCategoryEnum from 'apps/category-service/src/enum/events.names.category.enum';
+import { PomeloProcessEnum } from 'apps/integration-service/src/enums/pomelo.process.enum';
+import TagEnum from '@common/common/enums/TagEnum';
 
 @ApiTags('TRANSFERS')
 @Controller('transfers')
@@ -689,11 +692,31 @@ export class TransferServiceController implements GenericServiceController {
         return;
       }
 
+      const movement =
+        PomeloProcessEnum[
+          webhookTransferDto.requestBodyJson?.transaction?.type
+        ];
+      const category = await this.builder.getPromiseCategoryEventClient(
+        EventsNamesCategoryEnum.findOneByNameType,
+        {
+          slug: CommonService.getSlug(movement),
+          type: TagEnum.MONETARY_TRANSACTION_TYPE,
+        },
+      );
+      if (!category) {
+        Logger.error(
+          `Category by slug ${movement} was not found`,
+          'WebhookTransfer',
+        );
+        return;
+      }
+
       const transferDto: TransferCreateDto = new TransferCreateDto();
       transferDto.crm = crm;
       transferDto.status = status;
       transferDto.account = account;
       transferDto.userAccount = account.owner;
+      transferDto.typeTransaction = category;
       transferDto.amount = webhookTransferDto.amount;
       transferDto.amountCustodial = webhookTransferDto.amountCustodial;
       transferDto.currency = webhookTransferDto.currency;
