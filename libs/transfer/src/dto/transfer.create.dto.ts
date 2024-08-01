@@ -224,6 +224,10 @@ export class TransferCreateDto extends CreateAnyDto {
 
   @IsMongoId()
   @IsOptional()
+  userAccount: ObjectId;
+
+  @IsMongoId()
+  @IsOptional()
   userCreator: ObjectId;
 
   @IsMongoId()
