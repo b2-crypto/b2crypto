@@ -638,52 +638,70 @@ export class TransferServiceController implements GenericServiceController {
     @Payload() webhookTransferDto: any,
     @Ctx() ctx: RmqContext,
   ) {
-    CommonService.ack(ctx);
+    try {
+      CommonService.ack(ctx);
 
-    const crm = await this.builder.getPromiseCrmEventClient(
-      EventsNamesCrmEnum.findOneByName,
-      webhookTransferDto.integration,
-    );
+      const crm = await this.builder.getPromiseCrmEventClient(
+        EventsNamesCrmEnum.findOneByName,
+        webhookTransferDto.integration,
+      );
+      if (!crm) {
+        Logger.error(
+          `CRM ${webhookTransferDto.integration} was not found`,
+          'WebhookTransfer',
+        );
+        return;
+      }
 
-    const status = await this.builder.getPromiseStatusEventClient(
-      EventsNamesStatusEnum.findOneByName,
-      webhookTransferDto.status,
-    );
+      const status = await this.builder.getPromiseStatusEventClient(
+        EventsNamesStatusEnum.findOneByName,
+        webhookTransferDto.status,
+      );
+      if (!status) {
+        Logger.error(
+          `Status ${webhookTransferDto.status} was not found`,
+          'WebhookTransfer',
+        );
+        return;
+      }
 
-    const cardId = webhookTransferDto?.requestBodyJson?.card?.id ?? '';
+      const cardId = webhookTransferDto?.requestBodyJson?.card?.id ?? '';
 
-    const account = await this.builder.getPromiseAccountEventClient(
-      EventsNamesAccountEnum.findOneByCardId,
-      {
-        id: cardId,
-      },
-    );
+      const account = await this.builder.getPromiseAccountEventClient(
+        EventsNamesAccountEnum.findOneByCardId,
+        {
+          id: cardId,
+        },
+      );
+      if (!account) {
+        Logger.error(
+          `Account by card ${cardId} was not found`,
+          'WebhookTransfer',
+        );
+        return;
+      }
 
-    //Check de nulos o vacíos
+      const transferDto: TransferCreateDto = new TransferCreateDto();
+      transferDto.crm = crm;
+      transferDto.status = status;
+      transferDto.account = account;
+      transferDto.amount = webhookTransferDto.amount;
+      transferDto.amountCustodial = webhookTransferDto.amountCustodial;
+      transferDto.currency = webhookTransferDto.currency;
+      transferDto.currencyCustodial = webhookTransferDto.currencyCustodial;
+      transferDto.statusPayment = webhookTransferDto.status;
+      transferDto.description = webhookTransferDto.description;
+      transferDto.operationType = webhookTransferDto.operationType;
+      transferDto.requestBodyJson = webhookTransferDto.requestBodyJson;
+      transferDto.requestHeadersJson = webhookTransferDto.requestHeadersJson;
+      transferDto.descriptionStatusPayment =
+        webhookTransferDto.descriptionStatusPayment;
+      transferDto.confirmedAt = new Date();
 
-    this.builder.getPromiseStatusEventClient(
-      EventsNamesStatusEnum.findOneByName,
-      webhookTransferDto.status,
-    );
-
-    const transferDto: TransferCreateDto = new TransferCreateDto();
-    transferDto.crm = crm;
-    transferDto.status = status;
-    transferDto.account = account;
-    transferDto.amount = webhookTransferDto.amount;
-    transferDto.amountCustodial = webhookTransferDto.amountCustodial;
-    transferDto.currency = webhookTransferDto.currency;
-    transferDto.currencyCustodial = webhookTransferDto.currencyCustodial;
-    transferDto.statusPayment = webhookTransferDto.status;
-    transferDto.description = webhookTransferDto.description;
-    transferDto.operationType = webhookTransferDto.operationType;
-    transferDto.requestBodyJson = webhookTransferDto.requestBodyJson;
-    transferDto.requestHeadersJson = webhookTransferDto.requestHeadersJson;
-    transferDto.descriptionStatusPayment =
-      webhookTransferDto.descriptionStatusPayment;
-    transferDto.confirmedAt = new Date();
-
-    await this.transferService.newTransfer(transferDto);
+      await this.transferService.newTransfer(transferDto);
+    } catch (error) {
+      Logger.error(error, 'WebhookTransfer');
+    }
   }
 
   @AllowAnon()
