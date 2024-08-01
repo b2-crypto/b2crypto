@@ -68,9 +68,10 @@ export class SignatureGuard implements CanActivate {
       request?.connection?.remoteAddress ||
       '';
     Logger.log(`IpCaller: ${caller}`, 'SignatureGuard');
-    //const whitelisted = process.env.POMELO_WHITELISTED_IPS;
-    //return whitelisted?.replace(/\s/g, '')?.split(',')?.includes(caller) || false;
-    return true;
+    const whitelisted = process.env.POMELO_WHITELISTED_IPS;
+    return (
+      whitelisted?.replace(/\s/g, '')?.split(',')?.includes(caller) || false
+    );
   }
 
   private checkValidEndpoint(path: string, headers: ProcessHeaderDto): boolean {
@@ -82,9 +83,8 @@ export class SignatureGuard implements CanActivate {
   }
 
   private checkSignatureIsNotExpired(timestamp: number) {
-    /* const currentTime: number = Date.now() / 1000;
-    return currentTime - timestamp <= this.constants.TTL; */
-    return true;
+    const currentTime: number = Date.now() / 1000;
+    return currentTime - timestamp <= this.constants.TTL;
   }
 
   private headersToLowercase(context: ExecutionContext) {
