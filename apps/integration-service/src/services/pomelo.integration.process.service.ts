@@ -55,7 +55,8 @@ export class PomeloIntegrationProcessService {
         integration: 'Pomelo',
         requestBodyJson: process,
         requestHeadersJson: headers,
-        operationType: OperationTransactionType[process?.transaction?.type],
+        operationType:
+          OperationTransactionType[process?.transaction?.type?.toLowerCase()],
         status: response?.status ?? CardsEnum.CARD_PROCESS_OK,
         descriptionStatusPayment:
           response?.status_detail ?? CardsEnum.CARD_PROCESS_OK,
@@ -172,7 +173,10 @@ export class PomeloIntegrationProcessService {
     return response;
   }
 
-  async processNotification(notification: NotificationDto): Promise<any> {
+  async processNotification(
+    notification: NotificationDto,
+    headers: any,
+  ): Promise<any> {
     Logger.log('ProcessNotification', 'Message Received');
     let cachedResult = await this.cache.getResponse(
       notification.idempotency_key,
@@ -180,10 +184,21 @@ export class PomeloIntegrationProcessService {
     if (cachedResult == null) {
       cachedResult = await this.cache.setTooEarly(notification.idempotency_key);
 
-      // Save notification record on activity
+      const amount = {
+        to: notification?.event_detail?.amount?.settlement?.currency,
+        from: notification?.event_detail?.amount?.local?.currency,
+        amount: notification?.event_detail?.amount?.local?.total,
+        usd: notification?.event_detail?.amount?.settlement?.total,
+      };
 
       cachedResult = await this.cache.setResponseReceived(
         notification.idempotency_key,
+      );
+      this.createTransferRecord(
+        notification?.event_detail,
+        headers,
+        cachedResult,
+        amount,
       );
       return cachedResult;
     }
