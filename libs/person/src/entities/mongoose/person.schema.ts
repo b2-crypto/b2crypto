@@ -81,18 +81,6 @@ export class Person extends PersonEntity {
 
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'users' })
   user: User;
-
-  @Prop({ type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'leads' }] })
-  leads: Lead[];
-
-  @Prop({ type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'accounts' }] })
-  accounts: Account[];
-
-  @Prop({ type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'traffics' }] })
-  traffics: Traffic[];
-
-  @Prop({ type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'affiliates' }] })
-  affiliates: Affiliate[];
 }
 
 export const PersonSchema = SchemaFactory.createForClass(Person);
