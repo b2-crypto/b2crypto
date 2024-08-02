@@ -76,9 +76,7 @@ export class AccountServiceController implements GenericServiceController {
     const account = await this.accountService.findOneById(id);
     const status = await this.builder.getPromiseStatusEventClient(
       EventsNamesStatusEnum.findOneByName,
-      {
-        slug: slugName,
-      },
+      slugName,
     );
     account.status = status;
     return account.save();
