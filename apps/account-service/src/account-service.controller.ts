@@ -26,6 +26,7 @@ import EventsNamesAccountEnum from './enum/events.names.account.enum';
 import { ActivityCreateDto } from '@activity/activity/dto/activity.create.dto';
 import { CommonService } from '@common/common';
 import EventsNamesUserEnum from 'apps/user-service/src/enum/events.names.user.enum';
+import EventsNamesStatusEnum from 'apps/status-service/src/enum/events.names.status.enum';
 
 @ApiTags('ACCOUNT')
 @Controller('accounts')
@@ -51,8 +52,40 @@ export class AccountServiceController implements GenericServiceController {
     return this.accountService.findAll(query);
   }
 
-  @Get(':cardID')
-  findOneById(@Param('cardID') id: string) {
+  @Get('lock/:accountId')
+  async blockedOneById(@Param('accountId') id: string) {
+    return this.updateStatusAccount(id, 'blocked');
+  }
+
+  @Get('unlock/:accountId')
+  async unblockedOneById(@Param('accountId') id: string) {
+    return this.updateStatusAccount(id, 'active');
+  }
+
+  @Get('cancel/:accountId')
+  async cancelOneById(@Param('accountId') id: string) {
+    return this.updateStatusAccount(id, 'cancel');
+  }
+
+  @Get('disable/:accountId')
+  async disableOneById(@Param('accountId') id: string) {
+    return this.updateStatusAccount(id, 'inactive');
+  }
+
+  async updateStatusAccount(id: string, slugName: string) {
+    const account = await this.accountService.findOneById(id);
+    const status = await this.builder.getPromiseStatusEventClient(
+      EventsNamesStatusEnum.findOneByName,
+      {
+        slug: slugName,
+      },
+    );
+    account.status = status;
+    return account.save();
+  }
+
+  @Get(':accountId')
+  findOneById(@Param('accountId') id: string) {
     return this.accountService.findOneById(id);
   }
 

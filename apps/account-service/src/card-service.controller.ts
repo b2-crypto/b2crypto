@@ -309,6 +309,12 @@ export class CardServiceController extends AccountServiceController {
     if (!user) {
       throw new NotFoundException('User not found');
     }
+    if (!user.personalData) {
+      throw new BadRequestException('Profile of user not found');
+    }
+    if (!user.personalData.location?.address) {
+      throw new BadRequestException('Location address not found');
+    }
     const cardIntegration = await this.integration.getCardIntegration(
       IntegrationCardEnum.POMELO,
     );
@@ -320,24 +326,26 @@ export class CardServiceController extends AccountServiceController {
     }
     const rtaShippingCard = await cardIntegration.shippingPhysicalCard({
       shipment_type: 'CARD_FROM_WAREHOUSE',
+      // TODo[hender-2024/08/02] Default because is available AFG
       affinity_group_id: 'afg-2jc1143Egwfm4SUOaAwBz9IfZKb',
+      // TODo[hender-2024/08/02] Default because only COL is authorized
       country: 'COL',
       user_id: user.userCard.id,
       address: {
-        street_name: 'Calle 6Sur #70-215',
+        street_name: user.personalData.location.address.street_name,
         street_number: ' ',
-        city: 'MEDELLIN',
-        region: 'ANTIOQUIA',
-        neighborhood: 'BELEN',
-        country: 'COL',
-        apartment: '706',
+        city: user.personalData.location.address.city,
+        region: user.personalData.location.address.region,
+        neighborhood: user.personalData.location.address.neighborhood,
+        country: user.personalData.location.address.country,
+        apartment: user.personalData.location.address.apartment,
       },
       receiver: {
-        full_name: 'Hender Orlando',
-        email: 'hender.orlando@b2crypto.com',
-        document_type: 'CC',
-        document_number: '1090387495',
-        telephone_number: '573187880301',
+        full_name: user.personalData.name,
+        email: user.email,
+        document_type: user.personalData.typeDocId,
+        document_number: user.personalData.numDocId,
+        telephone_number: user.personalData.telephone[0].phoneNumber,
       },
     });
     if (rtaShippingCard.data.id) {
