@@ -52,22 +52,22 @@ export class AccountServiceController implements GenericServiceController {
     return this.accountService.findAll(query);
   }
 
-  @Get('lock/:accountId')
+  @Patch('lock/:accountId')
   async blockedOneById(@Param('accountId') id: string) {
     return this.updateStatusAccount(id, 'blocked');
   }
 
-  @Get('unlock/:accountId')
+  @Patch('unlock/:accountId')
   async unblockedOneById(@Param('accountId') id: string) {
     return this.updateStatusAccount(id, 'active');
   }
 
-  @Get('cancel/:accountId')
+  @Patch('cancel/:accountId')
   async cancelOneById(@Param('accountId') id: string) {
     return this.updateStatusAccount(id, 'cancel');
   }
 
-  @Get('disable/:accountId')
+  @Patch('disable/:accountId')
   async disableOneById(@Param('accountId') id: string) {
     return this.updateStatusAccount(id, 'inactive');
   }
