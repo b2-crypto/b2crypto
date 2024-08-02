@@ -8,10 +8,11 @@ import { BasicMicroserviceService } from '@common/common/models/basic.microservi
 import { CreateAnyDto } from '@common/common/models/create-any.dto';
 import { QuerySearchAnyDto } from '@common/common/models/query_search-any.dto';
 import { UpdateAnyDto } from '@common/common/models/update-any.dto';
-import { Inject, Injectable } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { ClientProxy, Ctx, RmqContext } from '@nestjs/microservices';
 import { StatusDocument } from '@status/status/entities/mongoose/status.schema';
+import EventsNamesStatusEnum from 'apps/status-service/src/enum/events.names.status.enum';
 
 @Injectable()
 export class AccountServiceService
@@ -55,7 +56,16 @@ export class AccountServiceService
     updateDto: AccountUpdateDto,
     context?: any,
   ): Promise<AccountDocument> {
-    return this.lib.update(updateDto.id ?? updateDto._id, updateDto);
+    const id = updateDto.id ?? updateDto._id;
+    const account = await this.findOneById(id);
+    const statusDisable = await this.builder.getPromiseStatusEventClient(
+      EventsNamesStatusEnum.findOneByName,
+      'disable',
+    );
+    if (account.status === statusDisable._id) {
+      throw new BadRequestException('The account was disabled');
+    }
+    return this.lib.update(id, updateDto);
   }
   async customUpdateOne(updateRequest: any): Promise<AccountDocument> {
     const id = updateRequest.id ?? updateRequest._id;

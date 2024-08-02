@@ -69,7 +69,18 @@ export class AccountServiceController implements GenericServiceController {
 
   @Patch('disable/:accountId')
   async disableOneById(@Param('accountId') id: string) {
-    return this.updateStatusAccount(id, 'inactive');
+    return this.toggleVisibleToOwner(id, false);
+  }
+
+  @Patch('enable/:accountId')
+  async enableOneById(@Param('accountId') id: string) {
+    return this.toggleVisibleToOwner(id, true);
+  }
+
+  async toggleVisibleToOwner(id: string, visible?: boolean) {
+    const account = await this.accountService.findOneById(id);
+    account.showToOwner = visible ?? !account.showToOwner;
+    return account.save();
   }
 
   async updateStatusAccount(id: string, slugName: string) {

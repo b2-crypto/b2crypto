@@ -30,7 +30,7 @@ export interface AccountInterface {
   owner?: UserInterface;
   totalTransfer: number;
   quantityTransfer: number;
-  showToAffiliate: boolean;
+  showToOwner: boolean;
   hasSendDisclaimer: boolean;
   referralType?: CategoryInterface | string;
   group?: GroupInterface;

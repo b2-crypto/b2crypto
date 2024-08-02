@@ -35,7 +35,7 @@ describe('AccountServiceController', () => {
         referralType: '',
         brand: undefined,
         searchText: '',
-        showToAffiliate: false,
+        showToOwner: false,
         hasSendDisclaimer: false,
         country: CountryCodeEnum.na,
         personalData: undefined,
