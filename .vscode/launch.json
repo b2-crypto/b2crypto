@@ -10,7 +10,8 @@
       "runtimeArgs": [
         "run",
         //"start:debug",
-        "start-local:debug",
+        //"start-local:debug",
+        "start:local",
         "--",
         "--inspect-brk"
       ],
@@ -19,7 +20,8 @@
       "protocol": "auto",
       "port": 9229,
       "autoAttachChildProcesses": true,
-      "envFile": "${workspaceRoot}/.env"
+      "envFile": "${workspaceRoot}/.env",
+      "postDebugTask": "task:stop:infra"
     },
     {
       "type": "node",
