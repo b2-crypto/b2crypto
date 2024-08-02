@@ -54,7 +54,7 @@ export class AccountServiceController implements GenericServiceController {
 
   @Patch('lock/:accountId')
   async blockedOneById(@Param('accountId') id: string) {
-    return this.updateStatusAccount(id, 'blocked');
+    return this.updateStatusAccount(id, 'lock');
   }
 
   @Patch('unlock/:accountId')
