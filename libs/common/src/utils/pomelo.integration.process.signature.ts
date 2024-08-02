@@ -17,6 +17,7 @@ export class SignatureUtils {
     try {
       if (headers && body) {
         Logger.log(`Headers: ${JSON.stringify(headers)}`, 'Check Signature');
+        Logger.log(`Body: ${JSON.stringify(body)}`, 'Check Signature');
         let signature = headers.signature;
         if (headers.signature.startsWith('hmac-sha256')) {
           signature = signature.replace('hmac-sha256 ', '');
@@ -26,7 +27,7 @@ export class SignatureUtils {
 
           const hmac = crypto
             .createHmac('sha256', key)
-            .update(headers.timestamp.toString())
+            .update('' + headers.timestamp)
             .update(headers.endpoint)
             .update(Buffer.from(JSON.stringify(body)));
 
@@ -46,7 +47,7 @@ export class SignatureUtils {
               `Signature mismatch. Received: ${signature}. Calculated: ${hashResult}`,
               'Check Signature',
             );
-            return true;
+            return false;
           }
           return true;
         } else {
