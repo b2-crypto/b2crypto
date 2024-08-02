@@ -103,7 +103,7 @@ export class AccountEntity implements AccountInterface {
   owner: UserEntity;
   totalTransfer: number;
   quantityTransfer: number;
-  showToAffiliate: boolean;
+  showToOwner: boolean;
   hasSendDisclaimer: boolean;
   @ApiProperty({
     type: CategoryEntity,

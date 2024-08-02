@@ -92,6 +92,9 @@ export class Account extends AccountEntity {
   amountBlocked: number;
 
   @Prop()
+  showToOwner: boolean;
+
+  @Prop()
   hasSendDisclaimer: boolean;
 
   @Prop({ type: String, enum: CountryCodeB2cryptoEnum })
