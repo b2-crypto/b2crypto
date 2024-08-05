@@ -10,7 +10,7 @@ export class FiatIntegrationClient {
     from: string,
     amount: number,
   ): Promise<any> {
-    const to = process.env.DEFAULT_CURRENCY_TO_CONVERT;
+    const to = process.env.DEFAULT_CURRENCY_CONVERSION_COIN;
     return this.getCurrencyConversion(to, from, amount);
   }
 
@@ -19,8 +19,8 @@ export class FiatIntegrationClient {
     from: string,
     amount: number,
   ): Promise<any> {
-    const apiURL = process.env.URL;
-    const apiKey = process.env.API_KEY_CURRENCY;
+    const apiURL = process.env.CURRENCY_CONVERSION_API_URL;
+    const apiKey = process.env.CURRENCY_CONVERSION_API_KEY;
 
     const url = `${apiURL}?access_key=${apiKey}&from=${from}&to=${to}&amount=${amount}`;
 
