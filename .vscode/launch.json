@@ -10,8 +10,7 @@
       "runtimeArgs": [
         "run",
         //"start:debug",
-        //"start-local:debug",
-        "start:local",
+        "start-local:debug",
         "--",
         "--inspect-brk"
       ],
