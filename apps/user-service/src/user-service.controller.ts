@@ -11,7 +11,13 @@ import {
   Query,
   Req,
 } from '@nestjs/common';
-import { ApiHeader, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiHeader,
+  ApiResponse,
+  ApiSecurity,
+  ApiTags,
+} from '@nestjs/swagger';
 
 import { AllowAnon } from '@auth/auth/decorators/allow-anon.decorator';
 import { ApiKeyCheck } from '@auth/auth/decorators/api-key-check.decorator';
@@ -56,10 +62,7 @@ export class UserServiceController implements GenericServiceController {
 
   @ApiKeyCheck()
   @ApiTags('Stakey Security')
-  @ApiHeader({
-    name: 'b2crypto-key',
-    description: 'The apiKey',
-  })
+  @ApiSecurity('b2crypto-key')
   @Get('email/:userEmail')
   // @CheckPoliciesAbility(new PolicyHandlerUserRead())
   async findOneByEmail(@Param('userEmail') email: string) {

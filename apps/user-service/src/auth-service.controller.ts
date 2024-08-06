@@ -35,7 +35,13 @@ import {
   Payload,
   RmqContext,
 } from '@nestjs/microservices';
-import { ApiHeader, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiHeader,
+  ApiResponse,
+  ApiSecurity,
+  ApiTags,
+} from '@nestjs/swagger';
 import ResponseB2Crypto from '@response-b2crypto/response-b2crypto/models/ResponseB2Crypto';
 import { UserRegisterDto } from '@user/user/dto/user.register.dto';
 import EventsNamesActivityEnum from 'apps/activity-service/src/enum/events.names.activity.enum';
@@ -50,6 +56,7 @@ import { UserDocument } from '@user/user/entities/mongoose/user.schema';
 import { IntegrationService } from '@integration/integration';
 import { SumsubIssueTokenDto } from '@integration/integration/identity/generic/domain/sumsub.issue.token.dto';
 import { ApiKeyAuthGuard } from '@auth/auth/guards/api.key.guard';
+import { UserSignInDto } from '@user/user/dto/user.signin.dto';
 
 @ApiTags('AUTHENTICATION')
 @Controller('auth')
@@ -71,10 +78,8 @@ export class AuthServiceController {
   @ApiKeyCheck()
   @UseGuards(ApiKeyAuthGuard)
   @ApiTags('Stakey Security')
-  @ApiHeader({
-    name: 'b2crypto-key',
-    description: 'The apiKey',
-  })
+  @ApiBearerAuth('bearerToken')
+  @ApiSecurity('b2crypto-key')
   @Post('identity/token')
   async sumsubToken(@Body() identityDto: SumsubIssueTokenDto, @Req() req) {
     const client = req.clientApi;
@@ -94,10 +99,8 @@ export class AuthServiceController {
 
   @ApiKeyCheck()
   @ApiTags('Stakey Security')
-  @ApiHeader({
-    name: 'b2crypto-key',
-    description: 'The apiKey',
-  })
+  @ApiBearerAuth('bearerToken')
+  @ApiSecurity('b2crypto-key')
   @Post('restore-password')
   async restorePassword(@Body() restorePasswordDto: RestorePasswordDto) {
     const users = await this.builder.getPromiseUserEventClient(
@@ -150,11 +153,9 @@ export class AuthServiceController {
   }
 
   @ApiKeyCheck()
+  @UseGuards(ApiKeyAuthGuard)
+  @ApiSecurity('b2crypto-key')
   @ApiTags('Stakey Security')
-  @ApiHeader({
-    name: 'b2crypto-key',
-    description: 'The apiKey',
-  })
   @Get('otp/:email')
   async getOtp(@Param('email') email: string) {
     await this.generateOtp({ email } as any);
@@ -166,11 +167,9 @@ export class AuthServiceController {
   }
 
   @ApiKeyCheck()
+  @UseGuards(ApiKeyAuthGuard)
+  @ApiSecurity('b2crypto-key')
   @ApiTags('Stakey Security')
-  @ApiHeader({
-    name: 'b2crypto-key',
-    description: 'The apiKey',
-  })
   @Get('otp/:email/:otp')
   async validateOtp(@Param('email') email: string, @Param('otp') otp: string) {
     const otpSended = await this.getOtpGenerated(email);
@@ -200,11 +199,9 @@ export class AuthServiceController {
 
   @AllowAnon()
   @ApiKeyCheck()
+  @UseGuards(ApiKeyAuthGuard)
+  @ApiSecurity('b2crypto-key')
   @ApiTags('Stakey Security')
-  @ApiHeader({
-    name: 'b2crypto-key',
-    description: 'The apiKey',
-  })
   /* @ApiResponse({
     status: 201,
     description: 'was searched successfully',
@@ -229,12 +226,10 @@ export class AuthServiceController {
 
   @IsRefresh()
   @ApiKeyCheck()
+  @UseGuards(ApiKeyAuthGuard)
+  @ApiSecurity('b2crypto-key')
   @Post('refresh-token')
   @ApiTags('Stakey Security')
-  @ApiHeader({
-    name: 'b2crypto-key',
-    description: 'The apiKey',
-  })
   @ApiResponse(ResponseB2Crypto.getResponseSwagger(200))
   @ApiResponse(ResponseB2Crypto.getResponseSwagger(400))
   @ApiResponse(ResponseB2Crypto.getResponseSwagger(403))
@@ -249,19 +244,15 @@ export class AuthServiceController {
     };
   }
 
-  @AllowAnon()
   @ApiKeyCheck()
   @Post('sign-in')
-  @UseGuards(LocalAuthGuard)
+  @UseGuards(ApiKeyAuthGuard, LocalAuthGuard)
+  @ApiSecurity('b2crypto-key')
   @ApiTags('Stakey Security')
-  @ApiHeader({
-    name: 'b2crypto-key',
-    description: 'The apiKey',
-  })
   @ApiResponse(ResponseB2Crypto.getResponseSwagger(200))
   @ApiResponse(ResponseB2Crypto.getResponseSwagger(400))
   @ApiResponse(ResponseB2Crypto.getResponseSwagger(403))
-  async signIn(@Request() req) {
+  async signIn(@Req() req, @Body() data: UserSignInDto) {
     const user = req.user;
     if (req.body.code && !user.twoFactorIsActive) {
       // Validated Two Factor Authentication
