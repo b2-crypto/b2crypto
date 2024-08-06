@@ -18,4 +18,5 @@ export class SumsubIssueTokenDto {
 export class SumsubIssuedTokenDto {
   token: string;
   userId: string;
+  url: string;
 }

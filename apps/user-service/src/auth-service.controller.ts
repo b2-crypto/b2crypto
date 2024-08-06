@@ -25,6 +25,7 @@ import {
   Query,
   Req,
   Request,
+  Res,
   UseGuards,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
@@ -81,18 +82,22 @@ export class AuthServiceController {
   @ApiBearerAuth('bearerToken')
   @ApiSecurity('b2crypto-key')
   @Post('identity/token')
-  async sumsubToken(@Body() identityDto: SumsubIssueTokenDto, @Req() req) {
-    const client = req.clientApi;
+  async sumsubToken(
+    @Body() identityDto: SumsubIssueTokenDto,
+    @Req() req,
+    @Res() res,
+  ) {
     const identity = await this.integration.getIdentityIntegration(
       IntegrationIdentityEnum.SUMSUB,
     );
     try {
       const rta = await identity.generateToken(identityDto);
-      return {
-        token: '',
-        userId: identityDto.userId,
-      };
+      if (!rta.url) {
+        throw rta;
+      }
+      return res.redirect(rta.url);
     } catch (err) {
+      Logger.error(err, 'Bad request Identity');
       throw new BadGatewayException();
     }
   }
