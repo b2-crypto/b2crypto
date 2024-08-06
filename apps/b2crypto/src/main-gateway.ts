@@ -67,14 +67,21 @@ function addSwaggerStakeyCard(app: INestApplication) {
     .addTag('Stakey Profile')
     .addTag('Stakey Deposit')
     .addTag('Stakey Card')
+    .addTag('Stakey Wallet')
     .addTag('Stakey List')
-    /* .addApiKey(
+    .addBearerAuth({
+      name: 'bearerToken',
+      type: 'http',
+      scheme: 'bearer',
+      bearerFormat: 'JWT',
+    })
+    .addApiKey(
       {
         type: 'apiKey',
         description: 'ApiKey to endpoints',
       },
       'b2crypto-key',
-    ) */
+    )
     .build();
   const stakeyCardDocument = SwaggerModule.createDocument(app, config, {
     include: [
