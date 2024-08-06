@@ -1,3 +1,4 @@
+import { IntegrationIdentityEnum } from './../../../libs/integration/src/identity/generic/domain/integration.identity.enum';
 import { AuthService } from '@auth/auth';
 import { AllowAnon } from '@auth/auth/decorators/allow-anon.decorator';
 import { ApiKeyCheck } from '@auth/auth/decorators/api-key-check.decorator';
@@ -8,6 +9,7 @@ import { CommonService } from '@common/common';
 import ActionsEnum from '@common/common/enums/ActionEnum';
 import ResourcesEnum from '@common/common/enums/ResourceEnum';
 import {
+  BadGatewayException,
   BadRequestException,
   Body,
   CACHE_MANAGER,
@@ -21,6 +23,7 @@ import {
   Patch,
   Post,
   Query,
+  Req,
   Request,
   UseGuards,
 } from '@nestjs/common';
@@ -44,6 +47,9 @@ import EventsNamesMessageEnum from 'apps/message-service/src/enum/events.names.m
 import { MessageCreateDto } from '@message/message/dto/message.create.dto';
 import TransportEnum from '@common/common/enums/TransportEnum';
 import { UserDocument } from '@user/user/entities/mongoose/user.schema';
+import { IntegrationService } from '@integration/integration';
+import { SumsubIssueTokenDto } from '@integration/integration/identity/generic/domain/sumsub.issue.token.dto';
+import { ApiKeyAuthGuard } from '@auth/auth/guards/api.key.guard';
 
 @ApiTags('AUTHENTICATION')
 @Controller('auth')
@@ -54,6 +60,8 @@ export class AuthServiceController {
     private cacheManager: Cache,
     @Inject(BuildersService)
     private builder: BuildersService,
+    @Inject(IntegrationService)
+    private integration: IntegrationService,
     private readonly authService: AuthService,
     private readonly configService: ConfigService,
   ) {
@@ -61,9 +69,27 @@ export class AuthServiceController {
   }
 
   @ApiKeyCheck()
-  @Post('identify/link')
-  async sumsubToken() {
-    throw new ForbiddenException();
+  @UseGuards(ApiKeyAuthGuard)
+  @ApiTags('Stakey Security')
+  @ApiHeader({
+    name: 'b2crypto-key',
+    description: 'The apiKey',
+  })
+  @Post('identity/token')
+  async sumsubToken(@Body() identityDto: SumsubIssueTokenDto, @Req() req) {
+    const client = req.clientApi;
+    const identity = await this.integration.getIdentityIntegration(
+      IntegrationIdentityEnum.SUMSUB,
+    );
+    try {
+      const rta = await identity.generateToken(identityDto);
+      return {
+        token: '',
+        userId: identityDto.userId,
+      };
+    } catch (err) {
+      throw new BadGatewayException();
+    }
   }
 
   @ApiKeyCheck()

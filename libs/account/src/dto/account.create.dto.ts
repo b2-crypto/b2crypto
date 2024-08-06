@@ -21,6 +21,7 @@ import {
 import { ObjectId } from 'mongodb';
 import { AccountInterface } from '../entities/account.interface';
 import TypesAccountEnum from '../enum/types.account.enum';
+import StatusAccountEnum from '../enum/status.account.enum';
 
 export class AccountCreateDto extends CreateAnyDto implements AccountInterface {
   _id?: ObjectId;
@@ -243,6 +244,8 @@ export class AccountCreateDto extends CreateAnyDto implements AccountInterface {
   quantityTransfer: number;
   @IsEmpty()
   showToOwner: boolean;
+  @IsEmpty()
+  statusText: StatusAccountEnum;
   @IsEmpty()
   accountStatus: StatusInterface[];
   @IsEmpty()

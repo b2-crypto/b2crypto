@@ -1,14 +1,15 @@
 import { AffiliateInterface } from '@affiliate/affiliate/domain/entities/affiliate.interface';
+import { BrandInterface } from '@brand/brand/entities/brand.interface';
 import { CategoryInterface } from '@category/category/entities/category.interface';
 import CountryCodeB2cryptoEnum from '@common/common/enums/country.code.b2crypto.enum';
 import { CrmInterface } from '@crm/crm/entities/crm.interface';
 import { GroupInterface } from '@group/group/entities/group.interface';
-import { ShippingResultInterface } from '@integration/integration/card/generic/interface/shipping-result.interface';
 import { PersonInterface } from '@person/person/entities/PersonInterface';
 import { StatusInterface } from '@status/status/entities/status.interface';
 import { UserInterface } from '@user/user/entities/user.interface';
-import { BrandInterface } from 'libs/brand/src/entities/brand.interface';
 import { ObjectId } from 'mongodb';
+import StatusAccountEnum from '../enum/status.account.enum';
+import TypesAccountEnum from '../enum/types.account.enum';
 
 export interface AccountInterface {
   _id?: ObjectId;
@@ -31,6 +32,7 @@ export interface AccountInterface {
   totalTransfer: number;
   quantityTransfer: number;
   showToOwner: boolean;
+  statusText: StatusAccountEnum;
   hasSendDisclaimer: boolean;
   referralType?: CategoryInterface | string;
   group?: GroupInterface;
@@ -44,7 +46,7 @@ export interface AccountInterface {
   updatedAt: Date;
   firstName?: string;
   lastName?: string;
-  type?: string;
+  type?: TypesAccountEnum;
   responseCreation?: any;
   responseShipping?: any;
   prevAccount?: AccountInterface;

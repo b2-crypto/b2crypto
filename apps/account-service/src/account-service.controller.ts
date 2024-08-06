@@ -27,6 +27,7 @@ import { ActivityCreateDto } from '@activity/activity/dto/activity.create.dto';
 import { CommonService } from '@common/common';
 import EventsNamesUserEnum from 'apps/user-service/src/enum/events.names.user.enum';
 import EventsNamesStatusEnum from 'apps/status-service/src/enum/events.names.status.enum';
+import StatusAccountEnum from '@account/account/enum/status.account.enum';
 
 @ApiTags('ACCOUNT')
 @Controller('accounts')
@@ -54,25 +55,25 @@ export class AccountServiceController implements GenericServiceController {
 
   @Patch('lock/:accountId')
   async blockedOneById(@Param('accountId') id: string) {
-    return this.updateStatusAccount(id, 'lock');
+    return this.updateStatusAccount(id, StatusAccountEnum.LOCK);
   }
 
   @Patch('unlock/:accountId')
   async unblockedOneById(@Param('accountId') id: string) {
-    return this.updateStatusAccount(id, 'active');
+    return this.updateStatusAccount(id, StatusAccountEnum.UNLOCK);
   }
 
   @Patch('cancel/:accountId')
   async cancelOneById(@Param('accountId') id: string) {
-    return this.updateStatusAccount(id, 'cancel');
+    return this.updateStatusAccount(id, StatusAccountEnum.CANCEL);
   }
 
-  @Patch('disable/:accountId')
+  @Patch('hidden/:accountId')
   async disableOneById(@Param('accountId') id: string) {
     return this.toggleVisibleToOwner(id, false);
   }
 
-  @Patch('enable/:accountId')
+  @Patch('visible/:accountId')
   async enableOneById(@Param('accountId') id: string) {
     return this.toggleVisibleToOwner(id, true);
   }
@@ -83,13 +84,14 @@ export class AccountServiceController implements GenericServiceController {
     return account.save();
   }
 
-  async updateStatusAccount(id: string, slugName: string) {
+  async updateStatusAccount(id: string, slugName: StatusAccountEnum) {
     const account = await this.accountService.findOneById(id);
     const status = await this.builder.getPromiseStatusEventClient(
       EventsNamesStatusEnum.findOneByName,
       slugName,
     );
     account.status = status;
+    account.statusText = slugName;
     return account.save();
   }
 
