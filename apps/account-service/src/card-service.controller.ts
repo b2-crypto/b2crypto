@@ -80,7 +80,7 @@ export class CardServiceController extends AccountServiceController {
     name: 'b2crypto-key',
     description: 'The apiKey',
   })
-  findAll(@Query() query: QuerySearchAnyDto, req?: any) {
+  findAll(@Query() query: QuerySearchAnyDto, @Req() req?: any) {
     query = query ?? {};
     query.where = query.where ?? {};
     query.where.type = TypesAccountEnum.CARD;
