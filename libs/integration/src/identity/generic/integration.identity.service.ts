@@ -20,7 +20,9 @@ export class IntegrationIdentityService
   env: EnvironmentEnum;
   private routesMap: IdentityRoutesInterface;
 
-  constructor(private dataIntegration: BasicDataIntegration) {}
+  constructor(private dataIntegration: BasicDataIntegration) {
+    const tmp = dataIntegration;
+  }
 
   setRouteMap(routesMap: IdentityRoutesInterface) {
     this.routesMap = routesMap;

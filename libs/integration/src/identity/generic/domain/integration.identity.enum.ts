@@ -1,3 +1,3 @@
 export enum IntegrationIdentityEnum {
-  Sumsub = 'SUMSUB',
+  SUMSUB = 'SUMSUB',
 }

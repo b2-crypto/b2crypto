@@ -104,11 +104,11 @@ export class IntegrationService {
   }
 
   private getIdentityType(
-    identityCategoryName: string,
+    identityCategoryName: IntegrationIdentityEnum,
   ): IntegrationIdentityService {
     let identityType: IntegrationIdentityService;
     switch (identityCategoryName.toUpperCase()) {
-      case IntegrationCardEnum.POMELO:
+      case IntegrationIdentityEnum.SUMSUB:
         identityType = new IntegrationIdentityService({
           urlApi: process.env.SUMSUB_ROOT_URL,
           token: process.env.SUMSUB_APP_TOKEN,
@@ -118,7 +118,7 @@ export class IntegrationService {
     }
     if (!identityType) {
       throw new RpcException(
-        'The card "' + identityCategoryName + '" has not found',
+        'The service "' + identityCategoryName + '" has not found',
       );
     }
     return identityType;
