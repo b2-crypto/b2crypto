@@ -29,7 +29,7 @@ export class ApiKeyAuthGuard extends AuthGuard('api-key') {
     if (!client) {
       throw new UnauthorizedException('Not found client with key');
     }
-    request['client'] = client._id;
+    request['clientApi'] = client._id;
     delete request.headers['checkApiKey'];
     return true;
   }

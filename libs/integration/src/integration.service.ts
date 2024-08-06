@@ -16,12 +16,20 @@ import { RegisterLeadLeverateRequestDto } from './crm/leverate-integration/dto/r
 import { B2BinPayIntegrationService } from './crypto/b2binpay-integration/b2binpay-integration.service';
 import IntegrationCryptoEnum from './crypto/enums/IntegrationCryptoEnum';
 import { IntegrationCryptoService } from './crypto/generic/integration.crypto.service';
+import { IntegrationIdentityEnum } from './identity/generic/domain/integration.identity.enum';
+import { IntegrationIdentityService } from './identity/generic/integration.identity.service';
 
 @Injectable()
 export class IntegrationService {
   private env: string;
   constructor(private readonly configService: ConfigService) {
     this.env = configService.get('ENVIRONMENT');
+  }
+
+  async getIdentityIntegration(
+    identityCategoryName: IntegrationIdentityEnum,
+  ): Promise<IntegrationIdentityService> {
+    return this.getIdentityType(identityCategoryName);
   }
 
   async getCardIntegration(
@@ -93,6 +101,27 @@ export class IntegrationService {
       throw new RpcException('The CRM "' + crmCategoryName + '" has not found');
     }
     return crmType;
+  }
+
+  private getIdentityType(
+    identityCategoryName: string,
+  ): IntegrationIdentityService {
+    let identityType: IntegrationIdentityService;
+    switch (identityCategoryName.toUpperCase()) {
+      case IntegrationCardEnum.POMELO:
+        identityType = new IntegrationIdentityService({
+          urlApi: process.env.SUMSUB_ROOT_URL,
+          token: process.env.SUMSUB_APP_TOKEN,
+          privateKey: process.env.SUMSUB_SECRET_KEY,
+        });
+        break;
+    }
+    if (!identityType) {
+      throw new RpcException(
+        'The card "' + identityCategoryName + '" has not found',
+      );
+    }
+    return identityType;
   }
 
   private getCardType(
