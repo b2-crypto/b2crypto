@@ -11,7 +11,12 @@ import {
   Query,
   Req,
 } from '@nestjs/common';
-import { ApiHeader, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiHeader,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 
 import { AllowAnon } from '@auth/auth/decorators/allow-anon.decorator';
 import { ApiKeyCheck } from '@auth/auth/decorators/api-key-check.decorator';
@@ -56,6 +61,7 @@ export class UserServiceController implements GenericServiceController {
 
   @ApiKeyCheck()
   @ApiTags('Stakey Security')
+  @ApiBearerAuth('bearerToken')
   @ApiHeader({
     name: 'b2crypto-key',
     description: 'The apiKey',

@@ -10,7 +10,7 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common';
-import { ApiHeader, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiHeader, ApiResponse, ApiTags } from '@nestjs/swagger';
 
 import { AllowAnon } from '@auth/auth/decorators/allow-anon.decorator';
 import { ApiKeyCheck } from '@auth/auth/decorators/api-key-check.decorator';
@@ -134,6 +134,7 @@ export class CategoryServiceController implements GenericServiceController {
   @ApiTags('Affiliate Category')
   @ApiTags('Integration Category')
   @ApiTags('Stakey List')
+  @ApiBearerAuth('bearerToken')
   @ApiKeyCheck()
   @UseGuards(ApiKeyAffiliateAuthGuard)
   @ApiHeader({

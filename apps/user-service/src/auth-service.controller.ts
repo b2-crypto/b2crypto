@@ -35,7 +35,12 @@ import {
   Payload,
   RmqContext,
 } from '@nestjs/microservices';
-import { ApiHeader, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiHeader,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import ResponseB2Crypto from '@response-b2crypto/response-b2crypto/models/ResponseB2Crypto';
 import { UserRegisterDto } from '@user/user/dto/user.register.dto';
 import EventsNamesActivityEnum from 'apps/activity-service/src/enum/events.names.activity.enum';
@@ -71,6 +76,7 @@ export class AuthServiceController {
   @ApiKeyCheck()
   @UseGuards(ApiKeyAuthGuard)
   @ApiTags('Stakey Security')
+  @ApiBearerAuth('bearerToken')
   @ApiHeader({
     name: 'b2crypto-key',
     description: 'The apiKey',
@@ -94,6 +100,7 @@ export class AuthServiceController {
 
   @ApiKeyCheck()
   @ApiTags('Stakey Security')
+  @ApiBearerAuth('bearerToken')
   @ApiHeader({
     name: 'b2crypto-key',
     description: 'The apiKey',
@@ -150,6 +157,7 @@ export class AuthServiceController {
   }
 
   @ApiKeyCheck()
+  @UseGuards(ApiKeyAuthGuard)
   @ApiTags('Stakey Security')
   @ApiHeader({
     name: 'b2crypto-key',
@@ -166,6 +174,7 @@ export class AuthServiceController {
   }
 
   @ApiKeyCheck()
+  @UseGuards(ApiKeyAuthGuard)
   @ApiTags('Stakey Security')
   @ApiHeader({
     name: 'b2crypto-key',
@@ -200,6 +209,7 @@ export class AuthServiceController {
 
   @AllowAnon()
   @ApiKeyCheck()
+  @UseGuards(ApiKeyAuthGuard)
   @ApiTags('Stakey Security')
   @ApiHeader({
     name: 'b2crypto-key',
@@ -229,6 +239,7 @@ export class AuthServiceController {
 
   @IsRefresh()
   @ApiKeyCheck()
+  @UseGuards(ApiKeyAuthGuard)
   @Post('refresh-token')
   @ApiTags('Stakey Security')
   @ApiHeader({
@@ -249,10 +260,9 @@ export class AuthServiceController {
     };
   }
 
-  @AllowAnon()
   @ApiKeyCheck()
   @Post('sign-in')
-  @UseGuards(LocalAuthGuard)
+  @UseGuards(ApiKeyAuthGuard, LocalAuthGuard)
   @ApiTags('Stakey Security')
   @ApiHeader({
     name: 'b2crypto-key',

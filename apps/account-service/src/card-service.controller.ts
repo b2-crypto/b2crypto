@@ -25,7 +25,7 @@ import {
   Query,
   Req,
 } from '@nestjs/common';
-import { ApiHeader, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiHeader, ApiTags } from '@nestjs/swagger';
 import { User } from '@user/user/entities/mongoose/user.schema';
 import { CategoryServiceService } from 'apps/category-service/src/category-service.service';
 import { GroupServiceService } from 'apps/group-service/src/group-service.service';
@@ -77,6 +77,7 @@ export class CardServiceController extends AccountServiceController {
 
   @Get('all')
   @ApiTags('Stakey Card')
+  @ApiBearerAuth('bearerToken')
   @ApiHeader({
     name: 'b2crypto-key',
     description: 'The apiKey',
@@ -89,6 +90,7 @@ export class CardServiceController extends AccountServiceController {
   }
   @Get('me')
   @ApiTags('Stakey Card')
+  @ApiBearerAuth('bearerToken')
   @ApiHeader({
     name: 'b2crypto-key',
     description: 'The apiKey',
@@ -103,6 +105,7 @@ export class CardServiceController extends AccountServiceController {
 
   @Post('create')
   @ApiTags('Stakey Card')
+  @ApiBearerAuth('bearerToken')
   @ApiHeader({
     name: 'b2crypto-key',
     description: 'The apiKey',

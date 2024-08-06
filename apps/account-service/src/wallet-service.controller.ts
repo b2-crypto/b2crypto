@@ -36,12 +36,12 @@ export class WalletServiceController extends AccountServiceController {
   }
 
   @ApiTags('Stakey Wallet')
+  @ApiBearerAuth('bearerToken')
   @ApiHeader({
     name: 'b2crypto-key',
     description: 'The apiKey',
   })
   @Get('all')
-  @ApiBearerAuth()
   findAll(@Query() query: QuerySearchAnyDto, @Req() req?: any) {
     const client = req.clientApi;
     query = query ?? {};
@@ -51,6 +51,7 @@ export class WalletServiceController extends AccountServiceController {
   }
 
   @ApiTags('Stakey Wallet')
+  @ApiBearerAuth('bearerToken')
   @ApiHeader({
     name: 'b2crypto-key',
     description: 'The apiKey',
@@ -65,6 +66,7 @@ export class WalletServiceController extends AccountServiceController {
   }
 
   @ApiTags('Stakey Wallet')
+  @ApiBearerAuth('bearerToken')
   @ApiHeader({
     name: 'b2crypto-key',
     description: 'The apiKey',

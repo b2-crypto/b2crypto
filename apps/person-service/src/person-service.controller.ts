@@ -11,7 +11,7 @@ import {
   Query,
   Req,
 } from '@nestjs/common';
-import { ApiHeader, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiHeader, ApiTags } from '@nestjs/swagger';
 
 import { AllowAnon } from '@auth/auth/decorators/allow-anon.decorator';
 import { PolicyHandlerPersonCreate } from '@auth/auth/policy/person/policity.handler.person.create';
@@ -66,6 +66,7 @@ export class PersonServiceController implements GenericServiceController {
 
   @Post()
   @ApiTags('Stakey Profile')
+  @ApiBearerAuth('bearerToken')
   @ApiHeader({
     name: 'b2crypto-key',
     description: 'The apiKey',

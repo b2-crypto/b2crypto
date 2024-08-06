@@ -21,7 +21,13 @@ import {
   Res,
   UseGuards,
 } from '@nestjs/common';
-import { ApiHeader, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiHeader,
+  ApiQuery,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 
 import { AllowAnon } from '@auth/auth/decorators/allow-anon.decorator';
 import { ApiKeyCheck } from '@auth/auth/decorators/api-key-check.decorator';
@@ -78,6 +84,7 @@ import EventsNamesAccountEnum from 'apps/account-service/src/enum/events.names.a
 import EventsNamesCategoryEnum from 'apps/category-service/src/enum/events.names.category.enum';
 import { PomeloProcessEnum } from 'apps/integration-service/src/enums/pomelo.process.enum';
 import TagEnum from '@common/common/enums/TagEnum';
+import { ApiKeyAuthGuard } from '@auth/auth/guards/api.key.guard';
 
 @ApiTags('TRANSFERS')
 @Controller('transfers')
@@ -344,6 +351,8 @@ export class TransferServiceController implements GenericServiceController {
   @NoCache()
   @AllowAnon()
   @ApiTags('Stakey Deposit')
+  @ApiBearerAuth('bearerToken')
+  @UseGuards(ApiKeyAuthGuard)
   @ApiHeader({
     name: 'b2crypto-key',
     description: 'The apiKey',
