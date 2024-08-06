@@ -75,13 +75,13 @@ function addSwaggerStakeyCard(app: INestApplication) {
       scheme: 'bearer',
       bearerFormat: 'JWT',
     })
-    .addApiKey(
+    /* .addApiKey(
       {
         type: 'apiKey',
         description: 'ApiKey to endpoints',
       },
       'b2crypto-key',
-    )
+    ) */
     .build();
   const stakeyCardDocument = SwaggerModule.createDocument(app, config, {
     include: [
