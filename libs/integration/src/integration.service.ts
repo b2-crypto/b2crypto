@@ -110,9 +110,10 @@ export class IntegrationService {
     switch (identityCategoryName.toUpperCase()) {
       case IntegrationIdentityEnum.SUMSUB:
         identityType = new IntegrationIdentityService({
-          urlApi: process.env.SUMSUB_ROOT_URL,
-          token: process.env.SUMSUB_APP_TOKEN,
-          privateKey: process.env.SUMSUB_SECRET_KEY,
+          urlApi: 'https://api.sumsub.com/',
+          token:
+            'prd:4GTDd9lXlksugzFcLwvUPrer.06DQ3vvaaTDReWC6YhKSJqsCBlFeWRfU',
+          privateKey: 'DQZbSZExLTNC7xX1FP2pcffonu4cDrzc',
         });
         break;
     }
