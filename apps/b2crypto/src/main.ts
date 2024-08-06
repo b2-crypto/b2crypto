@@ -89,7 +89,14 @@ function addSwaggerStakeyCard(app: INestApplication) {
     .addTag('Stakey Profile')
     .addTag('Stakey Deposit')
     .addTag('Stakey Card')
+    .addTag('Stakey Wallet')
     .addTag('Stakey List')
+    .addBearerAuth({
+      name: 'bearerToken',
+      type: 'http',
+      scheme: 'bearer',
+      bearerFormat: 'JWT',
+    })
     /* .addApiKey(
       {
         type: 'apiKey',
