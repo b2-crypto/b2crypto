@@ -10,14 +10,11 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiHeader, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiHeader, ApiResponse, ApiTags } from '@nestjs/swagger';
 
 import { AllowAnon } from '@auth/auth/decorators/allow-anon.decorator';
 import { ApiKeyCheck } from '@auth/auth/decorators/api-key-check.decorator';
 import { ApiKeyAffiliateAuthGuard } from '@auth/auth/guards/api.key.affiliate.guard';
-import { PolicyHandlerCategoryManage } from '@auth/auth/policy/category/policity.handler.category.manage';
-import { PolicyHandlerCategoryRead } from '@auth/auth/policy/category/policity.handler.category.read';
-import { CheckPoliciesAbility } from '@auth/auth/policy/policy.handler.ability';
 import { CategoryCreateDto } from '@category/category/dto/category.create.dto';
 import { CategoryUpdateDto } from '@category/category/dto/category.update.dto';
 import { CategoryEntity } from '@category/category/entities/category.entity';
@@ -34,12 +31,12 @@ import {
   Payload,
   RmqContext,
 } from '@nestjs/microservices';
+import ResponseB2Crypto from '@response-b2crypto/response-b2crypto/models/ResponseB2Crypto';
 import { CategoryServiceService } from './category-service.service';
 import { CategoryQueryEventsDto } from './dto/category.query.events.dto';
 import { CategoryResponseDto } from './dto/category.response.dto';
 import { PspAccountResponseDto } from './dto/psp.account.response.dto';
 import EventsNamesCategoryEnum from './enum/events.names.category.enum';
-import ResponseB2Crypto from '@response-b2crypto/response-b2crypto/models/ResponseB2Crypto';
 
 @ApiTags('CATEGORY')
 @Controller('category')
@@ -134,7 +131,6 @@ export class CategoryServiceController implements GenericServiceController {
   @ApiTags('Affiliate Category')
   @ApiTags('Integration Category')
   @ApiTags('Stakey List')
-  @ApiBearerAuth('bearerToken')
   @ApiKeyCheck()
   @UseGuards(ApiKeyAffiliateAuthGuard)
   @ApiHeader({
