@@ -23,6 +23,9 @@ export interface UserInterface {
   active: boolean;
   individual: boolean;
   isClientAPI: boolean;
+  inMaintenance: boolean;
+  maintenanceStartAt: Date;
+  maintenanceEndAt: Date;
   apiKey: string;
   configuration: JSON;
   twoFactorSecret: string;
