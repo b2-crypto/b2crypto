@@ -16,7 +16,7 @@ import {
   Query,
   Req,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiHeader, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiSecurity, ApiTags } from '@nestjs/swagger';
 import { User } from '@user/user/entities/mongoose/user.schema';
 import { UserServiceService } from 'apps/user-service/src/user-service.service';
 import { AccountServiceController } from './account-service.controller';
@@ -37,10 +37,7 @@ export class WalletServiceController extends AccountServiceController {
 
   @ApiTags('Stakey Wallet')
   @ApiBearerAuth('bearerToken')
-  @ApiHeader({
-    name: 'b2crypto-key',
-    description: 'The apiKey',
-  })
+  @ApiSecurity('b2crypto-key')
   @Get('all')
   findAll(@Query() query: QuerySearchAnyDto, @Req() req?: any) {
     const client = req.clientApi;
@@ -52,10 +49,7 @@ export class WalletServiceController extends AccountServiceController {
 
   @ApiTags('Stakey Wallet')
   @ApiBearerAuth('bearerToken')
-  @ApiHeader({
-    name: 'b2crypto-key',
-    description: 'The apiKey',
-  })
+  @ApiSecurity('b2crypto-key')
   @Get('me')
   findAllMe(@Query() query: QuerySearchAnyDto, @Req() req?: any) {
     query = query ?? {};
@@ -67,10 +61,7 @@ export class WalletServiceController extends AccountServiceController {
 
   @ApiTags('Stakey Wallet')
   @ApiBearerAuth('bearerToken')
-  @ApiHeader({
-    name: 'b2crypto-key',
-    description: 'The apiKey',
-  })
+  @ApiSecurity('b2crypto-key')
   @Post('create')
   async createOne(@Body() createDto: WalletCreateDto, @Req() req?: any) {
     const user: User = (
