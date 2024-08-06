@@ -49,6 +49,7 @@ import { IntegrationCardService } from '@integration/integration/card/generic/in
 import { AccountDocument } from '@account/account/entities/mongoose/account.schema';
 import { CardsEnum } from '@common/common/enums/messages.enum';
 import EventsNamesUserEnum from 'apps/user-service/src/enum/events.names.user.enum';
+import StatusAccountEnum from '@account/account/enum/status.account.enum';
 
 @ApiTags('CARD')
 @Controller('cards')
@@ -421,6 +422,7 @@ export class CardServiceController extends AccountServiceController {
       Logger.log(`Looking for card: ${data.id}`, 'CardController');
       const cardList = await this.cardService.findAll({
         where: {
+          statusText: StatusAccountEnum.UNLOCK,
           'cardConfig.id': data.id,
         },
       });
