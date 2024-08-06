@@ -10,15 +10,11 @@ import {
   Post,
   Query,
   Req,
+  UseGuards,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiHeader, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiSecurity, ApiTags } from '@nestjs/swagger';
 
 import { AllowAnon } from '@auth/auth/decorators/allow-anon.decorator';
-import { PolicyHandlerPersonCreate } from '@auth/auth/policy/person/policity.handler.person.create';
-import { PolicyHandlerPersonDelete } from '@auth/auth/policy/person/policity.handler.person.delete';
-import { PolicyHandlerPersonRead } from '@auth/auth/policy/person/policity.handler.person.read';
-import { PolicyHandlerPersonUpdate } from '@auth/auth/policy/person/policity.handler.person.update';
-import { CheckPoliciesAbility } from '@auth/auth/policy/policy.handler.ability';
 import { CommonService } from '@common/common';
 import GenericServiceController from '@common/common/interfaces/controller.generic.interface';
 import { QuerySearchAnyDto } from '@common/common/models/query_search-any.dto';
@@ -31,10 +27,11 @@ import {
 } from '@nestjs/microservices';
 import { PersonCreateDto } from '@person/person/dto/person.create.dto';
 import { PersonUpdateDto } from '@person/person/dto/person.update.dto';
-import EventsNamesPersonEnum from './enum/events.names.person.enum';
-import { PersonServiceService } from './person-service.service';
 import { UserServiceService } from 'apps/user-service/src/user-service.service';
 import { BadRequestError } from 'passport-headerapikey';
+import EventsNamesPersonEnum from './enum/events.names.person.enum';
+import { PersonServiceService } from './person-service.service';
+import { ApiKeyAuthGuard } from '@auth/auth/guards/api.key.guard';
 
 @ApiTags('PERSON')
 @Controller('persons')
@@ -52,6 +49,10 @@ export class PersonServiceController implements GenericServiceController {
   }
 
   @Get('me')
+  @UseGuards(ApiKeyAuthGuard)
+  @ApiTags('Stakey Profile')
+  @ApiBearerAuth('bearerToken')
+  @ApiSecurity('b2crypto-key')
   // @CheckPoliciesAbility(new PolicyHandlerPersonRead())
   async findAllMe(@Req() req, @Query() query: QuerySearchAnyDto) {
     query = CommonService.getQueryWithUserId(query, req);
@@ -67,10 +68,7 @@ export class PersonServiceController implements GenericServiceController {
   @Post()
   @ApiTags('Stakey Profile')
   @ApiBearerAuth('bearerToken')
-  @ApiHeader({
-    name: 'b2crypto-key',
-    description: 'The apiKey',
-  })
+  @ApiSecurity('b2crypto-key')
   // @CheckPoliciesAbility(new PolicyHandlerPersonCreate())
   async createOne(@Body() createPersonDto: PersonCreateDto, @Req() req?) {
     createPersonDto.name = createPersonDto.firstName;

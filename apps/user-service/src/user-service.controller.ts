@@ -15,6 +15,7 @@ import {
   ApiBearerAuth,
   ApiHeader,
   ApiResponse,
+  ApiSecurity,
   ApiTags,
 } from '@nestjs/swagger';
 
@@ -61,11 +62,7 @@ export class UserServiceController implements GenericServiceController {
 
   @ApiKeyCheck()
   @ApiTags('Stakey Security')
-  @ApiBearerAuth('bearerToken')
-  @ApiHeader({
-    name: 'b2crypto-key',
-    description: 'The apiKey',
-  })
+  @ApiSecurity('b2crypto-key')
   @Get('email/:userEmail')
   // @CheckPoliciesAbility(new PolicyHandlerUserRead())
   async findOneByEmail(@Param('userEmail') email: string) {

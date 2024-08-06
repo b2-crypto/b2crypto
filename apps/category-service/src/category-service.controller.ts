@@ -10,7 +10,7 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common';
-import { ApiHeader, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiHeader, ApiResponse, ApiSecurity, ApiTags } from '@nestjs/swagger';
 
 import { AllowAnon } from '@auth/auth/decorators/allow-anon.decorator';
 import { ApiKeyCheck } from '@auth/auth/decorators/api-key-check.decorator';
@@ -37,6 +37,7 @@ import { CategoryQueryEventsDto } from './dto/category.query.events.dto';
 import { CategoryResponseDto } from './dto/category.response.dto';
 import { PspAccountResponseDto } from './dto/psp.account.response.dto';
 import EventsNamesCategoryEnum from './enum/events.names.category.enum';
+import { ApiKeyAuthGuard } from '@auth/auth/guards/api.key.guard';
 
 @ApiTags('CATEGORY')
 @Controller('category')
@@ -132,7 +133,8 @@ export class CategoryServiceController implements GenericServiceController {
   @ApiTags('Integration Category')
   @ApiTags('Stakey List')
   @ApiKeyCheck()
-  @UseGuards(ApiKeyAffiliateAuthGuard)
+  @UseGuards(ApiKeyAuthGuard)
+  @ApiSecurity('b2crypto-key')
   @ApiHeader({
     name: 'b2crypto-affiliate-key',
     description: 'The affiliate secret key',

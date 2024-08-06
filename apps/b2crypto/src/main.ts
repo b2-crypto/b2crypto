@@ -101,8 +101,8 @@ function addSwaggerStakeyCard(app: INestApplication) {
     )
     .addApiKey(
       {
+        in: 'header',
         type: 'apiKey',
-        scheme: '',
         description: 'ApiKey to endpoints',
       },
       'b2crypto-key',
