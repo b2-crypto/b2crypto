@@ -1,17 +1,17 @@
 import { AccountInterface } from '@account/account/entities/account.interface';
 import { AffiliateEntity } from '@affiliate/affiliate/domain/entities/affiliate.entity';
+import { BrandEntity } from '@brand/brand/entities/brand.entity';
 import { CategoryEntity } from '@category/category/entities/category.entity';
 import CountryCodeB2cryptoEnum from '@common/common/enums/country.code.b2crypto.enum';
 import { CrmEntity } from '@crm/crm/entities/crm.entity';
 import { GroupEntity } from '@group/group/entities/group.entity';
-import { ShippingResult } from '@integration/integration/card/generic/interface/shipping-result.interface';
 import { ApiProperty } from '@nestjs/swagger';
 import { PersonEntity } from '@person/person/entities/person.entity';
 import { StatusEntity } from '@status/status/entities/status.entity';
 import { TransferEntity } from '@transfer/transfer/entities/transfer.entity';
 import { UserEntity } from '@user/user/entities/user.entity';
-import { BrandEntity } from 'libs/brand/src/entities/brand.entity';
 import { ObjectId } from 'mongodb';
+import StatusAccountEnum from '../enum/status.account.enum';
 import TypesAccountEnum from '../enum/types.account.enum';
 
 export class AccountEntity implements AccountInterface {
@@ -104,6 +104,7 @@ export class AccountEntity implements AccountInterface {
   totalTransfer: number;
   quantityTransfer: number;
   showToOwner: boolean;
+  statusText: StatusAccountEnum;
   hasSendDisclaimer: boolean;
   @ApiProperty({
     type: CategoryEntity,

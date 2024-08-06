@@ -42,6 +42,7 @@ import { CheckLeadStatusOnCrmDto } from './dto/check.lead.status.on.crm.dto';
 import { CreateLeadOnCrmDto } from './dto/create.lead.on.crm.dto';
 import { CreateTransferOnCrmDto } from './dto/create.transfer.on.crm.dto';
 import EventsNamesCrmEnum from './enum/events.names.crm.enum';
+import { BuildersService } from '@builder/builders';
 
 @ApiTags('CRM')
 @Controller('crm')
@@ -50,6 +51,7 @@ export class CrmServiceController implements GenericServiceController {
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
     private readonly crmService: CrmServiceService,
     private readonly configService: ConfigService,
+    protected readonly builder: BuildersService,
   ) {}
 
   @Get('all/retention')

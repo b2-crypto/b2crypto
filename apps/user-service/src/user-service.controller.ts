@@ -157,6 +157,16 @@ export class UserServiceController implements GenericServiceController {
   }
 
   @AllowAnon()
+  @MessagePattern(EventsNamesUserEnum.findOneByPublicKey)
+  findOneByPublicKeyEvent(
+    @Payload() publicKey: string,
+    @Ctx() ctx: RmqContext,
+  ) {
+    CommonService.ack(ctx);
+    return this.findOneByPublicKey(publicKey);
+  }
+
+  @AllowAnon()
   @MessagePattern(EventsNamesUserEnum.createOne)
   async createOneEvent(
     @Payload() createDto: UserRegisterDto,
@@ -190,6 +200,7 @@ export class UserServiceController implements GenericServiceController {
 
   @AllowAnon()
   @MessagePattern(EventsNamesUserEnum.updateOne)
+  @EventPattern(EventsNamesUserEnum.updateOne)
   updateOneEvent(@Payload() updateDto: UserUpdateDto, @Ctx() ctx: RmqContext) {
     const user = this.updateOne(updateDto);
     CommonService.ack(ctx);
@@ -230,5 +241,17 @@ export class UserServiceController implements GenericServiceController {
       id: user.id,
       twoFactorIsActive: true,
     });
+  }
+
+  private async findOneByPublicKey(publicKey: string) {
+    const users = await this.userService.getAll({
+      where: {
+        publicKey: publicKey,
+      },
+    });
+    if (!users.totalElements) {
+      throw new NotFoundException();
+    }
+    return users.list[0];
   }
 }
