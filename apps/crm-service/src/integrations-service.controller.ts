@@ -26,7 +26,7 @@ export class IntegrationsServiceController extends CrmServiceController {
     @Body()
     maintenanceOnDto: MaintenanceOnDto,
   ) {
-    const clientId = req.client;
+    const clientId = req.clientApi;
     if (!clientId) {
       throw new NotFoundException('Client not found');
     }
@@ -54,7 +54,7 @@ export class IntegrationsServiceController extends CrmServiceController {
   @ApiKeyCheck()
   @UseGuards(ApiKeyAuthGuard)
   async maintenanceOff(@Req() req) {
-    const clientId = req.client;
+    const clientId = req.clientApi;
     if (!clientId) {
       throw new NotFoundException('Client not found');
     }
