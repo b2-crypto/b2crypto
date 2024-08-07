@@ -5,12 +5,14 @@ import TypesAccountEnum from '../enum/types.account.enum';
 import { AccountCreateDto } from './account.create.dto';
 
 export class CardCreateDto extends AccountCreateDto {
-  @IsEmpty()
+  @IsOptional()
   @ApiProperty({
+    required: false,
     type: String,
     description: 'Account Card',
     example: 'CARD',
   })
+  @IsString()
   type = TypesAccountEnum.CARD;
 
   @IsEnum(CardTypesAccountEnum)
