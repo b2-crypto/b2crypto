@@ -24,8 +24,14 @@ import {
   Post,
   Query,
   Req,
+  UseGuards,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiHeader, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiHeader,
+  ApiSecurity,
+  ApiTags,
+} from '@nestjs/swagger';
 import { User } from '@user/user/entities/mongoose/user.schema';
 import { CategoryServiceService } from 'apps/category-service/src/category-service.service';
 import { GroupServiceService } from 'apps/group-service/src/group-service.service';
@@ -50,6 +56,7 @@ import { AccountDocument } from '@account/account/entities/mongoose/account.sche
 import { CardsEnum } from '@common/common/enums/messages.enum';
 import EventsNamesUserEnum from 'apps/user-service/src/enum/events.names.user.enum';
 import StatusAccountEnum from '@account/account/enum/status.account.enum';
+import { ApiKeyAuthGuard } from '@auth/auth/guards/api.key.guard';
 
 @ApiTags('CARD')
 @Controller('cards')
@@ -103,13 +110,11 @@ export class CardServiceController extends AccountServiceController {
     return this.cardService.findAll(query);
   }
 
-  @Post('create')
   @ApiTags('Stakey Card')
+  @ApiSecurity('b2crypto-key')
   @ApiBearerAuth('bearerToken')
-  @ApiHeader({
-    name: 'b2crypto-key',
-    description: 'The apiKey',
-  })
+  @Post('create')
+  @UseGuards(ApiKeyAuthGuard)
   async createOne(@Body() createDto: CardCreateDto, @Req() req?: any) {
     createDto.accountType =
       createDto.accountType ?? CardTypesAccountEnum.VIRTUAL;
@@ -277,6 +282,10 @@ export class CardServiceController extends AccountServiceController {
     }
   }
 
+  @ApiTags('Stakey Card')
+  @ApiSecurity('b2crypto-key')
+  @ApiBearerAuth('bearerToken')
+  @UseGuards(ApiKeyAuthGuard)
   @Get('shipping/:idCard')
   async getShippingPhysicalCard(
     @Param('idCard') idCard: string,
@@ -307,6 +316,10 @@ export class CardServiceController extends AccountServiceController {
     return card.responseShipping;
   }
 
+  @ApiTags('Stakey Card')
+  @ApiSecurity('b2crypto-key')
+  @ApiBearerAuth('bearerToken')
+  @UseGuards(ApiKeyAuthGuard)
   @Post('shipping')
   async shippingPhysicalCard(@Req() req?: any) {
     const user: User = await this.getUser(req?.user?.id);

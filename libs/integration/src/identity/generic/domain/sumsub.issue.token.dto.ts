@@ -1,17 +1,24 @@
-import { Type } from 'class-transformer';
-import { IsString, IsNotEmpty, IsInt } from 'class-validator';
+import { ApiProperty } from '@nestjs/swagger';
+import { IsEmpty, IsEnum, IsInt, IsNotEmpty } from 'class-validator';
+import { SumsubApplicantLevels } from './sumsub.enum';
 
 export class SumsubIssueTokenDto {
-  @IsString()
-  @IsNotEmpty()
+  @IsEmpty()
   userId: string;
 
-  @IsString()
+  @IsEnum(SumsubApplicantLevels)
   @IsNotEmpty()
-  levelName: string;
+  @ApiProperty({
+    description: 'Verification level',
+    enum: SumsubApplicantLevels,
+  })
+  levelName: SumsubApplicantLevels;
 
   @IsInt()
-  @Type(() => Number)
+  @ApiProperty({
+    description:
+      'Time To Live - Form lifetime. Positive integer',
+  })
   ttlInSecs: number;
 }
 

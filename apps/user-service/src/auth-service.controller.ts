@@ -76,22 +76,26 @@ export class AuthServiceController {
     this.eventClient = this.builder.getEventClient();
   }
 
-  @ApiKeyCheck()
   @UseGuards(ApiKeyAuthGuard)
   @ApiTags('Stakey Security')
   @ApiBearerAuth('bearerToken')
   @ApiSecurity('b2crypto-key')
-  @Post('identity/token')
+  @Post('identity/page')
   async sumsubGenerateToken(
     @Body() identityDto: SumsubIssueTokenDto,
     @Req() req,
     @Res() res,
   ) {
+    const user = req.user;
+    if (!user) {
+      throw new BadRequestException('User not found');
+    }
     const identity = await this.integration.getIdentityIntegration(
       IntegrationIdentityEnum.SUMSUB,
     );
     try {
       const rta = await identity.generateToken(identityDto);
+      identityDto.userId = user.id;
       if (!rta.url) {
         throw rta;
       }
