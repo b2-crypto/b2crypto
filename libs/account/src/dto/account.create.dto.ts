@@ -16,6 +16,7 @@ import {
   IsNumber,
   IsOptional,
   IsString,
+  Min,
   ValidateNested,
 } from 'class-validator';
 import { ObjectId } from 'mongodb';
@@ -60,6 +61,8 @@ export class AccountCreateDto extends CreateAnyDto implements AccountInterface {
     type: String,
     description: 'Param firstName',
   })
+  @IsOptional()
+  @IsString()
   firstName?: string;
 
   @ApiProperty({
@@ -67,6 +70,8 @@ export class AccountCreateDto extends CreateAnyDto implements AccountInterface {
     type: String,
     description: 'Param lastName',
   })
+  @IsOptional()
+  @IsString()
   lastName?: string;
 
   @IsEmpty()
@@ -84,6 +89,7 @@ export class AccountCreateDto extends CreateAnyDto implements AccountInterface {
   secret: string;
 
   @IsNumber({ maxDecimalPlaces: 0, allowNaN: false, allowInfinity: false })
+  @Min(0)
   @ApiProperty({
     required: false,
     description: 'Account pin',
@@ -91,6 +97,7 @@ export class AccountCreateDto extends CreateAnyDto implements AccountInterface {
   pin: number;
 
   @ApiProperty({
+    required: false,
     description: 'Account DocId',
   })
   @IsOptional()
@@ -99,18 +106,21 @@ export class AccountCreateDto extends CreateAnyDto implements AccountInterface {
   address: AddressDto;
 
   @ApiProperty({
+    required: false,
     description: 'Account email',
   })
   @IsOptional()
   email: string;
 
   @ApiProperty({
+    required: false,
     description: 'Account telephone',
   })
   @IsOptional()
   telephone: string;
 
   @ApiProperty({
+    required: false,
     description: 'Account description',
   })
   @IsString()
@@ -157,7 +167,10 @@ export class AccountCreateDto extends CreateAnyDto implements AccountInterface {
   referral: string;
 
   @ApiProperty({
-    description: 'Account country',
+    required: false,
+    enum: CountryCodeEnum,
+    enumName: 'CountryCode',
+    description: 'Country code',
   })
   @IsEnum(CountryCodeEnum)
   @IsOptional()

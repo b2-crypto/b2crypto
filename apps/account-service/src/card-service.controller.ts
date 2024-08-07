@@ -1,3 +1,4 @@
+import { LegalAddress } from './../../../libs/integration/src/card/generic/dto/user.card.dto';
 import { CardDepositCreateDto } from '@account/account/dto/card-deposit.create.dto';
 import { CardCreateDto } from '@account/account/dto/card.create.dto';
 import { Card } from '@account/account/entities/mongoose/card.schema';
@@ -57,6 +58,7 @@ import { CardsEnum } from '@common/common/enums/messages.enum';
 import EventsNamesUserEnum from 'apps/user-service/src/enum/events.names.user.enum';
 import StatusAccountEnum from '@account/account/enum/status.account.enum';
 import { ApiKeyAuthGuard } from '@auth/auth/guards/api.key.guard';
+import { AddressSchema } from '@person/person/entities/mongoose/address.schema';
 
 @ApiTags('CARD')
 @Controller('cards')
@@ -255,14 +257,10 @@ export class CardServiceController extends AccountServiceController {
           apartment: user.personalData.location.address.apartment,
           city: user.personalData.location.address.city,
           region: user.personalData.location.address.region,
-          //country: user.personalData.location.address.country ?? 'Colombia',
-          country: 'Colombia',
-          zip_code: user.personalData.location.zipcode,
+          country: user.personalData.location.address.country,
+          zip_code: user.personalData.location.address.zip_code,
           neighborhood: user.personalData.location.address.neighborhood,
         },
-        /*address:
-          account.personalData?.location.address ??
-          user.personalData.location.address,*/
         previous_card_id: account.prevAccount?.cardConfig?.id ?? null,
         // After first access remove pin
         pin: account.pin,
@@ -276,7 +274,7 @@ export class CardServiceController extends AccountServiceController {
       account.save();
       return account;
     } catch (err) {
-      Logger.error(err, 'Account Card not created');
+      Logger.error(err, `Account Card not created ${account._id}`);
       await this.getAccountService().deleteOneById(account._id);
       return err;
     }
@@ -308,7 +306,7 @@ export class CardServiceController extends AccountServiceController {
     if (!cardIntegration) {
       throw new BadRequestException('Bad integration card');
     }
-    //TODO[hender-2024/07/25] Cretification Pomelo
+    //TODO[hender-2024/07/25] Certification Pomelo
     const rtaGetShipping = await cardIntegration.getShippingPhysicalCard(
       card.responseShipping.id,
     );
@@ -507,7 +505,15 @@ export class CardServiceController extends AccountServiceController {
     if (rtaUserCard.data.length > 0) {
       userCardConfig = rtaUserCard.data[0];
     } else {
-      const birthDate = account?.personalData?.birth ?? user.personalData.birth;
+      let birthDate = account?.personalData?.birth ?? user.personalData.birth;
+      if (!birthDate) {
+        throw new BadRequestException('Birth not found');
+      }
+      birthDate = new Date(birthDate);
+      const legalAddress = this.getLegalAddress(
+        account?.personalData?.location.address ??
+          user.personalData.location.address,
+      );
       const userCard = await cardIntegration.createUser({
         name: account?.personalData?.name ?? user.personalData.name,
         surname: account?.personalData?.lastName ?? user.personalData.lastName,
@@ -523,17 +529,9 @@ export class CardServiceController extends AccountServiceController {
         gender: account?.personalData?.gender ?? user.personalData.gender,
         email: account?.email ?? user.personalData.email[0] ?? user.email,
         phone: account?.telephone ?? user.personalData.telephone[0],
-        tax_identification_type:
-          account?.personalData?.taxIdentificationType ??
-          user.personalData.taxIdentificationType,
-        tax_identification_value:
-          account?.personalData?.taxIdentificationValue ??
-          user.personalData.taxIdentificationValue,
         nationality:
           account?.personalData?.nationality ?? user.personalData.nationality,
-        legal_address:
-          account?.personalData?.location.address ??
-          user.personalData.location.address,
+        legal_address: legalAddress,
         operation_country: account?.country ?? user.personalData.nationality,
       } as unknown as UserCardDto);
       const error = userCard['error'];
@@ -550,5 +548,47 @@ export class CardServiceController extends AccountServiceController {
       },
     );
     return userCardConfig;
+  }
+
+  private getLegalAddress(address: AddressSchema): AddressSchema {
+    if (!address) {
+      throw new BadRequestException('Address not found in profile address');
+    }
+    if (!address.street_name) {
+      throw new BadRequestException('Street name not found in profile address');
+    }
+    if (!address.street_number) {
+      address.street_number = ' ';
+      throw new BadRequestException(
+        'Street number not found in profile address',
+      );
+    }
+    if (!address.city) {
+      // Validate cities
+      throw new BadRequestException('City not found in profile address');
+    }
+    if (!address.region) {
+      // Validate regions
+      throw new BadRequestException('Region not found in profile address');
+    }
+    if (!address.zip_code) {
+      throw new BadRequestException('Zip code not found in profile address');
+    }
+    if (!address.neighborhood) {
+      address.neighborhood = ' ';
+      throw new BadRequestException(
+        'Neighborhood not found in profile address',
+      );
+    }
+    address.country = 'COL';
+    /* if (!address.country) {
+      // Validate cities
+      throw new BadRequestException('Country not found in profile address');
+    } */
+    if (!address.additional_info) {
+      address.additional_info = ' ';
+    }
+
+    return address;
   }
 }
