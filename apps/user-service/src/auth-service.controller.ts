@@ -82,7 +82,7 @@ export class AuthServiceController {
   @ApiBearerAuth('bearerToken')
   @ApiSecurity('b2crypto-key')
   @Post('identity/token')
-  async sumsubToken(
+  async sumsubGenerateToken(
     @Body() identityDto: SumsubIssueTokenDto,
     @Req() req,
     @Res() res,
