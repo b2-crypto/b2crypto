@@ -4,5 +4,5 @@ import { AxiosInstance } from 'axios';
 export interface IntegrationIdentityInterface<TRequest = any, TResponse = any> {
   http: AxiosInstance;
   env: EnvironmentEnum;
-  generateToken(queryParams: TRequest): Promise<TResponse>;
+  generateUrlApplicant(queryParams: TRequest): Promise<TResponse>;
 }

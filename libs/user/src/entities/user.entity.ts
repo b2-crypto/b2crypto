@@ -43,6 +43,11 @@ export class UserEntity implements UserInterface {
   category: CategoryEntity;
   personalData: PersonEntity;
   userParent: UserEntity;
+  verifyIdentity: boolean;
+  verifyIdentityTtl: number;
+  verifyIdentityCode: string;
+  verifyIdentityLevelName: string;
+  verifyIdentityExpiredAt: Date;
   createdAt: Date;
   updatedAt: Date;
 

@@ -16,8 +16,7 @@ export class SumsubIssueTokenDto {
 
   @IsInt()
   @ApiProperty({
-    description:
-      'Time To Live - Form lifetime. Positive integer',
+    description: 'Time To Live - Form lifetime. Positive integer',
   })
   ttlInSecs: number;
 }
