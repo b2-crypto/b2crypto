@@ -1,4 +1,5 @@
 import { AccountEntity } from '@account/account/entities/account.entity';
+import StatusAccountEnum from '@account/account/enum/status.account.enum';
 import TypesAccountEnum from '@account/account/enum/types.account.enum';
 import { Affiliate } from '@affiliate/affiliate/infrastructure/mongoose/affiliate.schema';
 import { Brand } from '@brand/brand/entities/mongoose/brand.schema';
@@ -11,7 +12,6 @@ import { Prop, raw, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Person } from '@person/person/entities/mongoose/person.schema';
 import { Status } from '@status/status/entities/mongoose/status.schema';
 import { User } from '@user/user/entities/mongoose/user.schema';
-import { Type } from 'class-transformer';
 import * as mongoose from 'mongoose';
 import { Document, ObjectId } from 'mongoose';
 import { Card, CardSchema } from './card.schema';
@@ -93,6 +93,13 @@ export class Account extends AccountEntity {
 
   @Prop()
   showToOwner: boolean;
+
+  @Prop({
+    type: String,
+    enum: StatusAccountEnum,
+    default: StatusAccountEnum.UNLOCK,
+  })
+  statusText: StatusAccountEnum;
 
   @Prop()
   hasSendDisclaimer: boolean;

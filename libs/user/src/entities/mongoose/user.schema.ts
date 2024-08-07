@@ -62,6 +62,18 @@ export class User extends UserEntity {
   @Prop()
   isClientAPI: boolean;
 
+  @Prop({ default: false })
+  inMaintenance: boolean;
+
+  @Prop({ default: null })
+  maintenanceAt: Date;
+
+  @Prop({ default: null })
+  maintenanceStartAt: Date;
+
+  @Prop({ default: null })
+  maintenanceEndAt: Date;
+
   @Prop()
   apiKey: string;
 

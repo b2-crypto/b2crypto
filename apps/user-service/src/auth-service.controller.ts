@@ -1,3 +1,4 @@
+import { IntegrationIdentityEnum } from './../../../libs/integration/src/identity/generic/domain/integration.identity.enum';
 import { AuthService } from '@auth/auth';
 import { AllowAnon } from '@auth/auth/decorators/allow-anon.decorator';
 import { ApiKeyCheck } from '@auth/auth/decorators/api-key-check.decorator';
@@ -8,6 +9,7 @@ import { CommonService } from '@common/common';
 import ActionsEnum from '@common/common/enums/ActionEnum';
 import ResourcesEnum from '@common/common/enums/ResourceEnum';
 import {
+  BadGatewayException,
   BadRequestException,
   Body,
   CACHE_MANAGER,
@@ -21,7 +23,9 @@ import {
   Patch,
   Post,
   Query,
+  Req,
   Request,
+  Res,
   UseGuards,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
@@ -32,7 +36,13 @@ import {
   Payload,
   RmqContext,
 } from '@nestjs/microservices';
-import { ApiHeader, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiHeader,
+  ApiResponse,
+  ApiSecurity,
+  ApiTags,
+} from '@nestjs/swagger';
 import ResponseB2Crypto from '@response-b2crypto/response-b2crypto/models/ResponseB2Crypto';
 import { UserRegisterDto } from '@user/user/dto/user.register.dto';
 import EventsNamesActivityEnum from 'apps/activity-service/src/enum/events.names.activity.enum';
@@ -44,6 +54,10 @@ import EventsNamesMessageEnum from 'apps/message-service/src/enum/events.names.m
 import { MessageCreateDto } from '@message/message/dto/message.create.dto';
 import TransportEnum from '@common/common/enums/TransportEnum';
 import { UserDocument } from '@user/user/entities/mongoose/user.schema';
+import { IntegrationService } from '@integration/integration';
+import { SumsubIssueTokenDto } from '@integration/integration/identity/generic/domain/sumsub.issue.token.dto';
+import { ApiKeyAuthGuard } from '@auth/auth/guards/api.key.guard';
+import { UserSignInDto } from '@user/user/dto/user.signin.dto';
 
 @ApiTags('AUTHENTICATION')
 @Controller('auth')
@@ -54,6 +68,8 @@ export class AuthServiceController {
     private cacheManager: Cache,
     @Inject(BuildersService)
     private builder: BuildersService,
+    @Inject(IntegrationService)
+    private integration: IntegrationService,
     private readonly authService: AuthService,
     private readonly configService: ConfigService,
   ) {
@@ -61,17 +77,35 @@ export class AuthServiceController {
   }
 
   @ApiKeyCheck()
-  @Post('identify/link')
-  async sumsubToken() {
-    throw new ForbiddenException();
+  @UseGuards(ApiKeyAuthGuard)
+  @ApiTags('Stakey Security')
+  @ApiBearerAuth('bearerToken')
+  @ApiSecurity('b2crypto-key')
+  @Post('identity/token')
+  async sumsubGenerateToken(
+    @Body() identityDto: SumsubIssueTokenDto,
+    @Req() req,
+    @Res() res,
+  ) {
+    const identity = await this.integration.getIdentityIntegration(
+      IntegrationIdentityEnum.SUMSUB,
+    );
+    try {
+      const rta = await identity.generateToken(identityDto);
+      if (!rta.url) {
+        throw rta;
+      }
+      return res.redirect(rta.url);
+    } catch (err) {
+      Logger.error(err, 'Bad request Identity');
+      throw new BadGatewayException();
+    }
   }
 
   @ApiKeyCheck()
   @ApiTags('Stakey Security')
-  @ApiHeader({
-    name: 'b2crypto-key',
-    description: 'The apiKey',
-  })
+  @ApiBearerAuth('bearerToken')
+  @ApiSecurity('b2crypto-key')
   @Post('restore-password')
   async restorePassword(@Body() restorePasswordDto: RestorePasswordDto) {
     const users = await this.builder.getPromiseUserEventClient(
@@ -124,11 +158,9 @@ export class AuthServiceController {
   }
 
   @ApiKeyCheck()
+  @UseGuards(ApiKeyAuthGuard)
+  @ApiSecurity('b2crypto-key')
   @ApiTags('Stakey Security')
-  @ApiHeader({
-    name: 'b2crypto-key',
-    description: 'The apiKey',
-  })
   @Get('otp/:email')
   async getOtp(@Param('email') email: string) {
     await this.generateOtp({ email } as any);
@@ -140,11 +172,9 @@ export class AuthServiceController {
   }
 
   @ApiKeyCheck()
+  @UseGuards(ApiKeyAuthGuard)
+  @ApiSecurity('b2crypto-key')
   @ApiTags('Stakey Security')
-  @ApiHeader({
-    name: 'b2crypto-key',
-    description: 'The apiKey',
-  })
   @Get('otp/:email/:otp')
   async validateOtp(@Param('email') email: string, @Param('otp') otp: string) {
     const otpSended = await this.getOtpGenerated(email);
@@ -174,11 +204,9 @@ export class AuthServiceController {
 
   @AllowAnon()
   @ApiKeyCheck()
+  @UseGuards(ApiKeyAuthGuard)
+  @ApiSecurity('b2crypto-key')
   @ApiTags('Stakey Security')
-  @ApiHeader({
-    name: 'b2crypto-key',
-    description: 'The apiKey',
-  })
   /* @ApiResponse({
     status: 201,
     description: 'was searched successfully',
@@ -203,12 +231,10 @@ export class AuthServiceController {
 
   @IsRefresh()
   @ApiKeyCheck()
+  @UseGuards(ApiKeyAuthGuard)
+  @ApiSecurity('b2crypto-key')
   @Post('refresh-token')
   @ApiTags('Stakey Security')
-  @ApiHeader({
-    name: 'b2crypto-key',
-    description: 'The apiKey',
-  })
   @ApiResponse(ResponseB2Crypto.getResponseSwagger(200))
   @ApiResponse(ResponseB2Crypto.getResponseSwagger(400))
   @ApiResponse(ResponseB2Crypto.getResponseSwagger(403))
@@ -223,19 +249,15 @@ export class AuthServiceController {
     };
   }
 
-  @AllowAnon()
   @ApiKeyCheck()
   @Post('sign-in')
-  @UseGuards(LocalAuthGuard)
+  @UseGuards(ApiKeyAuthGuard, LocalAuthGuard)
+  @ApiSecurity('b2crypto-key')
   @ApiTags('Stakey Security')
-  @ApiHeader({
-    name: 'b2crypto-key',
-    description: 'The apiKey',
-  })
   @ApiResponse(ResponseB2Crypto.getResponseSwagger(200))
   @ApiResponse(ResponseB2Crypto.getResponseSwagger(400))
   @ApiResponse(ResponseB2Crypto.getResponseSwagger(403))
-  async signIn(@Request() req) {
+  async signIn(@Req() req, @Body() data: UserSignInDto) {
     const user = req.user;
     if (req.body.code && !user.twoFactorIsActive) {
       // Validated Two Factor Authentication

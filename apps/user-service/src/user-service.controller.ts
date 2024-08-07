@@ -11,7 +11,13 @@ import {
   Query,
   Req,
 } from '@nestjs/common';
-import { ApiHeader, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiHeader,
+  ApiResponse,
+  ApiSecurity,
+  ApiTags,
+} from '@nestjs/swagger';
 
 import { AllowAnon } from '@auth/auth/decorators/allow-anon.decorator';
 import { ApiKeyCheck } from '@auth/auth/decorators/api-key-check.decorator';
@@ -56,10 +62,7 @@ export class UserServiceController implements GenericServiceController {
 
   @ApiKeyCheck()
   @ApiTags('Stakey Security')
-  @ApiHeader({
-    name: 'b2crypto-key',
-    description: 'The apiKey',
-  })
+  @ApiSecurity('b2crypto-key')
   @Get('email/:userEmail')
   // @CheckPoliciesAbility(new PolicyHandlerUserRead())
   async findOneByEmail(@Param('userEmail') email: string) {
@@ -157,6 +160,16 @@ export class UserServiceController implements GenericServiceController {
   }
 
   @AllowAnon()
+  @MessagePattern(EventsNamesUserEnum.findOneByPublicKey)
+  findOneByPublicKeyEvent(
+    @Payload() publicKey: string,
+    @Ctx() ctx: RmqContext,
+  ) {
+    CommonService.ack(ctx);
+    return this.findOneByPublicKey(publicKey);
+  }
+
+  @AllowAnon()
   @MessagePattern(EventsNamesUserEnum.createOne)
   async createOneEvent(
     @Payload() createDto: UserRegisterDto,
@@ -190,6 +203,7 @@ export class UserServiceController implements GenericServiceController {
 
   @AllowAnon()
   @MessagePattern(EventsNamesUserEnum.updateOne)
+  @EventPattern(EventsNamesUserEnum.updateOne)
   updateOneEvent(@Payload() updateDto: UserUpdateDto, @Ctx() ctx: RmqContext) {
     const user = this.updateOne(updateDto);
     CommonService.ack(ctx);
@@ -230,5 +244,17 @@ export class UserServiceController implements GenericServiceController {
       id: user.id,
       twoFactorIsActive: true,
     });
+  }
+
+  private async findOneByPublicKey(publicKey: string) {
+    const users = await this.userService.getAll({
+      where: {
+        publicKey: publicKey,
+      },
+    });
+    if (!users.totalElements) {
+      throw new NotFoundException();
+    }
+    return users.list[0];
   }
 }
