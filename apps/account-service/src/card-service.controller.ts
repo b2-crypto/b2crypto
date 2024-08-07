@@ -80,7 +80,7 @@ export class CardServiceController extends AccountServiceController {
   }
 
   private readonly BLOCK_BALANCE_PERCENTAGE: number =
-    this.configService.get<number>('BLOCK_BALANCE_PERCENTAGE');
+    this.configService.get<number>('AUTHORIZATIONS_BLOCK_BALANCE_PERCENTAGE');
 
   @Get('all')
   @ApiTags('Stakey Card')
