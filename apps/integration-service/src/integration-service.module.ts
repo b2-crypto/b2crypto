@@ -5,6 +5,8 @@ import { CommonModule } from '@common/common';
 import { Constants } from '@common/common/utils/pomelo.integration.process.constants';
 import { HttpUtils } from '@common/common/utils/pomelo.integration.process.http.utils';
 import { SignatureUtils } from '@common/common/utils/pomelo.integration.process.signature';
+import { SumsubHttpUtils } from '@common/common/utils/sumsub.integration.process.http.utils';
+import { SumsubSignatureUtils } from '@common/common/utils/sumsub.integration.process.signature';
 import { IntegrationModule } from '@integration/integration';
 import { PomeloRestClient } from '@integration/integration/client/pomelo.integration.client';
 import { PomeloCache } from '@integration/integration/util/pomelo.integration.process.cache';
@@ -20,8 +22,8 @@ import { PomeloSensitiveInfoController } from './pomelo.sensitive-info.controlle
 import { PomeloShippingController } from './pomelo.shipping.controller';
 import { PomeloIntegrationProcessService } from './services/pomelo.integration.process.service';
 import { PomeloIntegrationShippingService } from './services/pomelo.integration.shipping.service';
-import { SumsubNotificationIntegrationController } from './sumsub.notification.controller';
 import { SumsubNotificationIntegrationService } from './services/sumsub.notification.integration.service';
+import { SumsubNotificationIntegrationController } from './sumsub.notification.controller';
 
 @Module({
   imports: [
@@ -51,6 +53,8 @@ import { SumsubNotificationIntegrationService } from './services/sumsub.notifica
     IntegrationServiceService,
     PomeloIntegrationProcessService,
     PomeloIntegrationShippingService,
+    SumsubHttpUtils,
+    SumsubSignatureUtils,
     SumsubNotificationIntegrationService,
   ],
 })

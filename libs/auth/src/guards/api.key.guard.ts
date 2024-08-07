@@ -23,7 +23,7 @@ export class ApiKeyAuthGuard extends AuthGuard('api-key') {
       throw new UnauthorizedException('Not found client key');
     }
     const client = await this.builder.getPromiseUserEventClient(
-      EventsNamesUserEnum.findOneByPublicKey,
+      EventsNamesUserEnum.findOneByApiKey,
       apiKey,
     );
     if (!client) {
