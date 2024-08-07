@@ -74,7 +74,6 @@ export class IntegrationIdentityService
       axiosInstance.defaults.headers[SumsubEnum.SUMSUB_HEADER_SIGNATURE] =
         signature;
       Logger.log('IssueSumsubToken', 'ISSUING SUMSUB TOKEN');
-      let token: SumsubIssuedTokenDto = null;
       return axiosInstance
         .post(metadata.url, null)
         .then((response) => {
