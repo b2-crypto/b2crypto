@@ -92,6 +92,21 @@ export class User extends UserEntity {
   @Prop()
   amountCustodial: number;
 
+  @Prop({ default: false })
+  verifyIdentity: boolean;
+
+  @Prop()
+  verifyIdentityTtl: number;
+
+  @Prop()
+  verifyIdentityCode: string;
+
+  @Prop()
+  verifyIdentityLevelName: string;
+
+  @Prop()
+  verifyIdentityExpiredAt: Date;
+
   @Prop({ type: String })
   currencyCustodial: CurrencyCodeB2cryptoEnum;
 

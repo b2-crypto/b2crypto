@@ -40,6 +40,11 @@ export interface UserInterface {
   category: CategoryInterface;
   personalData: PersonInterface;
   userParent: UserInterface;
+  verifyIdentity: boolean;
+  verifyIdentityTtl: number;
+  verifyIdentityCode: string;
+  verifyIdentityLevelName: string;
+  verifyIdentityExpiredAt: Date;
   createdAt: Date;
   updatedAt: Date;
 }

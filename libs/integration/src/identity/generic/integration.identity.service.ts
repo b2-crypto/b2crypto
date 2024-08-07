@@ -55,7 +55,7 @@ export class IntegrationIdentityService
     return signature.digest('hex');
   }
 
-  async generateToken(
+  async generateUrlApplicant(
     issueTokenDto: SumsubIssueTokenDto,
   ): Promise<SumsubIssuedTokenDto> {
     try {
@@ -78,8 +78,7 @@ export class IntegrationIdentityService
       return axiosInstance
         .post(metadata.url, null)
         .then((response) => {
-          token = response.data;
-          return token;
+          return response.data;
         })
         .catch((error) => {
           Logger.error('IssueSumsubToken:84', error);

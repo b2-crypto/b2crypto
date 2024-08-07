@@ -153,12 +153,14 @@ export class AuthService {
     const crm = affiliate?.crm;
     const payload = {
       id: user._id,
-      api: user.apiData,
+      //api: user.apiData,
       email: user.email,
+      verifyIdentity: user.verifyIdentity,
+      verifyIdentityLevelName: user.verifyIdentityLevelName,
       lastName: user.personalData?.lastName,
       firstName: user.name || user.personalData?.name,
       crmId: crm,
-      tpId: affiliate?.crmIdAffiliate,
+      //tpId: affiliate?.crmIdAffiliate,
       brandId: affiliate?.brand,
       country:
         user.personalData?.location?.country ??
