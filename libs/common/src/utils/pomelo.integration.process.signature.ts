@@ -6,7 +6,7 @@ import * as crypto from 'crypto';
 
 @Injectable()
 export class SignatureUtils {
-  private API_DIC = JSON.parse(process.env.API_SECRET_KEY_DIC);
+  private API_DIC = JSON.parse(process.env.POMELO_SIGNATURE_SECRET_KEY_DIC);
 
   constructor(private readonly cache: PomeloCache) {}
 
