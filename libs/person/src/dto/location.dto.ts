@@ -22,7 +22,7 @@ export default class LocationDto implements LocationModel {
     description: 'Name of location',
   })
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   name: string;
 
   @ApiProperty({
