@@ -1,7 +1,6 @@
 import { Constants } from '@common/common/utils/pomelo.integration.process.constants';
 import { SumsubHttpUtils } from '@common/common/utils/sumsub.integration.process.http.utils';
 import { SumsubSignatureUtils } from '@common/common/utils/sumsub.integration.process.signature';
-import { PomeloEnum } from '@integration/integration/enum/pomelo.enum';
 import {
   CanActivate,
   ExecutionContext,
@@ -9,7 +8,6 @@ import {
   Injectable,
   Logger,
 } from '@nestjs/common';
-import { Reflector } from '@nestjs/core';
 
 @Injectable()
 export class SumsubSignatureGuard implements CanActivate {
@@ -17,16 +15,16 @@ export class SumsubSignatureGuard implements CanActivate {
     private readonly signatureUtil: SumsubSignatureUtils,
     private readonly constants: Constants,
     private readonly utils: SumsubHttpUtils,
-    private readonly reflector: Reflector,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     this.headersToLowercase(context);
     const headers = this.utils.extractRequestHeaders(context);
     Logger.log(`Authorizing request.`, 'Sumsub Signature Guard');
+    const request = context.switchToHttp().getRequest();
     const isValid = await this.signatureUtil.checkSignature(
       headers,
-      context.switchToHttp().getRequest().body,
+      request.body,
     );
     if (!isValid) {
       Logger.log(`Signing invalid signature response`, 'SignatureGuard');
