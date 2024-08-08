@@ -19,6 +19,9 @@ import { Constants } from '@common/common/utils/pomelo.integration.process.const
 import { SignatureUtils } from '@common/common/utils/pomelo.integration.process.signature';
 import { HttpUtils } from '@common/common/utils/pomelo.integration.process.http.utils';
 import { PomeloCache } from '@integration/integration/util/pomelo.integration.process.cache';
+import { SumsubSignatureGuard } from './guards/sumsub.signature.guard';
+import { SumsubHttpUtils } from '@common/common/utils/sumsub.integration.process.http.utils';
+import { SumsubSignatureUtils } from '@common/common/utils/sumsub.integration.process.signature';
 
 @Module({
   imports: [
@@ -44,9 +47,12 @@ import { PomeloCache } from '@integration/integration/util/pomelo.integration.pr
     LocalStrategy,
     JwtStrategy,
     Constants,
+    SumsubSignatureUtils,
     SignatureUtils,
     HttpUtils,
+    SumsubHttpUtils,
     SignatureGuard,
+    SumsubSignatureGuard,
     PomeloCache,
   ],
   exports: [AuthService, CaslAbilityFactory, SignatureGuard],
