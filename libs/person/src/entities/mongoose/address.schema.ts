@@ -1,3 +1,4 @@
+import CountryCodeB2cryptoEnum from '@common/common/enums/country.code.b2crypto.enum';
 import AddressModel from '@common/common/models/AddressModel';
 import { Prop, Schema } from '@nestjs/mongoose';
 
@@ -30,8 +31,8 @@ export class AddressSchema implements AddressModel {
   @Prop()
   additional_info: string;
 
-  @Prop()
-  country: string;
+  @Prop({ type: String, enum: CountryCodeB2cryptoEnum })
+  country: CountryCodeB2cryptoEnum;
 
   @Prop()
   name: string;

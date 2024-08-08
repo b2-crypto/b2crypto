@@ -59,6 +59,7 @@ import EventsNamesUserEnum from 'apps/user-service/src/enum/events.names.user.en
 import StatusAccountEnum from '@account/account/enum/status.account.enum';
 import { ApiKeyAuthGuard } from '@auth/auth/guards/api.key.guard';
 import { AddressSchema } from '@person/person/entities/mongoose/address.schema';
+import CountryCodeEnum from '@common/common/enums/country.code.b2crypto.enum';
 
 @ApiTags('CARD')
 @Controller('cards')
@@ -580,7 +581,7 @@ export class CardServiceController extends AccountServiceController {
         'Neighborhood not found in profile address',
       );
     }
-    address.country = 'COL';
+    address.country = CountryCodeEnum.Colombia;
     /* if (!address.country) {
       // Validate cities
       throw new BadRequestException('Country not found in profile address');
