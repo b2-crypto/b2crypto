@@ -5,6 +5,7 @@ import { SumsubApplicantReviewed } from '@integration/integration/identity/gener
 import {
   BadRequestException,
   Injectable,
+  Logger,
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -35,7 +36,11 @@ export class SumsubNotificationIntegrationService {
       notification.externalUserId,
     );
     if (!user) {
-      throw new BadRequestException('User not found');
+      Logger.error(
+        'User not found',
+        'Reviewed.SumsubNotificationIntegrationService',
+      );
+      return null;
     }
     user.verifyIdentityResponse =
       user.verifyIdentityResponse ?? new UserVerifyIdentitySchema();
@@ -50,6 +55,7 @@ export class SumsubNotificationIntegrationService {
       verifyIdentityLevelName: notification.levelName,
       verifyIdentity: user.verifyIdentity,
     });
+    Logger.log('User Updated', 'Reviewed.SumsubNotificationIntegrationService');
 
     return user;
   }
@@ -59,7 +65,11 @@ export class SumsubNotificationIntegrationService {
       notification.externalUserId,
     );
     if (!user) {
-      throw new BadRequestException('User not found');
+      Logger.error(
+        'User not found',
+        'Pending.SumsubNotificationIntegrationService',
+      );
+      return null;
     }
     user.verifyIdentityResponse =
       user.verifyIdentityResponse ?? new UserVerifyIdentitySchema();
@@ -69,6 +79,7 @@ export class SumsubNotificationIntegrationService {
       verifyIdentityResponse: user.verifyIdentityResponse,
       verifyIdentityStatus: notification.reviewStatus,
     });
+    Logger.log('User Updated', 'Pending.SumsubNotificationIntegrationService');
 
     return user;
   }
@@ -78,7 +89,11 @@ export class SumsubNotificationIntegrationService {
       notification.externalUserId,
     );
     if (!user) {
-      throw new BadRequestException('User not found');
+      Logger.error(
+        'User not found',
+        'OnHold.SumsubNotificationIntegrationService',
+      );
+      return null;
     }
     user.verifyIdentityResponse =
       user.verifyIdentityResponse ?? new UserVerifyIdentitySchema();
@@ -89,6 +104,7 @@ export class SumsubNotificationIntegrationService {
       verifyIdentityStatus: notification.reviewStatus,
       verifyIdentityLevelName: notification.levelName,
     });
+    Logger.log('User Updated', 'OnHold.SumsubNotificationIntegrationService');
 
     return user;
   }
