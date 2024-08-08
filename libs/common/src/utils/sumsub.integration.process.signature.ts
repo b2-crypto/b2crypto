@@ -1,5 +1,5 @@
 import { SumsubProcessHeaderDto } from '@integration/integration/identity/generic/domain/dto/sumsub.process.header.dto';
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotImplementedException } from '@nestjs/common';
 import * as crypto from 'crypto';
 
 @Injectable()
@@ -14,7 +14,7 @@ export class SumsubSignatureUtils {
     }[headers.digestAlgorithm];
 
     if (!algo) {
-      throw new Error('Unsupported algorithm');
+      throw new NotImplementedException('Unsupported algorithm');
     }
 
     const calculatedDigest = crypto

@@ -5,6 +5,7 @@ import { SumsubApplicantReviewed } from '@integration/integration/identity/gener
 import {
   BadRequestException,
   Injectable,
+  NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { UserVerifyIdentitySchema } from '@user/user/entities/mongoose/user.verify.identity.schema';
@@ -21,7 +22,7 @@ export class SumsubNotificationIntegrationService {
       clientId,
     );
     if (!client) {
-      throw new Error('Client not found');
+      throw new NotFoundException('Client not found');
     }
 
     if (client.slug !== 'sumsub') {
