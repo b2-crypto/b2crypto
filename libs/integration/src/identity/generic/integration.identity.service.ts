@@ -10,6 +10,7 @@ import {
 import { RequestMetadataDto } from './domain/sumsub.request.metadata.dto';
 import { IntegrationIdentityInterface } from './integration.identity.interface';
 import { IdentityRoutesInterface } from './interface/identity.routes.interface';
+import * as crypto from 'crypto';
 
 export class IntegrationIdentityService
   implements IntegrationIdentityInterface
@@ -41,6 +42,18 @@ export class IntegrationIdentityService
     return axiosInstance;
   }
 
+  private createSignature(requestMetadata: RequestMetadataDto) {
+    const secretKey = this.dataIntegration.privateKey;
+    const valueToSign =
+      requestMetadata.ts +
+      requestMetadata.method.toUpperCase() +
+      requestMetadata.url.toString() +
+      requestMetadata.data;
+    const signature = crypto.createHmac('sha256', secretKey);
+    signature.update(valueToSign);
+    return signature.digest('hex');
+  }
+
   async generateUrlApplicant(
     issueTokenDto: SumsubIssueTokenDto,
   ): Promise<SumsubIssuedTokenDto> {
@@ -54,6 +67,11 @@ export class IntegrationIdentityService
         data: null,
       };
       const axiosInstance = this.createAxiosInstance();
+      const signature = this.createSignature(metadata);
+      axiosInstance.defaults.headers[SumsubEnum.SUMSUB_HEADER_TIMESTAMP] =
+        metadata.ts;
+      axiosInstance.defaults.headers[SumsubEnum.SUMSUB_HEADER_SIGNATURE] =
+        signature;
       Logger.log('IssueSumsubToken', 'ISSUING SUMSUB TOKEN');
       return axiosInstance
         .post(metadata.url, null)
