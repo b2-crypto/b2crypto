@@ -34,7 +34,7 @@ export class SumsubNotificationIntegrationService {
   async updateUserByReviewed(notification: SumsubApplicantReviewed) {
     if (!isMongoId(notification.externalUserId)) {
       Logger.error(
-        `User id "${notification.externalUserId}" is wrong`,
+        `User id "${notification.externalUserId}" isn't valid`,
         'Reviewed.SumsubNotificationIntegrationService',
       );
       return null;
@@ -70,7 +70,7 @@ export class SumsubNotificationIntegrationService {
   async updateUserByPending(notification: SumsubApplicantPending) {
     if (!isMongoId(notification.externalUserId)) {
       Logger.error(
-        `User id "${notification.externalUserId}" is wrong`,
+        `User id "${notification.externalUserId}" isn't valid`,
         'Reviewed.SumsubNotificationIntegrationService',
       );
       return null;
@@ -101,7 +101,7 @@ export class SumsubNotificationIntegrationService {
   async updateUserByOnHold(notification: SumsubApplicantOnHold) {
     if (!isMongoId(notification.externalUserId)) {
       Logger.error(
-        `User id "${notification.externalUserId}" is wrong`,
+        `User id "${notification.externalUserId}" isn't valid`,
         'Reviewed.SumsubNotificationIntegrationService',
       );
       return null;
