@@ -165,7 +165,7 @@ export class AuthServiceController {
 
   private async getClientFromPublicKey(clientId): Promise<UserEntity> {
     const client = this.builder.getPromiseUserEventClient(
-      EventsNamesUserEnum.findOneByPublicKey,
+      EventsNamesUserEnum.findOneByApiKey,
       clientId,
     );
     if (!client) {
