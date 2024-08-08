@@ -1,5 +1,5 @@
 import { SumsubProcessHeaderDto } from '@integration/integration/identity/generic/domain/dto/sumsub.process.header.dto';
-import { Injectable, NotImplementedException } from '@nestjs/common';
+import { Injectable, Logger, NotImplementedException } from '@nestjs/common';
 import * as crypto from 'crypto';
 
 @Injectable()
@@ -16,11 +16,17 @@ export class SumsubSignatureUtils {
     if (!algo) {
       throw new NotImplementedException('Unsupported algorithm');
     }
+    Logger.log(`Using ${algo} as algorithm`, 'Sumsub Check Signature');
 
     const calculatedDigest = crypto
       .createHmac(algo, this.apiKey)
       .update(JSON.stringify(body))
       .digest('hex');
+    Logger.log(
+      `Calculated digest: ${calculatedDigest}`,
+      'Sumsub Check Signature',
+    );
+    Logger.log(`Digest: ${headers.digest}`, 'Sumsub Check Signature');
 
     return calculatedDigest === headers.digest;
   }
