@@ -26,7 +26,7 @@ export class ApiKeyAuthGuard extends AuthGuard('api-key') {
       EventsNamesUserEnum.findOneByApiKey,
       apiKey,
     );
-    if (!client) {
+    if (!client || !client.isClientAPI) {
       throw new UnauthorizedException('Not found client with key');
     }
     request['clientApi'] = client._id;

@@ -130,6 +130,9 @@ export class AuthServiceController {
     @Res() res,
   ) {
     const client = await this.getClientFromPublicKey(clientId);
+    if (!client.isClientAPI) {
+      throw new UnauthorizedException();
+    }
     const user = await this.builder.getPromiseUserEventClient(
       EventsNamesUserEnum.findOneById,
       userId,
@@ -184,7 +187,7 @@ export class AuthServiceController {
       IntegrationIdentityEnum.SUMSUB,
     );
     try {
-      identityDto.userId = user.id;
+      identityDto.userId = user.id ?? user._id;
       identityDto.ttlInSecs = identityDto.ttlInSecs ?? 900;
       const rta = await identity.generateUrlApplicant(identityDto);
       if (!rta.url) {
