@@ -164,14 +164,19 @@ export class AuthServiceController {
   }
 
   private async getClientFromPublicKey(clientId): Promise<UserEntity> {
-    const client = this.builder.getPromiseUserEventClient(
-      EventsNamesUserEnum.findOneByApiKey,
-      clientId,
-    );
-    if (!client) {
+    try {
+      const client = await this.builder.getPromiseUserEventClient(
+        EventsNamesUserEnum.findOneByApiKey,
+        clientId,
+      );
+      if (!client) {
+        throw new UnauthorizedException();
+      }
+      return client;
+    } catch (err) {
+      Logger.error(err, 'Error getting client from public key');
       throw new UnauthorizedException();
     }
-    return client;
   }
 
   private async getIdentityCode(identityDto: SumsubIssueTokenDto, user) {
