@@ -12,6 +12,7 @@ import {
 import { UserVerifyIdentitySchema } from '@user/user/entities/mongoose/user.verify.identity.schema';
 import { UserEntity } from '@user/user/entities/user.entity';
 import EventsNamesUserEnum from 'apps/user-service/src/enum/events.names.user.enum';
+import { isMongoId } from 'class-validator';
 
 @Injectable()
 export class SumsubNotificationIntegrationService {
@@ -31,6 +32,13 @@ export class SumsubNotificationIntegrationService {
     }
   }
   async updateUserByReviewed(notification: SumsubApplicantReviewed) {
+    if (!isMongoId(notification.externalUserId)) {
+      Logger.error(
+        `User id "${notification.externalUserId}" is wrong`,
+        'Reviewed.SumsubNotificationIntegrationService',
+      );
+      return null;
+    }
     const user = await this.builder.getPromiseUserEventClient<UserEntity>(
       EventsNamesUserEnum.findOneById,
       notification.externalUserId,
@@ -60,6 +68,13 @@ export class SumsubNotificationIntegrationService {
     return user;
   }
   async updateUserByPending(notification: SumsubApplicantPending) {
+    if (!isMongoId(notification.externalUserId)) {
+      Logger.error(
+        `User id "${notification.externalUserId}" is wrong`,
+        'Reviewed.SumsubNotificationIntegrationService',
+      );
+      return null;
+    }
     const user = await this.builder.getPromiseUserEventClient<UserEntity>(
       EventsNamesUserEnum.findOneById,
       notification.externalUserId,
@@ -84,6 +99,13 @@ export class SumsubNotificationIntegrationService {
     return user;
   }
   async updateUserByOnHold(notification: SumsubApplicantOnHold) {
+    if (!isMongoId(notification.externalUserId)) {
+      Logger.error(
+        `User id "${notification.externalUserId}" is wrong`,
+        'Reviewed.SumsubNotificationIntegrationService',
+      );
+      return null;
+    }
     const user = await this.builder.getPromiseUserEventClient<UserEntity>(
       EventsNamesUserEnum.findOneById,
       notification.externalUserId,
