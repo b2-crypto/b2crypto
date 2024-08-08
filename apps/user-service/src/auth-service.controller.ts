@@ -92,7 +92,7 @@ export class AuthServiceController {
     @Body() identityDto: SumsubIssueTokenDto,
     @Req() req,
   ) {
-    const client = await this.getClientFromPublicKey(req.clientApi);
+    const client = await this.getClientFromPublicKey(req.clientApi, false);
     const user = req.user;
     if (!user) {
       throw new BadRequestException('User not found');
@@ -166,12 +166,23 @@ export class AuthServiceController {
     return expiredAt.getTime() < tenMinutesFromNow.getTime();
   }
 
-  private async getClientFromPublicKey(clientId): Promise<UserEntity> {
+  private async getClientFromPublicKey(
+    clientId,
+    apiKey = true,
+  ): Promise<UserEntity> {
     try {
-      const client = await this.builder.getPromiseUserEventClient(
-        EventsNamesUserEnum.findOneByApiKey,
-        clientId,
-      );
+      let client;
+      if (apiKey) {
+        client = await this.builder.getPromiseUserEventClient(
+          EventsNamesUserEnum.findOneByApiKey,
+          clientId,
+        );
+      } else {
+        client = await this.builder.getPromiseUserEventClient(
+          EventsNamesUserEnum.findOneById,
+          clientId,
+        );
+      }
       if (!client) {
         throw new UnauthorizedException();
       }
