@@ -69,6 +69,7 @@ export class PersonServiceController implements GenericServiceController {
   @ApiTags('Stakey Profile')
   @ApiBearerAuth('bearerToken')
   @ApiSecurity('b2crypto-key')
+  @UseGuards(ApiKeyAuthGuard)
   // @CheckPoliciesAbility(new PolicyHandlerPersonCreate())
   async createOne(@Body() createPersonDto: PersonCreateDto, @Req() req?) {
     createPersonDto.name = createPersonDto.firstName;
@@ -113,8 +114,17 @@ export class PersonServiceController implements GenericServiceController {
   }
 
   @Patch()
+  @ApiTags('Stakey Profile')
+  @ApiBearerAuth('bearerToken')
+  @ApiSecurity('b2crypto-key')
+  @UseGuards(ApiKeyAuthGuard)
   // @CheckPoliciesAbility(new PolicyHandlerPersonUpdate())
-  async updateOne(@Body() updatePersonDto: PersonUpdateDto) {
+  async updateOne(@Body() updatePersonDto: PersonUpdateDto, @Req() req?) {
+    const user = await this.userService.getOne(req.user.id);
+    if (!user._id) {
+      throw new BadRequestError('User not found');
+    }
+    updatePersonDto.id = user.personalData;
     return this.personService.updatePerson(updatePersonDto);
   }
 
