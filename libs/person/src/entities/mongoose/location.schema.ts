@@ -24,10 +24,10 @@ export class LocationSchema implements LocationModel {
   @Prop()
   searchText: string;
 
-  @Prop({ type: ColonySchema })
+  @Prop()
   colony: ColonySchema;
 
-  @Prop({ type: CitySchema })
+  @Prop()
   city: string;
 
   @Prop({ type: String, enum: CountryCodeB2cryptoEnum })
