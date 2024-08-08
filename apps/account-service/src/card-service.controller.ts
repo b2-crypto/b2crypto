@@ -263,8 +263,6 @@ export class CardServiceController extends AccountServiceController {
           neighborhood: user.personalData.location.address.neighborhood,
         },
         previous_card_id: account.prevAccount?.cardConfig?.id ?? null,
-        // After first access remove pin
-        pin: account.pin,
         name_on_card: account.name,
       });
       const error = card['error'];
