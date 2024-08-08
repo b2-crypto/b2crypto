@@ -119,7 +119,7 @@ export class SumsubNotificationIntegrationService {
     }
     user.verifyIdentityResponse =
       user.verifyIdentityResponse ?? new UserVerifyIdentitySchema();
-    user.verifyIdentityResponse.reviewed = notification;
+    user.verifyIdentityResponse.onHold = notification;
     this.builder.emitUserEventClient(EventsNamesUserEnum.updateOne, {
       id: user._id,
       verifyIdentityResponse: user.verifyIdentityResponse,
