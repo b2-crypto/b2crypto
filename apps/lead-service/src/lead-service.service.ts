@@ -24,6 +24,7 @@ import {
   Injectable,
   Logger,
   NotFoundException,
+  NotImplementedException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
@@ -102,61 +103,61 @@ export class LeadServiceService
     return this.getAll(query);
   }
   findOneById(id: string, context?: any): Promise<LeadDocument> {
-    throw new Error('Method not implemented.');
+    throw new NotImplementedException('Method not implemented.');
   }
   createOne(createDto: CreateAnyDto, context?: any): Promise<LeadDocument> {
-    throw new Error('Method not implemented.');
+    throw new NotImplementedException('Method not implemented.');
   }
   createMany(
     createDto: CreateAnyDto[],
     context?: any,
   ): Promise<LeadDocument[]> {
-    throw new Error('Method not implemented.');
+    throw new NotImplementedException('Method not implemented.');
   }
   updateOne(updateDto: UpdateAnyDto, context?: any): Promise<LeadDocument> {
-    throw new Error('Method not implemented.');
+    throw new NotImplementedException('Method not implemented.');
   }
   updateMany(
     updateDto: UpdateAnyDto[],
     context?: any,
   ): Promise<LeadDocument[]> {
-    throw new Error('Method not implemented.');
+    throw new NotImplementedException('Method not implemented.');
   }
   deleteManyById(ids: UpdateAnyDto[], context?: any): Promise<LeadDocument[]> {
-    throw new Error('Method not implemented.');
+    throw new NotImplementedException('Method not implemented.');
   }
   deleteOneById(id: string, context?: any): Promise<LeadDocument> {
-    throw new Error('Method not implemented.');
+    throw new NotImplementedException('Method not implemented.');
   }
   getRta(rta: any, @Ctx() ctx: any) {
-    throw new Error('Method not implemented.');
+    throw new NotImplementedException('Method not implemented.');
   }
   findAllEvent(query: QuerySearchAnyDto, @Ctx() ctx: RmqContext) {
-    throw new Error('Method not implemented.');
+    throw new NotImplementedException('Method not implemented.');
   }
   downloadEvent(query: QuerySearchAnyDto, @Ctx() ctx: RmqContext) {
-    throw new Error('Method not implemented.');
+    throw new NotImplementedException('Method not implemented.');
   }
   findOneByIdEvent(id: string, @Ctx() ctx: RmqContext) {
-    throw new Error('Method not implemented.');
+    throw new NotImplementedException('Method not implemented.');
   }
   createOneEvent(createActivityDto: CreateAnyDto, @Ctx() ctx: RmqContext) {
-    throw new Error('Method not implemented.');
+    throw new NotImplementedException('Method not implemented.');
   }
   createManyEvent(createActivitysDto: CreateAnyDto[], @Ctx() ctx: RmqContext) {
-    throw new Error('Method not implemented.');
+    throw new NotImplementedException('Method not implemented.');
   }
   updateOneEvent(updateActivityDto: UpdateAnyDto, @Ctx() ctx: RmqContext) {
-    throw new Error('Method not implemented.');
+    throw new NotImplementedException('Method not implemented.');
   }
   updateManyEvent(updateActivitysDto: UpdateAnyDto[], @Ctx() ctx: RmqContext) {
-    throw new Error('Method not implemented.');
+    throw new NotImplementedException('Method not implemented.');
   }
   deleteManyByIdEvent(ids: UpdateAnyDto[], @Ctx() ctx: RmqContext) {
-    throw new Error('Method not implemented.');
+    throw new NotImplementedException('Method not implemented.');
   }
   deleteOneByIdEvent(id: string, @Ctx() ctx: RmqContext) {
-    throw new Error('Method not implemented.');
+    throw new NotImplementedException('Method not implemented.');
   }
 
   private async getStatusCftdDB(): Promise<StatusDocument> {

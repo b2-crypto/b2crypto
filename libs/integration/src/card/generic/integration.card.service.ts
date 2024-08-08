@@ -1,7 +1,11 @@
 import { AccountDocument } from '@account/account/entities/mongoose/account.schema';
 import { CommonService } from '@common/common';
 import { EnvironmentEnum } from '@common/common/enums/environment.enum';
-import { BadRequestException, Logger } from '@nestjs/common';
+import {
+  BadRequestException,
+  Logger,
+  NotImplementedException,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import axios, {
   AxiosInstance,
@@ -209,6 +213,6 @@ export class IntegrationCardService<
     userCard: TUserCardDto,
     card: TCardDto,
   ): Promise<AxiosResponse<any[], any>> {
-    throw new Error('Method not implemented.');
+    throw new NotImplementedException('Method not implemented.');
   }
 }
