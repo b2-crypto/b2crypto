@@ -20,7 +20,6 @@ import { SumsubNotificationIntegrationService } from './services/sumsub.notifica
 @UseGuards(ApiKeyAuthGuard, SumsubSignatureGuard)
 //@UseInterceptors(SumsubSignatureInterceptor)
 export class SumsubNotificationIntegrationController {
-  private secret = 'zyPoKDIxcPqJNtSi4BtjK1RV62g';
   constructor(
     private readonly sumsubService: SumsubNotificationIntegrationService,
   ) {}
@@ -43,6 +42,7 @@ export class SumsubNotificationIntegrationController {
   }
 
   @Post(SumsubConfigEnum.SUMSUB_NOTIFICATION_PENDING_PATH)
+  @ApiKeyCheck()
   @HttpCode(200)
   async handleNotificationPending(
     @Req() req: Request,
@@ -58,6 +58,7 @@ export class SumsubNotificationIntegrationController {
   }
 
   @Post(SumsubConfigEnum.SUMSUB_NOTIFICATION_ON_HOLD_PATH)
+  @ApiKeyCheck()
   @HttpCode(200)
   async handleNotificationOnHold(
     @Req() req: Request,
