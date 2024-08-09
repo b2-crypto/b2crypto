@@ -252,4 +252,6 @@ export class AccountCreateDto extends CreateAnyDto implements AccountInterface {
   createdAt: Date;
   @IsEmpty()
   updatedAt: Date;
+  @IsEmpty()
+  cardConfig: any;
 }

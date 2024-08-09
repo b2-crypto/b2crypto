@@ -191,6 +191,37 @@ export class UserServiceController implements GenericServiceController {
   }
 
   @AllowAnon()
+  @MessagePattern(EventsNamesUserEnum.migrateOne)
+  async migrateOne(
+    @Payload() createDto: UserRegisterDto,
+    @Ctx() ctx: RmqContext,
+  ) {
+    try {
+      let user: any;
+      const users = await this.findAll({
+        where: {
+          email: createDto.email,
+        },
+      });
+      if (users?.list?.length > 0) {
+        user = users.list[0];
+      } else {
+        user = await this.createOne(createDto);
+      }
+      CommonService.ack(ctx);
+      return user;
+    } catch (err) {
+      CommonService.ack(ctx);
+      //throw new RpcException(err);
+      return {
+        data: err,
+        message: err.errmsg,
+        statusCode: err.statusCode,
+      };
+    }
+  }
+
+  @AllowAnon()
   @MessagePattern(EventsNamesUserEnum.createMany)
   createManyEvent(
     @Payload() createsDto: UserRegisterDto[],

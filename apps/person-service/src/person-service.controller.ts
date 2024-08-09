@@ -168,6 +168,34 @@ export class PersonServiceController implements GenericServiceController {
   }
 
   @AllowAnon()
+  @MessagePattern(EventsNamesPersonEnum.migrateOne)
+  async migrateOne(
+    @Payload() createDto: PersonCreateDto,
+    @Ctx() ctx: RmqContext,
+  ) {
+    let person;
+    let query: QuerySearchAnyDto = new QuerySearchAnyDto();
+    query = query ?? {};
+    query.where = query.where ?? {};
+    query.where['user'] = createDto?.user?.id ?? createDto?.user?._id;
+    const persons = await this.personService.getAll(query);
+    if (persons?.list?.length > 0) {
+      person = persons?.list[0];
+    } else {
+      const personalData = await this.personService.newPerson(createDto);
+      if (personalData.user) {
+        await this.userService.updateUser({
+          id: personalData.user._id,
+          personalData: personalData._id,
+        });
+      }
+      person = personalData;
+    }
+    CommonService.ack(ctx);
+    return person;
+  }
+
+  @AllowAnon()
   @MessagePattern(EventsNamesPersonEnum.createMany)
   createManyEvent(
     @Payload() createsDto: PersonCreateDto[],

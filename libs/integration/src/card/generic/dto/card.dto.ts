@@ -1,5 +1,14 @@
 import { Type } from 'class-transformer';
-import { IsObject, IsOptional, IsString } from 'class-validator';
+import { IsNumber, IsObject, IsOptional, IsString } from 'class-validator';
+
+export class CardSearchDto {
+  @IsString()
+  @IsOptional()
+  user_id: string;
+  @IsNumber()
+  @IsOptional()
+  page_size: number;
+}
 
 export class CardDto {
   @IsString()

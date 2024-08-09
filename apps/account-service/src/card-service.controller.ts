@@ -435,7 +435,7 @@ export class CardServiceController extends AccountServiceController {
     CommonService.ack(ctx);
     try {
       let txnAmount = 0;
-      Logger.log(`Looking for card: ${data.id}`, 'CardController');
+      Logger.log(`Looking for card: ${data.id}`, CardServiceController.name);
       const cardList = await this.cardService.findAll({
         where: {
           statusText: StatusAccountEnum.UNLOCK,
@@ -449,7 +449,7 @@ export class CardServiceController extends AccountServiceController {
       if (data.authorize) {
         Logger.log(
           `Card balance: ${card.amount} | Movement amount: ${data.amount}`,
-          'CardController',
+          CardServiceController.name,
         );
         const allowedBalance =
           card.amount * (1.0 - this.BLOCK_BALANCE_PERCENTAGE);
@@ -471,7 +471,7 @@ export class CardServiceController extends AccountServiceController {
       });
       return CardsEnum.CARD_PROCESS_OK;
     } catch (error) {
-      Logger.error(error, 'CardController');
+      Logger.error(error, CardServiceController.name);
       return CardsEnum.CARD_PROCESS_FAILURE;
     }
   }
@@ -480,7 +480,7 @@ export class CardServiceController extends AccountServiceController {
   async findByCardId(@Ctx() ctx: RmqContext, @Payload() data: any) {
     CommonService.ack(ctx);
     try {
-      Logger.log(`Looking for card: ${data.id}`, 'CardController');
+      Logger.log(`Looking for card: ${data.id}`, CardServiceController.name);
       const cardList = await this.cardService.findAll({
         where: {
           'cardConfig.id': data.id,
@@ -491,7 +491,49 @@ export class CardServiceController extends AccountServiceController {
       }
       return cardList.list[0];
     } catch (error) {
-      Logger.error(error, 'CardController');
+      Logger.error(error, CardServiceController.name);
+    }
+  }
+
+  @MessagePattern(EventsNamesAccountEnum.mingrateOne)
+  async migrateCard(
+    @Ctx() ctx: RmqContext,
+    @Payload() cardToMigrate: CardCreateDto,
+  ) {
+    try {
+      Logger.log(
+        `Migrating card ${JSON.stringify(cardToMigrate)}`,
+        CardServiceController.name,
+      );
+      CommonService.ack(ctx);
+      return await this.cardService.createOne(cardToMigrate);
+    } catch (error) {
+      Logger.error(error, CardServiceController.name);
+    }
+  }
+
+  @MessagePattern(EventsNamesAccountEnum.setBalanceByCard)
+  async setBalanceByCard(@Ctx() ctx: RmqContext, @Payload() data: any) {
+    CommonService.ack(ctx);
+    try {
+      Logger.log(`Looking for card: ${data.id}`, CardServiceController.name);
+      const cardList = await this.cardService.findAll({
+        where: {
+          'cardConfig.id': data.id,
+        },
+      });
+      if (!cardList || !cardList.list[0]) {
+        throw new NotFoundException(`Card ${data.id} was not found`);
+      }
+      const card = cardList.list[0];
+      await this.cardService.customUpdateOne({
+        id: card._id,
+        $inc: {
+          amount: data.amount,
+        },
+      });
+    } catch (error) {
+      Logger.error(error, CardServiceController.name);
     }
   }
 
