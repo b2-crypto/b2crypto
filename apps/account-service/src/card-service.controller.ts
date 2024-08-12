@@ -64,6 +64,9 @@ import CountryCodeEnum from '@common/common/enums/country.code.b2crypto.enum';
 import { FiatIntegrationClient } from 'apps/integration-service/src/clients/fiat.integration.client';
 import { AccountEntity } from '@account/account/entities/account.entity';
 import CurrencyCodeB2cryptoEnum from '@common/common/enums/currency-code-b2crypto.enum';
+import { SwaggerSteakeyConfigEnum } from 'libs/config/enum/swagger.stakey.config.enum';
+import { countries } from 'apps/seed-service/const/countries.const';
+import { isEmpty, isString } from 'class-validator';
 
 @ApiTags('CARD')
 @Controller('cards')
@@ -91,7 +94,7 @@ export class CardServiceController extends AccountServiceController {
     this.configService.get<number>('AUTHORIZATIONS_BLOCK_BALANCE_PERCENTAGE');
 
   @Get('all')
-  @ApiTags('Stakey Card')
+  @ApiTags(SwaggerSteakeyConfigEnum.TAG_CARD)
   @ApiBearerAuth('bearerToken')
   @ApiHeader({
     name: 'b2crypto-key',
@@ -131,7 +134,7 @@ export class CardServiceController extends AccountServiceController {
   }
 
   @Get('me')
-  @ApiTags('Stakey Card')
+  @ApiTags(SwaggerSteakeyConfigEnum.TAG_CARD)
   @ApiBearerAuth('bearerToken')
   async findAllMe(@Query() query: QuerySearchAnyDto, @Req() req?: any) {
     query = query ?? {};
@@ -146,7 +149,7 @@ export class CardServiceController extends AccountServiceController {
     return rta;
   }
 
-  @ApiTags('Stakey Card')
+  @ApiTags(SwaggerSteakeyConfigEnum.TAG_CARD)
   @ApiSecurity('b2crypto-key')
   @ApiBearerAuth('bearerToken')
   @Post('create')
@@ -307,13 +310,13 @@ export class CardServiceController extends AccountServiceController {
       account.save();
       return account;
     } catch (err) {
-      Logger.error(err, `Account Card not created ${account._id}`);
       await this.getAccountService().deleteOneById(account._id);
+      Logger.error(err.response, `Account Card not created ${account._id}`);
       return err;
     }
   }
 
-  @ApiTags('Stakey Card')
+  @ApiTags(SwaggerSteakeyConfigEnum.TAG_CARD)
   @ApiSecurity('b2crypto-key')
   @ApiBearerAuth('bearerToken')
   @UseGuards(ApiKeyAuthGuard)
@@ -347,7 +350,7 @@ export class CardServiceController extends AccountServiceController {
     return card.responseShipping;
   }
 
-  @ApiTags('Stakey Card')
+  @ApiTags(SwaggerSteakeyConfigEnum.TAG_CARD)
   @ApiSecurity('b2crypto-key')
   @ApiBearerAuth('bearerToken')
   @UseGuards(ApiKeyAuthGuard)
@@ -459,7 +462,7 @@ export class CardServiceController extends AccountServiceController {
   }
 
   @Patch('lock/:cardId')
-  @ApiTags('Stakey Card')
+  @ApiTags(SwaggerSteakeyConfigEnum.TAG_CARD)
   @ApiSecurity('b2crypto-key')
   @ApiBearerAuth('bearerToken')
   @UseGuards(ApiKeyAuthGuard)
@@ -468,7 +471,7 @@ export class CardServiceController extends AccountServiceController {
   }
 
   @Patch('unlock/:cardId')
-  @ApiTags('Stakey Card')
+  @ApiTags(SwaggerSteakeyConfigEnum.TAG_CARD)
   @ApiSecurity('b2crypto-key')
   @ApiBearerAuth('bearerToken')
   @UseGuards(ApiKeyAuthGuard)
@@ -477,7 +480,7 @@ export class CardServiceController extends AccountServiceController {
   }
 
   @Patch('cancel/:cardId')
-  @ApiTags('Stakey Card')
+  @ApiTags(SwaggerSteakeyConfigEnum.TAG_CARD)
   @ApiSecurity('b2crypto-key')
   @ApiBearerAuth('bearerToken')
   @UseGuards(ApiKeyAuthGuard)
@@ -486,7 +489,7 @@ export class CardServiceController extends AccountServiceController {
   }
 
   @Patch('hidden/:cardId')
-  @ApiTags('Stakey Card')
+  @ApiTags(SwaggerSteakeyConfigEnum.TAG_CARD)
   @ApiSecurity('b2crypto-key')
   @ApiBearerAuth('bearerToken')
   @UseGuards(ApiKeyAuthGuard)
@@ -495,7 +498,7 @@ export class CardServiceController extends AccountServiceController {
   }
 
   @Patch('visible/:cardId')
-  @ApiTags('Stakey Card')
+  @ApiTags(SwaggerSteakeyConfigEnum.TAG_CARD)
   @ApiSecurity('b2crypto-key')
   @ApiBearerAuth('bearerToken')
   @UseGuards(ApiKeyAuthGuard)
@@ -594,6 +597,12 @@ export class CardServiceController extends AccountServiceController {
         account?.personalData?.location.address ??
           user.personalData.location.address,
       );
+      const country = countries.filter(
+        (country) =>
+          country.alpha2 ===
+          (account?.country ?? user.personalData.nationality),
+      )[0].alpha3;
+      legalAddress.country = country;
       const userCard = await cardIntegration.createUser({
         name: account?.personalData?.name ?? user.personalData.name,
         surname: account?.personalData?.lastName ?? user.personalData.lastName,
@@ -605,17 +614,16 @@ export class CardServiceController extends AccountServiceController {
         birthdate: `${birthDate.getFullYear()}-${CommonService.getNumberDigits(
           birthDate.getMonth() + 1,
           2,
-        )}-${birthDate.getDate()}`,
+        )}-${CommonService.getNumberDigits(birthDate.getDate(), 2)}`,
         gender: account?.personalData?.gender ?? user.personalData.gender,
         email: account?.email ?? user.personalData.email[0] ?? user.email,
         phone:
           account?.telephone ??
           user.personalData.telephones[0]?.phoneNumber ??
           user.personalData.phoneNumber,
-        nationality:
-          account?.personalData?.nationality ?? user.personalData.nationality,
+        nationality: country,
         legal_address: legalAddress,
-        operation_country: account?.country ?? user.personalData.nationality,
+        operation_country: country,
       } as unknown as UserCardDto);
       const error = userCard['error'];
       if (error) {
@@ -659,8 +667,11 @@ export class CardServiceController extends AccountServiceController {
       // Validate cities
       throw new BadRequestException('Country not found in profile address');
     } */
-    if (address.additional_info) {
-      address.additional_info = null;
+    if (
+      isString(address.additional_info) &&
+      isEmpty(address.additional_info.trim())
+    ) {
+      address.additional_info = ' ';
     }
 
     return address;

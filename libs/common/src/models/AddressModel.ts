@@ -10,7 +10,7 @@ interface AddressModel {
   city: string;
   region: string;
   additional_info: string;
-  country: CountryCodeEnum;
+  country: CountryCodeEnum | string;
 }
 
 export default AddressModel;

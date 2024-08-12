@@ -32,7 +32,7 @@ export class AddressSchema implements AddressModel {
   additional_info: string;
 
   @Prop({ type: String, enum: CountryCodeB2cryptoEnum })
-  country: CountryCodeB2cryptoEnum;
+  country: CountryCodeB2cryptoEnum | string;
 
   @Prop()
   name: string;
