@@ -93,5 +93,5 @@ export default class AddressDto implements AddressModel {
   })
   @IsEnum(CountryCodeEnum)
   @IsOptional()
-  country: CountryCodeEnum;
+  country: CountryCodeEnum | string;
 }
