@@ -1,41 +1,133 @@
+import { BuildersService } from '@builder/builders';
+import { SumsubApplicantOnHold } from '@integration/integration/identity/generic/domain/process/sumsub.applicant.onhold.dto';
+import { SumsubApplicantPending } from '@integration/integration/identity/generic/domain/process/sumsub.applicant.pending.dto';
+import { SumsubApplicantReviewed } from '@integration/integration/identity/generic/domain/process/sumsub.applicant.reviewed.dto';
 import {
-  CardEvents,
-  ShippingNotifications,
-} from '@integration/integration/dto/pomelo.shipping.body.dto';
-import { PomeloCache } from '@integration/integration/util/pomelo.integration.process.cache';
-import { Injectable } from '@nestjs/common';
+  BadRequestException,
+  Injectable,
+  Logger,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
+import { UserVerifyIdentitySchema } from '@user/user/entities/mongoose/user.verify.identity.schema';
+import { UserEntity } from '@user/user/entities/user.entity';
+import EventsNamesUserEnum from 'apps/user-service/src/enum/events.names.user.enum';
+import { isMongoId } from 'class-validator';
 
 @Injectable()
 export class SumsubNotificationIntegrationService {
-  constructor(private readonly cache: PomeloCache) {}
+  constructor(private readonly builder: BuildersService) {}
 
-  async handleShippingNotification(
-    notification: ShippingNotifications,
-  ): Promise<any> {
-    const cachedResult = await this.cache.getResponse(
-      notification.idempotency_key,
+  async validateClient(clientId: string) {
+    const client = await this.builder.getPromiseUserEventClient(
+      EventsNamesUserEnum.findOneById,
+      clientId,
     );
-    if (cachedResult == null) {
-      const response = {
-        statusCode: 204,
-        body: {},
-      };
-      await this.cache.setResponse(notification.idempotency_key, response);
-      return response;
+    if (!client) {
+      throw new NotFoundException('Client not found');
     }
-    return cachedResult;
-  }
 
-  async handleCardEvents(event: CardEvents): Promise<any> {
-    const cachedResult = await this.cache.getResponse(event.idempotency_key);
-    if (cachedResult == null) {
-      const response = {
-        statusCode: 204,
-        body: {},
-      };
-      await this.cache.setResponse(event.idempotency_key, response);
-      return response;
+    if (client.slug !== 'sumsub') {
+      throw new UnauthorizedException('Invalid client');
     }
-    return cachedResult;
+  }
+  async updateUserByReviewed(notification: SumsubApplicantReviewed) {
+    if (!isMongoId(notification.externalUserId)) {
+      Logger.error(
+        `User id "${notification.externalUserId}" isn't valid`,
+        'Reviewed.SumsubNotificationIntegrationService',
+      );
+      return null;
+    }
+    const user = await this.builder.getPromiseUserEventClient<UserEntity>(
+      EventsNamesUserEnum.findOneById,
+      notification.externalUserId,
+    );
+    if (!user) {
+      Logger.error(
+        'User not found',
+        'Reviewed.SumsubNotificationIntegrationService',
+      );
+      return null;
+    }
+    user.verifyIdentityResponse =
+      user.verifyIdentityResponse ?? new UserVerifyIdentitySchema();
+    user.verifyIdentityResponse.reviewed = notification;
+    if (notification.reviewStatus === 'completed') {
+      user.verifyIdentity = notification.reviewResult.reviewAnswer === 'GREEN';
+    }
+    this.builder.emitUserEventClient(EventsNamesUserEnum.updateOne, {
+      id: user._id,
+      verifyIdentityResponse: user.verifyIdentityResponse,
+      verifyIdentityStatus: notification.reviewStatus,
+      verifyIdentityLevelName: notification.levelName,
+      verifyIdentity: user.verifyIdentity,
+    });
+    Logger.log('User Updated', 'Reviewed.SumsubNotificationIntegrationService');
+
+    return user;
+  }
+  async updateUserByPending(notification: SumsubApplicantPending) {
+    if (!isMongoId(notification.externalUserId)) {
+      Logger.error(
+        `User id "${notification.externalUserId}" isn't valid`,
+        'Reviewed.SumsubNotificationIntegrationService',
+      );
+      return null;
+    }
+    const user = await this.builder.getPromiseUserEventClient<UserEntity>(
+      EventsNamesUserEnum.findOneById,
+      notification.externalUserId,
+    );
+    if (!user) {
+      Logger.error(
+        'User not found',
+        'Pending.SumsubNotificationIntegrationService',
+      );
+      return null;
+    }
+    user.verifyIdentityResponse =
+      user.verifyIdentityResponse ?? new UserVerifyIdentitySchema();
+    user.verifyIdentityResponse.pending = notification;
+    this.builder.emitUserEventClient(EventsNamesUserEnum.updateOne, {
+      id: user._id,
+      verifyIdentityResponse: user.verifyIdentityResponse,
+      verifyIdentityStatus: notification.reviewStatus,
+    });
+    Logger.log('User Updated', 'Pending.SumsubNotificationIntegrationService');
+
+    return user;
+  }
+  async updateUserByOnHold(notification: SumsubApplicantOnHold) {
+    if (!isMongoId(notification.externalUserId)) {
+      Logger.error(
+        `User id "${notification.externalUserId}" isn't valid`,
+        'Reviewed.SumsubNotificationIntegrationService',
+      );
+      return null;
+    }
+    const user = await this.builder.getPromiseUserEventClient<UserEntity>(
+      EventsNamesUserEnum.findOneById,
+      notification.externalUserId,
+    );
+    if (!user) {
+      Logger.error(
+        'User not found',
+        'OnHold.SumsubNotificationIntegrationService',
+      );
+      return null;
+    }
+    user.verifyIdentityResponse =
+      user.verifyIdentityResponse ?? new UserVerifyIdentitySchema();
+    user.verifyIdentityResponse.onHold = notification;
+    this.builder.emitUserEventClient(EventsNamesUserEnum.updateOne, {
+      id: user._id,
+      verifyIdentityResponse: user.verifyIdentityResponse,
+      verifyIdentityStatus: notification.reviewStatus,
+      verifyIdentityLevelName: notification.levelName,
+    });
+    Logger.log('User Updated', 'OnHold.SumsubNotificationIntegrationService');
+
+    return user;
   }
 }

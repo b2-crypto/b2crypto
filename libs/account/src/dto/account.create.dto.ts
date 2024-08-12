@@ -16,12 +16,14 @@ import {
   IsNumber,
   IsOptional,
   IsString,
+  Min,
   ValidateNested,
 } from 'class-validator';
 import { ObjectId } from 'mongodb';
 import { AccountInterface } from '../entities/account.interface';
 import TypesAccountEnum from '../enum/types.account.enum';
 import StatusAccountEnum from '../enum/status.account.enum';
+import CurrencyCodeB2cryptoEnum from '@common/common/enums/currency-code-b2crypto.enum';
 
 export class AccountCreateDto extends CreateAnyDto implements AccountInterface {
   _id?: ObjectId;
@@ -60,6 +62,8 @@ export class AccountCreateDto extends CreateAnyDto implements AccountInterface {
     type: String,
     description: 'Param firstName',
   })
+  @IsOptional()
+  @IsString()
   firstName?: string;
 
   @ApiProperty({
@@ -67,6 +71,8 @@ export class AccountCreateDto extends CreateAnyDto implements AccountInterface {
     type: String,
     description: 'Param lastName',
   })
+  @IsOptional()
+  @IsString()
   lastName?: string;
 
   @IsEmpty()
@@ -84,6 +90,7 @@ export class AccountCreateDto extends CreateAnyDto implements AccountInterface {
   secret: string;
 
   @IsNumber({ maxDecimalPlaces: 0, allowNaN: false, allowInfinity: false })
+  @Min(0)
   @ApiProperty({
     required: false,
     description: 'Account pin',
@@ -91,6 +98,7 @@ export class AccountCreateDto extends CreateAnyDto implements AccountInterface {
   pin: number;
 
   @ApiProperty({
+    required: false,
     description: 'Account DocId',
   })
   @IsOptional()
@@ -99,18 +107,21 @@ export class AccountCreateDto extends CreateAnyDto implements AccountInterface {
   address: AddressDto;
 
   @ApiProperty({
+    required: false,
     description: 'Account email',
   })
   @IsOptional()
   email: string;
 
   @ApiProperty({
+    required: false,
     description: 'Account telephone',
   })
   @IsOptional()
   telephone: string;
 
   @ApiProperty({
+    required: false,
     description: 'Account description',
   })
   @IsString()
@@ -157,7 +168,10 @@ export class AccountCreateDto extends CreateAnyDto implements AccountInterface {
   referral: string;
 
   @ApiProperty({
-    description: 'Account country',
+    required: false,
+    enum: CountryCodeEnum,
+    enumName: 'CountryCode',
+    description: 'Country code',
   })
   @IsEnum(CountryCodeEnum)
   @IsOptional()
@@ -254,4 +268,22 @@ export class AccountCreateDto extends CreateAnyDto implements AccountInterface {
   updatedAt: Date;
   @IsEmpty()
   cardConfig: any;
+  @IsOptional()
+  prevAccount?: AccountInterface;
+  @IsEmpty()
+  amount: number;
+  @IsEmpty()
+  currency: CurrencyCodeB2cryptoEnum;
+  @IsEmpty()
+  amountCustodial: number;
+  @IsEmpty()
+  currencyCustodial: CurrencyCodeB2cryptoEnum;
+  @IsEmpty()
+  amountBlocked: number;
+  @IsEmpty()
+  currencyBlocked: CurrencyCodeB2cryptoEnum;
+  @IsEmpty()
+  amountBlockedCustodial: number;
+  @IsEmpty()
+  currencyBlockedCustodial: CurrencyCodeB2cryptoEnum;
 }

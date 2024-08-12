@@ -8,8 +8,10 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Permission } from '@permission/permission/entities/mongoose/permission.schema';
 import { Person } from '@person/person/entities/mongoose/person.schema';
 import { Role } from '@role/role/entities/mongoose/role.schema';
+import UserVerifyIdentityDto from '@user/user/dto/user.verify.identity.dto';
 import { UserEntity } from '@user/user/entities/user.entity';
 import mongoose, { Document, ObjectId } from 'mongoose';
+import { UserVerifyIdentitySchema } from './user.verify.identity.schema';
 
 export type UserDocument = User & Document;
 
@@ -91,6 +93,27 @@ export class User extends UserEntity {
 
   @Prop()
   amountCustodial: number;
+
+  @Prop({ default: false })
+  verifyIdentity: boolean;
+
+  @Prop()
+  verifyIdentityTtl: number;
+
+  @Prop()
+  verifyIdentityCode: string;
+
+  @Prop()
+  verifyIdentityStatus: string;
+
+  @Prop()
+  verifyIdentityLevelName: string;
+
+  @Prop()
+  verifyIdentityExpiredAt: Date;
+
+  @Prop({ type: UserVerifyIdentitySchema })
+  verifyIdentityResponse: UserVerifyIdentitySchema;
 
   @Prop({ type: String })
   currencyCustodial: CurrencyCodeB2cryptoEnum;

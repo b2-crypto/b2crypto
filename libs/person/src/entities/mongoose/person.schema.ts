@@ -56,7 +56,10 @@ export class Person extends PersonEntity {
   taxIdentificationValue: number;
 
   @Prop([{ type: TelephoneSchema }])
-  telephone: TelephoneSchema[];
+  telephones: TelephoneSchema[];
+
+  @Prop()
+  phoneNumber: string;
 
   @Prop()
   numDocId: string;

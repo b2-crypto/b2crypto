@@ -9,6 +9,7 @@ import { RoleEntity } from '@role/role/entities/role.entity';
 import { UserChangePasswordDto } from '@user/user/dto/user.change-password.dto';
 import { UserInterface } from '@user/user/entities/user.interface';
 import { ObjectId } from 'mongoose';
+import UserVerifyIdentityDto from '../dto/user.verify.identity.dto';
 
 export class UserEntity implements UserInterface {
   _id?: ObjectId;
@@ -43,6 +44,13 @@ export class UserEntity implements UserInterface {
   category: CategoryEntity;
   personalData: PersonEntity;
   userParent: UserEntity;
+  verifyIdentity: boolean;
+  verifyIdentityTtl: number;
+  verifyIdentityCode: string;
+  verifyIdentityStatus: string;
+  verifyIdentityLevelName: string;
+  verifyIdentityExpiredAt: Date;
+  verifyIdentityResponse: UserVerifyIdentityDto;
   createdAt: Date;
   updatedAt: Date;
 

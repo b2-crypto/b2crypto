@@ -22,7 +22,8 @@ export class PersonEntity implements PersonInterface {
   searchText: string;
   lastName: string;
   email: string[];
-  telephone: TelephoneModel[];
+  telephones: TelephoneModel[];
+  phoneNumber: string;
   numDocId: string;
   typeDocId: DocIdTypeEnum;
   location: LocationModel;

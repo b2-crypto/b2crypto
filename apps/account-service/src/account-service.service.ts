@@ -8,7 +8,12 @@ import { BasicMicroserviceService } from '@common/common/models/basic.microservi
 import { CreateAnyDto } from '@common/common/models/create-any.dto';
 import { QuerySearchAnyDto } from '@common/common/models/query_search-any.dto';
 import { UpdateAnyDto } from '@common/common/models/update-any.dto';
-import { BadRequestException, Inject, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Inject,
+  Injectable,
+  NotImplementedException,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { ClientProxy, Ctx, RmqContext } from '@nestjs/microservices';
 import { StatusDocument } from '@status/status/entities/mongoose/status.schema';
@@ -29,7 +34,7 @@ export class AccountServiceService
     query: QuerySearchAnyDto,
     context?: any,
   ): Promise<AccountDocument[]> {
-    throw new Error('Method not implemented.');
+    throw new NotImplementedException('Method not implemented.');
   }
   async findAll(
     query: QuerySearchAnyDto,
@@ -92,33 +97,33 @@ export class AccountServiceService
     return this.lib.remove(id);
   }
   getRta(rta: any, @Ctx() ctx: any) {
-    throw new Error('Method not implemented.');
+    throw new NotImplementedException('Method not implemented.');
   }
   findAllEvent(query: QuerySearchAnyDto, @Ctx() ctx: RmqContext) {
-    throw new Error('Method not implemented.');
+    throw new NotImplementedException('Method not implemented.');
   }
   downloadEvent(query: QuerySearchAnyDto, @Ctx() ctx: RmqContext) {
-    throw new Error('Method not implemented.');
+    throw new NotImplementedException('Method not implemented.');
   }
   findOneByIdEvent(id: string, @Ctx() ctx: RmqContext) {
-    throw new Error('Method not implemented.');
+    throw new NotImplementedException('Method not implemented.');
   }
   createOneEvent(createActivityDto: CreateAnyDto, @Ctx() ctx: RmqContext) {
-    throw new Error('Method not implemented.');
+    throw new NotImplementedException('Method not implemented.');
   }
   createManyEvent(createActivitysDto: CreateAnyDto[], @Ctx() ctx: RmqContext) {
-    throw new Error('Method not implemented.');
+    throw new NotImplementedException('Method not implemented.');
   }
   updateOneEvent(updateActivityDto: UpdateAnyDto, @Ctx() ctx: RmqContext) {
-    throw new Error('Method not implemented.');
+    throw new NotImplementedException('Method not implemented.');
   }
   updateManyEvent(updateActivitysDto: UpdateAnyDto[], @Ctx() ctx: RmqContext) {
-    throw new Error('Method not implemented.');
+    throw new NotImplementedException('Method not implemented.');
   }
   deleteManyByIdEvent(ids: UpdateAnyDto[], @Ctx() ctx: RmqContext) {
-    throw new Error('Method not implemented.');
+    throw new NotImplementedException('Method not implemented.');
   }
   deleteOneByIdEvent(id: string, @Ctx() ctx: RmqContext) {
-    throw new Error('Method not implemented.');
+    throw new NotImplementedException('Method not implemented.');
   }
 }

@@ -18,7 +18,7 @@ export default class AddressDto implements AddressModel {
     type: String,
     description: 'Street number',
   })
-  @IsNumber()
+  @IsString()
   @IsOptional()
   street_number: string;
 
@@ -27,7 +27,7 @@ export default class AddressDto implements AddressModel {
     type: String,
     description: 'Floor',
   })
-  @IsNumber()
+  @IsString()
   @IsOptional()
   floor: string;
 
@@ -36,7 +36,7 @@ export default class AddressDto implements AddressModel {
     type: String,
     description: 'Zip code',
   })
-  @IsNumber()
+  @IsString()
   @IsOptional()
   zip_code: string;
 

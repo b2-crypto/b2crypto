@@ -1,6 +1,6 @@
 enum CardTypesAccountEnum {
-  PHYSICAL = 'PHYSICAL',
   VIRTUAL = 'VIRTUAL',
+  PHYSICAL = 'PHYSICAL',
 }
 
 export default CardTypesAccountEnum;

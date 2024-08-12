@@ -38,7 +38,7 @@ export class CardDto {
 
   @IsString()
   @IsOptional()
-  pin: string;
+  pin?: string;
 
   @IsString()
   @IsOptional()

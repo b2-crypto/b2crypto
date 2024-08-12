@@ -160,13 +160,13 @@ export class UserServiceController implements GenericServiceController {
   }
 
   @AllowAnon()
-  @MessagePattern(EventsNamesUserEnum.findOneByPublicKey)
+  @MessagePattern(EventsNamesUserEnum.findOneByApiKey)
   findOneByPublicKeyEvent(
     @Payload() publicKey: string,
     @Ctx() ctx: RmqContext,
   ) {
     CommonService.ack(ctx);
-    return this.findOneByPublicKey(publicKey);
+    return this.findOneByApiKey(publicKey);
   }
 
   @AllowAnon()
@@ -277,10 +277,10 @@ export class UserServiceController implements GenericServiceController {
     });
   }
 
-  private async findOneByPublicKey(publicKey: string) {
+  private async findOneByApiKey(publicKey: string) {
     const users = await this.userService.getAll({
       where: {
-        publicKey: publicKey,
+        apiKey: publicKey,
       },
     });
     if (!users.totalElements) {

@@ -3,6 +3,7 @@ import {
   ExecutionContext,
   Inject,
   Injectable,
+  Logger,
   UnauthorizedException,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
@@ -22,16 +23,22 @@ export class ApiKeyAuthGuard extends AuthGuard('api-key') {
     if (!apiKey) {
       throw new UnauthorizedException('Not found client key');
     }
-    const client = await this.builder.getPromiseUserEventClient(
-      EventsNamesUserEnum.findOneByPublicKey,
-      apiKey,
-    );
-    if (!client) {
-      throw new UnauthorizedException('Not found client with key');
+    let client = null;
+    try {
+      client = await this.builder.getPromiseUserEventClient(
+        EventsNamesUserEnum.findOneByApiKey,
+        apiKey,
+      );
+      if (!client || !client.isClientAPI) {
+        throw new UnauthorizedException('Not found client with key');
+      }
+      request['clientApi'] = client._id;
+      delete request.headers['checkApiKey'];
+      return true;
+    } catch (err) {
+      Logger.error(err, 'ApiKeyAuthGuard.canActive');
+      return false;
     }
-    request['clientApi'] = client._id;
-    delete request.headers['checkApiKey'];
-    return true;
   }
   handleRequest(err, affiliate /* , info */) {
     // You can throw an exception based on either "info" or "err" arguments

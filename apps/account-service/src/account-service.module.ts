@@ -25,6 +25,8 @@ import { AccountServiceController } from './account-service.controller';
 import { AccountServiceService } from './account-service.service';
 import { CardServiceController } from './card-service.controller';
 import { WalletServiceController } from './wallet-service.controller';
+import { FiatIntegrationClient } from 'apps/integration-service/src/clients/fiat.integration.client';
+import { HttpModule } from '@nestjs/axios';
 
 @Module({
   imports: [
@@ -47,6 +49,8 @@ import { WalletServiceController } from './wallet-service.controller';
     GroupModule,
     CategoryModule,
     StatusModule,
+    //
+    HttpModule,
   ],
   controllers: [
     AccountServiceController,
@@ -59,6 +63,7 @@ import { WalletServiceController } from './wallet-service.controller';
     GroupServiceService,
     UserServiceService,
     //
+    FiatIntegrationClient,
     IntegrationService,
     AccountServiceService,
     {

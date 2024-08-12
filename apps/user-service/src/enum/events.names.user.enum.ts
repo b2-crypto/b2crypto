@@ -12,7 +12,7 @@ enum EventsNamesUserEnum {
   updateOne = 'USER.UPDATE.ONE',
   findAll = 'USER.FIND.ALL',
   findOneById = 'USER.FIND.ONE.BY.ID',
-  findOneByPublicKey = 'USER.FIND.ONE.BY.PUBLIC.KEY',
+  findOneByApiKey = 'USER.FIND.ONE.BY.PUBLIC.KEY',
   deleteMany = 'USER.DELETE.MANY',
   deleteOneById = 'USER.DELETE.ONE.BY.ID',
 

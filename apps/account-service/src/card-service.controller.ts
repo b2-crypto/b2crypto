@@ -1,3 +1,4 @@
+import { LegalAddress } from './../../../libs/integration/src/card/generic/dto/user.card.dto';
 import { CardDepositCreateDto } from '@account/account/dto/card-deposit.create.dto';
 import { CardCreateDto } from '@account/account/dto/card.create.dto';
 import { Card } from '@account/account/entities/mongoose/card.schema';
@@ -57,6 +58,11 @@ import { CardsEnum } from '@common/common/enums/messages.enum';
 import EventsNamesUserEnum from 'apps/user-service/src/enum/events.names.user.enum';
 import StatusAccountEnum from '@account/account/enum/status.account.enum';
 import { ApiKeyAuthGuard } from '@auth/auth/guards/api.key.guard';
+import { AddressSchema } from '@person/person/entities/mongoose/address.schema';
+import CountryCodeEnum from '@common/common/enums/country.code.b2crypto.enum';
+import { FiatIntegrationClient } from 'apps/integration-service/src/clients/fiat.integration.client';
+import { AccountEntity } from '@account/account/entities/account.entity';
+import CurrencyCodeB2cryptoEnum from '@common/common/enums/currency-code-b2crypto.enum';
 
 @ApiTags('CARD')
 @Controller('cards')
@@ -75,6 +81,7 @@ export class CardServiceController extends AccountServiceController {
     readonly cardBuilder: BuildersService,
     private readonly integration: IntegrationService,
     private readonly configService: ConfigService,
+    private readonly currencyConversion: FiatIntegrationClient,
   ) {
     super(cardService, cardBuilder);
   }
@@ -89,25 +96,53 @@ export class CardServiceController extends AccountServiceController {
     name: 'b2crypto-key',
     description: 'The apiKey',
   })
-  findAll(@Query() query: QuerySearchAnyDto, @Req() req?: any) {
+  async findAll(@Query() query: QuerySearchAnyDto, @Req() req?: any) {
     query = query ?? {};
     query.where = query.where ?? {};
     query.where.type = TypesAccountEnum.CARD;
     return this.cardService.findAll(query);
   }
+
+  private async swapToCurrencyUser(req: any, account: AccountEntity) {
+    req.user.currency = req.user.currency ?? CurrencyCodeB2cryptoEnum.USD;
+    if (
+      (account.amount === 0 && account.amountCustodial === 0) ||
+      req.user.currency === account.currencyCustodial
+    ) {
+      return account.amountCustodial || account.amount;
+    }
+    try {
+      const amount = await this.currencyConversion.getCurrencyConversion(
+        req.user.currency,
+        account.currencyCustodial,
+        account.amountCustodial || account.amount,
+      );
+      this.cardBuilder.emitUserEventClient(EventsNamesUserEnum.updateOne, {
+        id: req.user.id,
+        amount: amount,
+        currency: req.user.currency,
+      });
+      return amount;
+    } catch (err) {
+      Logger.error(err, 'CardController');
+      return account.amountCustodial || account.amount;
+    }
+  }
+
   @Get('me')
   @ApiTags('Stakey Card')
   @ApiBearerAuth('bearerToken')
-  @ApiHeader({
-    name: 'b2crypto-key',
-    description: 'The apiKey',
-  })
-  findAllMe(@Query() query: QuerySearchAnyDto, @Req() req?: any) {
+  async findAllMe(@Query() query: QuerySearchAnyDto, @Req() req?: any) {
     query = query ?? {};
     query.where = query.where ?? {};
     query.where.type = TypesAccountEnum.CARD;
     query = CommonService.getQueryWithUserId(query, req, 'owner');
-    return this.cardService.findAll(query);
+    const rta = await this.cardService.findAll(query);
+    rta.list.forEach(async (account) => {
+      account.amount = await this.swapToCurrencyUser(req, account);
+      account.currency = req.user.currency ?? CurrencyCodeB2cryptoEnum.USD;
+    });
+    return rta;
   }
 
   @ApiTags('Stakey Card')
@@ -171,22 +206,17 @@ export class CardServiceController extends AccountServiceController {
         email: account.email,
         address: {
           street_name: user.personalData.location.address.street_name,
-          street_number: user.personalData.location.address.street_number,
+          street_number:
+            user.personalData.location.address.street_number ?? ' ',
           floor: user.personalData.location.address.floor,
           apartment: user.personalData.location.address.apartment,
           city: user.personalData.location.address.city,
           region: user.personalData.location.address.region,
-          //country: user.personalData.location.address.country ?? 'Colombia',
-          country: 'Colombia',
-          zip_code: user.personalData.location.zipcode,
+          country: user.personalData.location.address.country,
+          zip_code: user.personalData.location.address.zip_code,
           neighborhood: user.personalData.location.address.neighborhood,
         },
-        /*address:
-          account.personalData?.location.address ??
-          user.personalData.location.address,*/
         previous_card_id: account.prevAccount?.cardConfig?.id ?? null,
-        // After first access remove pin
-        pin: account.pin,
         name_on_card: account.name,
       });
       const error = card['error'];
@@ -197,7 +227,7 @@ export class CardServiceController extends AccountServiceController {
       account.save();
       return account;
     } catch (err) {
-      Logger.error(err, 'Account Card not created');
+      Logger.error(err, `Account Card not created ${account._id}`);
       await this.getAccountService().deleteOneById(account._id);
       return err;
     }
@@ -310,7 +340,7 @@ export class CardServiceController extends AccountServiceController {
     if (!cardIntegration) {
       throw new BadRequestException('Bad integration card');
     }
-    //TODO[hender-2024/07/25] Cretification Pomelo
+    //TODO[hender-2024/07/25] Certification Pomelo
     const rtaGetShipping = await cardIntegration.getShippingPhysicalCard(
       card.responseShipping.id,
     );
@@ -355,8 +385,8 @@ export class CardServiceController extends AccountServiceController {
         street_number: ' ',
         city: user.personalData.location.address.city,
         region: user.personalData.location.address.region,
-        neighborhood: user.personalData.location.address.neighborhood,
         country: user.personalData.location.address.country,
+        neighborhood: user.personalData.location.address.neighborhood,
         apartment: user.personalData.location.address.apartment,
       },
       receiver: {
@@ -364,7 +394,9 @@ export class CardServiceController extends AccountServiceController {
         email: user.email,
         document_type: user.personalData.typeDocId,
         document_number: user.personalData.numDocId,
-        telephone_number: user.personalData.telephone[0].phoneNumber,
+        telephone_number:
+          user.personalData.telephones[0]?.phoneNumber ??
+          user.personalData.phoneNumber,
       },
     });
     if (rtaShippingCard.data.id) {
@@ -568,7 +600,15 @@ export class CardServiceController extends AccountServiceController {
     if (rtaUserCard.data.length > 0) {
       userCardConfig = rtaUserCard.data[0];
     } else {
-      const birthDate = account?.personalData?.birth ?? user.personalData.birth;
+      let birthDate = account?.personalData?.birth ?? user.personalData.birth;
+      if (!birthDate) {
+        throw new BadRequestException('Birth not found');
+      }
+      birthDate = new Date(birthDate);
+      const legalAddress = this.getLegalAddress(
+        account?.personalData?.location.address ??
+          user.personalData.location.address,
+      );
       const userCard = await cardIntegration.createUser({
         name: account?.personalData?.name ?? user.personalData.name,
         surname: account?.personalData?.lastName ?? user.personalData.lastName,
@@ -583,18 +623,13 @@ export class CardServiceController extends AccountServiceController {
         )}-${birthDate.getDate()}`,
         gender: account?.personalData?.gender ?? user.personalData.gender,
         email: account?.email ?? user.personalData.email[0] ?? user.email,
-        phone: account?.telephone ?? user.personalData.telephone[0],
-        tax_identification_type:
-          account?.personalData?.taxIdentificationType ??
-          user.personalData.taxIdentificationType,
-        tax_identification_value:
-          account?.personalData?.taxIdentificationValue ??
-          user.personalData.taxIdentificationValue,
+        phone:
+          account?.telephone ??
+          user.personalData.telephones[0]?.phoneNumber ??
+          user.personalData.phoneNumber,
         nationality:
           account?.personalData?.nationality ?? user.personalData.nationality,
-        legal_address:
-          account?.personalData?.location.address ??
-          user.personalData.location.address,
+        legal_address: legalAddress,
         operation_country: account?.country ?? user.personalData.nationality,
       } as unknown as UserCardDto);
       const error = userCard['error'];
@@ -611,5 +646,38 @@ export class CardServiceController extends AccountServiceController {
       },
     );
     return userCardConfig;
+  }
+
+  private getLegalAddress(address: AddressSchema): AddressSchema {
+    if (!address) {
+      throw new BadRequestException('Address not found in profile address');
+    }
+    if (!address.street_name) {
+      throw new BadRequestException('Street name not found in profile address');
+    }
+    if (address.street_number) {
+      address.street_number = ' ';
+    }
+    if (!address.city) {
+      // Validate cities
+      throw new BadRequestException('City not found in profile address');
+    }
+    if (!address.region) {
+      // Validate regions
+      throw new BadRequestException('Region not found in profile address');
+    }
+    if (!address.neighborhood) {
+      address.neighborhood = ' ';
+    }
+    address.country = CountryCodeEnum.Colombia;
+    /* if (!address.country) {
+      // Validate cities
+      throw new BadRequestException('Country not found in profile address');
+    } */
+    if (address.additional_info) {
+      address.additional_info = null;
+    }
+
+    return address;
   }
 }

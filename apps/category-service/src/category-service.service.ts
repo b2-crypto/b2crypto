@@ -20,6 +20,7 @@ import EventsNamesPspAccountEnum from 'apps/psp-service/src/enum/events.names.ps
 import ResourcesEnum from '@common/common/enums/ResourceEnum';
 import ActionsEnum from '@common/common/enums/ActionEnum';
 import EventsNamesPermissionEnum from 'apps/permission-service/src/enum/events.names.permission.enum';
+import { OperationTransactionType } from '@transfer/transfer/enum/operation.transaction.type.enum';
 
 @Injectable()
 export class CategoryServiceService {
@@ -44,6 +45,8 @@ export class CategoryServiceService {
       return Promise.resolve(Object.values(ResourcesEnum));
     } else if (type.toLowerCase() == 'actions') {
       return Promise.resolve(Object.values(ActionsEnum));
+    } else if (type.toLowerCase() == 'monetary_operation_type') {
+      return Promise.resolve(Object.values(OperationTransactionType));
     } else if (type.toLowerCase() == 'scopes') {
       return this.builder.getPromisePermissionEventClient(
         EventsNamesPermissionEnum.findAllScope,

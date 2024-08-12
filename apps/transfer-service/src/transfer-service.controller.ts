@@ -10,6 +10,7 @@ import {
   InternalServerErrorException,
   Logger,
   NotFoundException,
+  NotImplementedException,
   Param,
   ParseArrayPipe,
   Patch,
@@ -586,25 +587,25 @@ export class TransferServiceController implements GenericServiceController {
   @AllowAnon()
   @MessagePattern(EventsNamesTransferEnum.createMany)
   createManyEvent(createsDto: CreateAnyDto[], ctx: RmqContext) {
-    throw new Error('Method not implemented.');
+    throw new NotImplementedException('Method not implemented.');
   }
 
   @AllowAnon()
   @MessagePattern(EventsNamesTransferEnum.updateMany)
   updateManyEvent(updatesDto: UpdateAnyDto[], ctx: RmqContext) {
-    throw new Error('Method not implemented.');
+    throw new NotImplementedException('Method not implemented.');
   }
 
   @AllowAnon()
   @MessagePattern(EventsNamesTransferEnum.deleteMany)
   deleteManyByIdEvent(ids: UpdateAnyDto[], ctx: RmqContext) {
-    throw new Error('Method not implemented.');
+    throw new NotImplementedException('Method not implemented.');
   }
 
   @AllowAnon()
   @MessagePattern(EventsNamesTransferEnum.deleteOneById)
   deleteOneByIdEvent(id: string, ctx: RmqContext) {
-    throw new Error('Method not implemented.');
+    throw new NotImplementedException('Method not implemented.');
   }
 
   @AllowAnon()

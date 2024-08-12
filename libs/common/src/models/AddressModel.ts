@@ -1,3 +1,5 @@
+import CountryCodeEnum from '@common/common/enums/country.code.b2crypto.enum';
+
 interface AddressModel {
   street_name: string;
   street_number: string;
@@ -8,7 +10,7 @@ interface AddressModel {
   city: string;
   region: string;
   additional_info: string;
-  country: string;
+  country: CountryCodeEnum;
 }
 
 export default AddressModel;

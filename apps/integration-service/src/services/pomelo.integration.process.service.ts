@@ -3,7 +3,7 @@ import {
   InternalServerErrorException,
   Logger,
 } from '@nestjs/common';
-import { FiatIntegrationClient } from '../clients/pomelo.fiat.integration.client';
+import { FiatIntegrationClient } from '../clients/fiat.integration.client';
 import { BuildersService } from '@builder/builders';
 import EventsNamesAccountEnum from 'apps/account-service/src/enum/events.names.account.enum';
 import {

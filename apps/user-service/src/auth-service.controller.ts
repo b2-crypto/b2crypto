@@ -16,6 +16,7 @@ import {
   Controller,
   ForbiddenException,
   Get,
+  HttpStatus,
   Inject,
   Logger,
   NotFoundException,
@@ -26,6 +27,7 @@ import {
   Req,
   Request,
   Res,
+  UnauthorizedException,
   UseGuards,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
@@ -39,6 +41,8 @@ import {
 import {
   ApiBearerAuth,
   ApiHeader,
+  ApiParam,
+  ApiQuery,
   ApiResponse,
   ApiSecurity,
   ApiTags,
@@ -58,6 +62,9 @@ import { IntegrationService } from '@integration/integration';
 import { SumsubIssueTokenDto } from '@integration/integration/identity/generic/domain/sumsub.issue.token.dto';
 import { ApiKeyAuthGuard } from '@auth/auth/guards/api.key.guard';
 import { UserSignInDto } from '@user/user/dto/user.signin.dto';
+import { SumsubApplicantLevels } from '@integration/integration/identity/generic/domain/sumsub.enum';
+import { NoCache } from '@common/common/decorators/no-cache.decorator';
+import { UserEntity } from '@user/user/entities/user.entity';
 
 @ApiTags('AUTHENTICATION')
 @Controller('auth')
@@ -80,35 +87,148 @@ export class AuthServiceController {
   @ApiTags('Stakey Security')
   @ApiBearerAuth('bearerToken')
   @ApiSecurity('b2crypto-key')
-  @Post('identity/page')
+  @Post('identity/url')
   async sumsubGenerateToken(
     @Body() identityDto: SumsubIssueTokenDto,
     @Req() req,
-    @Res() res,
   ) {
+    const client = await this.getClientFromPublicKey(req.clientApi, false);
     const user = req.user;
     if (!user) {
       throw new BadRequestException('User not found');
     }
+    const userEntity = await this.builder.getPromiseUserEventClient(
+      EventsNamesUserEnum.findOneById,
+      user.id,
+    );
+    if (this.isExpiredUrl(new Date(userEntity.verifyIdentityExpiredAt))) {
+      user.verifyIdentityCode = await this.getIdentityCode(identityDto, user);
+    }
+    return {
+      statusCode: 200,
+      data: {
+        url: `${req.protocol}://${req.headers.host}/auth/identity/page/${user.id}?apiKey=${client.apiKey}`,
+      },
+    };
+  }
+
+  @AllowAnon()
+  @NoCache()
+  @ApiTags('Stakey Security')
+  @ApiParam({
+    name: 'userId',
+    type: String,
+    required: true,
+  })
+  @ApiQuery({
+    name: 'apiKey',
+    type: String,
+    required: true,
+  })
+  @Get('identity/page/:userId')
+  async sumsubGetToken(
+    @Param('userId') userId,
+    @Query('apiKey') clientId,
+    @Res() res,
+  ) {
+    const client = await this.getClientFromPublicKey(clientId);
+    if (!client.isClientAPI) {
+      throw new UnauthorizedException();
+    }
+    const user = await this.builder.getPromiseUserEventClient(
+      EventsNamesUserEnum.findOneById,
+      userId,
+    );
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    if (
+      !user.verifyIdentityCode ||
+      this.isExpiredUrl(new Date(user.verifyIdentityExpiredAt))
+    ) {
+      user.verifyIdentityCode = await this.getIdentityCode(
+        {
+          ttlInSecs: user.verifyIdentityTtl ?? 900,
+          levelName:
+            user.verifyIdentityLevelName ??
+            SumsubApplicantLevels.individual_basicKYCLevel,
+          userId: userId,
+        },
+        user,
+      );
+    }
+    return res.redirect(
+      HttpStatus.TEMPORARY_REDIRECT,
+      this.getSumsubVerifyIdentityUrl(user.verifyIdentityCode),
+    );
+  }
+
+  private isExpiredUrl(expiredAt: Date) {
+    const tenMinutesFromNow = new Date(new Date().getTime() + 10 * 60 * 1000);
+    return expiredAt.getTime() < tenMinutesFromNow.getTime();
+  }
+
+  private async getClientFromPublicKey(
+    clientId,
+    apiKey = true,
+  ): Promise<UserEntity> {
+    try {
+      let client;
+      if (apiKey) {
+        client = await this.builder.getPromiseUserEventClient(
+          EventsNamesUserEnum.findOneByApiKey,
+          clientId,
+        );
+      } else {
+        client = await this.builder.getPromiseUserEventClient(
+          EventsNamesUserEnum.findOneById,
+          clientId,
+        );
+      }
+      if (!client) {
+        throw new UnauthorizedException();
+      }
+      return client;
+    } catch (err) {
+      Logger.error(err, 'Error getting client from public key');
+      throw new UnauthorizedException();
+    }
+  }
+
+  private async getIdentityCode(identityDto: SumsubIssueTokenDto, user) {
     const identity = await this.integration.getIdentityIntegration(
       IntegrationIdentityEnum.SUMSUB,
     );
     try {
-      const rta = await identity.generateToken(identityDto);
-      identityDto.userId = user.id;
+      identityDto.userId = user.id ?? user._id;
+      identityDto.ttlInSecs = identityDto.ttlInSecs ?? 900;
+      const rta = await identity.generateUrlApplicant(identityDto);
       if (!rta.url) {
         throw rta;
       }
-      return res.redirect(rta.url);
+      const code = rta.url.split('#').pop();
+      user.verifyIdentityCode = code;
+      const expiredAt = new Date().getTime() + identityDto.ttlInSecs * 1000;
+      this.builder.emitUserEventClient(EventsNamesUserEnum.updateOne, {
+        id: user.id ?? user._id,
+        verifyIdentityCode: code,
+        verifyIdentityTtl: identityDto.ttlInSecs,
+        verifyIdentityLevelName: identityDto.levelName,
+        verifyIdentityExpiredAt: expiredAt,
+      });
+      return code;
     } catch (err) {
       Logger.error(err, 'Bad request Identity');
       throw new BadGatewayException();
     }
   }
 
+  private getSumsubVerifyIdentityUrl(code: string) {
+    return `https://in.sumsub.com/idensic/l/#${code}`;
+  }
+
   @ApiKeyCheck()
   @ApiTags('Stakey Security')
-  @ApiBearerAuth('bearerToken')
   @ApiSecurity('b2crypto-key')
   @Post('restore-password')
   async restorePassword(@Body() restorePasswordDto: RestorePasswordDto) {

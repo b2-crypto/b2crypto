@@ -1,9 +1,7 @@
 import { EnvironmentEnum } from '@common/common/enums/environment.enum';
 import { BasicDataIntegration } from '@integration/integration/domain/basic.data.integration.interface';
 import { Logger } from '@nestjs/common';
-import { PspDocument } from '@psp/psp/entities/mongoose/psp.schema';
 import axios, { AxiosInstance } from 'axios';
-import * as crypto from 'crypto';
 import { SumsubEnum } from './domain/sumsub.enum';
 import {
   SumsubIssuedTokenDto,
@@ -12,6 +10,7 @@ import {
 import { RequestMetadataDto } from './domain/sumsub.request.metadata.dto';
 import { IntegrationIdentityInterface } from './integration.identity.interface';
 import { IdentityRoutesInterface } from './interface/identity.routes.interface';
+import * as crypto from 'crypto';
 
 export class IntegrationIdentityService
   implements IntegrationIdentityInterface
@@ -55,7 +54,7 @@ export class IntegrationIdentityService
     return signature.digest('hex');
   }
 
-  async generateToken(
+  async generateUrlApplicant(
     issueTokenDto: SumsubIssueTokenDto,
   ): Promise<SumsubIssuedTokenDto> {
     try {
@@ -74,12 +73,10 @@ export class IntegrationIdentityService
       axiosInstance.defaults.headers[SumsubEnum.SUMSUB_HEADER_SIGNATURE] =
         signature;
       Logger.log('IssueSumsubToken', 'ISSUING SUMSUB TOKEN');
-      let token: SumsubIssuedTokenDto = null;
       return axiosInstance
         .post(metadata.url, null)
         .then((response) => {
-          token = response.data;
-          return token;
+          return response.data;
         })
         .catch((error) => {
           Logger.error('IssueSumsubToken:84', error);
