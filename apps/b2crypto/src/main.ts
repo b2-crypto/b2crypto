@@ -22,6 +22,7 @@ import { QueueAdminService } from '@common/common/queue-admin-providers/queue.ad
 import { QueueAdminModule } from '@common/common/queue-admin-providers/queue.admin.provider.module';
 import { PersonServiceModule } from 'apps/person-service/src/person-service.module';
 import { AccountServiceModule } from 'apps/account-service/src/account-service.module';
+import { SwaggerSteakeyConfigEnum } from 'libs/config/enum/swagger.stakey.config.enum';
 
 async function bootstrap() {
   Logger.log(process.env.TZ, 'Timezone');
@@ -85,12 +86,12 @@ function addSwaggerStakeyCard(app: INestApplication) {
     .setTitle('B2Crypto Api Stakey Card')
     .setDescription('The b2crypto api stakey card endpoints')
     .setVersion('1.0')
-    .addTag('Stakey Security')
-    .addTag('Stakey Profile')
-    .addTag('Stakey Deposit')
-    .addTag('Stakey Card')
-    .addTag('Stakey Wallet')
-    .addTag('Stakey List')
+    .addTag(SwaggerSteakeyConfigEnum.TAG_SECURITY)
+    .addTag(SwaggerSteakeyConfigEnum.TAG_PROFILE)
+    .addTag(SwaggerSteakeyConfigEnum.TAG_DEPOSIT)
+    .addTag(SwaggerSteakeyConfigEnum.TAG_CARD)
+    .addTag(SwaggerSteakeyConfigEnum.TAG_WALLET)
+    .addTag(SwaggerSteakeyConfigEnum.TAG_LIST)
     .addBearerAuth(
       {
         type: 'http',

@@ -64,6 +64,9 @@ import CountryCodeEnum from '@common/common/enums/country.code.b2crypto.enum';
 import { FiatIntegrationClient } from 'apps/integration-service/src/clients/fiat.integration.client';
 import { AccountEntity } from '@account/account/entities/account.entity';
 import CurrencyCodeB2cryptoEnum from '@common/common/enums/currency-code-b2crypto.enum';
+import { SwaggerSteakeyConfigEnum } from 'libs/config/enum/swagger.stakey.config.enum';
+import { countries } from 'apps/seed-service/const/countries.const';
+import { isEmpty, isString } from 'class-validator';
 
 @ApiTags('CARD')
 @Controller('cards')
@@ -91,7 +94,7 @@ export class CardServiceController extends AccountServiceController {
     this.configService.get<number>('AUTHORIZATIONS_BLOCK_BALANCE_PERCENTAGE');
 
   @Get('all')
-  @ApiTags('Stakey Card')
+  @ApiTags(SwaggerSteakeyConfigEnum.TAG_CARD)
   @ApiBearerAuth('bearerToken')
   @ApiHeader({
     name: 'b2crypto-key',
@@ -131,7 +134,7 @@ export class CardServiceController extends AccountServiceController {
   }
 
   @Get('me')
-  @ApiTags('Stakey Card')
+  @ApiTags(SwaggerSteakeyConfigEnum.TAG_CARD)
   @ApiBearerAuth('bearerToken')
   async findAllMe(@Query() query: QuerySearchAnyDto, @Req() req?: any) {
     query = query ?? {};
@@ -146,7 +149,7 @@ export class CardServiceController extends AccountServiceController {
     return rta;
   }
 
-  @ApiTags('Stakey Card')
+  @ApiTags(SwaggerSteakeyConfigEnum.TAG_CARD)
   @ApiSecurity('b2crypto-key')
   @ApiBearerAuth('bearerToken')
   @Post('create')
@@ -162,6 +165,16 @@ export class CardServiceController extends AccountServiceController {
     const user: User = await this.getUser(req?.user?.id);
     if (!user.personalData) {
       throw new BadRequestException('Need the personal data to continue');
+    }
+    const virtualCardPending = await this.cardService.findAll({
+      where: {
+        owner: user._id,
+        accountType: CardTypesAccountEnum.VIRTUAL,
+      },
+    });
+    // TODO[hender - 2024/08/12] Limit virtual card
+    if (virtualCardPending.totalElements === 10) {
+      throw new BadRequestException('Already have 10 virtual cards');
     }
     createDto.owner = user._id;
     createDto.pin =
@@ -279,41 +292,54 @@ export class CardServiceController extends AccountServiceController {
         account.group = group.list[0];
       }
       // Create Card
+      const address = {
+        street_name: user.personalData.location.address.street_name,
+        street_number: user.personalData.location.address.street_number ?? ' ',
+        floor: user.personalData.location.address.floor,
+        apartment: user.personalData.location.address.apartment,
+        city: user.personalData.location.address.city,
+        region: user.personalData.location.address.region,
+        country: countries.filter(
+          (c) => c.alpha2 === user.personalData.nationality,
+        )[0].alpha3,
+        zip_code: user.personalData.location.address.zip_code ?? '110231',
+        neighborhood: user.personalData.location.address.neighborhood,
+      };
       const card = await cardIntegration.createCard({
         user_id: account.userCardConfig.id,
         affinity_group_id: account.group.valueGroup,
         card_type: account.accountType,
         email: account.email,
-        address: {
-          street_name: user.personalData.location.address.street_name,
-          street_number:
-            user.personalData.location.address.street_number ?? ' ',
-          floor: user.personalData.location.address.floor,
-          apartment: user.personalData.location.address.apartment,
-          city: user.personalData.location.address.city,
-          region: user.personalData.location.address.region,
-          country: user.personalData.location.address.country,
-          zip_code: user.personalData.location.address.zip_code,
-          neighborhood: user.personalData.location.address.neighborhood,
-        },
+        address: address,
         previous_card_id: account.prevAccount?.cardConfig?.id ?? null,
         name_on_card: account.name,
       });
       const error = card['error'];
       if (error) {
+        // TODO[hender - 2024-08-12] If problems with data user in Pomelo, flag to update in pomelo when update profile user
         throw new BadRequestException(error);
       }
       account.cardConfig = card.data as unknown as Card;
       account.save();
       return account;
     } catch (err) {
-      Logger.error(err, `Account Card not created ${account._id}`);
       await this.getAccountService().deleteOneById(account._id);
-      return err;
+      Logger.error(err.response, `Account Card not created ${account._id}`);
+      err.response.details = err.response.details ?? [];
+      err.response.details.push({
+        detail: 'Card not created',
+      });
+      const desc = err.response.details.reduce(
+        (prev, current) => (current.detail += ', ' + prev.detail),
+      );
+      throw new BadRequestException({
+        statusCode: 400,
+        description: desc,
+      });
     }
   }
 
-  @ApiTags('Stakey Card')
+  @ApiTags(SwaggerSteakeyConfigEnum.TAG_CARD)
   @ApiSecurity('b2crypto-key')
   @ApiBearerAuth('bearerToken')
   @UseGuards(ApiKeyAuthGuard)
@@ -347,7 +373,7 @@ export class CardServiceController extends AccountServiceController {
     return card.responseShipping;
   }
 
-  @ApiTags('Stakey Card')
+  @ApiTags(SwaggerSteakeyConfigEnum.TAG_CARD)
   @ApiSecurity('b2crypto-key')
   @ApiBearerAuth('bearerToken')
   @UseGuards(ApiKeyAuthGuard)
@@ -362,6 +388,17 @@ export class CardServiceController extends AccountServiceController {
     }
     if (!user.personalData.location?.address) {
       throw new BadRequestException('Location address not found');
+    }
+    const physicalCardPending = await this.cardService.findAll({
+      where: {
+        owner: user._id,
+        cardConfig: {
+          $exists: false,
+        },
+      },
+    });
+    if (physicalCardPending.totalElements > 0) {
+      throw new BadRequestException('Already physical card pending');
     }
     const cardIntegration = await this.integration.getCardIntegration(
       IntegrationCardEnum.POMELO,
@@ -459,7 +496,7 @@ export class CardServiceController extends AccountServiceController {
   }
 
   @Patch('lock/:cardId')
-  @ApiTags('Stakey Card')
+  @ApiTags(SwaggerSteakeyConfigEnum.TAG_CARD)
   @ApiSecurity('b2crypto-key')
   @ApiBearerAuth('bearerToken')
   @UseGuards(ApiKeyAuthGuard)
@@ -468,7 +505,7 @@ export class CardServiceController extends AccountServiceController {
   }
 
   @Patch('unlock/:cardId')
-  @ApiTags('Stakey Card')
+  @ApiTags(SwaggerSteakeyConfigEnum.TAG_CARD)
   @ApiSecurity('b2crypto-key')
   @ApiBearerAuth('bearerToken')
   @UseGuards(ApiKeyAuthGuard)
@@ -477,7 +514,7 @@ export class CardServiceController extends AccountServiceController {
   }
 
   @Patch('cancel/:cardId')
-  @ApiTags('Stakey Card')
+  @ApiTags(SwaggerSteakeyConfigEnum.TAG_CARD)
   @ApiSecurity('b2crypto-key')
   @ApiBearerAuth('bearerToken')
   @UseGuards(ApiKeyAuthGuard)
@@ -486,7 +523,7 @@ export class CardServiceController extends AccountServiceController {
   }
 
   @Patch('hidden/:cardId')
-  @ApiTags('Stakey Card')
+  @ApiTags(SwaggerSteakeyConfigEnum.TAG_CARD)
   @ApiSecurity('b2crypto-key')
   @ApiBearerAuth('bearerToken')
   @UseGuards(ApiKeyAuthGuard)
@@ -495,7 +532,7 @@ export class CardServiceController extends AccountServiceController {
   }
 
   @Patch('visible/:cardId')
-  @ApiTags('Stakey Card')
+  @ApiTags(SwaggerSteakeyConfigEnum.TAG_CARD)
   @ApiSecurity('b2crypto-key')
   @ApiBearerAuth('bearerToken')
   @UseGuards(ApiKeyAuthGuard)
@@ -578,6 +615,8 @@ export class CardServiceController extends AccountServiceController {
     user: User,
     account?: AccountDocument,
   ) {
+    // TODO[hender - 2024/08/12] Check the Surname, City, Region to remove special characters
+    // TODO[hender - 2024/08/12] Check the Surname, City, Region to remove numbers
     const rtaUserCard = await cardIntegration.getUser({
       email: user.email,
     });
@@ -594,6 +633,12 @@ export class CardServiceController extends AccountServiceController {
         account?.personalData?.location.address ??
           user.personalData.location.address,
       );
+      const country = countries.filter(
+        (country) =>
+          country.alpha2 ===
+          (account?.country ?? user.personalData.nationality),
+      )[0].alpha3;
+      legalAddress.country = country;
       const userCard = await cardIntegration.createUser({
         name: account?.personalData?.name ?? user.personalData.name,
         surname: account?.personalData?.lastName ?? user.personalData.lastName,
@@ -605,17 +650,17 @@ export class CardServiceController extends AccountServiceController {
         birthdate: `${birthDate.getFullYear()}-${CommonService.getNumberDigits(
           birthDate.getMonth() + 1,
           2,
-        )}-${birthDate.getDate()}`,
+        )}-${CommonService.getNumberDigits(birthDate.getDate(), 2)}`,
         gender: account?.personalData?.gender ?? user.personalData.gender,
         email: account?.email ?? user.personalData.email[0] ?? user.email,
         phone:
           account?.telephone ??
           user.personalData.telephones[0]?.phoneNumber ??
           user.personalData.phoneNumber,
-        nationality:
-          account?.personalData?.nationality ?? user.personalData.nationality,
+        nationality: country,
         legal_address: legalAddress,
-        operation_country: account?.country ?? user.personalData.nationality,
+        operation_country: country,
+        zip_code: legalAddress.zip_code,
       } as unknown as UserCardDto);
       const error = userCard['error'];
       if (error) {
@@ -654,13 +699,19 @@ export class CardServiceController extends AccountServiceController {
     if (!address.neighborhood) {
       address.neighborhood = ' ';
     }
+    if (!address.zip_code) {
+      address.zip_code = '05002';
+    }
     address.country = CountryCodeEnum.Colombia;
     /* if (!address.country) {
       // Validate cities
       throw new BadRequestException('Country not found in profile address');
     } */
-    if (address.additional_info) {
-      address.additional_info = null;
+    if (
+      isString(address.additional_info) &&
+      isEmpty(address.additional_info.trim())
+    ) {
+      address.additional_info = ' ';
     }
 
     return address;

@@ -38,6 +38,7 @@ import { CategoryResponseDto } from './dto/category.response.dto';
 import { PspAccountResponseDto } from './dto/psp.account.response.dto';
 import EventsNamesCategoryEnum from './enum/events.names.category.enum';
 import { ApiKeyAuthGuard } from '@auth/auth/guards/api.key.guard';
+import { SwaggerSteakeyConfigEnum } from 'libs/config/enum/swagger.stakey.config.enum';
 
 @ApiTags('CATEGORY')
 @Controller('category')
@@ -131,7 +132,7 @@ export class CategoryServiceController implements GenericServiceController {
   @Get('/country')
   @ApiTags('Affiliate Category')
   @ApiTags('Integration Category')
-  @ApiTags('Stakey List')
+  @ApiTags(SwaggerSteakeyConfigEnum.TAG_LIST)
   @ApiKeyCheck()
   @UseGuards(ApiKeyAuthGuard)
   @ApiSecurity('b2crypto-key')
@@ -157,7 +158,7 @@ export class CategoryServiceController implements GenericServiceController {
   @AllowAnon()
   @ApiTags('Affiliate Category')
   @ApiTags('Integration Category')
-  @ApiTags('Stakey List')
+  @ApiTags(SwaggerSteakeyConfigEnum.TAG_LIST)
   @ApiSecurity('b2crypto-key')
   @ApiKeyCheck()
   @UseGuards(ApiKeyAuthGuard)
@@ -207,7 +208,7 @@ export class CategoryServiceController implements GenericServiceController {
   }
 
   @ApiTags('Integration Category')
-  @ApiTags('Stakey List')
+  @ApiTags(SwaggerSteakeyConfigEnum.TAG_LIST)
   @ApiSecurity('b2crypto-key')
   @ApiKeyCheck()
   @UseGuards(ApiKeyAuthGuard)
@@ -228,7 +229,7 @@ export class CategoryServiceController implements GenericServiceController {
   }
 
   @ApiTags('Integration Category')
-  @ApiTags('Stakey List')
+  @ApiTags(SwaggerSteakeyConfigEnum.TAG_LIST)
   @ApiSecurity('b2crypto-key')
   @ApiKeyCheck()
   @UseGuards(ApiKeyAuthGuard)
@@ -268,7 +269,7 @@ export class CategoryServiceController implements GenericServiceController {
     return this.categoryService.getPspAccount(query);
   }
 
-  @ApiTags('Stakey List')
+  @ApiTags(SwaggerSteakeyConfigEnum.TAG_LIST)
   @ApiKeyCheck()
   @UseGuards(ApiKeyAuthGuard)
   @ApiSecurity('b2crypto-key')
