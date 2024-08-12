@@ -60,6 +60,9 @@ import StatusAccountEnum from '@account/account/enum/status.account.enum';
 import { ApiKeyAuthGuard } from '@auth/auth/guards/api.key.guard';
 import { AddressSchema } from '@person/person/entities/mongoose/address.schema';
 import CountryCodeEnum from '@common/common/enums/country.code.b2crypto.enum';
+import { FiatIntegrationClient } from 'apps/integration-service/src/clients/fiat.integration.client';
+import { AccountEntity } from '@account/account/entities/account.entity';
+import CurrencyCodeB2cryptoEnum from '@common/common/enums/currency-code-b2crypto.enum';
 
 @ApiTags('CARD')
 @Controller('cards')
@@ -78,6 +81,7 @@ export class CardServiceController extends AccountServiceController {
     readonly cardBuilder: BuildersService,
     private readonly integration: IntegrationService,
     private readonly configService: ConfigService,
+    private readonly currencyConversion: FiatIntegrationClient,
   ) {
     super(cardService, cardBuilder);
   }
@@ -92,25 +96,53 @@ export class CardServiceController extends AccountServiceController {
     name: 'b2crypto-key',
     description: 'The apiKey',
   })
-  findAll(@Query() query: QuerySearchAnyDto, @Req() req?: any) {
+  async findAll(@Query() query: QuerySearchAnyDto, @Req() req?: any) {
     query = query ?? {};
     query.where = query.where ?? {};
     query.where.type = TypesAccountEnum.CARD;
     return this.cardService.findAll(query);
   }
+
+  private async swapToCurrencyUser(req: any, account: AccountEntity) {
+    req.user.currency = req.user.currency ?? CurrencyCodeB2cryptoEnum.USD;
+    if (
+      (account.amount === 0 && account.amountCustodial === 0) ||
+      req.user.currency === account.currencyCustodial
+    ) {
+      return account.amountCustodial || account.amount;
+    }
+    try {
+      const amount = await this.currencyConversion.getCurrencyConversion(
+        req.user.currency,
+        account.currencyCustodial,
+        account.amountCustodial || account.amount,
+      );
+      this.cardBuilder.emitUserEventClient(EventsNamesUserEnum.updateOne, {
+        id: req.user.id,
+        amount: amount,
+        currency: req.user.currency,
+      });
+      return amount;
+    } catch (err) {
+      Logger.error(err, 'CardController');
+      return account.amountCustodial || account.amount;
+    }
+  }
+
   @Get('me')
   @ApiTags('Stakey Card')
   @ApiBearerAuth('bearerToken')
-  @ApiHeader({
-    name: 'b2crypto-key',
-    description: 'The apiKey',
-  })
-  findAllMe(@Query() query: QuerySearchAnyDto, @Req() req?: any) {
+  async findAllMe(@Query() query: QuerySearchAnyDto, @Req() req?: any) {
     query = query ?? {};
     query.where = query.where ?? {};
     query.where.type = TypesAccountEnum.CARD;
     query = CommonService.getQueryWithUserId(query, req, 'owner');
-    return this.cardService.findAll(query);
+    const rta = await this.cardService.findAll(query);
+    rta.list.forEach(async (account) => {
+      account.amount = await this.swapToCurrencyUser(req, account);
+      account.currency = req.user.currency ?? CurrencyCodeB2cryptoEnum.USD;
+    });
+    return rta;
   }
 
   @ApiTags('Stakey Card')
