@@ -86,6 +86,7 @@ import EventsNamesCategoryEnum from 'apps/category-service/src/enum/events.names
 import { PomeloProcessEnum } from 'apps/integration-service/src/enums/pomelo.process.enum';
 import TagEnum from '@common/common/enums/TagEnum';
 import { ApiKeyAuthGuard } from '@auth/auth/guards/api.key.guard';
+import { SwaggerSteakeyConfigEnum } from 'libs/config/enum/swagger.stakey.config.enum';
 
 @ApiTags('TRANSFERS')
 @Controller('transfers')
@@ -351,7 +352,7 @@ export class TransferServiceController implements GenericServiceController {
 
   @NoCache()
   @AllowAnon()
-  @ApiTags('Stakey Deposit')
+  @ApiTags(SwaggerSteakeyConfigEnum.TAG_DEPOSIT)
   @ApiBearerAuth('bearerToken')
   @UseGuards(ApiKeyAuthGuard)
   @ApiHeader({

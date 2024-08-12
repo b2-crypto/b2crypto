@@ -25,6 +25,7 @@ import { User } from '@user/user/entities/mongoose/user.schema';
 import { UserServiceService } from 'apps/user-service/src/user-service.service';
 import { AccountServiceController } from './account-service.controller';
 import { AccountServiceService } from './account-service.service';
+import { SwaggerSteakeyConfigEnum } from 'libs/config/enum/swagger.stakey.config.enum';
 
 @ApiTags('E-WALLET')
 @Controller('wallets')
@@ -39,7 +40,7 @@ export class WalletServiceController extends AccountServiceController {
     super(walletService, ewalletBuilder);
   }
 
-  @ApiTags('Stakey Wallet')
+  @ApiTags(SwaggerSteakeyConfigEnum.TAG_WALLET)
   @ApiBearerAuth('bearerToken')
   @ApiSecurity('b2crypto-key')
   @Get('all')
@@ -51,7 +52,7 @@ export class WalletServiceController extends AccountServiceController {
     return this.walletService.findAll(query);
   }
 
-  @ApiTags('Stakey Wallet')
+  @ApiTags(SwaggerSteakeyConfigEnum.TAG_WALLET)
   @ApiBearerAuth('bearerToken')
   @ApiSecurity('b2crypto-key')
   @Get('me')
@@ -63,7 +64,7 @@ export class WalletServiceController extends AccountServiceController {
     return this.walletService.findAll(query);
   }
 
-  @ApiTags('Stakey Wallet')
+  @ApiTags(SwaggerSteakeyConfigEnum.TAG_WALLET)
   @ApiBearerAuth('bearerToken')
   @ApiSecurity('b2crypto-key')
   @Post('create')
@@ -122,7 +123,7 @@ export class WalletServiceController extends AccountServiceController {
   }
 
   @Patch('lock/:walletId')
-  @ApiTags('Stakey Card')
+  @ApiTags(SwaggerSteakeyConfigEnum.TAG_WALLET)
   @ApiSecurity('b2crypto-key')
   @ApiBearerAuth('bearerToken')
   @UseGuards(ApiKeyAuthGuard)
@@ -131,7 +132,7 @@ export class WalletServiceController extends AccountServiceController {
   }
 
   @Patch('unlock/:walletId')
-  @ApiTags('Stakey Card')
+  @ApiTags(SwaggerSteakeyConfigEnum.TAG_WALLET)
   @ApiSecurity('b2crypto-key')
   @ApiBearerAuth('bearerToken')
   @UseGuards(ApiKeyAuthGuard)
@@ -140,7 +141,7 @@ export class WalletServiceController extends AccountServiceController {
   }
 
   @Patch('cancel/:walletId')
-  @ApiTags('Stakey Card')
+  @ApiTags(SwaggerSteakeyConfigEnum.TAG_WALLET)
   @ApiSecurity('b2crypto-key')
   @ApiBearerAuth('bearerToken')
   @UseGuards(ApiKeyAuthGuard)
@@ -149,7 +150,7 @@ export class WalletServiceController extends AccountServiceController {
   }
 
   @Patch('hidden/:walletId')
-  @ApiTags('Stakey Card')
+  @ApiTags(SwaggerSteakeyConfigEnum.TAG_WALLET)
   @ApiSecurity('b2crypto-key')
   @ApiBearerAuth('bearerToken')
   @UseGuards(ApiKeyAuthGuard)
@@ -158,7 +159,7 @@ export class WalletServiceController extends AccountServiceController {
   }
 
   @Patch('visible/:walletId')
-  @ApiTags('Stakey Card')
+  @ApiTags(SwaggerSteakeyConfigEnum.TAG_WALLET)
   @ApiSecurity('b2crypto-key')
   @ApiBearerAuth('bearerToken')
   @UseGuards(ApiKeyAuthGuard)

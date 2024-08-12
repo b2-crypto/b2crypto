@@ -33,6 +33,7 @@ import EventsNamesPersonEnum from './enum/events.names.person.enum';
 import { PersonServiceService } from './person-service.service';
 import { ApiKeyAuthGuard } from '@auth/auth/guards/api.key.guard';
 import { AddressSchema } from '@person/person/entities/mongoose/address.schema';
+import { SwaggerSteakeyConfigEnum } from 'libs/config/enum/swagger.stakey.config.enum';
 
 @ApiTags('PERSON')
 @Controller('persons')
@@ -51,7 +52,7 @@ export class PersonServiceController implements GenericServiceController {
 
   @Get('me')
   @UseGuards(ApiKeyAuthGuard)
-  @ApiTags('Stakey Profile')
+  @ApiTags(SwaggerSteakeyConfigEnum.TAG_PROFILE)
   @ApiBearerAuth('bearerToken')
   @ApiSecurity('b2crypto-key')
   // @CheckPoliciesAbility(new PolicyHandlerPersonRead())
@@ -67,7 +68,7 @@ export class PersonServiceController implements GenericServiceController {
   }
 
   @Post()
-  @ApiTags('Stakey Profile')
+  @ApiTags(SwaggerSteakeyConfigEnum.TAG_PROFILE)
   @ApiBearerAuth('bearerToken')
   @ApiSecurity('b2crypto-key')
   @UseGuards(ApiKeyAuthGuard)
@@ -115,7 +116,7 @@ export class PersonServiceController implements GenericServiceController {
   }
 
   @Patch()
-  @ApiTags('Stakey Profile')
+  @ApiTags(SwaggerSteakeyConfigEnum.TAG_PROFILE)
   @ApiBearerAuth('bearerToken')
   @ApiSecurity('b2crypto-key')
   @UseGuards(ApiKeyAuthGuard)

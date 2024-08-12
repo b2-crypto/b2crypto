@@ -65,6 +65,7 @@ import { UserSignInDto } from '@user/user/dto/user.signin.dto';
 import { SumsubApplicantLevels } from '@integration/integration/identity/generic/domain/sumsub.enum';
 import { NoCache } from '@common/common/decorators/no-cache.decorator';
 import { UserEntity } from '@user/user/entities/user.entity';
+import { SwaggerSteakeyConfigEnum } from 'libs/config/enum/swagger.stakey.config.enum';
 
 @ApiTags('AUTHENTICATION')
 @Controller('auth')
@@ -84,7 +85,7 @@ export class AuthServiceController {
   }
 
   @UseGuards(ApiKeyAuthGuard)
-  @ApiTags('Stakey Security')
+  @ApiTags(SwaggerSteakeyConfigEnum.TAG_SECURITY)
   @ApiBearerAuth('bearerToken')
   @ApiSecurity('b2crypto-key')
   @Post('identity/url')
@@ -114,7 +115,7 @@ export class AuthServiceController {
 
   @AllowAnon()
   @NoCache()
-  @ApiTags('Stakey Security')
+  @ApiTags(SwaggerSteakeyConfigEnum.TAG_SECURITY)
   @ApiParam({
     name: 'userId',
     type: String,
@@ -228,7 +229,7 @@ export class AuthServiceController {
   }
 
   @ApiKeyCheck()
-  @ApiTags('Stakey Security')
+  @ApiTags(SwaggerSteakeyConfigEnum.TAG_SECURITY)
   @ApiSecurity('b2crypto-key')
   @Post('restore-password')
   async restorePassword(@Body() restorePasswordDto: RestorePasswordDto) {
@@ -284,7 +285,7 @@ export class AuthServiceController {
   @ApiKeyCheck()
   @UseGuards(ApiKeyAuthGuard)
   @ApiSecurity('b2crypto-key')
-  @ApiTags('Stakey Security')
+  @ApiTags(SwaggerSteakeyConfigEnum.TAG_SECURITY)
   @Get('otp/:email')
   async getOtp(@Param('email') email: string) {
     await this.generateOtp({ email } as any);
@@ -298,7 +299,7 @@ export class AuthServiceController {
   @ApiKeyCheck()
   @UseGuards(ApiKeyAuthGuard)
   @ApiSecurity('b2crypto-key')
-  @ApiTags('Stakey Security')
+  @ApiTags(SwaggerSteakeyConfigEnum.TAG_SECURITY)
   @Get('otp/:email/:otp')
   async validateOtp(@Param('email') email: string, @Param('otp') otp: string) {
     const otpSended = await this.getOtpGenerated(email);
@@ -330,7 +331,7 @@ export class AuthServiceController {
   @ApiKeyCheck()
   @UseGuards(ApiKeyAuthGuard)
   @ApiSecurity('b2crypto-key')
-  @ApiTags('Stakey Security')
+  @ApiTags(SwaggerSteakeyConfigEnum.TAG_SECURITY)
   /* @ApiResponse({
     status: 201,
     description: 'was searched successfully',
@@ -358,7 +359,7 @@ export class AuthServiceController {
   @UseGuards(ApiKeyAuthGuard)
   @ApiSecurity('b2crypto-key')
   @Post('refresh-token')
-  @ApiTags('Stakey Security')
+  @ApiTags(SwaggerSteakeyConfigEnum.TAG_SECURITY)
   @ApiResponse(ResponseB2Crypto.getResponseSwagger(200))
   @ApiResponse(ResponseB2Crypto.getResponseSwagger(400))
   @ApiResponse(ResponseB2Crypto.getResponseSwagger(403))
@@ -377,7 +378,7 @@ export class AuthServiceController {
   @Post('sign-in')
   @UseGuards(ApiKeyAuthGuard, LocalAuthGuard)
   @ApiSecurity('b2crypto-key')
-  @ApiTags('Stakey Security')
+  @ApiTags(SwaggerSteakeyConfigEnum.TAG_SECURITY)
   @ApiResponse(ResponseB2Crypto.getResponseSwagger(200))
   @ApiResponse(ResponseB2Crypto.getResponseSwagger(400))
   @ApiResponse(ResponseB2Crypto.getResponseSwagger(403))
