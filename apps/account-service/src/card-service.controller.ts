@@ -166,6 +166,16 @@ export class CardServiceController extends AccountServiceController {
     if (!user.personalData) {
       throw new BadRequestException('Need the personal data to continue');
     }
+    const virtualCardPending = await this.cardService.findAll({
+      where: {
+        owner: user._id,
+        accountType: CardTypesAccountEnum.VIRTUAL,
+      },
+    });
+    // TODO[hender - 2024/08/12] Limit virtual card
+    if (virtualCardPending.totalElements === 10) {
+      throw new BadRequestException('Already physical card pending');
+    }
     createDto.owner = user._id;
     createDto.pin =
       createDto.pin ??
@@ -365,6 +375,17 @@ export class CardServiceController extends AccountServiceController {
     }
     if (!user.personalData.location?.address) {
       throw new BadRequestException('Location address not found');
+    }
+    const physicalCardPending = await this.cardService.findAll({
+      where: {
+        owner: user._id,
+        cardConfig: {
+          $exists: false,
+        },
+      },
+    });
+    if (physicalCardPending.totalElements > 0) {
+      throw new BadRequestException('Already physical card pending');
     }
     const cardIntegration = await this.integration.getCardIntegration(
       IntegrationCardEnum.POMELO,
