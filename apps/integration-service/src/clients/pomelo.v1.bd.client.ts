@@ -3,7 +3,7 @@ const { Client } = require('pg');
 
 @Injectable()
 export class V1DBClient {
-  connectionProps = {
+  private connectionProps = {
     user: process.env.V1_DB_USER,
     password: process.env.V1_DB_PWD,
     host: process.env.V1_DB_HOST,
@@ -11,7 +11,7 @@ export class V1DBClient {
     database: process.env.V1_DB_NAME,
   };
 
-  statement = 'SELECT balance FROM cards where partner_card_id = $1';
+  private statement = 'SELECT balance FROM cards where partner_card_id = $1';
 
   async getBalanaceByCard(cardId: string): Promise<any> {
     try {

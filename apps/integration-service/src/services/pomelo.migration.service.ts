@@ -15,6 +15,7 @@ import EventsNamesAccountEnum from 'apps/account-service/src/enum/events.names.a
 import EventsNamesPersonEnum from 'apps/person-service/src/enum/events.names.person.enum';
 import EventsNamesUserEnum from 'apps/user-service/src/enum/events.names.user.enum';
 import { V1DBClient } from '../clients/pomelo.v1.bd.client';
+import EventsNamesTransferEnum from 'apps/transfer-service/src/enum/events.names.transfer.enum';
 
 @Injectable()
 export class PomeloMigrationService {
@@ -53,6 +54,7 @@ export class PomeloMigrationService {
                     const balance = await this.getBalanceByCard(card?.id);
                     if (balance) {
                       await this.setBalanceByCard(card?.id, balance);
+                      this.createTransferRecord(account);
                     }
                   } else {
                     // TODO Log error activity
@@ -68,6 +70,18 @@ export class PomeloMigrationService {
       // TODO Log error activity
       return null;
     }
+  }
+
+  private createTransferRecord(account: any) {
+    this.builder.emitTransferEventClient(
+      EventsNamesTransferEnum.createOneMigration,
+      {
+        integration: 'Pomelo',
+        movement: 'Credit',
+        status: account?.statusText,
+        account: account,
+      },
+    );
   }
 
   private async getBalanceByCard(cardId: string): Promise<any> {
@@ -123,63 +137,65 @@ export class PomeloMigrationService {
   private async migrateCard(pomeloCard: any, person: any): Promise<any> {
     try {
       Logger.log('Migrating Card', PomeloMigrationService.name);
-      let statusText;
-      if (pomeloCard?.status === 'ACTIVE') {
-        statusText = StatusAccountEnum.UNLOCK;
-      } else if (pomeloCard?.status === 'BLOCKED') {
-        statusText = StatusAccountEnum.LOCK;
-      } else {
-        statusText = StatusAccountEnum.CANCEL;
-      }
+      const cardDto = this.buildCardDto(pomeloCard, person);
       const account = await this.builder.getPromiseAccountEventClient(
         EventsNamesAccountEnum.mingrateOne,
-        {
-          name: person?.firstName,
-          type: TypesAccountEnum.CARD,
-          accountType: CardTypesAccountEnum[pomeloCard.card_type],
-          firstName: person?.firstName ?? person?.name,
-          lastName: person?.lastName,
-          docId: person?.numDocId,
-          address: person?.location?.address,
-          email: person?.email[0],
-          telephone: person?.phoneNumber,
-          description: pomeloCard?.affinity_group_name,
-          accountId: pomeloCard?.id,
-          owner: person?.user?.id,
-          statusText,
-          cardConfig: {
-            id: pomeloCard?.id,
-            user_id: pomeloCard?.user_id,
-            affinity_group_id: pomeloCard?.affinity_group_id,
-            card_type: pomeloCard?.card_type,
-            status: pomeloCard?.status,
-            start_date: pomeloCard?.start_date,
-            last_four: pomeloCard?.last_four,
-            provider: pomeloCard?.provider,
-            product_type: pomeloCard?.product_type,
-            address: {
-              street_name: person?.location?.address?.street_name,
-              street_number: person?.location?.address?.street_number,
-              floor: person?.location?.address?.floor ?? '',
-              apartment: person?.location?.address?.apartment ?? '',
-              city: person?.location?.address?.city,
-              region: person?.location?.address?.region,
-              country: CountryCodeEnum.Colombia,
-              zip_code: person?.location?.address?.zip_code,
-              neighborhood: person?.location?.address?.neighborhood,
-            },
-          },
-        },
+        cardDto,
       );
-      if (!account) {
-        // TODO Log error activity
-      }
       return account;
     } catch (error) {
       Logger.error(error, PomeloMigrationService.name);
       // TODO Log error activity
       return null;
     }
+  }
+
+  private buildCardDto(pomeloCard: any, person: any) {
+    let statusText: string;
+    if (pomeloCard?.status === 'ACTIVE') {
+      statusText = StatusAccountEnum.UNLOCK;
+    } else if (pomeloCard?.status === 'BLOCKED') {
+      statusText = StatusAccountEnum.LOCK;
+    } else {
+      statusText = StatusAccountEnum.CANCEL;
+    }
+    return {
+      name: person?.firstName,
+      type: TypesAccountEnum.CARD,
+      accountType: CardTypesAccountEnum[pomeloCard.card_type],
+      firstName: person?.firstName ?? person?.name,
+      lastName: person?.lastName,
+      docId: person?.numDocId,
+      address: person?.location?.address,
+      email: person?.email[0],
+      telephone: person?.phoneNumber,
+      description: pomeloCard?.affinity_group_name,
+      accountId: pomeloCard?.id,
+      owner: person?.user,
+      statusText,
+      cardConfig: {
+        id: pomeloCard?.id,
+        user_id: pomeloCard?.user_id,
+        affinity_group_id: pomeloCard?.affinity_group_id,
+        card_type: pomeloCard?.card_type,
+        status: pomeloCard?.status,
+        start_date: pomeloCard?.start_date,
+        last_four: pomeloCard?.last_four,
+        provider: pomeloCard?.provider,
+        product_type: pomeloCard?.product_type,
+        address: {
+          street_name: person?.location?.address?.street_name,
+          street_number: person?.location?.address?.street_number,
+          floor: person?.location?.address?.floor ?? '',
+          apartment: person?.location?.address?.apartment ?? '',
+          city: person?.location?.address?.city,
+          region: person?.location?.address?.region,
+          country: CountryCodeEnum.Colombia,
+          zip_code: person?.location?.address?.zip_code,
+          neighborhood: person?.location?.address?.neighborhood,
+        },
+      },
+    };
   }
 
   private async migrateUser(pomeloUser: any): Promise<any> {
@@ -190,12 +206,10 @@ export class PomeloMigrationService {
         {
           name: pomeloUser.name,
           email: pomeloUser.email,
+          password: '123Abc',
           slugEmail: CommonService.getSlug(pomeloUser.email),
         },
       );
-      if (!user) {
-        // TODO Log error activity
-      }
       return user;
     } catch (error) {
       Logger.error(error, PomeloMigrationService.name);
@@ -213,8 +227,8 @@ export class PomeloMigrationService {
           typeDocId: DocIdTypeEnum[pomeloUser.identification_type],
           numDocId: pomeloUser.identification_value,
           firstName: pomeloUser.name,
-          name: pomeloUser.name,
-          lastName: pomeloUser.surname,
+          name: `${pomeloUser.name} ${pomeloUser.surname}`,
+          lastName: `${pomeloUser.name} ${pomeloUser.surname}`,
           gender: GenderEnum[pomeloUser.gender],
           nationality: CountryCodeEnum.Colombia,
           birth: pomeloUser.birthdate,
@@ -238,9 +252,6 @@ export class PomeloMigrationService {
           user,
         },
       );
-      if (!person) {
-        // TODO Log error activity
-      }
       return person;
     } catch (error) {
       Logger.error(error, PomeloMigrationService.name);

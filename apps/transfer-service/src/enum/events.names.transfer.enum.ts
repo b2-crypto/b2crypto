@@ -7,6 +7,7 @@ enum EventsNamesTransferEnum {
   createMany = 'TRANSFER.CREATE.MANY',
   createOne = 'TRANSFER.CREATE.ONE',
   createOneWebhok = 'TRANSFER.CREATE.ONE.WEBHOOK',
+  createOneMigration = 'TRANSFER.CREATE.ONE.MIGRATION',
   updateMany = 'TRANSFER.UPDATE.MANY',
   updateOne = 'TRANSFER.UPDATE.ONE',
   findAll = 'TRANSFER.FIND.ALL',
