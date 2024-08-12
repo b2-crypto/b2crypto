@@ -580,7 +580,7 @@ export class CardServiceController extends AccountServiceController {
       await this.cardService.customUpdateOne({
         id: card._id,
         $inc: {
-          amount: data.amount,
+          amountCustodial: data.amount,
         },
       });
     } catch (error) {

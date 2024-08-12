@@ -16,6 +16,7 @@ import EventsNamesPersonEnum from 'apps/person-service/src/enum/events.names.per
 import EventsNamesUserEnum from 'apps/user-service/src/enum/events.names.user.enum';
 import { V1DBClient } from '../clients/pomelo.v1.bd.client';
 import EventsNamesTransferEnum from 'apps/transfer-service/src/enum/events.names.transfer.enum';
+import CurrencyCodeB2cryptoEnum from '@common/common/enums/currency-code-b2crypto.enum';
 
 @Injectable()
 export class PomeloMigrationService {
@@ -54,7 +55,7 @@ export class PomeloMigrationService {
                     const balance = await this.getBalanceByCard(card?.id);
                     if (balance) {
                       await this.setBalanceByCard(card?.id, balance);
-                      this.createTransferRecord(account);
+                      //this.createTransferRecord(account);
                     }
                   } else {
                     // TODO Log error activity
@@ -173,6 +174,8 @@ export class PomeloMigrationService {
       accountId: pomeloCard?.id,
       owner: person?.user,
       statusText,
+      amountCustodial: 0,
+      currencyCustodial: CurrencyCodeB2cryptoEnum.USD.toString(),
       cardConfig: {
         id: pomeloCard?.id,
         user_id: pomeloCard?.user_id,
