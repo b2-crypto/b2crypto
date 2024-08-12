@@ -16,6 +16,7 @@ import * as mongoose from 'mongoose';
 import { Document, ObjectId } from 'mongoose';
 import { Card, CardSchema } from './card.schema';
 import { UserCard, UserCardSchema } from './user-card.schema';
+import CurrencyCodeB2cryptoEnum from '@common/common/enums/currency-code-b2crypto.enum';
 
 export type AccountDocument = Account & Document;
 
@@ -88,8 +89,42 @@ export class Account extends AccountEntity {
   @Prop({ default: 0 })
   amount: number;
 
+  @Prop({
+    type: String,
+    default: CurrencyCodeB2cryptoEnum.COP,
+    enum: CurrencyCodeB2cryptoEnum,
+  })
+  currency: CurrencyCodeB2cryptoEnum;
+
+  @Prop({ default: 0 })
+  amountCustodial: number;
+
+  @Prop({
+    type: String,
+    default: CurrencyCodeB2cryptoEnum.COP,
+    enum: CurrencyCodeB2cryptoEnum,
+  })
+  currencyCustodial: CurrencyCodeB2cryptoEnum;
+
   @Prop({ default: 0 })
   amountBlocked: number;
+
+  @Prop({
+    type: String,
+    default: CurrencyCodeB2cryptoEnum.COP,
+    enum: CurrencyCodeB2cryptoEnum,
+  })
+  currencyBlocked: CurrencyCodeB2cryptoEnum;
+
+  @Prop({ default: 0 })
+  amountBlockedCustodial: number;
+
+  @Prop({
+    type: String,
+    default: CurrencyCodeB2cryptoEnum.COP,
+    enum: CurrencyCodeB2cryptoEnum,
+  })
+  currencyBlockedCustodial: CurrencyCodeB2cryptoEnum;
 
   @Prop()
   showToOwner: boolean;
