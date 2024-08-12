@@ -256,8 +256,9 @@ export class AccountCreateDto extends CreateAnyDto implements AccountInterface {
   totalTransfer: number;
   @IsEmpty()
   quantityTransfer: number;
-  @IsEmpty()
-  showToOwner: boolean;
+  @IsOptional()
+  @IsBoolean()
+  showToOwner = true;
   @IsEmpty()
   statusText: StatusAccountEnum;
   @IsEmpty()

@@ -1,5 +1,10 @@
 import { BadRequestException, Injectable, Logger } from '@nestjs/common';
-import { isDateString, isEmail, isPhoneNumber } from 'class-validator';
+import {
+  isBoolean,
+  isDateString,
+  isEmail,
+  isPhoneNumber,
+} from 'class-validator';
 import CountryCodeEnum from '@common/common/enums/country.code.b2crypto.enum';
 import { CountryCode } from 'libphonenumber-js';
 import * as bcrypt from 'bcrypt';
@@ -359,6 +364,9 @@ export class CommonService {
     query = query ?? {};
     query.where = query.where ?? {};
     query.where[attrName] = userId;
+    query.where.showToOwner = isBoolean(query.where.showToOwner)
+      ? query.where.showToOwner
+      : true;
     return query;
   }
 }
