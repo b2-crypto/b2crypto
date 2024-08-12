@@ -126,7 +126,7 @@ export class Account extends AccountEntity {
   })
   currencyBlockedCustodial: CurrencyCodeB2cryptoEnum;
 
-  @Prop()
+  @Prop({ default: true })
   showToOwner: boolean;
 
   @Prop({
