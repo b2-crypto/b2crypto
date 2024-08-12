@@ -10,6 +10,7 @@ import { UserInterface } from '@user/user/entities/user.interface';
 import { ObjectId } from 'mongodb';
 import StatusAccountEnum from '../enum/status.account.enum';
 import TypesAccountEnum from '../enum/types.account.enum';
+import CurrencyCodeB2cryptoEnum from '@common/common/enums/currency-code-b2crypto.enum';
 
 export interface AccountInterface {
   _id?: ObjectId;
@@ -50,8 +51,14 @@ export interface AccountInterface {
   responseCreation?: any;
   responseShipping?: any;
   prevAccount?: AccountInterface;
-  amount?: number;
-  amountBlocked?: number;
+  amount: number;
+  currency: CurrencyCodeB2cryptoEnum;
+  amountCustodial: number;
+  currencyCustodial: CurrencyCodeB2cryptoEnum;
+  amountBlocked: number;
+  currencyBlocked: CurrencyCodeB2cryptoEnum;
+  amountBlockedCustodial: number;
+  currencyBlockedCustodial: CurrencyCodeB2cryptoEnum;
 }
 
 export const AccountPropertiesRelations = [

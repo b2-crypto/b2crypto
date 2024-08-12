@@ -15,7 +15,7 @@ import { Module } from '@nestjs/common';
 import { UserModule } from '@user/user';
 import { AccountServiceService } from 'apps/account-service/src/account-service.service';
 import { UserServiceService } from 'apps/user-service/src/user-service.service';
-import { FiatIntegrationClient } from './clients/pomelo.fiat.integration.client';
+import { FiatIntegrationClient } from './clients/fiat.integration.client';
 import { IntegrationServiceService } from './integration-service.service';
 import { PomeloIntegrationServiceController } from './pomelo.integration-service.controller';
 import { PomeloSensitiveInfoController } from './pomelo.sensitive-info.controller';

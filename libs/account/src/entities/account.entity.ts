@@ -13,6 +13,7 @@ import { UserEntity } from '@user/user/entities/user.entity';
 import { ObjectId } from 'mongodb';
 import StatusAccountEnum from '../enum/status.account.enum';
 import TypesAccountEnum from '../enum/types.account.enum';
+import CurrencyCodeB2cryptoEnum from '@common/common/enums/currency-code-b2crypto.enum';
 
 export class AccountEntity implements AccountInterface {
   _id?: ObjectId;
@@ -171,18 +172,51 @@ export class AccountEntity implements AccountInterface {
   })
   prevAccount: AccountEntity;
   @ApiProperty({
-    type: AccountEntity,
-    description: 'Amount available',
+    type: Number,
+    description: 'Amount available in user currency',
   })
   amount: number;
   @ApiProperty({
-    type: AccountEntity,
-    description: 'Currency available',
+    type: String,
+    enum: CurrencyCodeB2cryptoEnum,
+    enumName: 'CurrencyList',
+    description: 'Currency user',
   })
-  currency: number;
+  currency: CurrencyCodeB2cryptoEnum;
+  @ApiProperty({
+    type: Number,
+    description: 'Amount available in user currency',
+  })
+  amountCustodial: number;
+  @ApiProperty({
+    type: String,
+    enum: CurrencyCodeB2cryptoEnum,
+    enumName: 'CurrencyList',
+    description: 'Currency user',
+  })
+  currencyCustodial: CurrencyCodeB2cryptoEnum;
   @ApiProperty({
     type: AccountEntity,
-    description: 'Amount blocked',
+    description: 'Amount blocked in user currency',
   })
   amountBlocked: number;
+  @ApiProperty({
+    type: String,
+    enum: CurrencyCodeB2cryptoEnum,
+    enumName: 'CurrencyList',
+    description: 'Currency of user amount blocked',
+  })
+  currencyBlocked: CurrencyCodeB2cryptoEnum;
+  @ApiProperty({
+    type: AccountEntity,
+    description: 'Amount blocked in custodial currency',
+  })
+  amountBlockedCustodial: number;
+  @ApiProperty({
+    type: String,
+    enum: CurrencyCodeB2cryptoEnum,
+    enumName: 'CurrencyList',
+    description: 'Currency of custodial amount blocked',
+  })
+  currencyBlockedCustodial: CurrencyCodeB2cryptoEnum;
 }

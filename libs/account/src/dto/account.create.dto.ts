@@ -23,6 +23,7 @@ import { ObjectId } from 'mongodb';
 import { AccountInterface } from '../entities/account.interface';
 import TypesAccountEnum from '../enum/types.account.enum';
 import StatusAccountEnum from '../enum/status.account.enum';
+import CurrencyCodeB2cryptoEnum from '@common/common/enums/currency-code-b2crypto.enum';
 
 export class AccountCreateDto extends CreateAnyDto implements AccountInterface {
   _id?: ObjectId;
@@ -265,4 +266,22 @@ export class AccountCreateDto extends CreateAnyDto implements AccountInterface {
   createdAt: Date;
   @IsEmpty()
   updatedAt: Date;
+  @IsOptional()
+  prevAccount?: AccountInterface;
+  @IsEmpty()
+  amount: number;
+  @IsEmpty()
+  currency: CurrencyCodeB2cryptoEnum;
+  @IsEmpty()
+  amountCustodial: number;
+  @IsEmpty()
+  currencyCustodial: CurrencyCodeB2cryptoEnum;
+  @IsEmpty()
+  amountBlocked: number;
+  @IsEmpty()
+  currencyBlocked: CurrencyCodeB2cryptoEnum;
+  @IsEmpty()
+  amountBlockedCustodial: number;
+  @IsEmpty()
+  currencyBlockedCustodial: CurrencyCodeB2cryptoEnum;
 }

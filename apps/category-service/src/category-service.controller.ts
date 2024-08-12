@@ -157,8 +157,10 @@ export class CategoryServiceController implements GenericServiceController {
   @AllowAnon()
   @ApiTags('Affiliate Category')
   @ApiTags('Integration Category')
+  @ApiTags('Stakey List')
+  @ApiSecurity('b2crypto-key')
   @ApiKeyCheck()
-  @UseGuards(ApiKeyAffiliateAuthGuard)
+  @UseGuards(ApiKeyAuthGuard)
   @ApiHeader({
     name: 'b2crypto-affiliate-key',
     description: 'The affiliate secret key',
@@ -204,15 +206,12 @@ export class CategoryServiceController implements GenericServiceController {
     return this.categoryListByType(query, TagEnum.REFERRAL_TYPE);
   }
 
-  @AllowAnon()
   @ApiTags('Integration Category')
+  @ApiTags('Stakey List')
+  @ApiSecurity('b2crypto-key')
   @ApiKeyCheck()
-  @UseGuards(ApiKeyAffiliateAuthGuard)
-  @ApiHeader({
-    name: 'b2crypto-affiliate-key',
-    description: 'The affiliate secret key',
-  })
-  @Get('/type-transaction')
+  @UseGuards(ApiKeyAuthGuard)
+  @Get('/transaction-type')
   @ApiResponse({
     status: 200,
     description: 'List of Monetary transaction',
@@ -227,14 +226,32 @@ export class CategoryServiceController implements GenericServiceController {
   ): Promise<ResponsePaginator<CategoryResponseDto> | string[]> {
     return this.categoryListByType(query, TagEnum.MONETARY_TRANSACTION_TYPE);
   }
-  @AllowAnon()
+
+  @ApiTags('Integration Category')
+  @ApiTags('Stakey List')
+  @ApiSecurity('b2crypto-key')
+  @ApiKeyCheck()
+  @UseGuards(ApiKeyAuthGuard)
+  @Get('/operation-type')
+  @ApiResponse({
+    status: 200,
+    description: 'List of Monetary transaction',
+    type: ResponsePaginator<CategoryEntity>,
+  })
+  @ApiResponse(ResponseB2Crypto.getResponseSwagger(400))
+  @ApiResponse(ResponseB2Crypto.getResponseSwagger(403))
+  @ApiResponse(ResponseB2Crypto.getResponseSwagger(404))
+  @ApiResponse(ResponseB2Crypto.getResponseSwagger(500))
+  async MonetaryOperationList(
+    @Query() query: QuerySearchAnyDto,
+  ): Promise<ResponsePaginator<CategoryResponseDto> | string[]> {
+    return this.categoryListByType(query, TagEnum.MONETARY_OPERATION_TYPE);
+  }
+
   @ApiTags('Integration Category')
   @ApiKeyCheck()
   @UseGuards(ApiKeyAffiliateAuthGuard)
-  @ApiHeader({
-    name: 'b2crypto-affiliate-key',
-    description: 'The affiliate secret key',
-  })
+  @ApiSecurity('b2crypto-key')
   @Get('psp-account')
   @ApiResponse({
     status: 200,
@@ -251,13 +268,10 @@ export class CategoryServiceController implements GenericServiceController {
     return this.categoryService.getPspAccount(query);
   }
 
-  @AllowAnon()
+  @ApiTags('Stakey List')
   @ApiKeyCheck()
-  @UseGuards(ApiKeyAffiliateAuthGuard)
-  @ApiHeader({
-    name: 'b2crypto-affiliate-key',
-    description: 'The affiliate secret key',
-  })
+  @UseGuards(ApiKeyAuthGuard)
+  @ApiSecurity('b2crypto-key')
   @Get('/doc-type')
   async docIdTypeList(@Query() query: QuerySearchAnyDto) {
     return this.categoryListByType(query, 'doc_type');
