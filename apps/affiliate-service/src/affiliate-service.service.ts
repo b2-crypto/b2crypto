@@ -63,7 +63,9 @@ export class AffiliateServiceService {
       idBU: affiliate.brand,
       email: affiliate.personalData.email,
       firstName: affiliate.personalData.name,
-      phone: affiliate.personalData.telephone,
+      phone:
+        affiliate.personalData.telephones[0]?.phoneNumber ??
+        affiliate.personalData.phoneNumber,
       lastName: affiliate.personalData.lastName,
       country: affiliate.personalData.location.country,
     };
