@@ -174,7 +174,7 @@ export class CardServiceController extends AccountServiceController {
     });
     // TODO[hender - 2024/08/12] Limit virtual card
     if (virtualCardPending.totalElements === 10) {
-      throw new BadRequestException('Already physical card pending');
+      throw new BadRequestException('Already have 10 virtual cards');
     }
     createDto.owner = user._id;
     createDto.pin =
