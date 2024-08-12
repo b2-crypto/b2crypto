@@ -21,7 +21,8 @@ export interface PersonInterface {
   searchText: string;
   lastName: string;
   email: string[];
-  telephone: TelephoneModel[];
+  telephones: TelephoneModel[];
+  phoneNumber: string;
   numDocId: string;
   typeDocId: DocIdTypeEnum;
   location: LocationModel;
@@ -57,7 +58,7 @@ export const PersonPropertiesBasic = [
   'searchText',
   'lastName',
   'email',
-  'telephone',
+  'telephones',
   'numDocId',
   'typeDocId',
   'location',

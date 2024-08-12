@@ -382,8 +382,8 @@ export class CardServiceController extends AccountServiceController {
         street_number: ' ',
         city: user.personalData.location.address.city,
         region: user.personalData.location.address.region,
-        neighborhood: user.personalData.location.address.neighborhood,
         country: user.personalData.location.address.country,
+        neighborhood: user.personalData.location.address.neighborhood,
         apartment: user.personalData.location.address.apartment,
       },
       receiver: {
@@ -391,7 +391,9 @@ export class CardServiceController extends AccountServiceController {
         email: user.email,
         document_type: user.personalData.typeDocId,
         document_number: user.personalData.numDocId,
-        telephone_number: user.personalData.telephone[0].phoneNumber,
+        telephone_number:
+          user.personalData.telephones[0]?.phoneNumber ??
+          user.personalData.phoneNumber,
       },
     });
     if (rtaShippingCard.data.id) {
@@ -559,7 +561,10 @@ export class CardServiceController extends AccountServiceController {
         )}-${birthDate.getDate()}`,
         gender: account?.personalData?.gender ?? user.personalData.gender,
         email: account?.email ?? user.personalData.email[0] ?? user.email,
-        phone: account?.telephone ?? user.personalData.telephone[0],
+        phone:
+          account?.telephone ??
+          user.personalData.telephones[0]?.phoneNumber ??
+          user.personalData.phoneNumber,
         nationality:
           account?.personalData?.nationality ?? user.personalData.nationality,
         legal_address: legalAddress,
