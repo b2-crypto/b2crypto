@@ -1,6 +1,8 @@
 import { WalletDepositCreateDto } from '@account/account/dto/wallet-deposit.create.dto';
 import { WalletCreateDto } from '@account/account/dto/wallet.create.dto';
+import StatusAccountEnum from '@account/account/enum/status.account.enum';
 import TypesAccountEnum from '@account/account/enum/types.account.enum';
+import { ApiKeyAuthGuard } from '@auth/auth/guards/api.key.guard';
 import { BuildersService } from '@builder/builders';
 import { CommonService } from '@common/common';
 import { QuerySearchAnyDto } from '@common/common/models/query_search-any.dto';
@@ -12,9 +14,11 @@ import {
   Get,
   Inject,
   Param,
+  Patch,
   Post,
   Query,
   Req,
+  UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiSecurity, ApiTags } from '@nestjs/swagger';
 import { User } from '@user/user/entities/mongoose/user.schema';
@@ -115,6 +119,51 @@ export class WalletServiceController extends AccountServiceController {
         amount: createDto.amount,
       },
     });
+  }
+
+  @Patch('lock/:walletId')
+  @ApiTags('Stakey Card')
+  @ApiSecurity('b2crypto-key')
+  @ApiBearerAuth('bearerToken')
+  @UseGuards(ApiKeyAuthGuard)
+  async blockedOneById(@Param('walletId') id: string) {
+    return this.updateStatusAccount(id, StatusAccountEnum.LOCK);
+  }
+
+  @Patch('unlock/:walletId')
+  @ApiTags('Stakey Card')
+  @ApiSecurity('b2crypto-key')
+  @ApiBearerAuth('bearerToken')
+  @UseGuards(ApiKeyAuthGuard)
+  async unblockedOneById(@Param('walletId') id: string) {
+    return this.updateStatusAccount(id, StatusAccountEnum.UNLOCK);
+  }
+
+  @Patch('cancel/:walletId')
+  @ApiTags('Stakey Card')
+  @ApiSecurity('b2crypto-key')
+  @ApiBearerAuth('bearerToken')
+  @UseGuards(ApiKeyAuthGuard)
+  async cancelOneById(@Param('walletId') id: string) {
+    return this.updateStatusAccount(id, StatusAccountEnum.CANCEL);
+  }
+
+  @Patch('hidden/:walletId')
+  @ApiTags('Stakey Card')
+  @ApiSecurity('b2crypto-key')
+  @ApiBearerAuth('bearerToken')
+  @UseGuards(ApiKeyAuthGuard)
+  async disableOneById(@Param('walletId') id: string) {
+    return this.toggleVisibleToOwner(id, false);
+  }
+
+  @Patch('visible/:walletId')
+  @ApiTags('Stakey Card')
+  @ApiSecurity('b2crypto-key')
+  @ApiBearerAuth('bearerToken')
+  @UseGuards(ApiKeyAuthGuard)
+  async enableOneById(@Param('walletId') id: string) {
+    return this.toggleVisibleToOwner(id, true);
   }
 
   @Delete(':walletID')
