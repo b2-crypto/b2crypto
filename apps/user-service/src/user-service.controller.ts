@@ -41,6 +41,7 @@ import { UserEntity } from '@user/user/entities/user.entity';
 import { ObjectId } from 'mongodb';
 import EventsNamesUserEnum from './enum/events.names.user.enum';
 import { UserServiceService } from './user-service.service';
+import { SwaggerSteakeyConfigEnum } from 'libs/config/enum/swagger.stakey.config.enum';
 
 @ApiTags('USER')
 @Controller('users')
@@ -61,7 +62,7 @@ export class UserServiceController implements GenericServiceController {
   }
 
   @ApiKeyCheck()
-  @ApiTags('Stakey Security')
+  @ApiTags(SwaggerSteakeyConfigEnum.TAG_SECURITY)
   @ApiSecurity('b2crypto-key')
   @Get('email/:userEmail')
   // @CheckPoliciesAbility(new PolicyHandlerUserRead())
