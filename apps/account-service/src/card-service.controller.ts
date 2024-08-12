@@ -437,6 +437,7 @@ export class CardServiceController extends AccountServiceController {
     });
     if (rtaShippingCard.data.id) {
       const account = await this.cardService.createOne({
+        type: TypesAccountEnum.CARD,
         accountType: CardTypesAccountEnum.PHYSICAL,
         responseShipping: rtaShippingCard.data,
         address: rtaShippingCard.data.address as any,
