@@ -593,11 +593,8 @@ export class CardServiceController extends AccountServiceController {
     if (!address.street_name) {
       throw new BadRequestException('Street name not found in profile address');
     }
-    if (!address.street_number) {
+    if (address.street_number) {
       address.street_number = ' ';
-      throw new BadRequestException(
-        'Street number not found in profile address',
-      );
     }
     if (!address.city) {
       // Validate cities
@@ -607,22 +604,16 @@ export class CardServiceController extends AccountServiceController {
       // Validate regions
       throw new BadRequestException('Region not found in profile address');
     }
-    if (!address.zip_code) {
-      throw new BadRequestException('Zip code not found in profile address');
-    }
     if (!address.neighborhood) {
       address.neighborhood = ' ';
-      throw new BadRequestException(
-        'Neighborhood not found in profile address',
-      );
     }
     address.country = CountryCodeEnum.Colombia;
     /* if (!address.country) {
       // Validate cities
       throw new BadRequestException('Country not found in profile address');
     } */
-    if (!address.additional_info) {
-      address.additional_info = ' ';
+    if (address.additional_info) {
+      address.additional_info = null;
     }
 
     return address;
