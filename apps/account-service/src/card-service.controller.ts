@@ -22,6 +22,7 @@ import {
   Logger,
   NotFoundException,
   Param,
+  Patch,
   Post,
   Query,
   Req,
@@ -162,7 +163,7 @@ export class CardServiceController extends AccountServiceController {
     if (!user.personalData) {
       throw new BadRequestException('Need the personal data to continue');
     }
-    createDto.owner = user.id;
+    createDto.owner = user._id;
     createDto.pin =
       createDto.pin ??
       parseInt(
@@ -455,6 +456,51 @@ export class CardServiceController extends AccountServiceController {
         },
       }),
     ]).then((list) => list[0]);
+  }
+
+  @Patch('lock/:cardId')
+  @ApiTags('Stakey Card')
+  @ApiSecurity('b2crypto-key')
+  @ApiBearerAuth('bearerToken')
+  @UseGuards(ApiKeyAuthGuard)
+  async blockedOneById(@Param('cardId') id: string) {
+    return this.updateStatusAccount(id, StatusAccountEnum.LOCK);
+  }
+
+  @Patch('unlock/:cardId')
+  @ApiTags('Stakey Card')
+  @ApiSecurity('b2crypto-key')
+  @ApiBearerAuth('bearerToken')
+  @UseGuards(ApiKeyAuthGuard)
+  async unblockedOneById(@Param('cardId') id: string) {
+    return this.updateStatusAccount(id, StatusAccountEnum.UNLOCK);
+  }
+
+  @Patch('cancel/:cardId')
+  @ApiTags('Stakey Card')
+  @ApiSecurity('b2crypto-key')
+  @ApiBearerAuth('bearerToken')
+  @UseGuards(ApiKeyAuthGuard)
+  async cancelOneById(@Param('cardId') id: string) {
+    return this.updateStatusAccount(id, StatusAccountEnum.CANCEL);
+  }
+
+  @Patch('hidden/:cardId')
+  @ApiTags('Stakey Card')
+  @ApiSecurity('b2crypto-key')
+  @ApiBearerAuth('bearerToken')
+  @UseGuards(ApiKeyAuthGuard)
+  async disableOneById(@Param('cardId') id: string) {
+    return this.toggleVisibleToOwner(id, false);
+  }
+
+  @Patch('visible/:cardId')
+  @ApiTags('Stakey Card')
+  @ApiSecurity('b2crypto-key')
+  @ApiBearerAuth('bearerToken')
+  @UseGuards(ApiKeyAuthGuard)
+  async enableOneById(@Param('cardId') id: string) {
+    return this.toggleVisibleToOwner(id, true);
   }
 
   @Delete(':cardID')
