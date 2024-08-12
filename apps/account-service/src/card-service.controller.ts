@@ -285,7 +285,8 @@ export class CardServiceController extends AccountServiceController {
         email: account.email,
         address: {
           street_name: user.personalData.location.address.street_name,
-          street_number: user.personalData.location.address.street_number,
+          street_number:
+            user.personalData.location.address.street_number ?? ' ',
           floor: user.personalData.location.address.floor,
           apartment: user.personalData.location.address.apartment,
           city: user.personalData.location.address.city,
