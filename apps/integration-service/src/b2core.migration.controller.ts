@@ -6,20 +6,15 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import csvParser from 'csv-parser';
-import { createReadStream } from 'fs';
+import { B2CoreMigrationService } from './services/b2core.migration.service';
 
 @Controller('b2core-migration')
 export class B2CoreMigrationController {
+  constructor(private readonly migrationService: B2CoreMigrationService) {}
+
   @Post('ignate')
   @UseInterceptors(FileInterceptor('file'))
-  async ignateB2CoreMigration(@UploadedFile() file) {
-    const results = [];
-    createReadStream(file.path)
-      .pipe(csvParser())
-      .on('data', (data) => results.push(data))
-      .on('end', () => {
-        Logger.log(results, B2CoreMigrationController.name);
-      });
+  async ignateB2CoreMigration(@UploadedFile() file: Express.Multer.File) {
+    this.migrationService.startB2CoreMigration(file);
   }
 }

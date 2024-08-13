@@ -21,6 +21,9 @@ enum EventsNamesAccountEnum {
   deleteMany = 'CARD.DELETE.MANY',
   deleteOneById = 'CARD.DELETE.ONE.BY.ID',
 
+  //Wallet
+  migrateOneWallet = 'WALLET.MIGRATE.ONE',
+
   findOneByTpId = 'CARD.FIND.ONE.BY.TP.ID',
   getAffiliatesFromCards = 'CARD.FIND.AFFILIATES',
   addCardFromAffiliate = 'CARD.CREATE.FROM.AFFILIATE',

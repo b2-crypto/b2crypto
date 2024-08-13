@@ -27,6 +27,7 @@ import { SumsubNotificationIntegrationController } from './sumsub.notification.c
 import { MulterModule } from '@nestjs/platform-express';
 import { FileModule } from '@file/file';
 import { B2CoreMigrationController } from './b2core.migration.controller';
+import { B2CoreMigrationService } from './services/b2core.migration.service';
 
 @Module({
   imports: [
@@ -58,6 +59,7 @@ import { B2CoreMigrationController } from './b2core.migration.controller';
     AccountServiceService,
     UserServiceService,
     FiatIntegrationClient,
+    B2CoreMigrationService,
     IntegrationServiceService,
     PomeloIntegrationProcessService,
     PomeloIntegrationShippingService,

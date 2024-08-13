@@ -171,6 +171,18 @@ export class UserServiceController implements GenericServiceController {
   }
 
   @AllowAnon()
+  @MessagePattern(EventsNamesUserEnum.findOneByEmail)
+  async findOneByEmailEvent(@Payload() email: string, @Ctx() ctx: RmqContext) {
+    CommonService.ack(ctx);
+    const users = await this.userService.getAll({
+      where: {
+        email: email,
+      },
+    });
+    return users.list[0];
+  }
+
+  @AllowAnon()
   @MessagePattern(EventsNamesUserEnum.createOne)
   async createOneEvent(
     @Payload() createDto: UserRegisterDto,
