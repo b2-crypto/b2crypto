@@ -27,9 +27,17 @@ import { PomeloMigrationController } from './pomelo.migration.controller';
 import { PomeloMigrationService } from './services/pomelo.migration.service';
 import { V1DBClient } from './clients/pomelo.v1.bd.client';
 import { SumsubNotificationIntegrationController } from './sumsub.notification.controller';
+import { MulterModule } from '@nestjs/platform-express';
+import { FileModule } from '@file/file';
+import { B2CoreMigrationController } from './b2core.migration.controller';
+import { B2CoreMigrationService } from './services/b2core.migration.service';
 
 @Module({
   imports: [
+    MulterModule.register({
+      dest: './migration/files',
+    }),
+    FileModule,
     AuthModule,
     CommonModule,
     AccountModule,
@@ -42,6 +50,7 @@ import { SumsubNotificationIntegrationController } from './sumsub.notification.c
     SumsubNotificationIntegrationController,
     PomeloIntegrationServiceController,
     PomeloSensitiveInfoController,
+    B2CoreMigrationController,
     PomeloShippingController,
     PomeloMigrationController,
   ],
@@ -56,6 +65,7 @@ import { SumsubNotificationIntegrationController } from './sumsub.notification.c
     UserServiceService,
     FiatIntegrationClient,
     PomeloMigrationService,
+    B2CoreMigrationService,
     IntegrationServiceService,
     PomeloIntegrationProcessService,
     PomeloIntegrationShippingService,

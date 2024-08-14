@@ -13,6 +13,7 @@ import {
   Delete,
   Get,
   Inject,
+  Logger,
   Param,
   Patch,
   Post,
@@ -26,6 +27,13 @@ import { UserServiceService } from 'apps/user-service/src/user-service.service';
 import { AccountServiceController } from './account-service.controller';
 import { AccountServiceService } from './account-service.service';
 import { SwaggerSteakeyConfigEnum } from 'libs/config/enum/swagger.stakey.config.enum';
+import {
+  Ctx,
+  MessagePattern,
+  Payload,
+  RmqContext,
+} from '@nestjs/microservices';
+import EventsNamesAccountEnum from './enum/events.names.account.enum';
 
 @ApiTags('E-WALLET')
 @Controller('wallets')
@@ -170,5 +178,29 @@ export class WalletServiceController extends AccountServiceController {
   @Delete(':walletID')
   deleteOneById(@Param('walletID') id: string, req?: any) {
     return this.getAccountService().deleteOneById(id);
+  }
+
+  @MessagePattern(EventsNamesAccountEnum.migrateOneWallet)
+  async migrateWallet(@Ctx() ctx: RmqContext, @Payload() walletToMigrate: any) {
+    try {
+      CommonService.ack(ctx);
+      Logger.log(
+        `Migrating wallet ${walletToMigrate.accountId}`,
+        WalletServiceController.name,
+      );
+      const walletList = await this.walletService.findAll({
+        where: {
+          accountId: walletToMigrate.accountId,
+          type: TypesAccountEnum.WALLET,
+        },
+      });
+      if (!walletList || !walletList.list[0]) {
+        return await this.walletService.createOne(walletToMigrate);
+      } else {
+        return walletList.list[0];
+      }
+    } catch (error) {
+      Logger.error(error, WalletServiceController.name);
+    }
   }
 }
