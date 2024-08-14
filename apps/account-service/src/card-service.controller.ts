@@ -635,11 +635,12 @@ export class CardServiceController extends AccountServiceController {
         account?.personalData?.location.address ??
           user.personalData.location.address,
       );
-      const country = countries.filter(
+      const country = 'COL';
+      /* const country = countries.filter(
         (country) =>
           country.alpha2 ===
           (account?.country ?? user.personalData.nationality),
-      )[0].alpha3;
+      )[0].alpha3; */
       legalAddress.country = country;
       const userCard = await cardIntegration.createUser({
         name: account?.personalData?.name ?? user.personalData.name,
