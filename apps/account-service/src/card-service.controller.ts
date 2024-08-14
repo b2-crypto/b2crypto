@@ -312,7 +312,7 @@ export class CardServiceController extends AccountServiceController {
         email: account.email,
         address: address,
         previous_card_id: account.prevAccount?.cardConfig?.id ?? null,
-        name_on_card: account.name,
+        //name_on_card: account.name,
       });
       const error = card['error'];
       if (error) {

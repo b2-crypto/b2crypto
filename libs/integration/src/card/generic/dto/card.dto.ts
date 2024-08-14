@@ -33,7 +33,7 @@ export class CardDto {
 
   @IsString()
   @IsOptional()
-  name_on_card: string;
+  name_on_card?: string;
 
   @IsString()
   @IsOptional()
