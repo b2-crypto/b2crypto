@@ -10,6 +10,7 @@ import {
   Post,
   Query,
   Req,
+  UseGuards,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -42,6 +43,7 @@ import { ObjectId } from 'mongodb';
 import EventsNamesUserEnum from './enum/events.names.user.enum';
 import { UserServiceService } from './user-service.service';
 import { SwaggerSteakeyConfigEnum } from 'libs/config/enum/swagger.stakey.config.enum';
+import { ApiKeyAuthGuard } from '@auth/auth/guards/api.key.guard';
 
 @ApiTags('USER')
 @Controller('users')
@@ -55,6 +57,10 @@ export class UserServiceController implements GenericServiceController {
   }
 
   @Get('me')
+  @ApiTags(SwaggerSteakeyConfigEnum.TAG_SECURITY)
+  @ApiBearerAuth('bearerToken')
+  @ApiSecurity('b2crypto-key')
+  @UseGuards(ApiKeyAuthGuard)
   // @CheckPoliciesAbility(new PolicyHandlerUserRead())
   async findAllMe(@Req() req, @Query() query: QuerySearchAnyDto) {
     query = CommonService.getQueryWithUserId(query, req, '_id');

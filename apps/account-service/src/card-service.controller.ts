@@ -299,9 +299,10 @@ export class CardServiceController extends AccountServiceController {
         apartment: user.personalData.location.address.apartment,
         city: user.personalData.location.address.city,
         region: user.personalData.location.address.region,
-        country: countries.filter(
+        country: 'COP',
+        /* country: countries.filter(
           (c) => c.alpha2 === user.personalData.nationality,
-        )[0].alpha3,
+        )[0].alpha3, */
         zip_code: user.personalData.location.address.zip_code ?? '110231',
         neighborhood: user.personalData.location.address.neighborhood,
       };
@@ -312,7 +313,7 @@ export class CardServiceController extends AccountServiceController {
         email: account.email,
         address: address,
         previous_card_id: account.prevAccount?.cardConfig?.id ?? null,
-        name_on_card: account.name,
+        //name_on_card: account.name,
       });
       const error = card['error'];
       if (error) {
@@ -437,6 +438,7 @@ export class CardServiceController extends AccountServiceController {
     });
     if (rtaShippingCard.data.id) {
       const account = await this.cardService.createOne({
+        type: TypesAccountEnum.CARD,
         accountType: CardTypesAccountEnum.PHYSICAL,
         responseShipping: rtaShippingCard.data,
         address: rtaShippingCard.data.address as any,
