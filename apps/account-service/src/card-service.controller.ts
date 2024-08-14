@@ -299,9 +299,10 @@ export class CardServiceController extends AccountServiceController {
         apartment: user.personalData.location.address.apartment,
         city: user.personalData.location.address.city,
         region: user.personalData.location.address.region,
-        country: countries.filter(
+        country: 'COP',
+        /* country: countries.filter(
           (c) => c.alpha2 === user.personalData.nationality,
-        )[0].alpha3,
+        )[0].alpha3, */
         zip_code: user.personalData.location.address.zip_code ?? '110231',
         neighborhood: user.personalData.location.address.neighborhood,
       };
