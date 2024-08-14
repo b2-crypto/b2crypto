@@ -7,6 +7,7 @@ enum EventsNamesUserEnum {
   activeTwoFactor = 'activeTwoFactor',
   createMany = 'USER.CREATE.MANY',
   createOne = 'USER.CREATE.ONE',
+  migrateOne = 'USER.MIGRATE.ONE',
   updateMany = 'USER.UPDATE.MANY',
   updateOne = 'USER.UPDATE.ONE',
   findAll = 'USER.FIND.ALL',

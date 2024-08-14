@@ -748,6 +748,69 @@ export class TransferServiceController implements GenericServiceController {
   }
 
   @AllowAnon()
+  @EventPattern(EventsNamesTransferEnum.createOneMigration)
+  async createOneMigration(
+    @Payload() migrationDto: any,
+    @Ctx() ctx: RmqContext,
+  ) {
+    try {
+      CommonService.ack(ctx);
+
+      const crm = await this.builder.getPromiseCrmEventClient(
+        EventsNamesCrmEnum.findOneByName,
+        migrationDto.integration,
+      );
+      if (!crm) {
+        Logger.error(
+          `CRM ${migrationDto.integration} was not found`,
+          'WebhookTransfer',
+        );
+        return;
+      }
+
+      const status = await this.builder.getPromiseStatusEventClient(
+        EventsNamesStatusEnum.findOneByName,
+        migrationDto.status,
+      );
+      if (!status) {
+        Logger.error(
+          `Status ${migrationDto.status} was not found`,
+          'WebhookTransfer',
+        );
+        return;
+      }
+
+      const category = await this.builder.getPromiseCategoryEventClient(
+        EventsNamesCategoryEnum.findOneByNameType,
+        {
+          slug: CommonService.getSlug(migrationDto.movement),
+          type: TagEnum.MONETARY_TRANSACTION_TYPE,
+        },
+      );
+      if (!category) {
+        Logger.error(
+          `Category by slug ${migrationDto.movement} was not found`,
+          'WebhookTransfer',
+        );
+        return;
+      }
+
+      const transferDto: TransferCreateDto = new TransferCreateDto();
+      transferDto.crm = crm;
+      transferDto.status = status;
+      transferDto.typeTransaction = category;
+      transferDto.account = migrationDto?.account;
+      transferDto.userAccount = migrationDto?.account?.owner;
+      transferDto.amount = migrationDto?.account?.amount;
+      transferDto.confirmedAt = new Date();
+
+      await this.transferService.newTransfer(transferDto);
+    } catch (error) {
+      Logger.error(error, 'WebhookTransfer');
+    }
+  }
+
+  @AllowAnon()
   @MessagePattern(EventsNamesTransferEnum.updateOne)
   async updateOneEvent(
     @Payload() updateTransferDto: TransferUpdateDto,

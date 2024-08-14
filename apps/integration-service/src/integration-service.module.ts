@@ -23,6 +23,9 @@ import { PomeloShippingController } from './pomelo.shipping.controller';
 import { PomeloIntegrationProcessService } from './services/pomelo.integration.process.service';
 import { PomeloIntegrationShippingService } from './services/pomelo.integration.shipping.service';
 import { SumsubNotificationIntegrationService } from './services/sumsub.notification.integration.service';
+import { PomeloMigrationController } from './pomelo.migration.controller';
+import { PomeloMigrationService } from './services/pomelo.migration.service';
+import { V1DBClient } from './clients/pomelo.v1.bd.client';
 import { SumsubNotificationIntegrationController } from './sumsub.notification.controller';
 
 @Module({
@@ -36,20 +39,23 @@ import { SumsubNotificationIntegrationController } from './sumsub.notification.c
     HttpModule,
   ],
   controllers: [
+    SumsubNotificationIntegrationController,
     PomeloIntegrationServiceController,
     PomeloSensitiveInfoController,
     PomeloShippingController,
-    SumsubNotificationIntegrationController,
+    PomeloMigrationController,
   ],
   providers: [
     Constants,
     HttpUtils,
+    V1DBClient,
     PomeloCache,
     SignatureUtils,
     PomeloRestClient,
     AccountServiceService,
     UserServiceService,
     FiatIntegrationClient,
+    PomeloMigrationService,
     IntegrationServiceService,
     PomeloIntegrationProcessService,
     PomeloIntegrationShippingService,

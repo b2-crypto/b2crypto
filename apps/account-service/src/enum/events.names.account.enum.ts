@@ -15,6 +15,8 @@ enum EventsNamesAccountEnum {
   updateOne = 'CARD.UPDATE.ONE',
   updateAmount = 'CARD.UPDATE.AMOUNT',
   updateOneByTpId = 'CARD.UPDATE.ONE.BY.TP.ID',
+  setBalanceByCard = 'SET.BALANCE.BY.CARD',
+  mingrateOne = 'CARD.MIGRATE.ONE',
   findAll = 'FILE.CARD.ALL',
   findOneById = 'CARD.FIND.ONE.BY.ID',
   findOneByCardId = 'CARD.FIND.ONE.BY.CARD.ID',
