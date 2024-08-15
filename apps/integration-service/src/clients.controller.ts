@@ -1,4 +1,3 @@
-import { ApiKeyCheck } from '@auth/auth/decorators/api-key-check.decorator';
 import { ApiKeyAuthGuard } from '@auth/auth/guards/api.key.guard';
 import { BuildersService } from '@builder/builders';
 import { CommonService } from '@common/common';
@@ -15,9 +14,7 @@ import {
 } from '@nestjs/common';
 import { SchedulerRegistry } from '@nestjs/schedule';
 import { MaintenanceOnDto } from '@user/user/dto/maintenance.on.dto';
-import EventsNamesLeadEnum from 'apps/lead-service/src/enum/events.names.lead.enum';
 import EventsNamesUserEnum from 'apps/user-service/src/enum/events.names.user.enum';
-import { resolve } from 'dns';
 import { ClientsTaskNamesEnum } from './enums/clients.task.names.enum';
 
 @Controller('clients')
@@ -30,7 +27,6 @@ export class ClientsIntegrationController {
   ) {}
 
   @Get('me')
-  @ApiKeyCheck()
   async getClientData(@Req() req) {
     const clientApi = await this.builder.getPromiseUserEventClient(
       EventsNamesUserEnum.findOneById,
@@ -53,8 +49,6 @@ export class ClientsIntegrationController {
   }
 
   @Put('maintenance-on')
-  @ApiKeyCheck()
-  @UseGuards(ApiKeyAuthGuard)
   async maintenanceOn(
     @Req() req,
     @Body()
@@ -126,8 +120,6 @@ export class ClientsIntegrationController {
   }
 
   @Put('maintenance-off')
-  @ApiKeyCheck()
-  @UseGuards(ApiKeyAuthGuard)
   async maintenanceOff(@Req() req) {
     const clientId = req.clientApi;
     if (!clientId) {
