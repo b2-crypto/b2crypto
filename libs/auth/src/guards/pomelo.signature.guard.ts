@@ -62,11 +62,16 @@ export class SignatureGuard implements CanActivate {
   }
 
   private checkWhitelistedIps(context: ExecutionContext): boolean {
+    if (
+      process.env.POMELO_WHITELISTED_IPS_CHECK ===
+      PomeloEnum.POMELO_WHITELISTED_IPS_CHECK_OFF.toString()
+    ) {
+      return true;
+    }
     const request = context.switchToHttp().getRequest();
-    //Logger.log(JSON.stringify(request?.connection), 'checkWhitelistedIps');
     const caller =
-      ipaddr.process(request?.connection?.remoteAddress).toString() ||
-      request?.connection?.remoteAddress ||
+      request?.headers[PomeloEnum.POMELO_WHITELISTED_HEADER_FORWARDED] ||
+      request?.headers[PomeloEnum.POMELO_WHITELISTED_HEADER_REAL] ||
       '';
     Logger.log(`IpCaller: ${caller}`, 'SignatureGuard');
     const whitelisted = process.env.POMELO_WHITELISTED_IPS;
