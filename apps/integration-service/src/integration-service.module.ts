@@ -24,6 +24,7 @@ import { PomeloIntegrationProcessService } from './services/pomelo.integration.p
 import { PomeloIntegrationShippingService } from './services/pomelo.integration.shipping.service';
 import { SumsubNotificationIntegrationService } from './services/sumsub.notification.integration.service';
 import { SumsubNotificationIntegrationController } from './sumsub.notification.controller';
+import { PomeloIntegrationSFTPService } from './services/pomelo.integration.sftp.service';
 
 @Module({
   imports: [
@@ -51,6 +52,7 @@ import { SumsubNotificationIntegrationController } from './sumsub.notification.c
     UserServiceService,
     FiatIntegrationClient,
     IntegrationServiceService,
+    PomeloIntegrationSFTPService,
     PomeloIntegrationProcessService,
     PomeloIntegrationShippingService,
     SumsubHttpUtils,
