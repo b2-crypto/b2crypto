@@ -220,7 +220,7 @@ export class CardServiceController extends AccountServiceController {
         apartment: user.personalData.location.address.apartment,
         city: user.personalData.location.address.city,
         region: user.personalData.location.address.region,
-        country: 'COP',
+        country: 'COL',
         /* country: countries.filter(
           (c) => c.alpha2 === user.personalData.nationality,
         )[0].alpha3, */

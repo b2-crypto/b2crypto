@@ -34,6 +34,8 @@ import {
   RmqContext,
 } from '@nestjs/microservices';
 import EventsNamesAccountEnum from './enum/events.names.account.enum';
+import EventsNamesTransferEnum from 'apps/transfer-service/src/enum/events.names.transfer.enum';
+import { TransferCreateButtonDto } from 'apps/transfer-service/src/dto/transfer.create.button.dto';
 
 @ApiTags('E-WALLET')
 @Controller('wallets')
@@ -113,21 +115,49 @@ export class WalletServiceController extends AccountServiceController {
     if (!user.personalData) {
       throw new BadRequestException('Need the personal data to continue');
     }
-    if (createDto.amount <= 0) {
-      throw new BadRequestException('The recharge not be 0 or less');
+    if (createDto.amount <= 10) {
+      throw new BadRequestException('The recharge not be 10 or less');
     }
     const to = await this.getAccountService().findOneById(
-      createDto.id.toString(),
+      createDto.to.toString(),
     );
     if (to.type != TypesAccountEnum.WALLET) {
       throw new BadRequestException('Wallet not found');
     }
-    return this.walletService.customUpdateOne({
+    const transferBtn: TransferCreateButtonDto = {
+      amount: createDto.amount.toString(),
+      currency: 'USD',
+      account: to._id,
+      creator: req?.user.id,
+      details: 'Recharge in wallet',
+      customer_name: user.name,
+      customer_email: user.email,
+      public_key: null,
+      identifier: user._id.toString(),
+    };
+    try {
+      const transfer = await this.ewalletBuilder.getPromiseTransferEventClient(
+        EventsNamesTransferEnum.createOneDepositLink,
+        transferBtn,
+      );
+      const host = req.get('Host');
+      const url = `${req.protocol}://${host}/transfers/deposit/page/${transfer?._id}`;
+      return {
+        statusCode: 200,
+        data: {
+          txId: transfer?._id,
+          url,
+        },
+      };
+    } catch (error) {
+      throw new BadRequestException(error);
+    }
+    /* return this.walletService.customUpdateOne({
       id: createDto.id,
       $inc: {
         amount: createDto.amount,
       },
-    });
+    }); */
   }
 
   @Patch('lock/:walletId')

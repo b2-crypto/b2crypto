@@ -314,21 +314,6 @@ export class TransferServiceController implements GenericServiceController {
     return this.transferService.newTransfer(createTransferDto);
   }
 
-  // ----------------------------
-  @AllowAnon()
-  @Post('b2binpay/status-deposit')
-  // @CheckPoliciesAbility(new PolicyHandlerTransferRead())
-  async b2binpayStatusDeposit(@Body() data: any) {
-    Logger.debug(data);
-  }
-
-  @AllowAnon()
-  @Post('b2binpay/status')
-  // @CheckPoliciesAbility(new PolicyHandlerTransferRead())
-  async b2binpayStatus(@Body() data: any) {
-    Logger.debug(data);
-  }
-
   @AllowAnon()
   @Post('bold/status')
   // @CheckPoliciesAbility(new PolicyHandlerTransferRead())
@@ -351,7 +336,6 @@ export class TransferServiceController implements GenericServiceController {
   }
 
   @NoCache()
-  @AllowAnon()
   @ApiTags(SwaggerSteakeyConfigEnum.TAG_DEPOSIT)
   @ApiBearerAuth('bearerToken')
   @UseGuards(ApiKeyAuthGuard)
@@ -369,36 +353,19 @@ export class TransferServiceController implements GenericServiceController {
     @Req() req,
     @Res() res: Response,
   ) {
-    const createTransferDto: TransferCreateDto = new TransferCreateDto();
-    // Create Lead
-    // Configure CallBack
-    createTransferDto.userCreator = req?.user?.id;
-    createTransferDto.name = createTransferButtonDto.identifier;
-    createTransferDto.description = createTransferButtonDto.details;
-    createTransferDto.page = req.get('Host');
-    createTransferDto.amount = parseFloat(createTransferButtonDto.amount);
-    createTransferDto.currency = createTransferButtonDto.currency;
-    const list = await this.affliateService.getAll({
-      where: {
-        publicKey: createTransferButtonDto.public_key,
+    createTransferButtonDto.creator = req?.user?.id;
+    createTransferButtonDto.host = req.get('Host');
+    const transfer = await this.createOneDepositPaymentLinkEvent(
+      createTransferButtonDto,
+    );
+    const url = `${req.protocol}://${createTransferButtonDto.host}/transfers/deposit/page/${transfer?._id}`;
+    return res.json({
+      statusCode: 200,
+      data: {
+        id: transfer?._id,
+        url,
       },
     });
-    const affiliate = list.list[0];
-    if (!affiliate) {
-      throw new BadRequestException('Affiliate not found');
-    }
-    if (!affiliate.account) {
-      throw new BadRequestException('Account not found');
-    }
-    createTransferDto.account = affiliate.account.toString();
-    createTransferDto.operationType = OperationTransactionType.deposit;
-    const transfer = await this.transferService.newTransfer(createTransferDto);
-    if (!transfer?.responseAccount?.data?.attributes?.payment_page) {
-      throw new InternalServerErrorException('URL not found');
-    }
-    return res.redirect(
-      transfer?.responseAccount?.data?.attributes?.payment_page,
-    );
   }
 
   @NoCache()
@@ -585,6 +552,59 @@ export class TransferServiceController implements GenericServiceController {
     return this.findAll(query);
   }
 
+  @AllowAnon()
+  @MessagePattern(EventsNamesTransferEnum.createOneDepositLink)
+  async createOneDepositPaymentLinkEvent(
+    @Payload() createTransferButtonDto: TransferCreateButtonDto,
+    @Ctx() ctx?: RmqContext,
+  ) {
+    CommonService.ack(ctx);
+    if (!createTransferButtonDto.creator) {
+      throw new BadRequestException('Missing creator');
+    }
+    if (
+      !createTransferButtonDto.public_key &&
+      !createTransferButtonDto.account
+    ) {
+      throw new BadRequestException('Missing public_key and account');
+    }
+    const createTransferDto: TransferCreateDto = new TransferCreateDto();
+    // Configure CallBack
+    createTransferDto.userCreator = createTransferButtonDto.creator;
+    createTransferDto.name = createTransferButtonDto.identifier;
+    createTransferDto.description = createTransferButtonDto.details;
+    createTransferDto.page = createTransferButtonDto.host;
+    createTransferDto.amount = parseFloat(createTransferButtonDto.amount);
+    createTransferDto.currency = createTransferButtonDto.currency;
+    createTransferDto.account = createTransferButtonDto.account;
+    if (!createTransferButtonDto.account) {
+      const list = await this.affliateService.getAll({
+        where: {
+          publicKey: createTransferButtonDto.public_key,
+        },
+      });
+      const affiliate = list.list[0];
+      if (!affiliate) {
+        throw new BadRequestException('Affiliate not found');
+      }
+      if (!affiliate.account) {
+        throw new BadRequestException('Account not found');
+      }
+      createTransferDto.account = affiliate.account.toString();
+    }
+    createTransferDto.operationType = OperationTransactionType.deposit;
+    const depositLinkCategory =
+      await this.builder.getPromiseCategoryEventClient(
+        EventsNamesCategoryEnum.findOneByNameType,
+        {
+          slug: 'deposit-link',
+          type: TagEnum.MONETARY_TRANSACTION_TYPE,
+        },
+      );
+    createTransferDto.typeTransaction = depositLinkCategory._id.toString();
+    const transfer = await this.transferService.newTransfer(createTransferDto);
+    return transfer;
+  }
   @AllowAnon()
   @MessagePattern(EventsNamesTransferEnum.createMany)
   createManyEvent(createsDto: CreateAnyDto[], ctx: RmqContext) {
