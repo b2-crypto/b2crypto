@@ -45,5 +45,13 @@ export class TransferCreateButtonDto {
 
   @IsString()
   @IsOptional()
-  account: string;
+  account?: string;
+
+  @IsString()
+  @IsOptional()
+  creator?: string;
+
+  @IsString()
+  @IsOptional()
+  host?: string;
 }
