@@ -258,10 +258,6 @@ export class TransferServiceService
       if (!account) {
         throw new BadRequestException('Not found account');
       }
-      transfer.account = account._id;
-      transfer.userCreator = transfer.userCreator ?? transfer.userAccount;
-      transfer.userAccount = transfer.userAccount ?? transfer.userCreator;
-      const transferSaved = await this.lib.create(transfer);
       const depositLinkCategory =
         await this.builder.getPromiseCategoryEventClient(
           EventsNamesCategoryEnum.findOneByNameType,
@@ -275,11 +271,20 @@ export class TransferServiceService
           'Not found deposit link monetary transaction type',
         );
       }
-      if (transferSaved.typeTransaction === depositLinkCategory._id) {
+      if (
+        transfer.typeTransaction === depositLinkCategory._id &&
+        !account.accountId
+      ) {
+        throw new BadRequestException('AccountId not found');
+      }
+      transfer.account = account._id;
+      transfer.userCreator = transfer.userCreator ?? account.owner;
+      transfer.userAccount = account.owner ?? transfer.userCreator;
+      const transferSaved = await this.lib.create(transfer);
+      if (
+        transferSaved.typeTransaction.toString() === depositLinkCategory._id
+      ) {
         try {
-          if (!account.accountId) {
-            throw new BadRequestException('AccountId not found');
-          }
           const url = transfer.account.url ?? 'https://api.b2binpay.com';
           Logger.log(url, 'URL B2BinPay');
           const integration =
@@ -309,6 +314,10 @@ export class TransferServiceService
               },
             },
           });
+          if (!deposit.data) {
+            Logger.error(deposit, 'Error B2BinPay Deposit');
+            throw new BadRequestException(deposit['errors']);
+          }
           Logger.log(deposit, 'URL B2BinPay Deposit');
           transferSaved.responseAccount = {
             data: deposit.data as unknown as DataTransferAccountResponse,
@@ -316,6 +325,7 @@ export class TransferServiceService
           await this.updateTransfer(transferSaved);
         } catch (err) {
           await this.lib.remove(transferSaved._id);
+          Logger.error(err, 'Error Transfer creation');
           throw new BadRequestException(err);
         }
       }
@@ -738,11 +748,8 @@ export class TransferServiceService
   }
 
   private async checkCountryAccount(transfer: TransferCreateDto, data) {
-    if (!transfer.leadCountry && data.account?.personalData) {
-      const person = await this.getPersonById(
-        data.account.personalData.toString(),
-      );
-      transfer.leadCountry = person.location?.country;
+    if (!transfer.leadCountry && data.account?.country) {
+      transfer.leadCountry = data.account?.country;
     }
   }
 
