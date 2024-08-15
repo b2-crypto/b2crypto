@@ -12,7 +12,7 @@ import {
 import { SchedulerRegistry } from '@nestjs/schedule';
 
 @Controller('b2binpay')
-@UseGuards(ApiKeyAuthGuard)
+//@UseGuards(ApiKeyAuthGuard)
 export class B2BinPayNotificationsController {
   constructor(
     private readonly builder: BuildersService,
