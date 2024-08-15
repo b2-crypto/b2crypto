@@ -222,6 +222,17 @@ export class CommonService {
     schedulerRegistry.addTimeout(name, timeout);
   }
 
+  static removeTimeout(schedulerRegistry: SchedulerRegistry, name: string) {
+    try {
+      const task = schedulerRegistry.getTimeout(name);
+      clearTimeout(task);
+      schedulerRegistry.deleteTimeout(name);
+      Logger.log('cleared', `Task "${name}" schedulerRegistry`);
+    } catch (err) {
+      Logger.error(err, `Task "${name}" schedulerRegistry`);
+    }
+  }
+
   static ack(ctx: RmqContext) {
     if (!!ctx) {
       const channel = ctx.getChannelRef();
