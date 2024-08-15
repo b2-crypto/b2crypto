@@ -16,6 +16,7 @@ import { SchedulerRegistry } from '@nestjs/schedule';
 import { MaintenanceOnDto } from '@user/user/dto/maintenance.on.dto';
 import EventsNamesUserEnum from 'apps/user-service/src/enum/events.names.user.enum';
 import { ClientsTaskNamesEnum } from './enums/clients.task.names.enum';
+import { ApiKeyCheck } from '@auth/auth/decorators/api-key-check.decorator';
 
 @Controller('clients')
 @UseGuards(ApiKeyAuthGuard)
@@ -27,6 +28,7 @@ export class ClientsIntegrationController {
   ) {}
 
   @Get('me')
+  @ApiKeyCheck()
   async getClientData(@Req() req) {
     const clientApi = await this.builder.getPromiseUserEventClient(
       EventsNamesUserEnum.findOneById,
