@@ -2,7 +2,7 @@ import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 export class TransferCreateButtonDto {
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   identifier: string;
 
   @IsString()
@@ -17,11 +17,11 @@ export class TransferCreateButtonDto {
 
   @IsString()
   @IsOptional()
-  cancel_url: string;
+  cancel_url?: string;
 
   @IsString()
   @IsOptional()
-  success_url: string;
+  success_url?: string;
 
   @IsString()
   @IsNotEmpty()
@@ -29,11 +29,11 @@ export class TransferCreateButtonDto {
 
   @IsString()
   @IsOptional()
-  site_logo: string;
+  site_logo?: string;
 
   @IsString()
   @IsOptional()
-  checkout_theme: string;
+  checkout_theme?: string;
 
   @IsString()
   @IsNotEmpty()
@@ -42,4 +42,16 @@ export class TransferCreateButtonDto {
   @IsString()
   @IsNotEmpty()
   customer_email: string;
+
+  @IsString()
+  @IsOptional()
+  account?: string;
+
+  @IsString()
+  @IsOptional()
+  creator?: string;
+
+  @IsString()
+  @IsOptional()
+  host?: string;
 }

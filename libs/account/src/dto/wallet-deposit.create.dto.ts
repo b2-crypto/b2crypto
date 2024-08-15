@@ -4,13 +4,14 @@ import { ObjectId } from 'mongoose';
 
 export class WalletDepositCreateDto extends CreateAnyDto {
   @IsMongoId()
-  id: ObjectId;
+  to: ObjectId;
 
   @IsMongoId()
   @IsOptional()
   from?: ObjectId;
 
   @IsString()
+  @IsOptional()
   pin: string;
 
   @IsNumber({
