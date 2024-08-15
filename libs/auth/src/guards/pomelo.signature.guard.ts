@@ -63,6 +63,7 @@ export class SignatureGuard implements CanActivate {
 
   private checkWhitelistedIps(context: ExecutionContext): boolean {
     const request = context.switchToHttp().getRequest();
+    //Logger.log(JSON.stringify(request?.connection), 'checkWhitelistedIps');
     const caller =
       ipaddr.process(request?.connection?.remoteAddress).toString() ||
       request?.connection?.remoteAddress ||

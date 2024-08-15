@@ -19,11 +19,13 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { PomeloIntegrationProcessService } from './services/pomelo.integration.process.service';
+import { PomeloIntegrationSFTPService } from './services/pomelo.integration.sftp.service';
 
 @Controller()
 export class PomeloIntegrationServiceController {
   constructor(
     private readonly integrationServiceService: PomeloIntegrationProcessService,
+    private readonly sftpService: PomeloIntegrationSFTPService,
   ) {}
 
   @Post(PomeloEnum.POMELO_NOTIFICATION_PATH)
@@ -76,5 +78,10 @@ export class PomeloIntegrationServiceController {
       authorization,
       headers,
     );
+  }
+
+  @Post('/sftp/download')
+  downloadSFTPReports() {
+    this.sftpService.getSFTPPomeloReportsByClient('b2crypto', 'col');
   }
 }

@@ -40,3 +40,6 @@ lerna-debug.log*
 # Migration files
 /migration
 /migration/*
+# SFTP report files
+/sftp/downloads
+/sftp/downloads/*

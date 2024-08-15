@@ -32,6 +32,7 @@ import { MulterModule } from '@nestjs/platform-express';
 import { FileModule } from '@file/file';
 import { B2CoreMigrationController } from './b2core.migration.controller';
 import { B2CoreMigrationService } from './services/b2core.migration.service';
+import { PomeloIntegrationSFTPService } from './services/pomelo.integration.sftp.service';
 
 @Module({
   imports: [
@@ -69,6 +70,7 @@ import { B2CoreMigrationService } from './services/b2core.migration.service';
     PomeloMigrationService,
     B2CoreMigrationService,
     IntegrationServiceService,
+    PomeloIntegrationSFTPService,
     PomeloIntegrationProcessService,
     PomeloIntegrationShippingService,
     SumsubHttpUtils,
