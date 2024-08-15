@@ -32,7 +32,7 @@ export class IntegrationsServiceController extends CrmServiceController {
     }
     maintenanceOnDto.dateStart = maintenanceOnDto.dateStart ?? new Date();
     if (
-      maintenanceOnDto.dateEnd.getTime() < maintenanceOnDto.dateStart.getTime()
+      maintenanceOnDto.dateEnd?.getTime() < maintenanceOnDto.dateStart.getTime()
     ) {
       throw new NotFoundException(
         `End date (${maintenanceOnDto.dateEnd.toISOString()}) must be greater than Start date (${maintenanceOnDto.dateStart.toISOString()})`,
