@@ -36,7 +36,20 @@ export class ClientsIntegrationController {
       EventsNamesUserEnum.findOneById,
       req.clientApi,
     );
-    return clientApi;
+    return {
+      id: clientApi._id,
+      email: clientApi.email,
+      name: clientApi.name,
+      active: clientApi.active,
+      apiKey: clientApi.apiKey,
+      authorizations: clientApi.authorizations,
+      permissions: clientApi.permissions,
+      createdAt: clientApi.createdAt,
+      updatedAt: clientApi.updatedAt,
+      inMaintenance: clientApi.inMaintenance,
+      maintenanceEndAt: clientApi.maintenanceEndAt,
+      maintenanceStartAt: clientApi.maintenanceStartAt,
+    };
   }
 
   @Put('maintenance-on')
