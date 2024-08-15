@@ -33,6 +33,7 @@ import { FileModule } from '@file/file';
 import { B2CoreMigrationController } from './b2core.migration.controller';
 import { B2CoreMigrationService } from './services/b2core.migration.service';
 import { PomeloIntegrationSFTPService } from './services/pomelo.integration.sftp.service';
+import { B2BinPayNotificationsController } from './b2binpay.notifications.controller';
 
 @Module({
   imports: [
@@ -50,6 +51,7 @@ import { PomeloIntegrationSFTPService } from './services/pomelo.integration.sftp
   ],
   controllers: [
     SumsubNotificationIntegrationController,
+    B2BinPayNotificationsController,
     ClientsIntegrationController,
     PomeloIntegrationServiceController,
     PomeloSensitiveInfoController,
