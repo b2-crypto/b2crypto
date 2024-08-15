@@ -66,14 +66,15 @@ export class ClientsIntegrationController {
           `End date (${maintenanceOnDto.dateEnd.toISOString()}) must be greater than now (${now.toISOString()})`,
         );
       }
+      const taskName = this.getTaskOffName(clientId);
+      CommonService.removeTimeout(this.schedulerRegistry, taskName);
       Logger.log(
         `Programming to ${maintenanceOnDto.dateEnd}`,
         'maintenance off',
       );
-      this.clearTimeoutScheduler(this.getTaskOffName(clientId));
       CommonService.addTimeout(
         this.schedulerRegistry,
-        this.getTaskOffName(clientId),
+        taskName,
         maintenanceOnDto.dateEnd.getTime() - now.getTime(),
         async () => {
           Logger.log('maintenance off', `Client ${clientId}`);
@@ -83,14 +84,15 @@ export class ClientsIntegrationController {
     }
     const inMaintenance = now.getTime() >= maintenanceOnDto.dateStart.getTime();
     if (!inMaintenance) {
+      const taskName = this.getTaskOnName(clientId);
+      CommonService.removeTimeout(this.schedulerRegistry, taskName);
       Logger.log(
         `Programming to ${maintenanceOnDto.dateStart}`,
         'maintenance on',
       );
-      this.clearTimeoutScheduler(this.getTaskOnName(clientId));
       CommonService.addTimeout(
         this.schedulerRegistry,
-        this.getTaskOnName(clientId),
+        taskName,
         maintenanceOnDto.dateStart.getTime() - now.getTime(),
         async () => {
           Logger.log('maintenance on', `Client ${clientId}`);
@@ -118,8 +120,14 @@ export class ClientsIntegrationController {
     if (!clientId) {
       throw new NotFoundException('Client not found');
     }
-    this.clearTimeoutScheduler(this.getTaskOnName(clientId));
-    this.clearTimeoutScheduler(this.getTaskOffName(clientId));
+    CommonService.removeTimeout(
+      this.schedulerRegistry,
+      this.getTaskOnName(clientId),
+    );
+    CommonService.removeTimeout(
+      this.schedulerRegistry,
+      this.getTaskOffName(clientId),
+    );
     this.cancelMaintenance(clientId);
     return {
       statusCode: 200,
@@ -161,16 +169,5 @@ export class ClientsIntegrationController {
       data['maintenanceEndAt'] = dateEnd;
     }
     this.builder.emitUserEventClient(EventsNamesUserEnum.updateOne, data);
-  }
-
-  private clearTimeoutScheduler(taskName: string) {
-    try {
-      const task = this.schedulerRegistry.getTimeout(taskName);
-      clearTimeout(task);
-      this.schedulerRegistry.deleteTimeout(taskName);
-      Logger.log('cleared', `Task "${taskName}" schedulerRegistry`);
-    } catch (err) {
-      Logger.error(err, `Task "${taskName}" schedulerRegistry`);
-    }
   }
 }
