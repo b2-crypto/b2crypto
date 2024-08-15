@@ -167,6 +167,7 @@ export class ClientsIntegrationController {
     try {
       const task = this.schedulerRegistry.getTimeout(taskName);
       clearTimeout(task);
+      this.schedulerRegistry.deleteTimeout(taskName);
       Logger.log('cleared', `Task "${taskName}" schedulerRegistry`);
     } catch (err) {
       Logger.error(err, `Task "${taskName}" schedulerRegistry`);
