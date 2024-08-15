@@ -1,4 +1,4 @@
-import { ExecutionContext, Injectable } from '@nestjs/common';
+import { ExecutionContext, Injectable, Logger } from '@nestjs/common';
 import { SignatureUtils } from './pomelo.integration.process.signature';
 import { Constants } from './pomelo.integration.process.constants';
 import { PomeloEnum } from '@integration/integration/enum/pomelo.enum';
@@ -30,6 +30,18 @@ export class HttpUtils {
 
   extractRequestHeaders(context: ExecutionContext): ProcessHeaderDto {
     const request = context.switchToHttp().getRequest();
+    Logger.log(
+      `HEADERS NGINX: ${JSON.stringify(request.headers)}`,
+      'extractRequestHeaders',
+    );
+    Logger.log(
+      `X-Forwarded-For: ${request.headers['X-Forwarded-For']}`,
+      'extractRequestHeaders',
+    );
+    Logger.log(
+      `X-Real-IP: ${request.headers['X-Real-IP']}`,
+      'extractRequestHeaders',
+    );
     const headers: ProcessHeaderDto = {
       idempotency: request.headers[PomeloEnum.POMELO_IDEMPOTENCY_HEADER],
       apiKey: request.headers[PomeloEnum.POMELO_APIKEY_HEADER],

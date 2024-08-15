@@ -20,7 +20,6 @@ export class SignatureUtils {
           `Headers: ${JSON.stringify(headers)}`,
           'Pomelo Check Signature',
         );
-        Logger.log(`Body: ${JSON.stringify(body)}`, 'Pomelo Check Signature');
         let signature = headers.signature;
         if (headers.signature.startsWith('hmac-sha256')) {
           signature = signature.replace('hmac-sha256 ', '');
