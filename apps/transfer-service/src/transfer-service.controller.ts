@@ -358,11 +358,12 @@ export class TransferServiceController implements GenericServiceController {
     const transfer = await this.createOneDepositPaymentLinkEvent(
       createTransferButtonDto,
     );
+    const url = `${req.protocol}://${createTransferButtonDto.host}/transfers/deposit/page/${transfer?._id}`;
     return res.json({
       statusCode: 200,
       data: {
         id: transfer?._id,
-        url: transfer?.responseAccount?.data?.attributes?.payment_page,
+        url,
       },
     });
   }
