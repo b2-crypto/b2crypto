@@ -26,6 +26,7 @@ import { PomeloIntegrationShippingService } from './services/pomelo.integration.
 import { SumsubNotificationIntegrationService } from './services/sumsub.notification.integration.service';
 import { SumsubNotificationIntegrationController } from './sumsub.notification.controller';
 import { PomeloIntegrationSFTPService } from './services/pomelo.integration.sftp.service';
+import { B2BinPayNotificationsController } from './b2binpay.notifications.controller';
 
 @Module({
   imports: [
@@ -38,6 +39,7 @@ import { PomeloIntegrationSFTPService } from './services/pomelo.integration.sftp
     HttpModule,
   ],
   controllers: [
+    B2BinPayNotificationsController,
     ClientsIntegrationController,
     PomeloIntegrationServiceController,
     PomeloSensitiveInfoController,
