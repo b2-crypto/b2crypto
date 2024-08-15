@@ -28,7 +28,8 @@ export class PomeloIntegrationSFTPService {
   }
 
   private buildFilename(prefix: string, client: string, country: string) {
-    const date = new Date();
+    let date = new Date();
+    date.setDate(date.getDate() - 1);
     const formattedDate = `${date.toISOString().split('T')[0]}`;
     return `${prefix}_${formattedDate}_${client}_${country}.csv`;
   }
