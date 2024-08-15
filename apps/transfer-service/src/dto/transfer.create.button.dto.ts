@@ -42,4 +42,8 @@ export class TransferCreateButtonDto {
   @IsString()
   @IsNotEmpty()
   customer_email: string;
+
+  @IsString()
+  @IsOptional()
+  account: string;
 }
