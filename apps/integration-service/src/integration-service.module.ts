@@ -2,9 +2,9 @@ import { AccountModule } from '@account/account/account.module';
 import { AuthModule } from '@auth/auth';
 import { BuildersModule } from '@builder/builders';
 import { CommonModule } from '@common/common';
-import { Constants } from '@common/common/utils/pomelo.integration.process.constants';
-import { HttpUtils } from '@common/common/utils/pomelo.integration.process.http.utils';
-import { SignatureUtils } from '@common/common/utils/pomelo.integration.process.signature';
+import { PomeloProcessConstants } from '@common/common/utils/pomelo.integration.process.constants';
+import { PomeloHttpUtils } from '@common/common/utils/pomelo.integration.process.http.utils';
+import { PomeloSignatureUtils } from '@common/common/utils/pomelo.integration.process.signature';
 import { SumsubHttpUtils } from '@common/common/utils/sumsub.integration.process.http.utils';
 import { SumsubSignatureUtils } from '@common/common/utils/sumsub.integration.process.signature';
 import { IntegrationModule } from '@integration/integration';
@@ -31,36 +31,36 @@ import { B2BinPayNotificationsController } from './b2binpay.notifications.contro
 @Module({
   imports: [
     AuthModule,
-    CommonModule,
-    AccountModule,
-    IntegrationModule,
-    BuildersModule,
     UserModule,
     HttpModule,
+    CommonModule,
+    AccountModule,
+    BuildersModule,
+    IntegrationModule,
   ],
   controllers: [
-    B2BinPayNotificationsController,
-    ClientsIntegrationController,
-    PomeloIntegrationServiceController,
-    PomeloSensitiveInfoController,
     PomeloShippingController,
+    ClientsIntegrationController,
+    PomeloSensitiveInfoController,
+    B2BinPayNotificationsController,
+    PomeloIntegrationServiceController,
     SumsubNotificationIntegrationController,
   ],
   providers: [
-    Constants,
-    HttpUtils,
     PomeloCache,
-    SignatureUtils,
+    PomeloSignatureUtils,
+    PomeloHttpUtils,
+    SumsubHttpUtils,
     PomeloRestClient,
-    AccountServiceService,
     UserServiceService,
+    SumsubSignatureUtils,
     FiatIntegrationClient,
+    AccountServiceService,
+    PomeloProcessConstants,
     IntegrationServiceService,
     PomeloIntegrationSFTPService,
     PomeloIntegrationProcessService,
     PomeloIntegrationShippingService,
-    SumsubHttpUtils,
-    SumsubSignatureUtils,
     SumsubNotificationIntegrationService,
   ],
 })

@@ -7,18 +7,18 @@ import {
 } from '@nestjs/common';
 import { Observable } from 'rxjs';
 import { map, tap } from 'rxjs/operators';
-import { SignatureUtils } from '../utils/pomelo.integration.process.signature';
-import { HttpUtils } from '../utils/pomelo.integration.process.http.utils';
+import { PomeloSignatureUtils } from '../utils/pomelo.integration.process.signature';
+import { PomeloHttpUtils } from '../utils/pomelo.integration.process.http.utils';
 import { ProcessHeaderDto } from '@integration/integration/dto/pomelo.process.header.dto';
 import { PomeloEnum } from '@integration/integration/enum/pomelo.enum';
 import { Reflector } from '@nestjs/core';
 import { PATH_METADATA } from '@nestjs/common/constants';
 
 @Injectable()
-export class SignatureInterceptor implements NestInterceptor {
+export class PomeloSignatureInterceptor implements NestInterceptor {
   constructor(
-    private readonly signatureUtil: SignatureUtils,
-    private readonly utils: HttpUtils,
+    private readonly signatureUtil: PomeloSignatureUtils,
+    private readonly utils: PomeloHttpUtils,
     private readonly reflector: Reflector,
   ) {}
 

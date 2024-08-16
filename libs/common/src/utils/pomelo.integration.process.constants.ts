@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 
 @Injectable()
-export class Constants {
+export class PomeloProcessConstants {
   public readonly TTL: number = 60;
 
   public readonly RESPONSE_TOO_EARLY = {
