@@ -33,6 +33,7 @@ export class UserServiceService {
     user.slugEmail = CommonService.getSlug(user.email);
     user.username = user.username ?? CommonService.getSlug(user.name);
     user.slugUsername = CommonService.getSlug(user.username);
+    user.verifyEmail = true;
     return this.lib.create(user);
   }
 
@@ -61,6 +62,13 @@ export class UserServiceService {
 
   async changePasswordUser(id: ObjectId, dataPassword: UserChangePasswordDto) {
     return this.lib.changePassword(id, dataPassword);
+  }
+
+  async customUpdateOne(updateRequest: any) {
+    const id = updateRequest.id ?? updateRequest._id;
+    delete updateRequest.id;
+    delete updateRequest._id;
+    return this.lib.update(id, updateRequest);
   }
 
   async download() {

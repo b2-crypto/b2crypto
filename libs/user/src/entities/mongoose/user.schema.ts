@@ -140,6 +140,9 @@ export class User extends UserEntity {
 
   @Prop({ type: UserCardSchema })
   userCard?: UserCard;
+
+  @Prop()
+  verifyEmail?: boolean;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
