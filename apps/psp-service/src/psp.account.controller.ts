@@ -191,7 +191,9 @@ export class PspAccountController implements GenericServiceController {
     CommonService.ack(ctx);
     const pspAccounts = await this.findAll({
       where: {
-        name: pspAccountName,
+        where: {
+          slug: CommonService.getSlug(pspAccountName),
+        },
       },
     });
     if (pspAccounts.totalElements) {
