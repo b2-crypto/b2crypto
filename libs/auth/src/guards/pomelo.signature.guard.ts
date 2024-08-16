@@ -9,7 +9,7 @@ import { Reflector } from '@nestjs/core';
 import { PATH_METADATA } from '@nestjs/common/constants';
 import { SignatureUtils } from '@common/common/utils/pomelo.integration.process.signature';
 import { PomeloProcessConstants } from '@common/common/utils/pomelo.integration.process.constants';
-import { HttpUtils } from '@common/common/utils/pomelo.integration.process.http.utils';
+import { PomeloHttpUtils } from '@common/common/utils/pomelo.integration.process.http.utils';
 import { PomeloEnum } from '@integration/integration/enum/pomelo.enum';
 import { ProcessHeaderDto } from '@integration/integration/dto/pomelo.process.header.dto';
 import { CommonService } from '@common/common';
@@ -19,7 +19,7 @@ export class PomeloSignatureGuard implements CanActivate {
   constructor(
     private readonly signatureUtil: SignatureUtils,
     private readonly constants: PomeloProcessConstants,
-    private readonly utils: HttpUtils,
+    private readonly utils: PomeloHttpUtils,
     private readonly reflector: Reflector,
   ) {}
 

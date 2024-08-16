@@ -5,7 +5,7 @@ import { PomeloEnum } from '@integration/integration/enum/pomelo.enum';
 import { ProcessHeaderDto } from '@integration/integration/dto/pomelo.process.header.dto';
 
 @Injectable()
-export class HttpUtils {
+export class PomeloHttpUtils {
   constructor(
     private readonly signatureUtil: SignatureUtils,
     private readonly constants: PomeloProcessConstants,
