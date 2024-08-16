@@ -1,5 +1,5 @@
 import { PomeloSignatureGuard } from '@auth/auth/guards/pomelo.signature.guard';
-import { SignatureInterceptor } from '@common/common/interceptors/pomelo.signature.interceptor';
+import { PomeloSignatureInterceptor } from '@common/common/interceptors/pomelo.signature.interceptor';
 import {
   CardEvents,
   ShippingNotifications,
@@ -18,7 +18,7 @@ import { PomeloIntegrationShippingService } from './services/pomelo.integration.
 
 @Controller()
 @UseGuards(PomeloSignatureGuard)
-@UseInterceptors(SignatureInterceptor)
+@UseInterceptors(PomeloSignatureInterceptor)
 export class PomeloShippingController {
   constructor(
     private readonly shippingService: PomeloIntegrationShippingService,

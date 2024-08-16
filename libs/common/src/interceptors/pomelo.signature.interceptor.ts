@@ -15,7 +15,7 @@ import { Reflector } from '@nestjs/core';
 import { PATH_METADATA } from '@nestjs/common/constants';
 
 @Injectable()
-export class SignatureInterceptor implements NestInterceptor {
+export class PomeloSignatureInterceptor implements NestInterceptor {
   constructor(
     private readonly signatureUtil: PomeloSignatureUtils,
     private readonly utils: PomeloHttpUtils,
