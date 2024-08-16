@@ -89,7 +89,7 @@ export class AuthServiceController {
   @ApiBearerAuth('bearerToken')
   @ApiSecurity('b2crypto-key')
   @Post('identity/url')
-  async sumsubGenerateToken(
+  async sumsubGenerateUrl(
     @Body() identityDto: SumsubIssueTokenDto,
     @Req() req,
   ) {
@@ -110,6 +110,26 @@ export class AuthServiceController {
       data: {
         url: `${req.protocol}://${req.headers.host}/auth/identity/page/${user.id}?apiKey=${client.apiKey}`,
       },
+    };
+  }
+
+  @Post('identity/token')
+  @UseGuards(ApiKeyAuthGuard)
+  @ApiTags(SwaggerSteakeyConfigEnum.TAG_SECURITY)
+  @ApiBearerAuth('bearerToken')
+  @ApiSecurity('b2crypto-key')
+  async sumsubGeneratetoken(
+    @Body() identityDto: SumsubIssueTokenDto,
+    @Req() req,
+  ) {
+    const user = req.user;
+    if (!user) {
+      throw new BadRequestException('User not found');
+    }
+    const data = await this.getIdentityToken(identityDto, user);
+    return {
+      statusCode: 200,
+      data,
     };
   }
 
@@ -162,49 +182,6 @@ export class AuthServiceController {
       HttpStatus.TEMPORARY_REDIRECT,
       this.getSumsubVerifyIdentityUrl(user.verifyIdentityCode),
     );
-  }
-
-  @Get('identity/token')
-  @UseGuards(ApiKeyAuthGuard)
-  @ApiTags(SwaggerSteakeyConfigEnum.TAG_SECURITY)
-  @ApiQuery({
-    name: 'apiKey',
-    type: String,
-    required: true,
-  })
-  async sumsubGetToken(@Req() req) {
-    const client = await this.getClientFromPublicKey(req.clientApi);
-    if (!client.isClientAPI) {
-      throw new UnauthorizedException('Not found client');
-    }
-    const user = await this.builder.getPromiseUserEventClient(
-      EventsNamesUserEnum.findOneById,
-      req.user.id,
-    );
-    if (!user) {
-      throw new NotFoundException('User not found');
-    }
-    if (
-      !user.verifyIdentityCode ||
-      this.isExpiredUrl(new Date(user.verifyIdentityExpiredAt))
-    ) {
-      user.verifyIdentityCode = await this.getIdentityCode(
-        {
-          ttlInSecs: user.verifyIdentityTtl ?? 900,
-          levelName:
-            user.verifyIdentityLevelName ??
-            SumsubApplicantLevels.individual_basicKYCLevel,
-          userId: req.user.id,
-        },
-        user,
-      );
-    }
-    return {
-      statusCode: 200,
-      data: {
-        token: user.verifyIdentityCode,
-      },
-    };
   }
 
   private isExpiredUrl(expiredAt: Date) {
@@ -261,6 +238,24 @@ export class AuthServiceController {
         verifyIdentityExpiredAt: expiredAt,
       });
       return code;
+    } catch (err) {
+      Logger.error(err, 'Bad request Identity');
+      throw new BadGatewayException();
+    }
+  }
+
+  private async getIdentityToken(identityDto: SumsubIssueTokenDto, user) {
+    const identity = await this.integration.getIdentityIntegration(
+      IntegrationIdentityEnum.SUMSUB,
+    );
+    try {
+      identityDto.userId = user.id ?? user._id;
+      identityDto.ttlInSecs = identityDto.ttlInSecs ?? 900;
+      const rta = await identity.generateTokenApplicant(identityDto);
+      if (!rta.token) {
+        throw rta;
+      }
+      return rta;
     } catch (err) {
       Logger.error(err, 'Bad request Identity');
       throw new BadGatewayException();
