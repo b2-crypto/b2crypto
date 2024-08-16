@@ -110,4 +110,8 @@ export class UserRegisterDto extends UserChangePasswordDto {
 
   @IsEmpty()
   twoFactorIsActive: boolean;
+
+  @IsBoolean()
+  @IsOptional()
+  verifyEmail: boolean;
 }

@@ -359,6 +359,7 @@ export class AuthServiceController {
       throw new BadRequestError('Not valid OTP');
     }
     await this.deleteOtpGenerated(email);
+    this.builder.emitUserEventClient(EventsNamesUserEnum.verifyEmail, email);
     return {
       statusCode: 200,
       message: 'OTP is valid',
@@ -487,9 +488,11 @@ export class AuthServiceController {
     delete userCodeDto.user.twoFactorQr;
     delete userCodeDto.user.twoFactorSecret;
     delete userCodeDto.user.twoFactorIsActive;
+    // Checks verified email (first time sing-in)
+    const statusCode = userCodeDto.user.verifyEmail ? 301 : 201;
     // Get token
     let rta = {
-      statusCode: 201,
+      statusCode,
       access_token: await this.authService.getTokenData(userCodeDto.user),
       refresh_token: await this.authService.getTokenData(
         userCodeDto.user,
