@@ -1,10 +1,8 @@
-import { SignatureGuard } from '@auth/auth/guards/pomelo.signature.guard';
-import { SignatureInterceptor } from '@common/common/interceptors/pomelo.signature.interceptor';
+import { PomeloSignatureGuard } from '@auth/auth/guards/pomelo.signature.guard';
+import { PomeloSignatureInterceptor } from '@common/common/interceptors/pomelo.signature.interceptor';
 import {
   Adjustment,
-  AdjustmentDto,
   Authorization,
-  AuthorizationDto,
   NotificationDto,
 } from '@integration/integration/dto/pomelo.process.body.dto';
 import { PomeloEnum } from '@integration/integration/enum/pomelo.enum';
@@ -29,8 +27,8 @@ export class PomeloIntegrationServiceController {
   ) {}
 
   @Post(PomeloEnum.POMELO_NOTIFICATION_PATH)
-  @UseGuards(SignatureGuard)
-  @UseInterceptors(SignatureInterceptor)
+  @UseGuards(PomeloSignatureGuard)
+  @UseInterceptors(PomeloSignatureInterceptor)
   @HttpCode(204)
   async processNotification(
     @Body() notification: NotificationDto,
@@ -47,8 +45,8 @@ export class PomeloIntegrationServiceController {
   }
 
   @Post(PomeloEnum.POMELO_ADJUSTMENT_PATH)
-  @UseGuards(SignatureGuard)
-  @UseInterceptors(SignatureInterceptor)
+  @UseGuards(PomeloSignatureGuard)
+  @UseInterceptors(PomeloSignatureInterceptor)
   @HttpCode(204)
   async processAdjustment(
     @Body() adjustment: Adjustment,
@@ -64,8 +62,8 @@ export class PomeloIntegrationServiceController {
   }
 
   @Post(PomeloEnum.POMELO_AUTHORIZATION_PATH)
-  @UseGuards(SignatureGuard)
-  @UseInterceptors(SignatureInterceptor)
+  @UseGuards(PomeloSignatureGuard)
+  @UseInterceptors(PomeloSignatureInterceptor)
   @HttpCode(200)
   async processAuthorization(
     @Body() authorization: Authorization,

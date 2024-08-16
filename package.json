@@ -141,7 +141,6 @@
     "epayco-sdk-node": "^1.2.1",
     "express-basic-auth": "^1.2.1",
     "ioredis": "^5.2.4",
-    "ipaddr": "^0.1.0",
     "mongodb": "^3.6.0",
     "mongoose": "^6.7.0",
     "mongoose-slug-updater": "^3.3.0",
