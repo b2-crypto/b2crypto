@@ -127,7 +127,7 @@ export class AuthServiceController {
     required: true,
   })
   @Get('identity/page/:userId')
-  async sumsubGetToken(
+  async sumsubGetPage(
     @Param('userId') userId,
     @Query('apiKey') clientId,
     @Res() res,
@@ -162,6 +162,49 @@ export class AuthServiceController {
       HttpStatus.TEMPORARY_REDIRECT,
       this.getSumsubVerifyIdentityUrl(user.verifyIdentityCode),
     );
+  }
+
+  @Get('identity/token')
+  @UseGuards(ApiKeyAuthGuard)
+  @ApiTags(SwaggerSteakeyConfigEnum.TAG_SECURITY)
+  @ApiQuery({
+    name: 'apiKey',
+    type: String,
+    required: true,
+  })
+  async sumsubGetToken(@Req() req) {
+    const client = await this.getClientFromPublicKey(req.clientApi);
+    if (!client.isClientAPI) {
+      throw new UnauthorizedException('Not found client');
+    }
+    const user = await this.builder.getPromiseUserEventClient(
+      EventsNamesUserEnum.findOneById,
+      req.user.id,
+    );
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    if (
+      !user.verifyIdentityCode ||
+      this.isExpiredUrl(new Date(user.verifyIdentityExpiredAt))
+    ) {
+      user.verifyIdentityCode = await this.getIdentityCode(
+        {
+          ttlInSecs: user.verifyIdentityTtl ?? 900,
+          levelName:
+            user.verifyIdentityLevelName ??
+            SumsubApplicantLevels.individual_basicKYCLevel,
+          userId: req.user.id,
+        },
+        user,
+      );
+    }
+    return {
+      statusCode: 200,
+      data: {
+        token: user.verifyIdentityCode,
+      },
+    };
   }
 
   private isExpiredUrl(expiredAt: Date) {
