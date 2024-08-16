@@ -1,32 +1,34 @@
-import { IsBoolean } from 'class-validator';
-import { IntegrationIdentityEnum } from './../../../libs/integration/src/identity/generic/domain/integration.identity.enum';
 import { AuthService } from '@auth/auth';
 import { AllowAnon } from '@auth/auth/decorators/allow-anon.decorator';
 import { ApiKeyCheck } from '@auth/auth/decorators/api-key-check.decorator';
 import { IsRefresh } from '@auth/auth/decorators/refresh.decorator';
+import { RestorePasswordDto } from '@auth/auth/dto/restore.password.dto';
+import { ApiKeyAuthGuard } from '@auth/auth/guards/api.key.guard';
 import { LocalAuthGuard } from '@auth/auth/guards/local.auth.guard';
 import { BuildersService } from '@builder/builders';
 import { CommonService } from '@common/common';
+import { NoCache } from '@common/common/decorators/no-cache.decorator';
 import ActionsEnum from '@common/common/enums/ActionEnum';
 import ResourcesEnum from '@common/common/enums/ResourceEnum';
+import TransportEnum from '@common/common/enums/TransportEnum';
+import { IntegrationService } from '@integration/integration';
+import { SumsubApplicantLevels } from '@integration/integration/identity/generic/domain/sumsub.enum';
+import { SumsubIssueTokenDto } from '@integration/integration/identity/generic/domain/sumsub.issue.token.dto';
 import {
   BadGatewayException,
   BadRequestException,
   Body,
   CACHE_MANAGER,
   Controller,
-  ForbiddenException,
   Get,
   HttpStatus,
   Inject,
   Logger,
   NotFoundException,
   Param,
-  Patch,
   Post,
   Query,
   Req,
-  Request,
   Res,
   UnauthorizedException,
   UseGuards,
@@ -41,7 +43,6 @@ import {
 } from '@nestjs/microservices';
 import {
   ApiBearerAuth,
-  ApiHeader,
   ApiParam,
   ApiQuery,
   ApiResponse,
@@ -50,23 +51,17 @@ import {
 } from '@nestjs/swagger';
 import ResponseB2Crypto from '@response-b2crypto/response-b2crypto/models/ResponseB2Crypto';
 import { UserRegisterDto } from '@user/user/dto/user.register.dto';
-import EventsNamesActivityEnum from 'apps/activity-service/src/enum/events.names.activity.enum';
-import { Cache } from 'cache-manager';
-import EventsNamesUserEnum from './enum/events.names.user.enum';
-import { BadRequestError } from 'passport-headerapikey';
-import { RestorePasswordDto } from '@auth/auth/dto/restore.password.dto';
-import EventsNamesMessageEnum from 'apps/message-service/src/enum/events.names.message.enum';
-import { MessageCreateDto } from '@message/message/dto/message.create.dto';
-import TransportEnum from '@common/common/enums/TransportEnum';
-import { UserDocument } from '@user/user/entities/mongoose/user.schema';
-import { IntegrationService } from '@integration/integration';
-import { SumsubIssueTokenDto } from '@integration/integration/identity/generic/domain/sumsub.issue.token.dto';
-import { ApiKeyAuthGuard } from '@auth/auth/guards/api.key.guard';
 import { UserSignInDto } from '@user/user/dto/user.signin.dto';
-import { SumsubApplicantLevels } from '@integration/integration/identity/generic/domain/sumsub.enum';
-import { NoCache } from '@common/common/decorators/no-cache.decorator';
+import { UserDocument } from '@user/user/entities/mongoose/user.schema';
 import { UserEntity } from '@user/user/entities/user.entity';
+import EventsNamesActivityEnum from 'apps/activity-service/src/enum/events.names.activity.enum';
+import EventsNamesMessageEnum from 'apps/message-service/src/enum/events.names.message.enum';
+import { Cache } from 'cache-manager';
+import { isBoolean } from 'class-validator';
 import { SwaggerSteakeyConfigEnum } from 'libs/config/enum/swagger.stakey.config.enum';
+import { BadRequestError } from 'passport-headerapikey';
+import { IntegrationIdentityEnum } from './../../../libs/integration/src/identity/generic/domain/integration.identity.enum';
+import EventsNamesUserEnum from './enum/events.names.user.enum';
 
 @ApiTags('AUTHENTICATION')
 @Controller('auth')
@@ -491,7 +486,7 @@ export class AuthServiceController {
     delete userCodeDto.user.twoFactorIsActive;
     // Checks verified email (first time sing-in)
     const statusCode =
-      !IsBoolean(userCodeDto.user.verifyEmail) ||
+      !isBoolean(userCodeDto.user.verifyEmail) ||
       userCodeDto.user.verifyEmail === true
         ? 301
         : 201;
