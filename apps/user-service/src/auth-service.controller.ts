@@ -1,3 +1,4 @@
+import { IsBoolean } from 'class-validator';
 import { IntegrationIdentityEnum } from './../../../libs/integration/src/identity/generic/domain/integration.identity.enum';
 import { AuthService } from '@auth/auth';
 import { AllowAnon } from '@auth/auth/decorators/allow-anon.decorator';
@@ -489,7 +490,10 @@ export class AuthServiceController {
     delete userCodeDto.user.twoFactorSecret;
     delete userCodeDto.user.twoFactorIsActive;
     // Checks verified email (first time sing-in)
-    const statusCode = userCodeDto.user.verifyEmail ? 301 : 201;
+    const statusCode =
+      !IsBoolean(userCodeDto.user.verifyEmail) || userCodeDto.user.verifyEmail
+        ? 301
+        : 201;
     // Get token
     let rta = {
       statusCode,
