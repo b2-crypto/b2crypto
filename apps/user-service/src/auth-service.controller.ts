@@ -491,7 +491,8 @@ export class AuthServiceController {
     delete userCodeDto.user.twoFactorIsActive;
     // Checks verified email (first time sing-in)
     const statusCode =
-      !IsBoolean(userCodeDto.user.verifyEmail) || userCodeDto.user.verifyEmail
+      !IsBoolean(userCodeDto.user.verifyEmail) ||
+      userCodeDto.user.verifyEmail === true
         ? 301
         : 201;
     // Get token
