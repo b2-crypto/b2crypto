@@ -89,7 +89,7 @@ export class AuthServiceController {
   @ApiBearerAuth('bearerToken')
   @ApiSecurity('b2crypto-key')
   @Post('identity/url')
-  async sumsubGenerateToken(
+  async sumsubGenerateUrl(
     @Body() identityDto: SumsubIssueTokenDto,
     @Req() req,
   ) {
@@ -113,6 +113,26 @@ export class AuthServiceController {
     };
   }
 
+  @Post('identity/token')
+  @UseGuards(ApiKeyAuthGuard)
+  @ApiTags(SwaggerSteakeyConfigEnum.TAG_SECURITY)
+  @ApiBearerAuth('bearerToken')
+  @ApiSecurity('b2crypto-key')
+  async sumsubGeneratetoken(
+    @Body() identityDto: SumsubIssueTokenDto,
+    @Req() req,
+  ) {
+    const user = req.user;
+    if (!user) {
+      throw new BadRequestException('User not found');
+    }
+    const data = await this.getIdentityToken(identityDto, user);
+    return {
+      statusCode: 200,
+      data,
+    };
+  }
+
   @AllowAnon()
   @NoCache()
   @ApiTags(SwaggerSteakeyConfigEnum.TAG_SECURITY)
@@ -127,7 +147,7 @@ export class AuthServiceController {
     required: true,
   })
   @Get('identity/page/:userId')
-  async sumsubGetToken(
+  async sumsubGetPage(
     @Param('userId') userId,
     @Query('apiKey') clientId,
     @Res() res,
@@ -218,6 +238,24 @@ export class AuthServiceController {
         verifyIdentityExpiredAt: expiredAt,
       });
       return code;
+    } catch (err) {
+      Logger.error(err, 'Bad request Identity');
+      throw new BadGatewayException();
+    }
+  }
+
+  private async getIdentityToken(identityDto: SumsubIssueTokenDto, user) {
+    const identity = await this.integration.getIdentityIntegration(
+      IntegrationIdentityEnum.SUMSUB,
+    );
+    try {
+      identityDto.userId = user.id ?? user._id;
+      identityDto.ttlInSecs = identityDto.ttlInSecs ?? 900;
+      const rta = await identity.generateTokenApplicant(identityDto);
+      if (!rta.token) {
+        throw rta;
+      }
+      return rta;
     } catch (err) {
       Logger.error(err, 'Bad request Identity');
       throw new BadGatewayException();
