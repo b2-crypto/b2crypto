@@ -7,12 +7,12 @@ import {
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { PATH_METADATA } from '@nestjs/common/constants';
-import * as ipaddr from 'ipaddr.js';
 import { SignatureUtils } from '@common/common/utils/pomelo.integration.process.signature';
 import { Constants } from '@common/common/utils/pomelo.integration.process.constants';
 import { HttpUtils } from '@common/common/utils/pomelo.integration.process.http.utils';
 import { PomeloEnum } from '@integration/integration/enum/pomelo.enum';
 import { ProcessHeaderDto } from '@integration/integration/dto/pomelo.process.header.dto';
+import { CommonService } from '@common/common';
 
 @Injectable()
 export class SignatureGuard implements CanActivate {
@@ -31,7 +31,7 @@ export class SignatureGuard implements CanActivate {
         .get<string[]>(PATH_METADATA, context.getHandler())
         ?.toString() || '';
     if (
-      this.checkWhitelistedIps(context) &&
+      CommonService.checkWhitelistedIps(context) &&
       this.checkValidEndpoint(path, headers)
     ) {
       Logger.log(`Authorizing request.`, 'SignatureGuard');
@@ -59,25 +59,6 @@ export class SignatureGuard implements CanActivate {
     }
     Logger.log('Not Authorized', 'SignatureGuard');
     return false;
-  }
-
-  private checkWhitelistedIps(context: ExecutionContext): boolean {
-    if (
-      process.env.POMELO_WHITELISTED_IPS_CHECK ===
-      PomeloEnum.POMELO_WHITELISTED_IPS_CHECK_OFF.toString()
-    ) {
-      return true;
-    }
-    const request = context.switchToHttp().getRequest();
-    const caller =
-      request?.headers[PomeloEnum.POMELO_WHITELISTED_HEADER_FORWARDED] ||
-      request?.headers[PomeloEnum.POMELO_WHITELISTED_HEADER_REAL] ||
-      '';
-    Logger.log(`IpCaller: ${caller}`, 'SignatureGuard');
-    const whitelisted = process.env.POMELO_WHITELISTED_IPS;
-    return (
-      whitelisted?.replace(/\s/g, '')?.split(',')?.includes(caller) || false
-    );
   }
 
   private checkValidEndpoint(path: string, headers: ProcessHeaderDto): boolean {
