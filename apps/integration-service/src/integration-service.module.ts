@@ -4,7 +4,7 @@ import { BuildersModule } from '@builder/builders';
 import { CommonModule } from '@common/common';
 import { PomeloProcessConstants } from '@common/common/utils/pomelo.integration.process.constants';
 import { PomeloHttpUtils } from '@common/common/utils/pomelo.integration.process.http.utils';
-import { SignatureUtils } from '@common/common/utils/pomelo.integration.process.signature';
+import { PomeloSignatureUtils } from '@common/common/utils/pomelo.integration.process.signature';
 import { SumsubHttpUtils } from '@common/common/utils/sumsub.integration.process.http.utils';
 import { SumsubSignatureUtils } from '@common/common/utils/sumsub.integration.process.signature';
 import { IntegrationModule } from '@integration/integration';
@@ -48,7 +48,7 @@ import { B2BinPayNotificationsController } from './b2binpay.notifications.contro
   ],
   providers: [
     PomeloCache,
-    SignatureUtils,
+    PomeloSignatureUtils,
     PomeloHttpUtils,
     SumsubHttpUtils,
     PomeloRestClient,

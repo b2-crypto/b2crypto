@@ -7,7 +7,7 @@ import {
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { PATH_METADATA } from '@nestjs/common/constants';
-import { SignatureUtils } from '@common/common/utils/pomelo.integration.process.signature';
+import { PomeloSignatureUtils } from '@common/common/utils/pomelo.integration.process.signature';
 import { PomeloProcessConstants } from '@common/common/utils/pomelo.integration.process.constants';
 import { PomeloHttpUtils } from '@common/common/utils/pomelo.integration.process.http.utils';
 import { PomeloEnum } from '@integration/integration/enum/pomelo.enum';
@@ -17,7 +17,7 @@ import { CommonService } from '@common/common';
 @Injectable()
 export class PomeloSignatureGuard implements CanActivate {
   constructor(
-    private readonly signatureUtil: SignatureUtils,
+    private readonly signatureUtil: PomeloSignatureUtils,
     private readonly constants: PomeloProcessConstants,
     private readonly utils: PomeloHttpUtils,
     private readonly reflector: Reflector,
