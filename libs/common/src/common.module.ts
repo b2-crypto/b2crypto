@@ -1,31 +1,29 @@
 import { Module } from '@nestjs/common';
 import { CommonService } from './common.service';
 import { databaseProviders } from './database-providers/database-providers.service';
-import { ConfigModule, ConfigService } from '@nestjs/config';
-import configuration from 'config/configuration';
 import { IntegrationModule } from '@integration/integration';
-import { SignatureInterceptor } from './interceptors/pomelo.signature.interceptor';
-import { SignatureUtils } from './utils/pomelo.integration.process.signature';
-import { HttpUtils } from './utils/pomelo.integration.process.http.utils';
+import { PomeloSignatureInterceptor } from './interceptors/pomelo.signature.interceptor';
+import { PomeloSignatureUtils } from './utils/pomelo.integration.process.signature';
+import { PomeloHttpUtils } from './utils/pomelo.integration.process.http.utils';
 import { PomeloCache } from '@integration/integration/util/pomelo.integration.process.cache';
-import { Constants } from './utils/pomelo.integration.process.constants';
+import { PomeloProcessConstants } from './utils/pomelo.integration.process.constants';
 
 @Module({
   providers: [
-    CommonService,
-    ...databaseProviders,
-    IntegrationModule,
-    SignatureUtils,
-    HttpUtils,
-    SignatureInterceptor,
     PomeloCache,
-    Constants,
+    CommonService,
+    PomeloHttpUtils,
+    IntegrationModule,
+    PomeloSignatureUtils,
+    ...databaseProviders,
+    PomeloProcessConstants,
+    PomeloSignatureInterceptor,
   ],
   exports: [
     CommonService,
+    PomeloHttpUtils,
     ...databaseProviders,
-    SignatureInterceptor,
-    HttpUtils,
+    PomeloSignatureInterceptor,
   ],
 })
 export class CommonModule {}

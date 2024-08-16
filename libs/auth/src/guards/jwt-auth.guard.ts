@@ -5,10 +5,9 @@ import { IS_ANON } from '../decorators/allow-anon.decorator';
 import { IS_REFRESH } from '../decorators/refresh.decorator';
 import { IS_API_KEY_CHECK } from '../decorators/api-key-check.decorator';
 import { PATH_METADATA } from '@nestjs/common/constants';
-import { HttpUtils } from '@common/common/utils/pomelo.integration.process.http.utils';
-import * as ipaddr from 'ipaddr.js';
 import { PomeloEnum } from '@integration/integration/enum/pomelo.enum';
 import { ProcessHeaderDto } from '@integration/integration/dto/pomelo.process.header.dto';
+import { CommonService } from '@common/common';
 
 @Injectable()
 export class JwtAuthGuard extends AuthGuard('jwt') {
@@ -60,7 +59,7 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
     //const headers = this.utils.extractRequestHeaders(context);
     const headers = this.extractRequestHeaders(context);
     if (
-      this.checkWhitelistedIps(context) &&
+      CommonService.checkWhitelistedIps(context) &&
       this.checkValidEndpoint(path, headers)
     ) {
       return true;
@@ -75,18 +74,6 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
 
     const adjustmentPath = path.replace('/:type', '');
     return headers.endpoint.includes(adjustmentPath);
-  }
-  private checkWhitelistedIps(context: ExecutionContext): boolean {
-    const request = context.switchToHttp().getRequest();
-    const caller =
-      ipaddr.process(request?.connection?.remoteAddress).toString() ||
-      request?.connection?.remoteAddress ||
-      '';
-    Logger.log(`IpCaller: ${caller}`, 'JwtAuthGuard');
-    const whitelisted = process.env.POMELO_WHITELISTED_IPS;
-    return (
-      whitelisted?.replace(/\s/g, '')?.split(',')?.includes(caller) || false
-    );
   }
   private headersToLowercase(context: ExecutionContext) {
     const req = context.switchToHttp().getRequest();

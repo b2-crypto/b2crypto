@@ -1,4 +1,9 @@
-import { BadRequestException, Injectable, Logger } from '@nestjs/common';
+import {
+  BadRequestException,
+  ExecutionContext,
+  Injectable,
+  Logger,
+} from '@nestjs/common';
 import {
   isBoolean,
   isDateString,
@@ -21,6 +26,7 @@ import { SchedulerRegistry } from '@nestjs/schedule';
 import { QuerySearchAnyDto } from './models/query_search-any.dto';
 import { FetchData } from './models/fetch-data.model';
 import * as http from 'http';
+import { PomeloEnum } from '@integration/integration/enum/pomelo.enum';
 
 @Injectable()
 export class CommonService {
@@ -379,5 +385,23 @@ export class CommonService {
       ? query.where.showToOwner
       : true;
     return query;
+  }
+  static checkWhitelistedIps(context: ExecutionContext): boolean {
+    if (
+      process.env.POMELO_WHITELISTED_IPS_CHECK ===
+      PomeloEnum.POMELO_WHITELISTED_IPS_CHECK_OFF.toString()
+    ) {
+      return true;
+    }
+    const request = context.switchToHttp().getRequest();
+    const caller =
+      request?.headers[PomeloEnum.POMELO_WHITELISTED_HEADER_FORWARDED] ||
+      request?.headers[PomeloEnum.POMELO_WHITELISTED_HEADER_REAL] ||
+      '';
+    Logger.log(`IpCaller: ${caller}`, 'SignatureGuard');
+    const whitelisted = process.env.POMELO_WHITELISTED_IPS;
+    return (
+      whitelisted?.replace(/\s/g, '')?.split(',')?.includes(caller) || false
+    );
   }
 }

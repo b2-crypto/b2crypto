@@ -1,4 +1,4 @@
-import { Constants } from '@common/common/utils/pomelo.integration.process.constants';
+import { PomeloProcessConstants } from '@common/common/utils/pomelo.integration.process.constants';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Inject, Injectable } from '@nestjs/common';
 import { Cache } from 'cache-manager';
@@ -7,7 +7,7 @@ import { Cache } from 'cache-manager';
 export class PomeloCache {
   constructor(
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
-    private readonly constants: Constants,
+    private readonly constants: PomeloProcessConstants,
   ) {}
 
   async getResponse(idempotency: string): Promise<any> {
