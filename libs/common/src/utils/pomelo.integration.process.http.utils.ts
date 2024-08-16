@@ -1,6 +1,6 @@
 import { ExecutionContext, Injectable, Logger } from '@nestjs/common';
 import { SignatureUtils } from './pomelo.integration.process.signature';
-import { Constants } from './pomelo.integration.process.constants';
+import { PomeloProcessConstants } from './pomelo.integration.process.constants';
 import { PomeloEnum } from '@integration/integration/enum/pomelo.enum';
 import { ProcessHeaderDto } from '@integration/integration/dto/pomelo.process.header.dto';
 
@@ -8,7 +8,7 @@ import { ProcessHeaderDto } from '@integration/integration/dto/pomelo.process.he
 export class HttpUtils {
   constructor(
     private readonly signatureUtil: SignatureUtils,
-    private readonly constants: Constants,
+    private readonly constants: PomeloProcessConstants,
   ) {}
 
   setResponseHeaders(context: ExecutionContext) {

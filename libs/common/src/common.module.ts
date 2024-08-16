@@ -8,24 +8,24 @@ import { SignatureInterceptor } from './interceptors/pomelo.signature.intercepto
 import { SignatureUtils } from './utils/pomelo.integration.process.signature';
 import { HttpUtils } from './utils/pomelo.integration.process.http.utils';
 import { PomeloCache } from '@integration/integration/util/pomelo.integration.process.cache';
-import { Constants } from './utils/pomelo.integration.process.constants';
+import { PomeloProcessConstants } from './utils/pomelo.integration.process.constants';
 
 @Module({
   providers: [
+    HttpUtils,
     CommonService,
     ...databaseProviders,
     IntegrationModule,
     SignatureUtils,
-    HttpUtils,
     SignatureInterceptor,
     PomeloCache,
-    Constants,
+    PomeloProcessConstants,
   ],
   exports: [
+    HttpUtils,
     CommonService,
     ...databaseProviders,
     SignatureInterceptor,
-    HttpUtils,
   ],
 })
 export class CommonModule {}

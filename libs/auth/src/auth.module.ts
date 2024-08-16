@@ -14,8 +14,8 @@ import { ApiKeyAffiliateStrategy } from './strategies/api.key.affiliate.strategy
 import { CaslAbilityFactory } from './casl-ability.factory';
 import { PermissionModule } from '@permission/permission';
 import { IntegrationModule } from '@integration/integration';
-import { SignatureGuard } from './guards/pomelo.signature.guard';
-import { Constants } from '@common/common/utils/pomelo.integration.process.constants';
+import { PomeloSignatureGuard } from './guards/pomelo.signature.guard';
+import { PomeloProcessConstants } from '@common/common/utils/pomelo.integration.process.constants';
 import { SignatureUtils } from '@common/common/utils/pomelo.integration.process.signature';
 import { HttpUtils } from '@common/common/utils/pomelo.integration.process.http.utils';
 import { PomeloCache } from '@integration/integration/util/pomelo.integration.process.cache';
@@ -40,21 +40,21 @@ import { SumsubSignatureUtils } from '@common/common/utils/sumsub.integration.pr
     IntegrationModule,
   ],
   providers: [
-    AuthService,
-    CaslAbilityFactory,
-    ApiKeyAffiliateStrategy,
-    ApiKeyStrategy,
-    LocalStrategy,
-    JwtStrategy,
-    Constants,
-    SumsubSignatureUtils,
-    SignatureUtils,
     HttpUtils,
-    SumsubHttpUtils,
-    SignatureGuard,
-    SumsubSignatureGuard,
+    AuthService,
     PomeloCache,
+    JwtStrategy,
+    LocalStrategy,
+    ApiKeyStrategy,
+    SignatureUtils,
+    SumsubHttpUtils,
+    CaslAbilityFactory,
+    SumsubSignatureUtils,
+    PomeloSignatureGuard,
+    SumsubSignatureGuard,
+    ApiKeyAffiliateStrategy,
+    PomeloProcessConstants,
   ],
-  exports: [AuthService, CaslAbilityFactory, SignatureGuard],
+  exports: [AuthService, CaslAbilityFactory, PomeloSignatureGuard],
 })
 export class AuthModule {}
