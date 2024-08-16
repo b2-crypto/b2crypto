@@ -44,6 +44,7 @@ import EventsNamesUserEnum from './enum/events.names.user.enum';
 import { UserServiceService } from './user-service.service';
 import { SwaggerSteakeyConfigEnum } from 'libs/config/enum/swagger.stakey.config.enum';
 import { ApiKeyAuthGuard } from '@auth/auth/guards/api.key.guard';
+import { isBoolean } from 'class-validator';
 
 @ApiTags('USER')
 @Controller('users')
@@ -177,13 +178,15 @@ export class UserServiceController implements GenericServiceController {
     CommonService.ack(ctx);
     const rta = await this.findUserByEmail(email);
     if (!rta.list[0]) {
-      throw new NotFoundException('Email not found');
+      throw new NotFoundException(`Email "${email}" not found`);
     }
     const user = rta.list[0];
-    await this.userService.customUpdateOne({
-      id: user._id,
-      verifyEmail: false,
-    });
+    if (!isBoolean(user.verifyEmail) || user.verifyEmail) {
+      await this.userService.customUpdateOne({
+        id: user._id,
+        verifyEmail: false,
+      });
+    }
   }
 
   @AllowAnon()
