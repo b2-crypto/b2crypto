@@ -82,6 +82,8 @@ export class WalletServiceController extends AccountServiceController {
     if (!user.personalData) {
       throw new BadRequestException('Need the personal data to continue');
     }
+    createDto.accountName = 'CoxSQtiWAHVo';
+    createDto.accountPassword = 'w7XDOfgfudBvRG';
     createDto.owner = user.id;
     createDto.pin =
       createDto.pin ??
@@ -133,7 +135,8 @@ export class WalletServiceController extends AccountServiceController {
         transferBtn,
       );
       const host = req.get('Host');
-      const url = `${req.protocol}://${host}/transfers/deposit/page/${transfer?._id}`;
+      //const url = `${req.protocol}://${host}/transfers/deposit/page/${transfer?._id}`;
+      const url = `https://${host}/transfers/deposit/page/${transfer?._id}`;
       return {
         statusCode: 200,
         data: {

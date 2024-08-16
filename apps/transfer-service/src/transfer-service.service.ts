@@ -302,7 +302,7 @@ export class TransferServiceService
                 tracking_id: transferSaved._id,
                 confirmations_needed: 2,
                 // TODO[hender-2024/05/30] Change callback_url to environment params
-                callback_url: 'http://stage.b2fintech.com/b2binpay/status',
+                callback_url: 'https://stage.b2fintech.com/b2binpay/status',
               },
               relationships: {
                 wallet: {
