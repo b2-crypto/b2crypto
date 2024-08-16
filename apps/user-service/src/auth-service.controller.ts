@@ -104,7 +104,8 @@ export class AuthServiceController {
     return {
       statusCode: 200,
       data: {
-        url: `${req.protocol}://${req.headers.host}/auth/identity/page/${user.id}?apiKey=${client.apiKey}`,
+        //url: `${req.protocol}://${req.headers.host}/auth/identity/page/${user.id}?apiKey=${client.apiKey}`,
+        url: `https://${req.headers.host}/auth/identity/page/${user.id}?apiKey=${client.apiKey}`,
       },
     };
   }

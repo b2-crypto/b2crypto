@@ -1,5 +1,4 @@
 import { AllowAnon } from '@auth/auth/decorators/allow-anon.decorator';
-import { ApiKeyAuthGuard } from '@auth/auth/guards/api.key.guard';
 import { BuildersService } from '@builder/builders';
 import {
   BadRequestException,
@@ -9,10 +8,10 @@ import {
   Logger,
   Post,
   Req,
-  UseGuards,
 } from '@nestjs/common';
 import { SchedulerRegistry } from '@nestjs/schedule';
 import EventsNamesAccountEnum from 'apps/account-service/src/enum/events.names.account.enum';
+import { isEmpty } from 'class-validator';
 
 @Controller('b2binpay')
 //@UseGuards(ApiKeyAuthGuard)
@@ -57,10 +56,16 @@ export class B2BinPayNotificationsController {
       'B2BinPayNotificationsController.status:request.body',
     );
     const attributes = data.data.attributes;
-    const account = await this.builder.getPromiseAccountEventClient(
-      EventsNamesAccountEnum.findOneById,
-      attributes.tracking_id,
-    );
+    let account = null;
+    if (isEmpty(attributes.tracking_id)) {
+      throw new BadRequestException('B2BinPay trackingId not found');
+    }
+    try {
+      account = await this.builder.getPromiseAccountEventClient(
+        EventsNamesAccountEnum.findOneById,
+        attributes.tracking_id,
+      );
+    } catch (err) {}
     if (!account) {
       throw new BadRequestException('B2BinPay Account not found');
     }
