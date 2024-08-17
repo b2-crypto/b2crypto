@@ -13,6 +13,7 @@ enum EventsNamesAccountEnum {
   createOne = 'CARD.CREATE.ONE',
   updateMany = 'CARD.UPDATE.MANY',
   updateOne = 'CARD.UPDATE.ONE',
+  customUpdateOne = 'CARD.CUSTOM.UPDATE.ONE',
   updateAmount = 'CARD.UPDATE.AMOUNT',
   updateOneByTpId = 'CARD.UPDATE.ONE.BY.TP.ID',
   findAll = 'FILE.CARD.ALL',

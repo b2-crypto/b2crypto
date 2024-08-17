@@ -20,7 +20,12 @@ import GenericServiceController from '@common/common/interfaces/controller.gener
 import { CreateAnyDto } from '@common/common/models/create-any.dto';
 import { QuerySearchAnyDto } from '@common/common/models/query_search-any.dto';
 import { UpdateAnyDto } from '@common/common/models/update-any.dto';
-import { MessagePattern, RmqContext } from '@nestjs/microservices';
+import {
+  Ctx,
+  MessagePattern,
+  Payload,
+  RmqContext,
+} from '@nestjs/microservices';
 import { AccountServiceService } from './account-service.service';
 import EventsNamesAccountEnum from './enum/events.names.account.enum';
 import { ActivityCreateDto } from '@activity/activity/dto/activity.create.dto';
@@ -142,42 +147,64 @@ export class AccountServiceController implements GenericServiceController {
   }
 
   @MessagePattern(EventsNamesAccountEnum.findAll)
-  findAllEvent(query: QuerySearchAnyDto, ctx: RmqContext) {
+  findAllEvent(@Payload() query: QuerySearchAnyDto, @Ctx() ctx: RmqContext) {
+    CommonService.ack(ctx);
     return this.accountService.findAll(query, ctx);
   }
 
   @MessagePattern(EventsNamesAccountEnum.findOneById)
-  findOneByIdEvent(id: string, ctx: RmqContext) {
+  findOneByIdEvent(@Payload() id: string, @Ctx() ctx: RmqContext) {
+    CommonService.ack(ctx);
     return this.accountService.findOneById(id, ctx);
   }
 
   @MessagePattern(EventsNamesAccountEnum.createOne)
-  createOneEvent(createDto: CreateAnyDto, ctx: RmqContext) {
+  createOneEvent(@Payload() createDto: CreateAnyDto, @Ctx() ctx: RmqContext) {
+    CommonService.ack(ctx);
     return this.accountService.createOneEvent(createDto, ctx);
   }
 
   @MessagePattern(EventsNamesAccountEnum.createMany)
-  createManyEvent(createsDto: CreateAnyDto[], ctx: RmqContext) {
+  createManyEvent(
+    @Payload() createsDto: CreateAnyDto[],
+    @Ctx() ctx: RmqContext,
+  ) {
+    CommonService.ack(ctx);
     return this.accountService.createManyEvent(createsDto, ctx);
   }
 
   @MessagePattern(EventsNamesAccountEnum.updateOne)
-  updateOneEvent(updateDto: UpdateAnyDto, ctx: RmqContext) {
+  updateOneEvent(@Payload() updateDto: UpdateAnyDto, @Ctx() ctx: RmqContext) {
+    CommonService.ack(ctx);
     return this.accountService.updateOneEvent(updateDto, ctx);
+  }
+  @MessagePattern(EventsNamesAccountEnum.customUpdateOne)
+  customUpdateOneEvent(
+    @Payload() updateDto: UpdateAnyDto,
+    @Ctx() ctx: RmqContext,
+  ) {
+    CommonService.ack(ctx);
+    return this.accountService.customUpdateOne(updateDto);
   }
 
   @MessagePattern(EventsNamesAccountEnum.updateMany)
-  updateManyEvent(updatesDto: UpdateAnyDto[], ctx: RmqContext) {
+  updateManyEvent(
+    @Payload() updatesDto: UpdateAnyDto[],
+    @Ctx() ctx: RmqContext,
+  ) {
+    CommonService.ack(ctx);
     return this.accountService.updateManyEvent(updatesDto, ctx);
   }
 
   @MessagePattern(EventsNamesAccountEnum.deleteMany)
-  deleteManyByIdEvent(ids: UpdateAnyDto[], ctx: RmqContext) {
+  deleteManyByIdEvent(@Payload() ids: UpdateAnyDto[], @Ctx() ctx: RmqContext) {
+    CommonService.ack(ctx);
     return this.accountService.deleteManyByIdEvent(ids, ctx);
   }
 
   @MessagePattern(EventsNamesAccountEnum.deleteOneById)
-  deleteOneByIdEvent(id: string, ctx: RmqContext) {
+  deleteOneByIdEvent(@Payload() id: string, @Ctx() ctx: RmqContext) {
+    CommonService.ack(ctx);
     return this.accountService.deleteOneByIdEvent(id, ctx);
   }
 

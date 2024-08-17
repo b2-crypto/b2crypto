@@ -50,7 +50,7 @@ export class PomeloIntegrationProcessService {
     amount: any,
   ) {
     this.builder.emitTransferEventClient(
-      EventsNamesTransferEnum.createOneWebhok,
+      EventsNamesTransferEnum.createOneWebhook,
       {
         integration: 'Pomelo',
         requestBodyJson: process,
