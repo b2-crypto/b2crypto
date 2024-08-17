@@ -83,7 +83,7 @@ export class B2BinPayNotificationsController {
     const currency = data.included.filter((entity) => {
       return entity.id === currencyId;
     })[0].attributes;
-    let account = null;
+    let transferList = null;
     if (isEmpty(attributes.tracking_id)) {
       throw new BadRequestException('B2BinPay trackingId not found');
     }
@@ -109,12 +109,22 @@ export class B2BinPayNotificationsController {
           EventsNamesPspAccountEnum.findOneByName,
           'internal',
         );
-      account = await this.builder.getPromiseAccountEventClient(
-        EventsNamesAccountEnum.findOneById,
-        attributes.tracking_id,
+      transferList = await this.builder.getPromiseTransferEventClient(
+        EventsNamesTransferEnum.findAll,
+        {
+          where: {
+            _id: attributes.tracking_id,
+          },
+          relations: ['account'],
+        },
       );
+      const transferEntity = transferList.list[0];
+      if (!transferEntity) {
+        throw new BadRequestException('Transfer not found');
+      }
+      const account = transferEntity.account;
       if (!account) {
-        throw new BadRequestException('Account not found');
+        throw new BadRequestException('B2BinPay Account not found');
       }
       let status = rejectedStatus;
       if (transfer.status === 3) {
@@ -155,10 +165,6 @@ export class B2BinPayNotificationsController {
         approvedAt: new Date(),
       } as unknown as TransferCreateDto);
     } catch (err) {}
-
-    if (!account) {
-      throw new BadRequestException('B2BinPay Account not found');
-    }
 
     return {
       statusCode: 200,
