@@ -1,6 +1,6 @@
 import { EnvironmentEnum } from '@common/common/enums/environment.enum';
 import { CrmDocument } from '@crm/crm/entities/mongoose/crm.schema';
-import { BadRequestException, Logger } from '@nestjs/common';
+import { BadRequestException, Logger, NotFoundException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import axios, {
   AxiosInstance,
@@ -80,6 +80,12 @@ export class IntegrationCryptoService<
         try {
           const token = await this.fetch('POST', this.routesMap.auth, req);
           const today = new Date();
+          if (!token.data) {
+            throw new NotFoundException(
+              'Token crypto not found',
+              IntegrationCryptoService.name,
+            );
+          }
           this.token = token.data?.attributes.access;
           const expireIn = token.data?.expiresIn || token.data?.ExpiresIn;
         } catch (err) {
