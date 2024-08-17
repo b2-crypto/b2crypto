@@ -282,7 +282,7 @@ export class TransferServiceService
       transfer.userAccount = account.owner ?? transfer.userCreator;
       const transferSaved = await this.lib.create(transfer);
       if (
-        transferSaved.typeTransaction.toString() === depositLinkCategory._id
+        transferSaved.typeTransaction?.toString() === depositLinkCategory._id
       ) {
         try {
           const url = transfer.account.url ?? 'https://api.b2binpay.com';

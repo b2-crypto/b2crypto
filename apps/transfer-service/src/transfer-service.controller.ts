@@ -676,7 +676,7 @@ export class TransferServiceController implements GenericServiceController {
   }
 
   @AllowAnon()
-  @EventPattern(EventsNamesTransferEnum.createOneWebhok)
+  @EventPattern(EventsNamesTransferEnum.createOneWebhook)
   async createOneWebhook(
     @Payload() webhookTransferDto: any,
     @Ctx() ctx: RmqContext,
