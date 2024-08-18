@@ -17,6 +17,7 @@ import { Document, ObjectId } from 'mongoose';
 import { Card, CardSchema } from './card.schema';
 import { UserCard, UserCardSchema } from './user-card.schema';
 import CurrencyCodeB2cryptoEnum from '@common/common/enums/currency-code-b2crypto.enum';
+import { ResponseCreationAccount } from '@account/account/entities/interfaces/response.creation.account.interface';
 
 export type AccountDocument = Account & Document;
 
@@ -182,7 +183,7 @@ export class Account extends AccountEntity {
   secret?: string;
 
   @Prop()
-  responseCreation?: string;
+  responseCreation?: ResponseCreationAccount;
 
   @Prop(raw(ShippingResult))
   responseShipping?: ShippingResult;

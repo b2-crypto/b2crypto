@@ -330,6 +330,29 @@ export class CardServiceController extends AccountServiceController {
       }
       account.cardConfig = card.data as unknown as Card;
       account.save();
+      const countWalletsUser =
+        await this.cardBuilder.getPromiseAccountEventClient(
+          EventsNamesAccountEnum.count,
+          {
+            where: {
+              type: TypesAccountEnum.WALLET,
+              owner: account.owner,
+            },
+          },
+        );
+      if (countWalletsUser < 1)
+        this.cardBuilder.emitAccountEventClient(
+          EventsNamesAccountEnum.createOneWallet,
+          {
+            owner: account.owner,
+            name: 'USDT',
+            pin: CommonService.getNumberDigits(
+              CommonService.randomIntNumber(4),
+              4,
+            ),
+            accountType: 'STABLECOIN',
+          },
+        );
       return account;
     } catch (err) {
       await this.getAccountService().deleteOneById(account._id);

@@ -41,6 +41,7 @@
     "start:dev": "./node_modules/.bin/nest start --watch",
     "start:debug": "./node_modules/.bin/nest start --debug --watch",
     "start-local:debug": "npm run start:infra && nest start --debug --watch",
+    "start-local-monolith:debug": "nest start --debug --watch",
     "start:local": "nest start --debug --watch",
     "start-microservices:debug": "nest start b2crypto-microservices --debug --watch",
     "start-gateway:debug": "nest start b2crypto-gateway --debug --watch",
@@ -103,7 +104,8 @@
     "test:watch": "./node_modules/.bin/jest --watch",
     "test:cov": "./node_modules/.bin/jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register ./node_modules/.bin/jest --runInBand",
-    "test:e2e": "npm run start:infra && ./node_modules/.bin/jest --config ./apps/b2crypto/test/jest-e2e.json"
+    "test:e2e": "npm run start:infra && ./node_modules/.bin/jest --config ./apps/b2crypto/test/jest-e2e.json",
+    "test-monolith:e2e": "./node_modules/.bin/jest --config ./apps/b2crypto/test/jest-e2e.json"
   },
   "dependencies": {
     "@casl/ability": "^6.5.0",
@@ -152,6 +154,7 @@
     "pg": "^8.8.0",
     "pug": "^3.0.3",
     "qrcode": "^1.5.1",
+    "redis": "^4.7.0",
     "reflect-metadata": "^0.1.13",
     "rimraf": "^3.0.2",
     "rxjs": "^7.2.0",

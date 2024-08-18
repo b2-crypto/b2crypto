@@ -1,11 +1,12 @@
 import { AuthModule } from '@auth/auth';
 import { BuildersModule } from '@builder/builders';
 import { ResponseHttpExceptionFilter } from '@common/common/exceptions/response.exception';
+import { B2CryptoCacheInterceptor } from '@common/common/interceptors/b-2-crypto-cache.interceptor';
 import { ResponseInterceptor } from '@common/common/interceptors/response.interceptor';
 import { IProvider } from '@common/common/interfaces/i.provider.interface';
 import { QueueAdminModule } from '@common/common/queue-admin-providers/queue.admin.provider.module';
-import { CacheInterceptor, CacheModule } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
+import { CacheModule } from '@nestjs/common';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { APP_FILTER, APP_INTERCEPTOR } from '@nestjs/core';
 import { ResponseB2CryptoModule } from '@response-b2crypto/response-b2crypto';
 import { AccountServiceModule } from 'apps/account-service/src/account-service.module';
@@ -17,6 +18,7 @@ import { CommunicationServiceModule } from 'apps/communication-service/src/commu
 import { CrmServiceModule } from 'apps/crm-service/src/crm-service.module';
 import { FileServiceModule } from 'apps/file-service/src/file-service.module';
 import { GroupServiceModule } from 'apps/group-service/src/group-service.module';
+import { IntegrationServiceModule } from 'apps/integration-service/src/integration-service.module';
 import { IpAddressServiceModule } from 'apps/ip-address-service/src/ip-address-service.module';
 import { LeadServiceModule } from 'apps/lead-service/src/lead-service.module';
 import { MessageServiceModule } from 'apps/message-service/src/message-service.module';
@@ -30,18 +32,28 @@ import { StatusServiceModule } from 'apps/status-service/src/status-service.modu
 import { TrafficServiceModule } from 'apps/traffic-service/src/traffic-service.module';
 import { TransferServiceModule } from 'apps/transfer-service/src/transfer-service.module';
 import { UserServiceModule } from 'apps/user-service/src/user-service.module';
+import * as redisStore from 'cache-manager-redis-store';
 import configuration from 'config/configuration';
+import { RedisClientOptions } from 'redis';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { B2CryptoCacheInterceptor } from '@common/common/interceptors/b-2-crypto-cache.interceptor';
-import { IntegrationServiceModule } from 'apps/integration-service/src/integration-service.module';
 
 export const configApp = {
   imports: [
-    CacheModule.register({
-      isGlobal: true,
-      ttl: 10,
-      max: 5,
+    CacheModule.registerAsync({
+      imports: [ConfigModule],
+      useFactory: async (configService: ConfigService) =>
+        ({
+          store: redisStore,
+          username: configService.get('REDIS_USERNAME') ?? '',
+          password: configService.get('REDIS_PASSWORD') ?? '',
+          host: configService.get('REDIS_HOST') ?? 'localhost',
+          port: configService.get('REDIS_PORT') ?? 6379,
+          ttl: parseInt(configService.get('CACHE_TTL') ?? '20') * 1000,
+          max: parseInt(configService.get('CACHE_MAX_ITEMS') ?? '10'),
+          isGlobal: true,
+        } as RedisClientOptions),
+      inject: [ConfigService],
     }),
     ConfigModule.forRoot({
       isGlobal: true,
@@ -81,10 +93,6 @@ export const configApp = {
   controllers: [AppController],
   providers: [
     AppService,
-    {
-      provide: APP_INTERCEPTOR,
-      useClass: CacheInterceptor,
-    },
     {
       provide: APP_INTERCEPTOR,
       useClass: ResponseInterceptor,
