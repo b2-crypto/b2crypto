@@ -1160,6 +1160,17 @@ class CreatorSeedMongoose {
       this.createStatusDto('B - Duplicate', '109', [ResourcesEnum.CRM]),
       this.createStatusDto('B - Underage', '110', [ResourcesEnum.CRM]),
       this.createStatusDto('B - Zero contact', '115', [ResourcesEnum.CRM]),
+      this.createStatusDto('Lock', 'Account locked', [ResourcesEnum.ACCOUNT]),
+      this.createStatusDto('Unlock', 'Account unlock', [ResourcesEnum.ACCOUNT]),
+      this.createStatusDto('Cancel', 'Account canceled', [
+        ResourcesEnum.ACCOUNT,
+      ]),
+      this.createStatusDto('Enable', 'Account enabled', [
+        ResourcesEnum.ACCOUNT,
+      ]),
+      this.createStatusDto('Disable', 'Account disable', [
+        ResourcesEnum.ACCOUNT,
+      ]),
     ];
   }
   private getPspsDto() {

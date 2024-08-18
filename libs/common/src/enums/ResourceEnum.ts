@@ -1,4 +1,5 @@
 enum ResourcesEnum {
+  ACCOUNT = 'ACCOUNT',
   ACTIVITY = 'ACTIVITY',
   AFFILIATE = 'AFFILIATE',
   BRAND = 'BRAND',

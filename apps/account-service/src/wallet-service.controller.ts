@@ -28,6 +28,10 @@ import { AccountServiceService } from './account-service.service';
 import { SwaggerSteakeyConfigEnum } from 'libs/config/enum/swagger.stakey.config.enum';
 import EventsNamesTransferEnum from 'apps/transfer-service/src/enum/events.names.transfer.enum';
 import { TransferCreateButtonDto } from 'apps/transfer-service/src/dto/transfer.create.button.dto';
+import { Ctx, EventPattern, Payload, RmqContext } from '@nestjs/microservices';
+import EventsNamesAccountEnum from './enum/events.names.account.enum';
+import { CreateAnyDto } from '@common/common/models/create-any.dto';
+import { TransferEntity } from '@transfer/transfer/entities/transfer.entity';
 
 @ApiTags('E-WALLET')
 @Controller('wallets')
@@ -71,17 +75,22 @@ export class WalletServiceController extends AccountServiceController {
   @ApiSecurity('b2crypto-key')
   @Post('create')
   async createOne(@Body() createDto: WalletCreateDto, @Req() req?: any) {
+    const userId = req?.user.id ?? createDto.owner;
+    if (!userId) {
+      throw new BadRequestException('Need the user id to continue');
+    }
     const user: User = (
       await this.userService.getAll({
         relations: ['personalData'],
         where: {
-          _id: req?.user.id,
+          _id: userId,
         },
       })
     ).list[0];
     if (!user.personalData) {
       throw new BadRequestException('Need the personal data to continue');
     }
+    createDto.type = TypesAccountEnum.WALLET;
     createDto.accountId = '2177';
     createDto.accountName = 'CoxSQtiWAHVo';
     createDto.accountPassword = 'w7XDOfgfudBvRG';
@@ -91,7 +100,30 @@ export class WalletServiceController extends AccountServiceController {
       parseInt(
         CommonService.getNumberDigits(CommonService.randomIntNumber(9999), 4),
       );
-    return this.walletService.createOne(createDto);
+    const wallet = await this.walletService.createOne(createDto);
+    const transferBtn: TransferCreateButtonDto = {
+      amount: '999',
+      currency: 'USD',
+      account: wallet._id,
+      creator: createDto.owner,
+      details: 'Deposit address',
+      customer_name: user.name,
+      customer_email: user.email,
+      public_key: null,
+      identifier: createDto.owner,
+    };
+    this.ewalletBuilder.emitAccountEventClient(
+      EventsNamesAccountEnum.updateOne,
+      {
+        id: wallet._id,
+        responseCreation:
+          await this.ewalletBuilder.getPromiseTransferEventClient(
+            EventsNamesTransferEnum.createOneDepositLink,
+            transferBtn,
+          ),
+      },
+    );
+    return wallet;
   }
 
   @Post('recharge')
@@ -131,29 +163,34 @@ export class WalletServiceController extends AccountServiceController {
       identifier: user._id.toString(),
     };
     try {
-      const transfer = await this.ewalletBuilder.getPromiseTransferEventClient(
-        EventsNamesTransferEnum.createOneDepositLink,
-        transferBtn,
-      );
+      let depositAddress = to.responseCreation;
+      if (!depositAddress) {
+        depositAddress =
+          await this.ewalletBuilder.getPromiseTransferEventClient(
+            EventsNamesTransferEnum.createOneDepositLink,
+            transferBtn,
+          );
+        this.ewalletBuilder.emitAccountEventClient(
+          EventsNamesAccountEnum.updateOne,
+          {
+            id: to._id,
+            responseCreation: depositAddress,
+          },
+        );
+      }
       const host = req.get('Host');
       //const url = `${req.protocol}://${host}/transfers/deposit/page/${transfer?._id}`;
-      const url = `https://${host}/transfers/deposit/page/${transfer?._id}`;
+      const url = `https://${host}/transfers/deposit/page/${depositAddress?._id}`;
       return {
         statusCode: 200,
         data: {
-          txId: transfer?._id,
+          txId: depositAddress?._id,
           url,
         },
       };
     } catch (error) {
       throw new BadRequestException(error);
     }
-    /* return this.walletService.customUpdateOne({
-      id: createDto.id,
-      $inc: {
-        amount: createDto.amount,
-      },
-    }); */
   }
 
   @Patch('lock/:walletId')
@@ -204,5 +241,14 @@ export class WalletServiceController extends AccountServiceController {
   @Delete(':walletID')
   deleteOneById(@Param('walletID') id: string, req?: any) {
     return this.getAccountService().deleteOneById(id);
+  }
+
+  @EventPattern(EventsNamesAccountEnum.createOneWallet)
+  createOneWalletEvent(
+    @Payload() createDto: WalletCreateDto,
+    @Ctx() ctx: RmqContext,
+  ) {
+    CommonService.ack(ctx);
+    return this.createOne(createDto);
   }
 }

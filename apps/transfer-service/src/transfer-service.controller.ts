@@ -593,15 +593,9 @@ export class TransferServiceController implements GenericServiceController {
       }
       createTransferDto.account = affiliate.account.toString();
     }
-    createTransferDto.operationType = OperationTransactionType.deposit;
-    const depositLinkCategory =
-      await this.builder.getPromiseCategoryEventClient(
-        EventsNamesCategoryEnum.findOneByNameType,
-        {
-          slug: 'deposit-link',
-          type: TagEnum.MONETARY_TRANSACTION_TYPE,
-        },
-      );
+    // Is NoApply because this operation generate a deposit address, not a transfer
+    createTransferDto.operationType = OperationTransactionType.noApply;
+    const depositLinkCategory = await this.getDepositLinkCategory();
     createTransferDto.typeTransaction = depositLinkCategory._id.toString();
     const transfer = await this.transferService.newTransfer(createTransferDto);
     return transfer;
@@ -842,6 +836,16 @@ export class TransferServiceController implements GenericServiceController {
   ) {
     CommonService.ack(ctx);
     //return this.transferService.checkTransferStatsByQuery(query);
+  }
+
+  private async getDepositLinkCategory() {
+    return this.builder.getPromiseCategoryEventClient(
+      EventsNamesCategoryEnum.findOneByNameType,
+      {
+        slug: 'deposit-link',
+        type: TagEnum.MONETARY_TRANSACTION_TYPE,
+      },
+    );
   }
 
   private async filterFromUserPermissions(

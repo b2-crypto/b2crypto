@@ -22,6 +22,7 @@ import { QuerySearchAnyDto } from '@common/common/models/query_search-any.dto';
 import { UpdateAnyDto } from '@common/common/models/update-any.dto';
 import {
   Ctx,
+  EventPattern,
   MessagePattern,
   Payload,
   RmqContext,
@@ -83,23 +84,6 @@ export class AccountServiceController implements GenericServiceController {
     return this.toggleVisibleToOwner(id, true);
   }
 
-  async toggleVisibleToOwner(id: string, visible?: boolean) {
-    const account = await this.accountService.findOneById(id);
-    account.showToOwner = visible ?? !account.showToOwner;
-    return account.save();
-  }
-
-  async updateStatusAccount(id: string, slugName: StatusAccountEnum) {
-    const account = await this.accountService.findOneById(id);
-    const status = await this.builder.getPromiseStatusEventClient(
-      EventsNamesStatusEnum.findOneByName,
-      slugName,
-    );
-    account.status = status;
-    account.statusText = slugName;
-    return account.save();
-  }
-
   @Get(':accountId')
   findOneById(@Param('accountId') id: string) {
     return this.accountService.findOneById(id);
@@ -146,6 +130,12 @@ export class AccountServiceController implements GenericServiceController {
     return this.accountService.deleteOneById(id);
   }
 
+  @MessagePattern(EventsNamesAccountEnum.count)
+  countEvent(@Payload() query: QuerySearchAnyDto, @Ctx() ctx: RmqContext) {
+    CommonService.ack(ctx);
+    return this.accountService.count(query, ctx);
+  }
+
   @MessagePattern(EventsNamesAccountEnum.findAll)
   findAllEvent(@Payload() query: QuerySearchAnyDto, @Ctx() ctx: RmqContext) {
     CommonService.ack(ctx);
@@ -166,7 +156,7 @@ export class AccountServiceController implements GenericServiceController {
 
   @MessagePattern(EventsNamesAccountEnum.createMany)
   createManyEvent(
-    @Payload() createsDto: CreateAnyDto[],
+    @Payload() createsDto: AccountCreateDto[],
     @Ctx() ctx: RmqContext,
   ) {
     CommonService.ack(ctx);
@@ -174,6 +164,7 @@ export class AccountServiceController implements GenericServiceController {
   }
 
   @MessagePattern(EventsNamesAccountEnum.updateOne)
+  @EventPattern(EventsNamesAccountEnum.updateOne)
   updateOneEvent(@Payload() updateDto: UpdateAnyDto, @Ctx() ctx: RmqContext) {
     CommonService.ack(ctx);
     return this.accountService.updateOneEvent(updateDto, ctx);
@@ -206,6 +197,23 @@ export class AccountServiceController implements GenericServiceController {
   deleteOneByIdEvent(@Payload() id: string, @Ctx() ctx: RmqContext) {
     CommonService.ack(ctx);
     return this.accountService.deleteOneByIdEvent(id, ctx);
+  }
+
+  async toggleVisibleToOwner(id: string, visible?: boolean) {
+    const account = await this.accountService.findOneById(id);
+    account.showToOwner = visible ?? !account.showToOwner;
+    return account.save();
+  }
+
+  async updateStatusAccount(id: string, slugName: StatusAccountEnum) {
+    const account = await this.accountService.findOneById(id);
+    const status = await this.builder.getPromiseStatusEventClient(
+      EventsNamesStatusEnum.findOneByName,
+      slugName,
+    );
+    account.status = status;
+    account.statusText = slugName;
+    return account.save();
   }
 
   protected async getUser(userId) {
