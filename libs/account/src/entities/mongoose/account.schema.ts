@@ -92,7 +92,7 @@ export class Account extends AccountEntity {
 
   @Prop({
     type: String,
-    default: CurrencyCodeB2cryptoEnum.COP,
+    default: CurrencyCodeB2cryptoEnum.USD,
     enum: CurrencyCodeB2cryptoEnum,
   })
   currency: CurrencyCodeB2cryptoEnum;
@@ -102,7 +102,7 @@ export class Account extends AccountEntity {
 
   @Prop({
     type: String,
-    default: CurrencyCodeB2cryptoEnum.COP,
+    default: CurrencyCodeB2cryptoEnum.USD,
     enum: CurrencyCodeB2cryptoEnum,
   })
   currencyCustodial: CurrencyCodeB2cryptoEnum;
@@ -112,7 +112,7 @@ export class Account extends AccountEntity {
 
   @Prop({
     type: String,
-    default: CurrencyCodeB2cryptoEnum.COP,
+    default: CurrencyCodeB2cryptoEnum.USD,
     enum: CurrencyCodeB2cryptoEnum,
   })
   currencyBlocked: CurrencyCodeB2cryptoEnum;
@@ -122,7 +122,7 @@ export class Account extends AccountEntity {
 
   @Prop({
     type: String,
-    default: CurrencyCodeB2cryptoEnum.COP,
+    default: CurrencyCodeB2cryptoEnum.USD,
     enum: CurrencyCodeB2cryptoEnum,
   })
   currencyBlockedCustodial: CurrencyCodeB2cryptoEnum;
