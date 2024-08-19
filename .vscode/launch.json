@@ -10,7 +10,7 @@
       "runtimeArgs": [
         "run",
         //"start:debug",
-        "start-local:debug",
+        "start-local-monolith:debug",
         "--",
         "--inspect-brk"
       ],
@@ -20,7 +20,7 @@
       "port": 9229,
       "autoAttachChildProcesses": true,
       "envFile": "${workspaceRoot}/.env",
-      "postDebugTask": "task:stop:infra"
+      //"postDebugTask": "task:stop:infra"
     },
     {
       "type": "node",

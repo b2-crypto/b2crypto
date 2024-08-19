@@ -1,4 +1,3 @@
-
 import {
   Body,
   Controller,
@@ -281,6 +280,20 @@ export class MessageServiceController implements GenericServiceController {
     CommonService.ack(ctx);
     try {
       await this.messageService.sendSecurityNotifications(message);
+    } catch (err) {
+      Logger.error(err, MessageServiceController.name);
+    }
+  }
+
+  @AllowAnon()
+  @EventPattern(EventsNamesMessageEnum.sendPasswordRestoredEmail)
+  async eventSendPasswordRestoredEmail(
+    @Payload() message: MessageCreateDto,
+    @Ctx() ctx: RmqContext,
+  ) {
+    CommonService.ack(ctx);
+    try {
+      await this.messageService.sendPasswordRestoredEmail(message);
     } catch (err) {
       Logger.error(err, MessageServiceController.name);
     }

@@ -1,4 +1,3 @@
-
 enum EventsNamesMessageEnum {
   // Websocket
   websocketPort = '3100',
@@ -21,7 +20,8 @@ enum EventsNamesMessageEnum {
   sendVirtualPhysicalCards = 'MESSAGE.SEND.VIRTUAL.PHYSICAL.CARDS',
   sendPurchasesTransactionAdjustments = 'MESSAGE.SEND.PURCHASES.TRANSACTION.ADJUSTMENTS',
   sendCryptoWalletsManagement = 'MESSAGE.SEND.CRYPTO.WALLETS.MANAGEMENT',
-  sendSecurityNotifications = 'MESSAGE.SEND.SECURITY.NOTIFICATIONS'
+  sendSecurityNotifications = 'MESSAGE.SEND.SECURITY.NOTIFICATIONS',
+  sendPasswordRestoredEmail = 'MESSAGE.SEND.PASSWORD.RESTORED.EMAIL',
 }
 
 export default EventsNamesMessageEnum;

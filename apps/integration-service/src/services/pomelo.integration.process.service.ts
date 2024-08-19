@@ -1,4 +1,3 @@
-
 import {
   Injectable,
   InternalServerErrorException,
@@ -215,22 +214,25 @@ export class PomeloIntegrationProcessService {
         false,
         headers,
       );
-  
+
       setImmediate(() => {
-        this.sendAdjustmentNotificationEmail(adjustment)
-          .catch(error => {
-            Logger.error('Error sending adjustment notification email', error.stack);
-          });
+        this.sendAdjustmentNotificationEmail(adjustment).catch((error) => {
+          Logger.error(
+            'Error sending adjustment notification email',
+            error.stack,
+          );
+        });
       });
-  
+
       return processed;
     } catch (error) {
-      Logger.error('Error processing adjustment', error.stack);    
+      Logger.error('Error processing adjustment', error.stack);
     }
   }
-  
-  
-  private async sendAdjustmentNotificationEmail(adjustment: Adjustment): Promise<void> {
+
+  private async sendAdjustmentNotificationEmail(
+    adjustment: Adjustment,
+  ): Promise<void> {
     if (adjustment.user && adjustment.user.id) {
       const data = {
         name: `Notificacion de Ajuste de Transaccion`, // Revisar metodos ASCCII
@@ -241,32 +243,34 @@ export class PomeloIntegrationProcessService {
         destiny: null,
         vars: {
           userId: adjustment.user.id,
-          transactionId: adjustment.transaction?.id ,
+          transactionId: adjustment.transaction?.id,
           transactionType: adjustment.transaction?.type,
-          transactionDate: adjustment.transaction?.local_date_time ,
+          transactionDate: adjustment.transaction?.local_date_time,
           merchantName: adjustment.merchant?.name,
-          merchantMcc: adjustment.merchant?.mcc ,
+          merchantMcc: adjustment.merchant?.mcc,
           cardLastFour: adjustment.card?.last_four,
           cardProductType: adjustment.card?.product_type,
           amountLocal: adjustment.amount?.settlement?.total,
-          currencyLocal: adjustment.amount?.settlement?.currency
+          currencyLocal: adjustment.amount?.settlement?.currency,
         },
       };
-  
+
       if (adjustment.transaction?.id) {
         data.destiny = {
           resourceId: adjustment.transaction.id,
           resourceName: 'TRANSACTION',
         };
       }
-  
+
       Logger.log(data, 'Purchases/Transaction Adjustments Email Prepared');
       this.builder.emitMessageEventClient(
         EventsNamesMessageEnum.sendPurchasesTransactionAdjustments,
-        data
+        data,
       );
     } else {
-      Logger.warn('Adjustment processed without valid user ID. Skipping notification email.');
+      Logger.warn(
+        'Adjustment processed without valid user ID. Skipping notification email.',
+      );
     }
   }
 
