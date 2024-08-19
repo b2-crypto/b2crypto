@@ -60,6 +60,7 @@ import { B2BinPayNotificationsController } from './b2binpay.notifications.contro
     PomeloMigrationController,
   ],
   providers: [
+    V1DBClient,
     PomeloCache,
     PomeloSignatureUtils,
     PomeloHttpUtils,

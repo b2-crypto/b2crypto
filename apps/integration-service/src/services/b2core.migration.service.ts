@@ -19,6 +19,10 @@ export class B2CoreMigrationService {
       createReadStream(file.path)
         .pipe(csv())
         .on('data', async (data) => {
+          Logger.log(
+            JSON.stringify(data['Email']),
+            B2CoreMigrationService.name,
+          );
           const user = await this.getUserByEmail(data['Email']);
           if (user) {
             const walletAccount = this.buildAccount(data, user);
