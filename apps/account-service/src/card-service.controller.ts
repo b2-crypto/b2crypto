@@ -1,3 +1,4 @@
+
 import { LegalAddress } from './../../../libs/integration/src/card/generic/dto/user.card.dto';
 import { CardDepositCreateDto } from '@account/account/dto/card-deposit.create.dto';
 import { CardCreateDto } from '@account/account/dto/card.create.dto';
@@ -436,6 +437,7 @@ export class CardServiceController extends AccountServiceController {
           user.personalData.phoneNumber,
       },
     });
+    
     if (rtaShippingCard.data.id) {
       const account = await this.cardService.createOne({
         type: TypesAccountEnum.CARD,

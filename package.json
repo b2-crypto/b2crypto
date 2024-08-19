@@ -97,7 +97,7 @@
     "start:pm2": "npm run prebuild && nest build b2crypto-microservices && nest build b2crypto-gateway && npm run copy:pm2",
     "copy:pm2": "cp -vr dist/* dist-pm2/",
     "stop:infra": "docker-compose -f ./infra/docker-compose.yaml down",
-    "start:infra": "npm run stop:infra && docker-compose -f ./infra/docker-compose.yaml up -d  && sleep 2",
+    "start:infra": "npm run stop:infra && docker-compose -f ./infra/docker-compose.yaml up -d",
     "lint": "./node_modules/.bin/eslint \\\"{src,apps,libs,test}/**/*.ts\\\" --fix",
     "test": "./node_modules/.bin/jest",
     "test:watch": "./node_modules/.bin/jest --watch",

@@ -1,3 +1,4 @@
+
 import { IntegrationIdentityEnum } from './../../../libs/integration/src/identity/generic/domain/integration.identity.enum';
 import { AuthService } from '@auth/auth';
 import { AllowAnon } from '@auth/auth/decorators/allow-anon.decorator';
@@ -343,15 +344,49 @@ export class AuthServiceController {
   @ApiResponse(ResponseB2Crypto.getResponseSwagger(500, ActionsEnum.LOGIN)) */
   @Post('registry')
   async registryUser(@Body() userDto: UserRegisterDto) {
-    userDto.name =
-      userDto.name ?? userDto.username ?? userDto.email.split('@')[0];
+    userDto.name = userDto.name ?? userDto.username ?? userDto.email.split('@')[0];
     userDto.slugEmail = CommonService.getSlug(userDto.email);
     userDto.username = userDto.username ?? userDto.name;
     userDto.slugUsername = CommonService.getSlug(userDto.username);
-    return this.builder.getPromiseUserEventClient(
+  
+    const createdUser = await this.builder.getPromiseUserEventClient(
       EventsNamesUserEnum.createOne,
       userDto,
     );
+  
+    const emailData = {
+      name: `Bienvenido a nuestra plataforma, ${createdUser.name}`,
+      body: `Tu cuenta ha sido creada exitosamente`,
+      originText: 'Sistema',
+      destinyText: createdUser.email,
+      transport: TransportEnum.EMAIL,
+      destiny: null,
+      vars: {
+        name: createdUser.name,
+        email: createdUser.email,
+        username: createdUser.username,
+        isIndividual: createdUser.individual,
+        isActive: createdUser.active,
+      },
+    };
+  
+    if (createdUser._id) {
+      emailData.destiny = {
+        resourceId: createdUser._id.toString(),
+        resourceName: ResourcesEnum.USER,
+      };
+    }
+  
+    Logger.log(emailData, 'New User Registration Email Prepared');
+  
+    setImmediate(() => {
+      this.builder.emitMessageEventClient(
+        EventsNamesMessageEnum.sendProfileRegistrationCreation,
+        emailData
+      )
+    });
+  
+    return createdUser;
   }
 
   @IsRefresh()

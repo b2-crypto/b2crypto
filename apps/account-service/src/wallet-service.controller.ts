@@ -1,3 +1,4 @@
+
 import { WalletDepositCreateDto } from '@account/account/dto/wallet-deposit.create.dto';
 import { WalletCreateDto } from '@account/account/dto/wallet.create.dto';
 import StatusAccountEnum from '@account/account/enum/status.account.enum';
@@ -28,6 +29,8 @@ import { AccountServiceService } from './account-service.service';
 import { SwaggerSteakeyConfigEnum } from 'libs/config/enum/swagger.stakey.config.enum';
 import EventsNamesTransferEnum from 'apps/transfer-service/src/enum/events.names.transfer.enum';
 import { TransferCreateButtonDto } from 'apps/transfer-service/src/dto/transfer.create.button.dto';
+import TransportEnum from '@common/common/enums/TransportEnum';
+import EventsNamesMessageEnum from 'apps/message-service/src/enum/events.names.message.enum';
 
 @ApiTags('E-WALLET')
 @Controller('wallets')
@@ -88,9 +91,42 @@ export class WalletServiceController extends AccountServiceController {
       parseInt(
         CommonService.getNumberDigits(CommonService.randomIntNumber(9999), 4),
       );
-    return this.walletService.createOne(createDto);
+    
+    const createdWallet = await this.walletService.createOne(createDto);
+  
+    const emailData = {
+      name: `Actualización de tu Wallet`,
+      body: `Se ha creado un nuevo wallet en tu cuenta`,
+      originText: 'Sistema',
+      destinyText: user.email,
+      transport: TransportEnum.EMAIL,
+      destiny: null,
+      vars: {
+        name: user.name,
+        accountType: createdWallet.accountType,
+        accountName: createdWallet.accountName,
+        balance: createdWallet.amount,
+        currency: createdWallet.currency,
+        accountId: createdWallet.accountId,
+      },
+    };
+  
+    if (createdWallet._id) {
+      emailData.destiny = {
+        resourceId: createdWallet._id.toString(),
+        resourceName: 'WALLET',
+      };
+    }
+  
+    setImmediate(() => {
+      this.ewalletBuilder.emitMessageEventClient(
+        EventsNamesMessageEnum.sendCryptoWalletsManagement,
+        emailData
+      )
+    });
+  
+    return createdWallet;
   }
-
   @Post('recharge')
   async rechargeOne(
     @Body() createDto: WalletDepositCreateDto,
