@@ -68,13 +68,19 @@ export class PomeloMigrationService {
                 Logger.log(
                   `Total cards ${pomeloCards.data.length} by user ${person?.email[0]}`,
                   `${PomeloMigrationService.name}-startPomeloMigration-cards`,
+                  `Total cards ${pomeloCards.data.length} by user ${pomeloUser.email}`,
+                  PomeloMigrationService.name,
                 );
                 const hasCards =
                   pomeloCards?.meta?.pagination?.total_pages ?? false;
                 if (hasCards) {
                   for (let j = 0; j < pomeloCards.data.length; j++) {
                     const card = pomeloCards.data[j];
-                    const account = await this.migrateCard(card, person);
+                    const account = await this.migrateCard(
+                      card,
+                      person,
+                      pomeloUser.email,
+                    );
                     if (account) {
                       const balance = await this.getBalanceByCard(card?.id);
                       if (balance) {
@@ -173,13 +179,17 @@ export class PomeloMigrationService {
     }
   }
 
-  private async migrateCard(pomeloCard: any, person: any): Promise<any> {
+  private async migrateCard(
+    pomeloCard: any,
+    person: any,
+    email: string,
+  ): Promise<any> {
     try {
       Logger.log(
-        `Migrating Card ${pomeloCard?.id} for user ${person?.email[0]}`,
-        `${PomeloMigrationService.name}-migrateCard`,
+        `Migrating Card ${pomeloCard?.id} for user ${email}`,
+        PomeloMigrationService.name,
       );
-      const cardDto = this.buildCardDto(pomeloCard, person);
+      const cardDto = this.buildCardDto(pomeloCard, person, email);
       const account = await this.builder.getPromiseAccountEventClient(
         EventsNamesAccountEnum.mingrateOne,
         cardDto,
@@ -192,7 +202,7 @@ export class PomeloMigrationService {
     }
   }
 
-  private buildCardDto(pomeloCard: any, person: any) {
+  private buildCardDto(pomeloCard: any, person: any, email: string) {
     let statusText: string;
     if (pomeloCard?.status === 'ACTIVE') {
       statusText = StatusAccountEnum.UNLOCK;
@@ -209,7 +219,7 @@ export class PomeloMigrationService {
       lastName: person?.lastName,
       docId: person?.numDocId,
       address: person?.location?.address,
-      email: person?.email[0],
+      email: email,
       telephone: person?.phoneNumber,
       description: pomeloCard?.affinity_group_name,
       afgId: pomeloCard?.affinity_group_id,
