@@ -52,7 +52,8 @@ export class PomeloMigrationService {
         if (pomeloUsers && pomeloUsers.data) {
           currentPage++;
           totalPages = pomeloUsers?.meta?.pagination?.total_pages ?? 0;
-          pomeloUsers.data.forEach(async (pomeloUser) => {
+          for (let i = 0; i < pomeloUsers.data.length; i++) {
+            const pomeloUser = pomeloUsers[i];
             const user = await this.migrateUser(pomeloUser);
             if (user && user.slug) {
               // TODO Log Activity
@@ -64,10 +65,15 @@ export class PomeloMigrationService {
               persons++;
               if (person) {
                 const pomeloCards = await this.getPomeloCard(pomeloUser.id);
+                Logger.log(
+                  `Total cards ${pomeloCards.data.length} by user ${person?.email[0]}`,
+                  PomeloMigrationService.name,
+                );
                 const hasCards =
                   pomeloCards?.meta?.pagination?.total_pages ?? false;
                 if (hasCards) {
-                  pomeloCards.data.forEach(async (card: any) => {
+                  for (let j = 0; j < pomeloCards.data.length; j++) {
+                    const card = pomeloCards.data[j];
                     const account = await this.migrateCard(card, person);
                     if (account) {
                       const balance = await this.getBalanceByCard(card?.id);
@@ -78,15 +84,15 @@ export class PomeloMigrationService {
                     } else {
                       // TODO Log error activity
                     }
-                  });
+                  }
                 }
               }
             }
-          });
+          }
         }
       } while (currentPage < totalPages);
     } catch (error) {
-      Logger.error(error, PomeloMigrationService.name);
+      Logger.error(error, `Error global ${PomeloMigrationService.name}`);
       // TODO Log error activity
       return null;
     }

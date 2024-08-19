@@ -8,5 +8,9 @@ export class PomeloMigrationController {
   async ignatePomeloIntegration() {
     Logger.log('Starting ...', 'PomeloMigrationController');
     await this.migrationService.startPomeloMigration();
+    return {
+      statusCode: 200,
+      data: 'Finnished',
+    };
   }
 }
