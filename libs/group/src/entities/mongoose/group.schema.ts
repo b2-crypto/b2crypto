@@ -1,21 +1,17 @@
+import { Category } from '@category/category/entities/mongoose/category.schema';
+import { GroupEntity } from '@group/group/entities/group.entity';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import * as mongoose from 'mongoose';
 import { Document, ObjectId } from 'mongoose';
-import { GroupEntity } from '@group/group/entities/group.entity';
-import { Category } from '@category/category/entities/mongoose/category.schema';
-import { Lead } from '@lead/lead/entities/mongoose/lead.schema';
-import { Affiliate } from '@affiliate/affiliate/infrastructure/mongoose/affiliate.schema';
-import { Crm } from '@crm/crm/entities/mongoose/crm.schema';
-import { Status } from '@status/status/entities/mongoose/status.schema';
-import { Psp } from '@psp/psp/entities/mongoose/psp.schema';
+import { GroupInterface } from '../group.interface';
 
 export type GroupDocument = Group & Document;
 
 @Schema({
   timestamps: true,
 })
-export class Group extends GroupEntity {
-  id: ObjectId;
+export class Group extends GroupEntity implements GroupInterface {
+  id: string;
 
   @Prop()
   name: string;

@@ -318,7 +318,6 @@ export class TransferServiceService
             Logger.error(deposit, 'Error B2BinPay Deposit');
             throw new BadRequestException(deposit['errors']);
           }
-          Logger.log(deposit, 'URL B2BinPay Deposit');
           transferSaved.responseAccount = {
             data: deposit.data as unknown as DataTransferAccountResponse,
           };
