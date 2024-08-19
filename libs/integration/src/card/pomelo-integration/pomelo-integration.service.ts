@@ -23,13 +23,11 @@ export class PomeloIntegrationService extends IntegrationCardService<
   ) {
     super(configService, _account);
     this.setClient({
-      id: 'BPdaVjhdJAyzPW43JI7YUM1czNoTPh2G',
-      secret:
-        this.account?.secret ??
-        'eRIIDxqovn5sBhFII7_E9aGrSu3CiU7aLpr5tw2As3-PjU78rro2Q2uoob0qw54F',
-      audience: this.account?.audience ?? 'https://auth-staging.pomelo.la',
-      url: this.account?.url ?? 'https://api-sandbox.pomelo.la',
-      grantType: this.account?.grantType ?? 'client_credentials',
+      id: process.env.POMELO_CLIENT_ID,
+      secret: this.account?.secret ?? process.env.POMELO_SECRET_ID,
+      audience: this.account?.audience ?? process.env.POMELO_AUDIENCE,
+      url: this.account?.url ?? process.env.POMELO_API_URL,
+      grantType: this.account?.grantType ?? process.env.POMELO_AUTH_GRANT_TYPE,
     });
     this.setRouteMap({
       getFormatKey: 'filter[%key%]',
