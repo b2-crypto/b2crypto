@@ -48,6 +48,8 @@ import { SwaggerSteakeyConfigEnum } from 'libs/config/enum/swagger.stakey.config
 import { ApiKeyAuthGuard } from '@auth/auth/guards/api.key.guard';
 import { isBoolean } from 'class-validator';
 import { BuildersService } from '@builder/builders';
+import EventsNamesMessageEnum from 'apps/message-service/src/enum/events.names.message.enum';
+import TransportEnum from '@common/common/enums/TransportEnum';
 
 @ApiTags('USER')
 @Controller('users')
@@ -116,8 +118,8 @@ export class UserServiceController implements GenericServiceController {
 
   @Post('massive-email')
   async generatePasswordEmail() {
-    let page: number = 1;
-    let totalPages: number = 0;
+    let page = 1;
+    let totalPages = 0;
     do {
       const users = await this.findAll({ page });
       if (users?.list?.length > 0) {
@@ -130,17 +132,34 @@ export class UserServiceController implements GenericServiceController {
         for (let i = 0; i < users?.list?.length; i++) {
           const user = users.list[i];
           if (user && user?.email) {
+            const psw = CommonService.generatePassword(8);
             const emailMessage = {
               name: user?.name,
               username: user?.username,
               email: user?.email,
-              password: CommonService.generatePassword(8),
+              password: psw,
             };
             Logger.log(
               `Email event msg: ${JSON.stringify(emailMessage)}`,
               `MassiveEmail.${UserServiceController.name}`,
             );
-            //this.builder.
+            const emailData = {
+              name: `Actualizacion de clave`,
+              body: `Tu clave ha sido actualizada exitosamente ${user.name}`,
+              originText: 'Sistema',
+              destinyText: user.email,
+              transport: TransportEnum.EMAIL,
+              destiny: null,
+              vars: {
+                name: user.name,
+                username: user.username,
+                password: psw,
+              },
+            };
+            this.builder.emitMessageEventClient(
+              EventsNamesMessageEnum.sendPasswordRestoredEmail,
+              emailData,
+            );
           }
         }
       }
