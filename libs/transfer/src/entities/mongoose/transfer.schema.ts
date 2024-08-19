@@ -29,9 +29,7 @@ export type TransferDocument = Transfer & Document;
 export class Transfer extends TransferEntity {
   id: ObjectId;
 
-  @Prop({
-    index: { unique: true },
-  })
+  @Prop()
   numericId: number;
 
   @Prop()

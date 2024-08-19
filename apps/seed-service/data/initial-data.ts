@@ -1160,6 +1160,17 @@ class CreatorSeedMongoose {
       this.createStatusDto('B - Duplicate', '109', [ResourcesEnum.CRM]),
       this.createStatusDto('B - Underage', '110', [ResourcesEnum.CRM]),
       this.createStatusDto('B - Zero contact', '115', [ResourcesEnum.CRM]),
+      this.createStatusDto('Lock', 'Account locked', [ResourcesEnum.ACCOUNT]),
+      this.createStatusDto('Unlock', 'Account unlock', [ResourcesEnum.ACCOUNT]),
+      this.createStatusDto('Cancel', 'Account canceled', [
+        ResourcesEnum.ACCOUNT,
+      ]),
+      this.createStatusDto('Enable', 'Account enabled', [
+        ResourcesEnum.ACCOUNT,
+      ]),
+      this.createStatusDto('Disable', 'Account disable', [
+        ResourcesEnum.ACCOUNT,
+      ]),
     ];
   }
   private getPspsDto() {
@@ -1185,16 +1196,122 @@ class CreatorSeedMongoose {
   private getTransferTypesDto() {
     const type = TagEnum.MONETARY_TRANSACTION_TYPE;
     return [
-      this.createCategoryDto('Cash', 'Payment with cash', type, [
+      this.createCategoryDto('Cash', 'Cash', type, [ResourcesEnum.TRANSFER]),
+      this.createCategoryDto('Transfer', 'Transfer', type, [
+        ResourcesEnum.TRANSFER,
+      ]),
+      this.createCategoryDto('Credit Card', 'Credit card', type, [
+        ResourcesEnum.TRANSFER,
+      ]),
+      this.createCategoryDto('Credit wallet', 'Credit wallet', type, [
+        ResourcesEnum.TRANSFER,
+      ]),
+      this.createCategoryDto('Credit bank', 'Credit bank', type, [
+        ResourcesEnum.TRANSFER,
+      ]),
+      this.createCategoryDto('Debit', 'Debit', type, [ResourcesEnum.TRANSFER]),
+      this.createCategoryDto('Debit Card', 'Debit Card', type, [
+        ResourcesEnum.TRANSFER,
+      ]),
+      this.createCategoryDto('Debit wallet', 'Debit wallet', type, [
+        ResourcesEnum.TRANSFER,
+      ]),
+      this.createCategoryDto('Debit bank', 'Debit bank', type, [
+        ResourcesEnum.TRANSFER,
+      ]),
+      this.createCategoryDto('Deposit Link', 'Deposit Link', type, [
+        ResourcesEnum.TRANSFER,
+      ]),
+      this.createCategoryDto('Crypto', 'Crypto', type, [
+        ResourcesEnum.TRANSFER,
+      ]),
+      this.createCategoryDto('Fiat', 'Fiat', type, [ResourcesEnum.TRANSFER]),
+      this.createCategoryDto('Mix', 'Mix', type, [ResourcesEnum.TRANSFER]),
+      this.createCategoryDto('Notification', 'Notification', type, [
+        ResourcesEnum.TRANSFER,
+      ]),
+      this.createCategoryDto('Notification card', 'Notification card', type, [
         ResourcesEnum.TRANSFER,
       ]),
       this.createCategoryDto(
-        'Transfer',
-        'Payment with bancary transfer',
+        'Notification wallet',
+        'Notification wallet',
         type,
         [ResourcesEnum.TRANSFER],
       ),
-      this.createCategoryDto('Credit Card', 'Payment with credit card', type, [
+      this.createCategoryDto('Notification bank', 'Notification bank', type, [
+        ResourcesEnum.TRANSFER,
+      ]),
+      this.createCategoryDto('Deposit Card', 'Deposit Card', type, [
+        ResourcesEnum.TRANSFER,
+      ]),
+      this.createCategoryDto('Deposit wallet', 'Deposit wallet', type, [
+        ResourcesEnum.TRANSFER,
+      ]),
+      this.createCategoryDto('Deposit bank', 'Deposit bank', type, [
+        ResourcesEnum.TRANSFER,
+      ]),
+      this.createCategoryDto('Withdrawal card', 'Withdrawal card', type, [
+        ResourcesEnum.TRANSFER,
+      ]),
+      this.createCategoryDto('Withdrawal wallet', 'Withdrawal wallet', type, [
+        ResourcesEnum.TRANSFER,
+      ]),
+      this.createCategoryDto('Withdrawal bank', 'Withdrawal bank', type, [
+        ResourcesEnum.TRANSFER,
+      ]),
+      this.createCategoryDto('Chargeback card', 'Chargeback card', type, [
+        ResourcesEnum.TRANSFER,
+      ]),
+      this.createCategoryDto('Chargeback wallet', 'Chargeback wallet', type, [
+        ResourcesEnum.TRANSFER,
+      ]),
+      this.createCategoryDto('Chargeback bank', 'Chargeback bank', type, [
+        ResourcesEnum.TRANSFER,
+      ]),
+      this.createCategoryDto('Refound card', 'Refound card', type, [
+        ResourcesEnum.TRANSFER,
+      ]),
+      this.createCategoryDto('Refound wallet', 'Refound wallet', type, [
+        ResourcesEnum.TRANSFER,
+      ]),
+      this.createCategoryDto('Refound bank', 'Refound bank', type, [
+        ResourcesEnum.TRANSFER,
+      ]),
+      this.createCategoryDto('Payment card', 'Payment card', type, [
+        ResourcesEnum.TRANSFER,
+      ]),
+      this.createCategoryDto('Payment wallet', 'Payment wallet', type, [
+        ResourcesEnum.TRANSFER,
+      ]),
+      this.createCategoryDto('Payment bank', 'Payment bank', type, [
+        ResourcesEnum.TRANSFER,
+      ]),
+      this.createCategoryDto('Purchase card', 'Purchase card', type, [
+        ResourcesEnum.TRANSFER,
+      ]),
+      this.createCategoryDto('Purchase wallet', 'Purchase wallet', type, [
+        ResourcesEnum.TRANSFER,
+      ]),
+      this.createCategoryDto('Purchase bank', 'Purchase bank', type, [
+        ResourcesEnum.TRANSFER,
+      ]),
+      this.createCategoryDto('Extra cash card', 'Extra cash card', type, [
+        ResourcesEnum.TRANSFER,
+      ]),
+      this.createCategoryDto('Extra cash wallet', 'Extra cash wallet', type, [
+        ResourcesEnum.TRANSFER,
+      ]),
+      this.createCategoryDto('Extra cash bank', 'Extra cash bank', type, [
+        ResourcesEnum.TRANSFER,
+      ]),
+      this.createCategoryDto('Reversal card', 'Reversal card', type, [
+        ResourcesEnum.TRANSFER,
+      ]),
+      this.createCategoryDto('Reversal wallet', 'Reversal wallet', type, [
+        ResourcesEnum.TRANSFER,
+      ]),
+      this.createCategoryDto('Reversal bank', 'Reversal bank', type, [
         ResourcesEnum.TRANSFER,
       ]),
     ];

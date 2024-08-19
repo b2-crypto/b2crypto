@@ -1,7 +1,7 @@
 
 import { Injectable, Logger } from '@nestjs/common';
-const sftpClient = require('ssh2-sftp-client');
-const fs = require('fs');
+import * as sftpClient from 'ssh2-sftp-client';
+import * as fs from 'fs';
 
 @Injectable()
 export class PomeloIntegrationSFTPService {
@@ -29,7 +29,7 @@ export class PomeloIntegrationSFTPService {
   }
 
   private buildFilename(prefix: string, client: string, country: string) {
-    let date = new Date();
+    const date = new Date();
     date.setDate(date.getDate() - 1);
     const formattedDate = `${date.toISOString().split('T')[0]}`;
     return `${prefix}_${formattedDate}_${client}_${country}.csv`;

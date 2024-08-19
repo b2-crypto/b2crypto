@@ -1,4 +1,4 @@
-import { Constants } from '@common/common/utils/pomelo.integration.process.constants';
+import { PomeloProcessConstants } from '@common/common/utils/pomelo.integration.process.constants';
 import { SumsubHttpUtils } from '@common/common/utils/sumsub.integration.process.http.utils';
 import { SumsubSignatureUtils } from '@common/common/utils/sumsub.integration.process.signature';
 import {
@@ -13,7 +13,7 @@ import {
 export class SumsubSignatureGuard implements CanActivate {
   constructor(
     private readonly signatureUtil: SumsubSignatureUtils,
-    private readonly constants: Constants,
+    private readonly constants: PomeloProcessConstants,
     private readonly utils: SumsubHttpUtils,
   ) {}
 

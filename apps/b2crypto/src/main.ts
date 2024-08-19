@@ -1,27 +1,24 @@
-import { AppModule } from './app.module';
-import { NestFactory } from '@nestjs/core';
 import { INestApplication, Logger, ValidationPipe } from '@nestjs/common';
-import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import { UserServiceModule } from '../../user-service/src/user-service.module';
-import { RoleServiceModule } from 'apps/role-service/src/role-service.module';
-import { LeadServiceModule } from 'apps/lead-service/src/lead-service.module';
-import { StatusServiceModule } from 'apps/status-service/src/status-service.module';
-import { PermissionServiceModule } from 'apps/permission-service/src/permission-service.module';
-import { CrmServiceModule } from 'apps/crm-service/src/crm-service.module';
-import { AffiliateServiceModule } from 'apps/affiliate-service/src/affiliate-service.module';
-import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 import { ConfigService } from '@nestjs/config';
-import { AppHttpModule } from './app.http.module';
-import * as basicAuth from 'express-basic-auth';
+import { NestFactory } from '@nestjs/core';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { AffiliateServiceModule } from 'apps/affiliate-service/src/affiliate-service.module';
 import { CategoryServiceModule } from 'apps/category-service/src/category-service.module';
+import { CrmServiceModule } from 'apps/crm-service/src/crm-service.module';
+import { LeadServiceModule } from 'apps/lead-service/src/lead-service.module';
+import { PermissionServiceModule } from 'apps/permission-service/src/permission-service.module';
+import { RoleServiceModule } from 'apps/role-service/src/role-service.module';
+import { StatusServiceModule } from 'apps/status-service/src/status-service.module';
+import * as basicAuth from 'express-basic-auth';
+import { UserServiceModule } from '../../user-service/src/user-service.module';
+import { AppHttpModule } from './app.http.module';
 
+import { QueueAdminModule } from '@common/common/queue-admin-providers/queue.admin.provider.module';
 import { OpenAPIObject } from '@nestjs/swagger';
 import { PathsObject } from '@nestjs/swagger/dist/interfaces/open-api-spec.interface';
-import { TransferServiceModule } from 'apps/transfer-service/src/transfer-service.module';
-import { QueueAdminService } from '@common/common/queue-admin-providers/queue.admin.provider.service';
-import { QueueAdminModule } from '@common/common/queue-admin-providers/queue.admin.provider.module';
-import { PersonServiceModule } from 'apps/person-service/src/person-service.module';
 import { AccountServiceModule } from 'apps/account-service/src/account-service.module';
+import { PersonServiceModule } from 'apps/person-service/src/person-service.module';
+import { TransferServiceModule } from 'apps/transfer-service/src/transfer-service.module';
 import { SwaggerSteakeyConfigEnum } from 'libs/config/enum/swagger.stakey.config.enum';
 
 async function bootstrap() {
@@ -31,16 +28,6 @@ async function bootstrap() {
     cors: true,
   });
   const configService = app.get(ConfigService);
-  const opts = {
-    username: configService.get('DATABASE_REDIS_USERNAME'),
-    password: configService.get('DATABASE_REDIS_PASSWORD'),
-    host: configService.get('DATABASE_REDIS_HOST'),
-    port: configService.get('DATABASE_REDIS_PORT'),
-  };
-  if (opts.host === 'localhost') {
-    delete opts.username;
-    delete opts.password;
-  }
 
   const validationPipes = new ValidationPipe({
     whitelist: true,

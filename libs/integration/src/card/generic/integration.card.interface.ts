@@ -1,4 +1,4 @@
-import { CardDto } from './dto/card.dto';
+import { CardDto, CardSearchDto } from './dto/card.dto';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { UserResponseDto } from '@integration/integration/crm/generic/dto/user.response.dto';
 import { AxiosInstance, AxiosResponse } from 'axios';
@@ -7,6 +7,7 @@ import { UserCardDto } from './dto/user.card.dto';
 export interface IntegrationCardInterface<
   TUserCardDto = UserCardDto,
   TCardDto = UserCardDto,
+  TCardSearchDto = CardSearchDto,
   TUserResponse = UserResponseDto,
 > {
   http: AxiosInstance;

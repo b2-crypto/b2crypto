@@ -7,6 +7,7 @@ import { IS_API_KEY_CHECK } from '../decorators/api-key-check.decorator';
 import { PATH_METADATA } from '@nestjs/common/constants';
 import { PomeloEnum } from '@integration/integration/enum/pomelo.enum';
 import { ProcessHeaderDto } from '@integration/integration/dto/pomelo.process.header.dto';
+import { CommonService } from '@common/common';
 
 @Injectable()
 export class JwtAuthGuard extends AuthGuard('jwt') {
@@ -58,7 +59,7 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
     //const headers = this.utils.extractRequestHeaders(context);
     const headers = this.extractRequestHeaders(context);
     if (
-      this.checkWhitelistedIps(context) &&
+      CommonService.checkWhitelistedIps(context) &&
       this.checkValidEndpoint(path, headers)
     ) {
       return true;
@@ -73,24 +74,6 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
 
     const adjustmentPath = path.replace('/:type', '');
     return headers.endpoint.includes(adjustmentPath);
-  }
-  private checkWhitelistedIps(context: ExecutionContext): boolean {
-    if (
-      process.env.POMELO_WHITELISTED_IPS_CHECK ===
-      PomeloEnum.POMELO_WHITELISTED_IPS_CHECK_OFF.toString()
-    ) {
-      return true;
-    }
-    const request = context.switchToHttp().getRequest();
-    const caller =
-      request?.headers[PomeloEnum.POMELO_WHITELISTED_HEADER_FORWARDED] ||
-      request?.headers[PomeloEnum.POMELO_WHITELISTED_HEADER_REAL] ||
-      '';
-    Logger.log(`IpCaller: ${caller}`, 'SignatureGuard');
-    const whitelisted = process.env.POMELO_WHITELISTED_IPS;
-    return (
-      whitelisted?.replace(/\s/g, '')?.split(',')?.includes(caller) || false
-    );
   }
   private headersToLowercase(context: ExecutionContext) {
     const req = context.switchToHttp().getRequest();

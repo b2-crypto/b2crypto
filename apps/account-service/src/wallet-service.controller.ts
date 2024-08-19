@@ -1,4 +1,3 @@
-
 import { WalletDepositCreateDto } from '@account/account/dto/wallet-deposit.create.dto';
 import { WalletCreateDto } from '@account/account/dto/wallet.create.dto';
 import StatusAccountEnum from '@account/account/enum/status.account.enum';
@@ -14,6 +13,7 @@ import {
   Delete,
   Get,
   Inject,
+  Logger,
   Param,
   Patch,
   Post,
@@ -27,10 +27,20 @@ import { UserServiceService } from 'apps/user-service/src/user-service.service';
 import { AccountServiceController } from './account-service.controller';
 import { AccountServiceService } from './account-service.service';
 import { SwaggerSteakeyConfigEnum } from 'libs/config/enum/swagger.stakey.config.enum';
+import {
+  Ctx,
+  EventPattern,
+  MessagePattern,
+  Payload,
+  RmqContext,
+} from '@nestjs/microservices';
+import EventsNamesAccountEnum from './enum/events.names.account.enum';
 import EventsNamesTransferEnum from 'apps/transfer-service/src/enum/events.names.transfer.enum';
 import { TransferCreateButtonDto } from 'apps/transfer-service/src/dto/transfer.create.button.dto';
 import TransportEnum from '@common/common/enums/TransportEnum';
 import EventsNamesMessageEnum from 'apps/message-service/src/enum/events.names.message.enum';
+import { CreateAnyDto } from '@common/common/models/create-any.dto';
+import { TransferEntity } from '@transfer/transfer/entities/transfer.entity';
 
 @ApiTags('E-WALLET')
 @Controller('wallets')
@@ -74,59 +84,34 @@ export class WalletServiceController extends AccountServiceController {
   @ApiSecurity('b2crypto-key')
   @Post('create')
   async createOne(@Body() createDto: WalletCreateDto, @Req() req?: any) {
+    const userId = req?.user.id ?? createDto.owner;
+    if (!userId) {
+      throw new BadRequestException('Need the user id to continue');
+    }
     const user: User = (
       await this.userService.getAll({
         relations: ['personalData'],
         where: {
-          _id: req?.user.id,
+          _id: userId,
         },
       })
     ).list[0];
     if (!user.personalData) {
       throw new BadRequestException('Need the personal data to continue');
     }
+    createDto.type = TypesAccountEnum.WALLET;
+    createDto.accountId = '2177';
+    createDto.accountName = 'CoxSQtiWAHVo';
+    createDto.accountPassword = 'w7XDOfgfudBvRG';
     createDto.owner = user.id;
     createDto.pin =
       createDto.pin ??
       parseInt(
         CommonService.getNumberDigits(CommonService.randomIntNumber(9999), 4),
       );
-    
-    const createdWallet = await this.walletService.createOne(createDto);
-  
-    const emailData = {
-      name: `Actualización de tu Wallet`,
-      body: `Se ha creado un nuevo wallet en tu cuenta`,
-      originText: 'Sistema',
-      destinyText: user.email,
-      transport: TransportEnum.EMAIL,
-      destiny: null,
-      vars: {
-        name: user.name,
-        accountType: createdWallet.accountType,
-        accountName: createdWallet.accountName,
-        balance: createdWallet.amount,
-        currency: createdWallet.currency,
-        accountId: createdWallet.accountId,
-      },
-    };
-  
-    if (createdWallet._id) {
-      emailData.destiny = {
-        resourceId: createdWallet._id.toString(),
-        resourceName: 'WALLET',
-      };
-    }
-  
-    setImmediate(() => {
-      this.ewalletBuilder.emitMessageEventClient(
-        EventsNamesMessageEnum.sendCryptoWalletsManagement,
-        emailData
-      )
-    });
-  
-    return createdWallet;
+    return this.walletService.createOne(createDto);
   }
+
   @Post('recharge')
   async rechargeOne(
     @Body() createDto: WalletDepositCreateDto,
@@ -164,28 +149,34 @@ export class WalletServiceController extends AccountServiceController {
       identifier: user._id.toString(),
     };
     try {
-      const transfer = await this.ewalletBuilder.getPromiseTransferEventClient(
-        EventsNamesTransferEnum.createOneDepositLink,
-        transferBtn,
-      );
+      let depositAddress = to.responseCreation;
+      if (!depositAddress) {
+        depositAddress =
+          await this.ewalletBuilder.getPromiseTransferEventClient(
+            EventsNamesTransferEnum.createOneDepositLink,
+            transferBtn,
+          );
+        this.ewalletBuilder.emitAccountEventClient(
+          EventsNamesAccountEnum.updateOne,
+          {
+            id: to._id,
+            responseCreation: depositAddress,
+          },
+        );
+      }
       const host = req.get('Host');
-      const url = `${req.protocol}://${host}/transfers/deposit/page/${transfer?._id}`;
+      //const url = `${req.protocol}://${host}/transfers/deposit/page/${transfer?._id}`;
+      const url = `https://${host}/transfers/deposit/page/${depositAddress?._id}`;
       return {
         statusCode: 200,
         data: {
-          txId: transfer?._id,
+          txId: depositAddress?._id,
           url,
         },
       };
     } catch (error) {
       throw new BadRequestException(error);
     }
-    /* return this.walletService.customUpdateOne({
-      id: createDto.id,
-      $inc: {
-        amount: createDto.amount,
-      },
-    }); */
   }
 
   @Patch('lock/:walletId')
@@ -236,5 +227,38 @@ export class WalletServiceController extends AccountServiceController {
   @Delete(':walletID')
   deleteOneById(@Param('walletID') id: string, req?: any) {
     return this.getAccountService().deleteOneById(id);
+  }
+
+  @MessagePattern(EventsNamesAccountEnum.migrateOneWallet)
+  async migrateWallet(@Ctx() ctx: RmqContext, @Payload() walletToMigrate: any) {
+    try {
+      CommonService.ack(ctx);
+      Logger.log(
+        `Migrating wallet ${walletToMigrate.accountId}`,
+        WalletServiceController.name,
+      );
+      const walletList = await this.walletService.findAll({
+        where: {
+          accountId: walletToMigrate.accountId,
+          type: TypesAccountEnum.WALLET,
+        },
+      });
+      if (!walletList || !walletList.list[0]) {
+        return await this.walletService.createOne(walletToMigrate);
+      } else {
+        return walletList.list[0];
+      }
+    } catch (error) {
+      Logger.error(error, WalletServiceController.name);
+    }
+  }
+
+  @EventPattern(EventsNamesAccountEnum.createOneWallet)
+  createOneWalletEvent(
+    @Payload() createDto: WalletCreateDto,
+    @Ctx() ctx: RmqContext,
+  ) {
+    CommonService.ack(ctx);
+    return this.createOne(createDto);
   }
 }

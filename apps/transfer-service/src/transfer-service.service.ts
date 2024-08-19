@@ -282,7 +282,7 @@ export class TransferServiceService
       transfer.userAccount = account.owner ?? transfer.userCreator;
       const transferSaved = await this.lib.create(transfer);
       if (
-        transferSaved.typeTransaction.toString() === depositLinkCategory._id
+        transferSaved.typeTransaction?.toString() === depositLinkCategory._id
       ) {
         try {
           const url = transfer.account.url ?? 'https://api.b2binpay.com';
@@ -300,9 +300,9 @@ export class TransferServiceService
                 target_amount_requested: transferSaved.amount.toString(),
                 label: transferSaved.name,
                 tracking_id: transferSaved._id,
-                confirmations_needed: 2,
+                confirmations_needed: 1,
                 // TODO[hender-2024/05/30] Change callback_url to environment params
-                callback_url: 'http://stage.b2fintech.com/b2binpay/status',
+                callback_url: 'https://stage.b2fintech.com/b2binpay/status',
               },
               relationships: {
                 wallet: {
@@ -318,7 +318,6 @@ export class TransferServiceService
             Logger.error(deposit, 'Error B2BinPay Deposit');
             throw new BadRequestException(deposit['errors']);
           }
-          Logger.log(deposit, 'URL B2BinPay Deposit');
           transferSaved.responseAccount = {
             data: deposit.data as unknown as DataTransferAccountResponse,
           };
