@@ -2,12 +2,7 @@ enum EventsNamesAccountEnum {
   // Websocket
   websocketPort = '3100',
   clientName = 'CARD',
-  download = 'CARD.DOWNLOAD',
-  downloadDatabase = 'CARD.DOWNLOAD.DATABASE',
-  downloadData = 'CARD.DOWNLOAD.DATA',
-  downloadCftd = 'CARD.DOWNLOAD.CFTD',
-  downloadFtd = 'CARD.DOWNLOAD.FTD',
-  downloadRetention = 'CARD.DOWNLOAD.RETENTION',
+  download = 'ACCOUNT.DOWNLOAD',
   //
   createMany = 'CARD.CREATE.MANY',
   createOne = 'CARD.CREATE.ONE',
@@ -38,6 +33,10 @@ enum EventsNamesAccountEnum {
   checkStatsDateAll = 'CARD.CHECK.STATS.DATE.ALL',
 
   athorizationTx = 'CARD.AUTHORIZATION.TX',
+  count = 'ACCOUNT.COUNT',
+  createOneWallet = 'ACCOUNT.CREATE.ONE.WALLET',
+  customUpdateOne = 'ACCOUNT.CUSTOM.UPDATE.ONE',
+
   pomeloTransaction = 'CARD.POMELO.TRANSACTION',
 }
 

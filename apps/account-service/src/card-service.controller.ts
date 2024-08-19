@@ -67,6 +67,14 @@ import CurrencyCodeB2cryptoEnum from '@common/common/enums/currency-code-b2crypt
 import { SwaggerSteakeyConfigEnum } from 'libs/config/enum/swagger.stakey.config.enum';
 import { countries } from 'apps/seed-service/const/countries.const';
 import { isEmpty, isString } from 'class-validator';
+import EventsNamesTransferEnum from 'apps/transfer-service/src/enum/events.names.transfer.enum';
+import { TransferCreateDto } from '@transfer/transfer/dto/transfer.create.dto';
+import EventsNamesCategoryEnum from 'apps/category-service/src/enum/events.names.category.enum';
+import { OperationTransactionType } from '@transfer/transfer/enum/operation.transaction.type.enum';
+import { StatusCashierEnum } from '@common/common/enums/StatusCashierEnum';
+import EventsNamesStatusEnum from 'apps/status-service/src/enum/events.names.status.enum';
+import EventsNamesPspAccountEnum from 'apps/psp-service/src/enum/events.names.psp.acount.enum';
+import { PspAccount } from '@psp-account/psp-account/entities/mongoose/psp-account.schema';
 
 @ApiTags('CARD')
 @Controller('cards')
@@ -243,6 +251,29 @@ export class CardServiceController extends AccountServiceController {
       }
       account.cardConfig = card.data as unknown as Card;
       account.save();
+      const countWalletsUser =
+        await this.cardBuilder.getPromiseAccountEventClient(
+          EventsNamesAccountEnum.count,
+          {
+            where: {
+              type: TypesAccountEnum.WALLET,
+              owner: account.owner,
+            },
+          },
+        );
+      if (countWalletsUser < 1)
+        this.cardBuilder.emitAccountEventClient(
+          EventsNamesAccountEnum.createOneWallet,
+          {
+            owner: account.owner,
+            name: 'USDT',
+            pin: CommonService.getNumberDigits(
+              CommonService.randomIntNumber(4),
+              4,
+            ),
+            accountType: 'STABLECOIN',
+          },
+        );
       return account;
     } catch (err) {
       await this.getAccountService().deleteOneById(account._id);
@@ -459,8 +490,8 @@ export class CardServiceController extends AccountServiceController {
     if (!user.personalData) {
       throw new BadRequestException('Need the personal data to continue');
     }
-    if (createDto.amount <= 0) {
-      throw new BadRequestException('The recharge not be 0 or less');
+    if (createDto.amount < 10) {
+      throw new BadRequestException('The recharge not be 10 or less');
     }
     if (!createDto.from) {
       throw new BadRequestException('I need a wallet to recharge card');
@@ -483,8 +514,33 @@ export class CardServiceController extends AccountServiceController {
     if (from.amount < createDto.amount) {
       throw new BadRequestException('Wallet with enough balance');
     }
+    const depositCardCategory =
+      await this.cardBuilder.getPromiseCategoryEventClient(
+        EventsNamesCategoryEnum.findOneByNameType,
+        {
+          slug: 'deposit-card',
+          type: TagEnum.MONETARY_TRANSACTION_TYPE,
+        },
+      );
+    const withDrawalWalletCategory =
+      await this.cardBuilder.getPromiseCategoryEventClient(
+        EventsNamesCategoryEnum.findOneByNameType,
+        {
+          slug: 'withdrawal-wallet',
+          type: TagEnum.MONETARY_TRANSACTION_TYPE,
+        },
+      );
+    const approvedStatus = await this.cardBuilder.getPromiseStatusEventClient(
+      EventsNamesStatusEnum.findOneByName,
+      'approved',
+    );
+    const internalPspAccount =
+      await this.cardBuilder.getPromisePspAccountEventClient(
+        EventsNamesPspAccountEnum.findOneByName,
+        'internal',
+      );
     // Create
-    return Promise.all([
+    const result = Promise.all([
       this.cardService.customUpdateOne({
         id: createDto.to,
         $inc: {
@@ -498,6 +554,59 @@ export class CardServiceController extends AccountServiceController {
         },
       }),
     ]).then((list) => list[0]);
+    this.cardBuilder.emitTransferEventClient(
+      EventsNamesTransferEnum.createOne,
+      {
+        name: `Recharge card ${to.name}`,
+        description: `Recharge from wallet ${from.name} to card ${to.name}`,
+        currency: to.currency,
+        amount: createDto.amount,
+        currencyCustodial: to.currencyCustodial,
+        amountCustodial: createDto.amount,
+        account: to._id,
+        userCreator: req?.user?.id,
+        userAccount: to.owner,
+        typeTransaction: depositCardCategory._id,
+        psp: internalPspAccount.psp,
+        pspAccount: internalPspAccount._id,
+        operationType: OperationTransactionType.deposit,
+        page: req.get('Host'),
+        statusPayment: StatusCashierEnum.APPROVED,
+        approve: true,
+        status: approvedStatus._id,
+        brand: to.brand,
+        crm: to.crm,
+        confirmedAt: new Date(),
+        approvedAt: new Date(),
+      } as unknown as TransferCreateDto,
+    );
+    this.cardBuilder.emitTransferEventClient(
+      EventsNamesTransferEnum.createOne,
+      {
+        name: `Withdrawal wallet ${from.name}`,
+        description: `Recharge from wallet ${from.name} to card ${to.name}`,
+        currency: from.currency,
+        amount: createDto.amount,
+        currencyCustodial: from.currencyCustodial,
+        amountCustodial: createDto.amount,
+        account: from._id,
+        userCreator: req?.user?.id,
+        userAccount: from.owner,
+        typeTransaction: withDrawalWalletCategory._id,
+        psp: internalPspAccount.psp,
+        pspAccount: internalPspAccount._id,
+        operationType: OperationTransactionType.withdrawal,
+        page: req.get('Host'),
+        statusPayment: StatusCashierEnum.APPROVED,
+        approve: true,
+        status: approvedStatus._id,
+        brand: from.brand,
+        crm: from.crm,
+        confirmedAt: new Date(),
+        approvedAt: new Date(),
+      } as unknown as TransferCreateDto,
+    );
+    return result;
   }
 
   @Patch('lock/:cardId')

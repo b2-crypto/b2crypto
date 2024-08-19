@@ -42,6 +42,10 @@ export class AccountServiceService
   ): Promise<ResponsePaginator<AccountDocument>> {
     return this.lib.findAll(query);
   }
+
+  async count(query: QuerySearchAnyDto, context?: any): Promise<number> {
+    return this.lib.count(query);
+  }
   async findOneById(id: string, context?: any): Promise<AccountDocument> {
     return this.lib.findOne(id);
   }
@@ -108,16 +112,19 @@ export class AccountServiceService
   findOneByIdEvent(id: string, @Ctx() ctx: RmqContext) {
     throw new NotImplementedException('Method not implemented.');
   }
-  createOneEvent(createActivityDto: CreateAnyDto, @Ctx() ctx: RmqContext) {
+  createOneEvent(createAccountDto: CreateAnyDto, @Ctx() ctx: RmqContext) {
     throw new NotImplementedException('Method not implemented.');
   }
-  createManyEvent(createActivitysDto: CreateAnyDto[], @Ctx() ctx: RmqContext) {
-    throw new NotImplementedException('Method not implemented.');
+  createManyEvent(
+    createAccountsDto: AccountCreateDto[],
+    @Ctx() ctx: RmqContext,
+  ) {
+    throw this.createMany(createAccountsDto);
   }
-  updateOneEvent(updateActivityDto: UpdateAnyDto, @Ctx() ctx: RmqContext) {
-    throw new NotImplementedException('Method not implemented.');
+  updateOneEvent(updateAccountDto: UpdateAnyDto, @Ctx() ctx: RmqContext) {
+    return this.updateOne(updateAccountDto);
   }
-  updateManyEvent(updateActivitysDto: UpdateAnyDto[], @Ctx() ctx: RmqContext) {
+  updateManyEvent(updateAccountsDto: UpdateAnyDto[], @Ctx() ctx: RmqContext) {
     throw new NotImplementedException('Method not implemented.');
   }
   deleteManyByIdEvent(ids: UpdateAnyDto[], @Ctx() ctx: RmqContext) {

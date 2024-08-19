@@ -67,9 +67,8 @@ export class TransferServiceMongooseService extends BasicServiceModel<
   ): Promise<TransferDocument[]> {
     if (this.nameOrm === dbIntegrationEnum.MONGOOSE) {
       try {
-        const count = await this.count();
         for (let h = 0; h < createAnyDto.length; h++) {
-          createAnyDto[h].numericId = count + h + 1;
+          createAnyDto[h].numericId = null;
         }
         const rta = await this.model.create(createAnyDto);
         return rta.map(

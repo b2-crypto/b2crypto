@@ -19,6 +19,8 @@ enum EventsNamesUserEnum {
 
   authorization = 'USER.AUTHORIZATION',
   refreshToken = 'USER.TOKEN.REFRESH',
+
+  verifyEmail = 'USER.VERIFY.EMAIL',
 }
 
 export default EventsNamesUserEnum;

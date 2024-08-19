@@ -34,22 +34,30 @@ export default registerAs('config', () => ({
     process.env.ENVIRONMENT == EnvironmentEnum.prod
       ? process.env.DATABASE_URL
       : 'mongodb://localhost:27017/b2crypto',
-  DATABASE_REDIS_HOST:
+  REDIS_HOST:
     process.env.ENVIRONMENT == EnvironmentEnum.prod
-      ? process.env.DATABASE_REDIS_HOST
+      ? process.env.REDIS_HOST
       : 'localhost',
-  DATABASE_REDIS_USERNAME:
+  REDIS_USERNAME:
     process.env.ENVIRONMENT == EnvironmentEnum.prod
-      ? process.env.DATABASE_REDIS_USERNAME
+      ? process.env.REDIS_USERNAME
       : 'b2crypto',
-  DATABASE_REDIS_PASSWORD:
+  REDIS_PASSWORD:
     process.env.ENVIRONMENT == EnvironmentEnum.prod
-      ? process.env.DATABASE_REDIS_PASSWORD
+      ? process.env.REDIS_PASSWORD
       : null,
-  DATABASE_REDIS_PORT:
+  REDIS_PORT:
     process.env.ENVIRONMENT == EnvironmentEnum.prod
-      ? process.env.DATABASE_REDIS_PORT
+      ? process.env.REDIS_PORT
       : 6379,
+  CACHE_TTL:
+    process.env.ENVIRONMENT == EnvironmentEnum.prod
+      ? process.env.CACHE_TTL
+      : 10,
+  CACHE_MAX_ITEMS:
+    process.env.ENVIRONMENT == EnvironmentEnum.prod
+      ? process.env.CACHE_MAX_ITEMS
+      : 5,
   RABBIT_MQ_HOST: process.env.RABBIT_MQ_HOST ?? 'localhost',
   RABBIT_MQ_PORT: process.env.RABBIT_MQ_PORT ?? '5672',
   RABBIT_MQ_QUEUE: process.env.RABBIT_MQ_QUEUE ?? 'DEV',

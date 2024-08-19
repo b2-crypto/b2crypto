@@ -44,6 +44,7 @@ import EventsNamesUserEnum from './enum/events.names.user.enum';
 import { UserServiceService } from './user-service.service';
 import { SwaggerSteakeyConfigEnum } from 'libs/config/enum/swagger.stakey.config.enum';
 import { ApiKeyAuthGuard } from '@auth/auth/guards/api.key.guard';
+import { isBoolean } from 'class-validator';
 
 @ApiTags('USER')
 @Controller('users')
@@ -73,12 +74,7 @@ export class UserServiceController implements GenericServiceController {
   @Get('email/:userEmail')
   // @CheckPoliciesAbility(new PolicyHandlerUserRead())
   async findOneByEmail(@Param('userEmail') email: string) {
-    const query = {
-      where: {
-        email: email,
-      },
-    };
-    const rta = await this.userService.getAll(query);
+    const rta = await this.findUserByEmail(email);
     if (!rta.list[0]) {
       throw new NotFoundException('Email not found');
     }
@@ -186,6 +182,22 @@ export class UserServiceController implements GenericServiceController {
       },
     });
     return users.list[0];
+  }
+
+  @EventPattern(EventsNamesUserEnum.verifyEmail)
+  async verifyEmail(@Payload() email: string, @Ctx() ctx: RmqContext) {
+    CommonService.ack(ctx);
+    const rta = await this.findUserByEmail(email);
+    if (!rta.list[0]) {
+      throw new NotFoundException(`Email "${email}" not found`);
+    }
+    const user = rta.list[0];
+    if (!isBoolean(user.verifyEmail) || user.verifyEmail) {
+      await this.userService.customUpdateOne({
+        id: user._id,
+        verifyEmail: false,
+      });
+    }
   }
 
   @AllowAnon()
@@ -306,5 +318,14 @@ export class UserServiceController implements GenericServiceController {
       throw new NotFoundException();
     }
     return users.list[0];
+  }
+
+  private async findUserByEmail(email: string) {
+    const query = {
+      where: {
+        email: email,
+      },
+    };
+    return await this.userService.getAll(query);
   }
 }

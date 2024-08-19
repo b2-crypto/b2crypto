@@ -171,6 +171,7 @@ export class AuthService {
       twoFactorIsActive: user.twoFactorIsActive,
       twoFactorSecret: user.twoFactorSecret,
       permissions: user.permissions,
+      verifyEmail: user?.verifyEmail,
       //authorizations: user.authorizations,
     };
     if (
