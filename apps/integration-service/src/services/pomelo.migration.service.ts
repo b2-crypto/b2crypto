@@ -47,7 +47,7 @@ export class PomeloMigrationService {
           `Users: ${JSON.stringify(
             pomeloUsers.data.length,
           )} & totalPages ${totalPages} & currentPage ${currentPage}`,
-          PomeloMigrationService.name,
+          `${PomeloMigrationService.name}`,
         );
         if (pomeloUsers && pomeloUsers.data) {
           currentPage++;
@@ -67,7 +67,7 @@ export class PomeloMigrationService {
                 const pomeloCards = await this.getPomeloCard(pomeloUser.id);
                 Logger.log(
                   `Total cards ${pomeloCards.data.length} by user ${person?.email[0]}`,
-                  PomeloMigrationService.name,
+                  `${PomeloMigrationService.name}-startPomeloMigration-cards`,
                 );
                 const hasCards =
                   pomeloCards?.meta?.pagination?.total_pages ?? false;
@@ -92,7 +92,10 @@ export class PomeloMigrationService {
         }
       } while (currentPage < totalPages);
     } catch (error) {
-      Logger.error(error, `Error global ${PomeloMigrationService.name}`);
+      Logger.error(
+        error,
+        `${PomeloMigrationService.name}-startPomeloMigration`,
+      );
       // TODO Log error activity
       return null;
     }
@@ -119,18 +122,21 @@ export class PomeloMigrationService {
 
   private async getBalanceByCard(cardId: string): Promise<any> {
     try {
-      Logger.log('Getting Balance', PomeloMigrationService.name);
+      Logger.log(
+        'Getting Balance',
+        `${PomeloMigrationService.name}-getBalanceByCard`,
+      );
       const balance = await this.dbClient.getBalanaceByCard(cardId);
       if (!balance) {
         Logger.error(
           `Unable to find balance for card ${cardId}`,
-          PomeloMigrationService.name,
+          `${PomeloMigrationService.name}-getBalanceByCard`,
         );
         // TODO Log error activity
       }
       return balance;
     } catch (error) {
-      Logger.error(error, PomeloMigrationService.name);
+      Logger.error(error, `${PomeloMigrationService.name}-getBalanceByCard`);
       // TODO Log error activity
       return null;
     }
@@ -141,7 +147,7 @@ export class PomeloMigrationService {
       const cardSearchDto: CardSearchDto = { user_id: userId, page_size: 1000 };
       return await this.pomeloIntegration.getCardByQuery(cardSearchDto);
     } catch (error) {
-      Logger.error(error, PomeloMigrationService.name);
+      Logger.error(error, `${PomeloMigrationService.name}-getPomeloCard`);
       // TODO Log error activity
       return null;
     }
@@ -151,7 +157,7 @@ export class PomeloMigrationService {
     try {
       Logger.log(
         `Adding balance of ${amount} to card ${cardId}`,
-        PomeloMigrationService.name,
+        `${PomeloMigrationService.name}-setBalanceByCard`,
       );
       const account = await this.builder.getPromiseAccountEventClient(
         EventsNamesAccountEnum.setBalanceByCard,
@@ -161,7 +167,7 @@ export class PomeloMigrationService {
         },
       );
     } catch (error) {
-      Logger.error(error, PomeloMigrationService.name);
+      Logger.error(error, `${PomeloMigrationService.name}-setBalanceByCard`);
       // TODO Log error activity
       return null;
     }
@@ -171,7 +177,7 @@ export class PomeloMigrationService {
     try {
       Logger.log(
         `Migrating Card ${pomeloCard?.id} for user ${person?.email[0]}`,
-        PomeloMigrationService.name,
+        `${PomeloMigrationService.name}-migrateCard`,
       );
       const cardDto = this.buildCardDto(pomeloCard, person);
       const account = await this.builder.getPromiseAccountEventClient(
@@ -180,7 +186,7 @@ export class PomeloMigrationService {
       );
       return account;
     } catch (error) {
-      Logger.error(error, PomeloMigrationService.name);
+      Logger.error(error, `${PomeloMigrationService.name}-migrateCard`);
       // TODO Log error activity
       return null;
     }
@@ -246,21 +252,21 @@ export class PomeloMigrationService {
   private async migrateUser(pomeloUser: any): Promise<any> {
     try {
       Logger.log(
-        `Migrating User ${pomeloUser.email}`,
-        PomeloMigrationService.name,
+        `Migrating User ${pomeloUser?.email}`,
+        `${PomeloMigrationService.name}-migrateUser`,
       );
       const user = await this.builder.getPromiseUserEventClient(
         EventsNamesUserEnum.migrateOne,
         {
           name: pomeloUser.name,
-          email: pomeloUser.email,
+          email: pomeloUser?.email,
           password: '123Abc',
-          slugEmail: CommonService.getSlug(pomeloUser.email),
+          slugEmail: CommonService.getSlug(pomeloUser?.email),
         },
       );
       return user;
     } catch (error) {
-      Logger.error(error, PomeloMigrationService.name);
+      Logger.error(error, `${PomeloMigrationService.name}-migrateUser`);
       // TODO Log error activity
       return null;
     }
@@ -273,8 +279,8 @@ export class PomeloMigrationService {
   ): Promise<any> {
     try {
       Logger.log(
-        `Migrating Person ${pomeloUser.email} total so far: ${persons}`,
-        PomeloMigrationService.name,
+        `Migrating Person ${pomeloUser?.email} total so far: ${persons}`,
+        `${PomeloMigrationService.name}-migratePerson`,
       );
       const person = await this.builder.getPromisePersonEventClient(
         EventsNamesPersonEnum.migrateOne,
@@ -287,8 +293,8 @@ export class PomeloMigrationService {
           gender: GenderEnum[pomeloUser.gender],
           nationality: CountryCodeEnum.Colombia,
           birth: pomeloUser.birthdate,
-          emails: [pomeloUser.email],
-          email: pomeloUser.email,
+          emails: [pomeloUser?.email],
+          email: pomeloUser?.email,
           phoneNumber: pomeloUser.phone,
           location: {
             name: pomeloUser.legal_address?.street_name,
@@ -309,7 +315,7 @@ export class PomeloMigrationService {
       );
       return person;
     } catch (error) {
-      Logger.error(error, PomeloMigrationService.name);
+      Logger.error(error, `${PomeloMigrationService.name}-migratePerson`);
       // TODO Log error activity
       return null;
     }
