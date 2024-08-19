@@ -41,6 +41,7 @@ export class PomeloMigrationService {
       let currentPage = 0;
       const size = 50;
       let persons = 1;
+      const promises = [];
       do {
         const pomeloUsers = await this.getUsers(size, currentPage);
         Logger.log(
@@ -54,43 +55,55 @@ export class PomeloMigrationService {
           totalPages = pomeloUsers?.meta?.pagination?.total_pages ?? 0;
           for (let i = 0; i < pomeloUsers.data.length; i++) {
             const pomeloUser = pomeloUsers.data[i];
-            const user = await this.migrateUser(pomeloUser);
-            if (user && user.slug) {
-              // TODO Log Activity
-              const person = await this.migratePerson(
-                pomeloUser,
-                user,
-                persons,
-              );
-              persons++;
-              if (person) {
-                const pomeloCards = await this.getPomeloCard(pomeloUser.id);
-                Logger.log(
-                  `Total cards ${pomeloCards.data.length} by user ${person?.email[0]}`,
-                  `${PomeloMigrationService.name}-startPomeloMigration-cards`,
-                );
-                const hasCards =
-                  pomeloCards?.meta?.pagination?.total_pages ?? false;
-                if (hasCards) {
-                  for (let j = 0; j < pomeloCards.data.length; j++) {
-                    const card = pomeloCards.data[j];
-                    const account = await this.migrateCard(card, person);
-                    if (account) {
-                      const balance = await this.getBalanceByCard(card?.id);
-                      if (balance) {
-                        await this.setBalanceByCard(card?.id, balance);
-                        //this.createTransferRecord(account);
+            promises.push(
+              new Promise(async (res) => {
+                const user = await this.migrateUser(pomeloUser);
+                if (user && user.slug) {
+                  // TODO Log Activity
+                  const person = await this.migratePerson(
+                    pomeloUser,
+                    user,
+                    persons,
+                  );
+                  persons++;
+                  if (person) {
+                    const pomeloCards = await this.getPomeloCard(pomeloUser.id);
+                    Logger.log(
+                      `Total cards ${pomeloCards.data.length} by user ${person?.email[0]}`,
+                      `${PomeloMigrationService.name}-startPomeloMigration-cards`,
+                      `Total cards ${pomeloCards.data.length} by user ${pomeloUser.email}`,
+                      `${PomeloMigrationService.name}-startPomeloMigration-cards`,
+                    );
+                    const hasCards =
+                      pomeloCards?.meta?.pagination?.total_pages ?? false;
+                    if (hasCards) {
+                      for (let j = 0; j < pomeloCards.data.length; j++) {
+                        const card = pomeloCards.data[j];
+                        const account = await this.migrateCard(
+                          card,
+                          person,
+                          pomeloUser.email,
+                        );
+                        if (account) {
+                          const balance = await this.getBalanceByCard(card?.id);
+                          if (balance) {
+                            await this.setBalanceByCard(card?.id, balance);
+                            //this.createTransferRecord(account);
+                          }
+                        } else {
+                          // TODO Log error activity
+                        }
+                        res(account);
                       }
-                    } else {
-                      // TODO Log error activity
                     }
                   }
                 }
-              }
-            }
+              }),
+            );
           }
         }
       } while (currentPage < totalPages);
+      return Promise.all(promises);
     } catch (error) {
       Logger.error(
         error,
@@ -173,13 +186,17 @@ export class PomeloMigrationService {
     }
   }
 
-  private async migrateCard(pomeloCard: any, person: any): Promise<any> {
+  private async migrateCard(
+    pomeloCard: any,
+    person: any,
+    email: string,
+  ): Promise<any> {
     try {
       Logger.log(
-        `Migrating Card ${pomeloCard?.id} for user ${person?.email[0]}`,
-        `${PomeloMigrationService.name}-migrateCard`,
+        `Migrating Card ${pomeloCard?.id} for user ${email}`,
+        PomeloMigrationService.name,
       );
-      const cardDto = this.buildCardDto(pomeloCard, person);
+      const cardDto = this.buildCardDto(pomeloCard, person, email);
       const account = await this.builder.getPromiseAccountEventClient(
         EventsNamesAccountEnum.mingrateOne,
         cardDto,
@@ -192,7 +209,7 @@ export class PomeloMigrationService {
     }
   }
 
-  private buildCardDto(pomeloCard: any, person: any) {
+  private buildCardDto(pomeloCard: any, person: any, email: string) {
     let statusText: string;
     if (pomeloCard?.status === 'ACTIVE') {
       statusText = StatusAccountEnum.UNLOCK;
@@ -209,7 +226,7 @@ export class PomeloMigrationService {
       lastName: person?.lastName,
       docId: person?.numDocId,
       address: person?.location?.address,
-      email: person?.email[0],
+      email: email,
       telephone: person?.phoneNumber,
       description: pomeloCard?.affinity_group_name,
       afgId: pomeloCard?.affinity_group_id,
