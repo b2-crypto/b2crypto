@@ -131,6 +131,8 @@ export class UserServiceController implements GenericServiceController {
           const user = users.list[i];
           if (user && user?.email) {
             const emailMessage = {
+              name: user?.name,
+              username: user?.username,
               email: user?.email,
               password: CommonService.generatePassword(8),
             };
