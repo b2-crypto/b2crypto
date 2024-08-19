@@ -59,7 +59,7 @@
     "AUTH_EXPIRE_IN": "8h",
     "AUTH_SECRET": "B2Crypto",
     "AUTH_MAX_SECONDS_TO_REFRESH": "60",
-    "RABBIT_MQ_HOST": "",
+    "RABBIT_MQ_HOST": "b-703c2650-67d0-4b93-a229-5338ed9e32a6.mq.us-west-1.amazonaws.com",
     "RABBIT_MQ_PORT": 5671,
     "RABBIT_MQ_QUEUE": "PROD",
     "RABBIT_MQ_USERNAME": "b2fintech",
