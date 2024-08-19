@@ -3,6 +3,8 @@ import {
   Controller,
   Delete,
   Get,
+  Inject,
+  Logger,
   NotFoundException,
   Param,
   ParseArrayPipe,
@@ -45,11 +47,16 @@ import { UserServiceService } from './user-service.service';
 import { SwaggerSteakeyConfigEnum } from 'libs/config/enum/swagger.stakey.config.enum';
 import { ApiKeyAuthGuard } from '@auth/auth/guards/api.key.guard';
 import { isBoolean } from 'class-validator';
+import { BuildersService } from '@builder/builders';
 
 @ApiTags('USER')
 @Controller('users')
 export class UserServiceController implements GenericServiceController {
-  constructor(private readonly userService: UserServiceService) {}
+  constructor(
+    private readonly userService: UserServiceService,
+    @Inject(BuildersService)
+    readonly builder: BuildersService,
+  ) {}
 
   @Get('all')
   // @CheckPoliciesAbility(new PolicyHandlerUserRead())
@@ -105,6 +112,31 @@ export class UserServiceController implements GenericServiceController {
     createUsersDto: UserRegisterDto[],
   ) {
     return this.userService.newManyUser(createUsersDto);
+  }
+
+  @Post('massive-email')
+  async generatePasswordEmail() {
+    const users = await this.findAll({});
+    if (users?.list?.length > 0) {
+      Logger.log(
+        `Users: ${users?.list?.length}`,
+        `MassiveEmail.${UserServiceController.name}`,
+      );
+      for (let i = 0; i < users?.list?.length; i++) {
+        const user = users.list[0];
+        if (user && user?.email) {
+          const emailMessage = {
+            email: user?.email,
+            password: CommonService.generatePassword(8),
+          };
+          Logger.log(
+            `Email event msg: ${JSON.stringify(emailMessage)}`,
+            `MassiveEmail.${UserServiceController.name}`,
+          );
+          //this.builder.
+        }
+      }
+    }
   }
 
   @Patch()
