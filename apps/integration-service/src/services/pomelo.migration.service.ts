@@ -92,7 +92,7 @@ export class PomeloMigrationService {
         }
       } while (currentPage < totalPages);
     } catch (error) {
-      Logger.error(error, `Error global ${PomeloMigrationService.name}`);
+      Logger.error(error, `GlobalError-${PomeloMigrationService.name}`);
       // TODO Log error activity
       return null;
     }
@@ -130,7 +130,7 @@ export class PomeloMigrationService {
       }
       return balance;
     } catch (error) {
-      Logger.error(error, PomeloMigrationService.name);
+      Logger.error(error, `ErrorGettingBalance-${PomeloMigrationService.name}`);
       // TODO Log error activity
       return null;
     }
@@ -141,7 +141,7 @@ export class PomeloMigrationService {
       const cardSearchDto: CardSearchDto = { user_id: userId, page_size: 1000 };
       return await this.pomeloIntegration.getCardByQuery(cardSearchDto);
     } catch (error) {
-      Logger.error(error, PomeloMigrationService.name);
+      Logger.error(error, `ErrorGettingCards-${PomeloMigrationService.name}`);
       // TODO Log error activity
       return null;
     }
@@ -161,7 +161,7 @@ export class PomeloMigrationService {
         },
       );
     } catch (error) {
-      Logger.error(error, PomeloMigrationService.name);
+      Logger.error(error, `ErrorSettingBalance-${PomeloMigrationService.name}`);
       // TODO Log error activity
       return null;
     }
@@ -180,7 +180,7 @@ export class PomeloMigrationService {
       );
       return account;
     } catch (error) {
-      Logger.error(error, PomeloMigrationService.name);
+      Logger.error(error, `ErrorMigratingCard-${PomeloMigrationService.name}`);
       // TODO Log error activity
       return null;
     }
@@ -260,7 +260,7 @@ export class PomeloMigrationService {
       );
       return user;
     } catch (error) {
-      Logger.error(error, PomeloMigrationService.name);
+      Logger.error(error, `ErrorMigratingUser-${PomeloMigrationService.name}`);
       // TODO Log error activity
       return null;
     }
@@ -309,7 +309,10 @@ export class PomeloMigrationService {
       );
       return person;
     } catch (error) {
-      Logger.error(error, PomeloMigrationService.name);
+      Logger.error(
+        error,
+        `ErrorMigratingPerson-${PomeloMigrationService.name}`,
+      );
       // TODO Log error activity
       return null;
     }
