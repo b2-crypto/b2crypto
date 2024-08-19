@@ -157,7 +157,10 @@ export class PomeloMigrationService {
 
   private async migrateCard(pomeloCard: any, person: any): Promise<any> {
     try {
-      Logger.log('Migrating Card', PomeloMigrationService.name);
+      Logger.log(
+        `Migrating Card ${pomeloCard?.id}`,
+        PomeloMigrationService.name,
+      );
       const cardDto = this.buildCardDto(pomeloCard, person);
       const account = await this.builder.getPromiseAccountEventClient(
         EventsNamesAccountEnum.mingrateOne,
@@ -230,7 +233,10 @@ export class PomeloMigrationService {
 
   private async migrateUser(pomeloUser: any): Promise<any> {
     try {
-      Logger.log('Migrating User', PomeloMigrationService.name);
+      Logger.log(
+        `Migrating User ${pomeloUser.email}`,
+        PomeloMigrationService.name,
+      );
       const user = await this.builder.getPromiseUserEventClient(
         EventsNamesUserEnum.migrateOne,
         {
@@ -250,7 +256,10 @@ export class PomeloMigrationService {
 
   private async migratePerson(pomeloUser: any, user: any): Promise<any> {
     try {
-      Logger.log('Migrating Person', PomeloMigrationService.name);
+      Logger.log(
+        `Migrating Person ${pomeloUser.email}`,
+        PomeloMigrationService.name,
+      );
       const person = await this.builder.getPromisePersonEventClient(
         EventsNamesPersonEnum.migrateOne,
         {
