@@ -116,27 +116,33 @@ export class UserServiceController implements GenericServiceController {
 
   @Post('massive-email')
   async generatePasswordEmail() {
-    const users = await this.findAll({});
-    if (users?.list?.length > 0) {
-      Logger.log(
-        `Users: ${users?.list?.length}`,
-        `MassiveEmail.${UserServiceController.name}`,
-      );
-      for (let i = 0; i < users?.list?.length; i++) {
-        const user = users.list[0];
-        if (user && user?.email) {
-          const emailMessage = {
-            email: user?.email,
-            password: CommonService.generatePassword(8),
-          };
-          Logger.log(
-            `Email event msg: ${JSON.stringify(emailMessage)}`,
-            `MassiveEmail.${UserServiceController.name}`,
-          );
-          //this.builder.
+    let page: number = 1;
+    let totalPages: number = 0;
+    do {
+      const users = await this.findAll({ page });
+      if (users?.list?.length > 0) {
+        Logger.log(
+          `Users: ${users?.list?.length} & Page: ${page}`,
+          `MassiveEmail.${UserServiceController.name}`,
+        );
+        page++;
+        totalPages = users?.lastPage ?? 0;
+        for (let i = 0; i < users?.list?.length; i++) {
+          const user = users.list[i];
+          if (user && user?.email) {
+            const emailMessage = {
+              email: user?.email,
+              password: CommonService.generatePassword(8),
+            };
+            Logger.log(
+              `Email event msg: ${JSON.stringify(emailMessage)}`,
+              `MassiveEmail.${UserServiceController.name}`,
+            );
+            //this.builder.
+          }
         }
       }
-    }
+    } while (page <= totalPages);
   }
 
   @Patch()
