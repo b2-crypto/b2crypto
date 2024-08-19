@@ -129,18 +129,24 @@ export class UserServiceController implements GenericServiceController {
         totalPages = users?.lastPage ?? 0;
         for (let i = 0; i < users?.list?.length; i++) {
           const user = users.list[i];
+          const pwd: string = CommonService.generatePassword(8);
           if (user && user?.email) {
             const emailMessage = {
               name: user?.name,
               username: user?.username,
               email: user?.email,
-              password: CommonService.generatePassword(8),
+              password: pwd,
             };
             Logger.log(
               `Email event msg: ${JSON.stringify(emailMessage)}`,
               `MassiveEmail.${UserServiceController.name}`,
             );
-            //this.builder.
+            const changePassword: UserChangePasswordDto = {
+              password: pwd,
+              confirmPassword: pwd,
+            };
+            await this.changePassword(user?.id, changePassword);
+            //await this.builder.
           }
         }
       }
