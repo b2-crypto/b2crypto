@@ -1,4 +1,3 @@
-
 import { BuildersService } from '@builder/builders';
 import { QuerySearchAnyDto } from '@common/common/models/query_search-any.dto';
 import { CrmInterface } from '@crm/crm/entities/crm.interface';
@@ -79,12 +78,17 @@ export class MessageServiceService {
   }
 
   async sendCardRequestConfirmationEmail(message: MessageCreateDto) {
-    return this.sendEmail(message, TemplatesMessageEnum.cardRequestConfirmation);
+    return this.sendEmail(
+      message,
+      TemplatesMessageEnum.cardRequestConfirmation,
+    );
   }
 
-  
   async sendProfileRegistrationCreation(message: MessageCreateDto) {
-    return this.sendEmail(message, TemplatesMessageEnum.profileRegistrationCreation);
+    return this.sendEmail(
+      message,
+      TemplatesMessageEnum.profileRegistrationCreation,
+    );
   }
 
   async sendVirtualPhysicalCards(message: MessageCreateDto) {
@@ -92,11 +96,17 @@ export class MessageServiceService {
   }
 
   async sendPurchasesTransactionAdjustments(message: MessageCreateDto) {
-    return this.sendEmail(message, TemplatesMessageEnum.purchasesTransactionAdjustments);
+    return this.sendEmail(
+      message,
+      TemplatesMessageEnum.purchasesTransactionAdjustments,
+    );
   }
 
   async sendCryptoWalletsManagement(message: MessageCreateDto) {
-    return this.sendEmail(message, TemplatesMessageEnum.cryptoWalletsManagement);
+    return this.sendEmail(
+      message,
+      TemplatesMessageEnum.cryptoWalletsManagement,
+    );
   }
 
   async sendSecurityNotifications(message: MessageCreateDto) {
@@ -104,7 +114,10 @@ export class MessageServiceService {
   }
 
   async sendPasswordRestoredEmail(message: MessageCreateDto) {
-    return this.sendEmail(message, TemplatesMessageEnum.passwordRestoredConfirmation);
+    return this.sendEmail(
+      message,
+      TemplatesMessageEnum.passwordRestoredConfirmation,
+    );
   }
 
   async sendEmail(message: MessageCreateDto, template: TemplatesMessageEnum) {
@@ -128,24 +141,25 @@ export class MessageServiceService {
   }
   private compileHtml(vars: any, template: TemplatesMessageEnum) {
     const templateVars = {
-      pageTitle: vars.name || 'Notificación', //check html validation
+      pageTitle: vars.name, //check html validation
       headerColor: this.getHeaderColorForTemplate(template),
-      headerTitle: vars.name || 'Notificación', // check html validation
-      logoUrl: 'https://message-templates-resource.s3.eu-west-3.amazonaws.com/logo.svg',
+      headerTitle: vars.name, // check html validation
+      logoUrl:
+        'https://message-templates-resource.s3.eu-west-3.amazonaws.com/logo.svg',
       vars: vars,
     };
-  
+
     return pug.renderFile(template, templateVars);
   }
-  
+
   private getHeaderColorForTemplate(template: TemplatesMessageEnum): string {
     const colors = {
-      [TemplatesMessageEnum.profileRegistrationCreation]: "#0056b3",
-      [TemplatesMessageEnum.virtualPhysicalCards]: "#28a745",
-      [TemplatesMessageEnum.purchasesTransactionAdjustments]: "#17a2b8",
-      [TemplatesMessageEnum.cryptoWalletsManagement]: "#6f42c1",
+      [TemplatesMessageEnum.profileRegistrationCreation]: '#0056b3',
+      [TemplatesMessageEnum.virtualPhysicalCards]: '#28a745',
+      [TemplatesMessageEnum.purchasesTransactionAdjustments]: '#17a2b8',
+      [TemplatesMessageEnum.cryptoWalletsManagement]: '#6f42c1',
     };
-    return colors[template] || "#007bff";
+    return colors[template] || '#007bff';
   }
 
   async sendEmailDisclaimer(lead: LeadDocument) {

@@ -297,11 +297,30 @@ export class AuthServiceController {
         throw new BadRequestException('Bad OTP');
       }
       await this.deleteOtpGenerated(restorePasswordDto.email);
+      const psw = restorePasswordDto.password;
+      const user = users.list[0];
+      const emailData = {
+        name: `Actualizacion de clave`,
+        body: `Tu clave ha sido actualizada exitosamente ${user.name}`,
+        originText: 'Sistema',
+        destinyText: user.email,
+        transport: TransportEnum.EMAIL,
+        destiny: null,
+        vars: {
+          name: user.name,
+          username: user.username,
+          password: psw,
+        },
+      };
+      this.builder.emitMessageEventClient(
+        EventsNamesMessageEnum.sendPasswordRestoredEmail,
+        emailData,
+      );
       await this.builder.getPromiseUserEventClient(
         EventsNamesUserEnum.updateOne,
         {
           id: users.list[0]._id,
-          password: CommonService.getHash(restorePasswordDto.password),
+          password: CommonService.getHash(psw),
         },
       );
       return {
