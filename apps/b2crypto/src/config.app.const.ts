@@ -5,7 +5,7 @@ import { B2CryptoCacheInterceptor } from '@common/common/interceptors/b-2-crypto
 import { ResponseInterceptor } from '@common/common/interceptors/response.interceptor';
 import { IProvider } from '@common/common/interfaces/i.provider.interface';
 import { QueueAdminModule } from '@common/common/queue-admin-providers/queue.admin.provider.module';
-import { CacheModule } from '@nestjs/common';
+import { CacheModule, Logger } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { APP_FILTER, APP_INTERCEPTOR } from '@nestjs/core';
 import { ResponseB2CryptoModule } from '@response-b2crypto/response-b2crypto';
@@ -42,8 +42,8 @@ export const configApp = {
   imports: [
     CacheModule.registerAsync({
       imports: [ConfigModule],
-      useFactory: async (configService: ConfigService) =>
-        ({
+      useFactory: async (configService: ConfigService) => {
+        const config = {
           store: redisStore,
           username: configService.get('REDIS_USERNAME') ?? '',
           password: configService.get('REDIS_PASSWORD') ?? '',
@@ -52,7 +52,10 @@ export const configApp = {
           ttl: parseInt(configService.get('CACHE_TTL') ?? '20') * 1000,
           max: parseInt(configService.get('CACHE_MAX_ITEMS') ?? '10'),
           isGlobal: true,
-        } as RedisClientOptions),
+        } as RedisClientOptions;
+        Logger.log(config, 'Redis Config');
+        return config;
+      },
       inject: [ConfigService],
     }),
     ConfigModule.forRoot({
