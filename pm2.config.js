@@ -59,7 +59,8 @@ module.exports = {
         ENVIRONMENT: 'PROD',
         APP_NAME: 'B2Crypto',
         GOOGLE_2FA: false,
-        DATABASE_URL: '',
+        DATABASE_URL:
+          'mongodb+srv://b2crypto:SFh59fK9mmM2ln1L@b2fintech.kajty.mongodb.net/?retryWrites=true&w=majority&appName=b2fintech',
         PORT: 8080,
         AUTH_EXPIRE_IN: '8h',
         AUTH_SECRET: 'B2Crypto',
@@ -209,7 +210,8 @@ module.exports = {
         ENVIRONMENT: 'PROD',
         APP_NAME: 'B2Crypto',
         GOOGLE_2FA: false,
-        DATABASE_URL: '',
+        DATABASE_URL:
+          'mongodb+srv://b2crypto:SFh59fK9mmM2ln1L@b2fintech.kajty.mongodb.net/?retryWrites=true&w=majority&appName=b2fintech',
         PORT: 8080,
         AUTH_EXPIRE_IN: '8h',
         AUTH_SECRET: 'B2Crypto',
