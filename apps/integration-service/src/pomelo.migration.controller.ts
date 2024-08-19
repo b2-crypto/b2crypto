@@ -7,6 +7,6 @@ export class PomeloMigrationController {
   @Post('ignate')
   async ignatePomeloIntegration() {
     Logger.log('Starting ...', 'PomeloMigrationController');
-    this.migrationService.startPomeloMigration();
+    await this.migrationService.startPomeloMigration();
   }
 }

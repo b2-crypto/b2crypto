@@ -40,12 +40,13 @@ export class PomeloMigrationService {
       let totalPages = 1;
       let currentPage = 0;
       const size = 50;
+      let persons = 1;
       do {
         const pomeloUsers = await this.getUsers(size, currentPage);
         Logger.log(
           `Users: ${JSON.stringify(
             pomeloUsers.data.length,
-          )} & totalPages ${totalPages}`,
+          )} & totalPages ${totalPages} & currentPage ${currentPage}`,
           PomeloMigrationService.name,
         );
         if (pomeloUsers && pomeloUsers.data) {
@@ -55,7 +56,12 @@ export class PomeloMigrationService {
             const user = await this.migrateUser(pomeloUser);
             if (user && user.slug) {
               // TODO Log Activity
-              const person = await this.migratePerson(pomeloUser, user);
+              const person = await this.migratePerson(
+                pomeloUser,
+                user,
+                persons,
+              );
+              persons++;
               if (person) {
                 const pomeloCards = await this.getPomeloCard(pomeloUser.id);
                 const hasCards =
@@ -158,7 +164,7 @@ export class PomeloMigrationService {
   private async migrateCard(pomeloCard: any, person: any): Promise<any> {
     try {
       Logger.log(
-        `Migrating Card ${pomeloCard?.id}`,
+        `Migrating Card ${pomeloCard?.id} for user ${person?.email[0]}`,
         PomeloMigrationService.name,
       );
       const cardDto = this.buildCardDto(pomeloCard, person);
@@ -254,10 +260,14 @@ export class PomeloMigrationService {
     }
   }
 
-  private async migratePerson(pomeloUser: any, user: any): Promise<any> {
+  private async migratePerson(
+    pomeloUser: any,
+    user: any,
+    persons: number,
+  ): Promise<any> {
     try {
       Logger.log(
-        `Migrating Person ${pomeloUser.email}`,
+        `Migrating Person ${pomeloUser.email} total so far: ${persons}`,
         PomeloMigrationService.name,
       );
       const person = await this.builder.getPromisePersonEventClient(
