@@ -74,7 +74,6 @@ module.exports = {
         REDIS_USERNAME: 'default',
         REDIS_PASSWORD: 'TPhqYUUS44CQlRkhhmkZFxDb3YH0Pdam',
         REDIS_PORT: 10790,
-        REDIS_PORT: 12145,
         CACHE_TTL: 20,
         CACHE_MAX_ITEMS: 50,
         API_KEY_EMAIL_APP: '',
