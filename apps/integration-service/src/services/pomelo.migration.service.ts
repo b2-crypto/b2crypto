@@ -253,7 +253,7 @@ export class PomeloMigrationService {
     try {
       Logger.log(
         `Migrating User ${pomeloUser?.email}`,
-        `${PomeloMigrationService.name}`,
+        `${PomeloMigrationService.name}-migrateUser`,
       );
       const user = await this.builder.getPromiseUserEventClient(
         EventsNamesUserEnum.migrateOne,
@@ -266,7 +266,7 @@ export class PomeloMigrationService {
       );
       return user;
     } catch (error) {
-      Logger.error(error, `${PomeloMigrationService.name}`);
+      Logger.error(error, `${PomeloMigrationService.name}-migrateUser`);
       // TODO Log error activity
       return null;
     }
@@ -280,7 +280,7 @@ export class PomeloMigrationService {
     try {
       Logger.log(
         `Migrating Person ${pomeloUser?.email} total so far: ${persons}`,
-        `${PomeloMigrationService.name}`,
+        `${PomeloMigrationService.name}-migratePerson`,
       );
       const person = await this.builder.getPromisePersonEventClient(
         EventsNamesPersonEnum.migrateOne,
@@ -315,7 +315,7 @@ export class PomeloMigrationService {
       );
       return person;
     } catch (error) {
-      Logger.error(error, `${PomeloMigrationService.name}`);
+      Logger.error(error, `${PomeloMigrationService.name}-migratePerson`);
       // TODO Log error activity
       return null;
     }
