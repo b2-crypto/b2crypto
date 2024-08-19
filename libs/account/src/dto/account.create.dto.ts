@@ -287,4 +287,6 @@ export class AccountCreateDto extends CreateAnyDto implements AccountInterface {
   amountBlockedCustodial: number;
   @IsEmpty()
   currencyBlockedCustodial: CurrencyCodeB2cryptoEnum;
+  @IsEmpty()
+  afgId: string;
 }

@@ -292,10 +292,12 @@ export class CardServiceController extends AccountServiceController {
     }
   }
 
-  private async buildAFG() {
+  private async buildAFG(afgId?: string) {
     const afg = {
-      id: process.env.AFG_ID,
-      name: 'B2Crypto COL physical virtual credit nominated',
+      id: afgId ?? 'afg-2arMn990ZksFKAHS5PngRPHqRmS',
+      name: afgId
+        ? 'migration'
+        : 'B2Crypto COL physical virtual credit nominated',
       card_type_supported: ['VIRTUAL'],
       innominate: false,
       months_to_expiration: 84,
@@ -745,7 +747,7 @@ export class CardServiceController extends AccountServiceController {
         `Migrating card ${cardToMigrate?.cardConfig?.id}`,
         CardServiceController.name,
       );
-      const group = await this.buildAFG();
+      const group = await this.buildAFG(cardToMigrate.afgId);
       cardToMigrate.group = group?.list[0];
       const cardList = await this.getCardById(cardToMigrate?.cardConfig?.id);
       if (!cardList || !cardList.list[0]) {
@@ -775,6 +777,7 @@ export class CardServiceController extends AccountServiceController {
       await this.cardService.customUpdateOne({
         id: card._id,
         $inc: {
+          amount: data.amount,
           amountCustodial: data.amount,
         },
       });
