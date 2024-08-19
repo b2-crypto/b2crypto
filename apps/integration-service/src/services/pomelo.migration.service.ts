@@ -53,7 +53,7 @@ export class PomeloMigrationService {
           currentPage++;
           totalPages = pomeloUsers?.meta?.pagination?.total_pages ?? 0;
           for (let i = 0; i < pomeloUsers.data.length; i++) {
-            const pomeloUser = pomeloUsers[i];
+            const pomeloUser = pomeloUsers.data[i];
             const user = await this.migrateUser(pomeloUser);
             if (user && user.slug) {
               // TODO Log Activity
