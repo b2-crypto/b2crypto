@@ -264,6 +264,7 @@ export class AuthServiceController {
   }
 
   @ApiKeyCheck()
+  @NoCache()
   @ApiTags(SwaggerSteakeyConfigEnum.TAG_SECURITY)
   @ApiSecurity('b2crypto-key')
   @Post('restore-password')
@@ -293,7 +294,7 @@ export class AuthServiceController {
       // Validate OTP
       if (!otpSended) {
         throw new BadRequestException('Expired OTP');
-      } else if (restorePasswordDto.otp !== otpSended) {
+      } else if (restorePasswordDto.otp != otpSended) {
         throw new BadRequestException('Bad OTP');
       }
       await this.deleteOtpGenerated(restorePasswordDto.email);
@@ -603,7 +604,10 @@ export class AuthServiceController {
   private async generateOtp(user: UserDocument, msOTP = 60000) {
     let otpSended = await this.getOtpGenerated(user.email);
     if (!otpSended) {
-      otpSended = CommonService.randomIntNumber(999999);
+      otpSended = CommonService.getNumberDigits(
+        CommonService.randomIntNumber(999999),
+        6,
+      );
       await this.cacheManager.set(user.email, otpSended, msOTP);
     }
     const data = {
