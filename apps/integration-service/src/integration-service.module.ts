@@ -26,7 +26,7 @@ import { PomeloIntegrationShippingService } from './services/pomelo.integration.
 import { SumsubNotificationIntegrationService } from './services/sumsub.notification.integration.service';
 import { PomeloMigrationController } from './pomelo.migration.controller';
 import { PomeloMigrationService } from './services/pomelo.migration.service';
-import { V1DBClient } from './clients/pomelo.v1.bd.client';
+import { PomeloV1DBClient } from './clients/pomelo.v1.bd.client';
 import { SumsubNotificationIntegrationController } from './sumsub.notification.controller';
 import { MulterModule } from '@nestjs/platform-express';
 import { FileModule } from '@file/file';
@@ -60,7 +60,7 @@ import { B2BinPayNotificationsController } from './b2binpay.notifications.contro
     PomeloMigrationController,
   ],
   providers: [
-    V1DBClient,
+    PomeloV1DBClient,
     PomeloCache,
     PomeloSignatureUtils,
     PomeloHttpUtils,

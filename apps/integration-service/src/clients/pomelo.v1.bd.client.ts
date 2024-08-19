@@ -2,7 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 const { Client } = require('pg');
 
 @Injectable()
-export class V1DBClient {
+export class PomeloV1DBClient {
   private connectionProps = {
     user: process.env.V1_DB_USER,
     password: process.env.V1_DB_PWD,
@@ -22,7 +22,7 @@ export class V1DBClient {
           .then(async () => {
             Logger.log(
               'Successfuly connected to V1 DB database',
-              V1DBClient.name,
+              PomeloV1DBClient.name,
             );
             client.query(this.statement, [cardId], (err: any, result: any) => {
               if (err) {
@@ -35,13 +35,13 @@ export class V1DBClient {
                 .then(() => {
                   Logger.log(
                     'Connection to V1 DB successfuly closed',
-                    V1DBClient.name,
+                    PomeloV1DBClient.name,
                   );
                 })
                 .catch((err: any) => {
                   Logger.error(
                     `Error closing connection ${err}`,
-                    V1DBClient.name,
+                    PomeloV1DBClient.name,
                   );
                 });
             });
@@ -49,13 +49,13 @@ export class V1DBClient {
           .catch((err: any) => {
             Logger.error(
               `Error connecting to V1 DB database ${err}`,
-              V1DBClient.name,
+              PomeloV1DBClient.name,
             );
           });
       });
       return resultset[0]?.balance;
     } catch (error) {
-      Logger.error(error, V1DBClient.name);
+      Logger.error(error, PomeloV1DBClient.name);
     }
   }
 }
