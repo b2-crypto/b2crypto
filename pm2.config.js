@@ -60,7 +60,7 @@ module.exports = {
         APP_NAME: 'B2Crypto',
         GOOGLE_2FA: 'false',
         PORT: 8080,
-        DATABASE_NAME: 'b2fintech_v2',
+        DATABASE_NAME: 'b2fintech',
         DATABASE_URL:
           'mongodb+srv://b2crypto:SFh59fK9mmM2ln1L@b2fintech.kajty.mongodb.net/?retryWrites=true&w=majority&appName=b2fintech',
         RABBIT_MQ_HOST:
@@ -225,7 +225,7 @@ module.exports = {
         APP_NAME: 'B2Crypto',
         GOOGLE_2FA: 'false',
         PORT: 8080,
-        DATABASE_NAME: 'b2fintech_v2',
+        DATABASE_NAME: 'b2fintech',
         DATABASE_URL:
           'mongodb+srv://b2crypto:SFh59fK9mmM2ln1L@b2fintech.kajty.mongodb.net/?retryWrites=true&w=majority&appName=b2fintech',
         RABBIT_MQ_HOST:
