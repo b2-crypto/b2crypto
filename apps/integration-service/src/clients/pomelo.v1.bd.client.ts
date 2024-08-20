@@ -28,6 +28,10 @@ export class PomeloV1DBClient {
               if (err) {
                 reject(err);
               } else {
+                Logger.debug(
+                  result.rows,
+                  'PomeloV1DBClient.getBalanaceByCard:result.rows',
+                );
                 resolve(result.rows);
               }
               client
