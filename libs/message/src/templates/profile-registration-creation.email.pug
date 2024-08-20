@@ -1,0 +1,28 @@
+doctype html
+html(lang="es")
+  include ./partials/head.pug
+  body
+    .container
+      include ./partials/header.pug
+      .content
+        h2 Bienvenido a nuestra plataforma
+        p Hola #{vars.name},
+        p Tu cuenta ha sido creada exitosamente. A continuación, te proporcionamos los detalles de tu cuenta:
+        
+        ul
+          li Nombre de usuario: #{vars.username}
+          li Correo electrónico: #{vars.email}
+          li Tipo de cuenta: #{vars.isIndividual ? 'Individual' : 'Corporativa'}
+          li Estado de la cuenta: #{vars.isActive ? 'Activa' : 'Inactiva'}
+
+        p Para comenzar a usar tu cuenta, por favor sigue estos pasos:
+        ol
+          li Inicia sesión con tu correo electrónico y contraseña.
+          li Completa tu perfil con toda la información necesaria.
+          li Explora las funcionalidades de nuestra plataforma.
+
+        p Si tienes alguna pregunta o necesitas asistencia, no dudes en contactar a nuestro equipo de soporte.
+
+        p ¡Gracias por unirte a nosotros!
+
+      include ./partials/footer.pug

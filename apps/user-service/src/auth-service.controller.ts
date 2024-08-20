@@ -1,3 +1,4 @@
+
 import { AuthService } from '@auth/auth';
 import { AllowAnon } from '@auth/auth/decorators/allow-anon.decorator';
 import { ApiKeyCheck } from '@auth/auth/decorators/api-key-check.decorator';
@@ -264,6 +265,7 @@ export class AuthServiceController {
   }
 
   @ApiKeyCheck()
+  @NoCache()
   @ApiTags(SwaggerSteakeyConfigEnum.TAG_SECURITY)
   @ApiSecurity('b2crypto-key')
   @Post('restore-password')
@@ -293,15 +295,35 @@ export class AuthServiceController {
       // Validate OTP
       if (!otpSended) {
         throw new BadRequestException('Expired OTP');
-      } else if (restorePasswordDto.otp !== otpSended) {
+      } else if (restorePasswordDto.otp != otpSended) {
         throw new BadRequestException('Bad OTP');
       }
       await this.deleteOtpGenerated(restorePasswordDto.email);
+      const psw = restorePasswordDto.password;
+      const user = users.list[0];
+      const emailData = {
+        name: `Actualizacion de clave`,
+        body: `Tu clave ha sido actualizada exitosamente ${user.name}`,
+        originText: 'Sistema',
+        destinyText: user.email,
+        transport: TransportEnum.EMAIL,
+        destiny: null,
+        vars: {
+          name: user.name,
+          username: user.username,
+          password: psw,
+        },
+      };
+      this.builder.emitMessageEventClient(
+        EventsNamesMessageEnum.sendPasswordRestoredEmail,
+        emailData,
+      );
       await this.builder.getPromiseUserEventClient(
         EventsNamesUserEnum.updateOne,
         {
           id: users.list[0]._id,
-          password: CommonService.getHash(restorePasswordDto.password),
+          verifyEmail: false,
+          password: CommonService.getHash(psw),
         },
       );
       return {
@@ -316,6 +338,7 @@ export class AuthServiceController {
       message: 'OTP generated',
     };
   }
+
 
   @ApiKeyCheck()
   @UseGuards(ApiKeyAuthGuard)
@@ -384,10 +407,45 @@ export class AuthServiceController {
     userDto.slugEmail = CommonService.getSlug(userDto.email);
     userDto.username = userDto.username ?? userDto.name;
     userDto.slugUsername = CommonService.getSlug(userDto.username);
-    return this.builder.getPromiseUserEventClient(
+
+    const createdUser = await this.builder.getPromiseUserEventClient(
       EventsNamesUserEnum.createOne,
       userDto,
     );
+
+    const emailData = {
+      name: `Bienvenido a nuestra plataforma, ${createdUser.name}`,
+      body: `Tu cuenta ha sido creada exitosamente`,
+      originText: 'Sistema',
+      destinyText: createdUser.email,
+      transport: TransportEnum.EMAIL,
+      destiny: null,
+      vars: {
+        name: createdUser.name,
+        email: createdUser.email,
+        username: createdUser.username,
+        isIndividual: createdUser.individual,
+        isActive: createdUser.active,
+      },
+    };
+
+    if (createdUser._id) {
+      emailData.destiny = {
+        resourceId: createdUser._id.toString(),
+        resourceName: ResourcesEnum.USER,
+      };
+    }
+
+    Logger.log(emailData, 'New User Registration Email Prepared');
+
+    setImmediate(() => {
+      this.builder.emitMessageEventClient(
+        EventsNamesMessageEnum.sendProfileRegistrationCreation,
+        emailData,
+      );
+    });
+
+    return createdUser;
   }
 
   @IsRefresh()

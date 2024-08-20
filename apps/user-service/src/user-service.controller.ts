@@ -1,8 +1,10 @@
+
 import {
   Body,
   Controller,
   Delete,
   Get,
+  Logger,
   NotFoundException,
   Param,
   ParseArrayPipe,
@@ -45,11 +47,21 @@ import { UserServiceService } from './user-service.service';
 import { SwaggerSteakeyConfigEnum } from 'libs/config/enum/swagger.stakey.config.enum';
 import { ApiKeyAuthGuard } from '@auth/auth/guards/api.key.guard';
 import { isBoolean } from 'class-validator';
+import { NoCache } from '@common/common/decorators/no-cache.decorator';
+import TransportEnum from '@common/common/enums/TransportEnum';
+import EventsNamesMessageEnum from 'apps/message-service/src/enum/events.names.message.enum';
+import { BuildersService } from '@builder/builders';
 
 @ApiTags('USER')
 @Controller('users')
+
+
 export class UserServiceController implements GenericServiceController {
-  constructor(private readonly userService: UserServiceService) {}
+  constructor(
+    private readonly userService: UserServiceService,
+    private readonly builder: BuildersService,
+
+  ) {}
 
   @Get('all')
   // @CheckPoliciesAbility(new PolicyHandlerUserRead())
@@ -83,6 +95,57 @@ export class UserServiceController implements GenericServiceController {
       message: 'Email founded',
     };
   }
+
+  @Post('massive-email')
+  @NoCache()
+  async generatePasswordEmail() {
+    let page = 1;
+    let totalPages = 0;
+    do {
+      const users = await this.findAll({ page });
+      if (users?.list?.length > 0) {
+        Logger.log(
+          `Users: ${users?.list?.length} & Page: ${page}`,
+          `MassiveEmail.${UserServiceController.name}`,
+        );
+        page++;
+        totalPages = users?.lastPage ?? 0;
+        for (let i = 0; i < users?.list?.length; i++) {
+          const user = users.list[i];
+          if (user && user?.email) {
+            const pwd: string = CommonService.generatePassword(8);
+            const changePassword: UserChangePasswordDto = {
+              password: pwd,
+              confirmPassword: pwd,
+            };
+            await this.changePassword(user?.id, changePassword);
+            Logger.log(
+              `${user?.email}`,
+              `MassiveEmail.${UserServiceController.name}`,
+            );
+            const emailData = {
+              name: `Actualizacion de clave`,
+              body: `Tu clave ha sido actualizada exitosamente ${user.name}`,
+              originText: 'Sistema',
+              destinyText: user.email,
+              transport: TransportEnum.EMAIL,
+              destiny: null,
+              vars: {
+                name: user.name,
+                username: user.username,
+                password: pwd,
+              },
+            };
+            this.builder.emitMessageEventClient(
+              EventsNamesMessageEnum.sendPasswordRestoredEmail,
+              emailData,
+            );
+          }
+        }
+      }
+    } while (page <= totalPages);
+  }
+
 
   @Get(':userID')
   // @CheckPoliciesAbility(new PolicyHandlerUserRead())
