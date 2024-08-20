@@ -75,6 +75,7 @@ import { StatusCashierEnum } from '@common/common/enums/StatusCashierEnum';
 import EventsNamesStatusEnum from 'apps/status-service/src/enum/events.names.status.enum';
 import EventsNamesPspAccountEnum from 'apps/psp-service/src/enum/events.names.psp.acount.enum';
 import { PspAccount } from '@psp-account/psp-account/entities/mongoose/psp-account.schema';
+import { NoCache } from '@common/common/decorators/no-cache.decorator';
 
 @ApiTags('CARD')
 @Controller('cards')
@@ -142,6 +143,7 @@ export class CardServiceController extends AccountServiceController {
   }
 
   @Get('me')
+  @NoCache()
   @ApiTags(SwaggerSteakeyConfigEnum.TAG_CARD)
   @ApiBearerAuth('bearerToken')
   async findAllMe(@Query() query: QuerySearchAnyDto, @Req() req?: any) {
