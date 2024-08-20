@@ -143,11 +143,12 @@ export class PomeloMigrationService {
           `${PomeloMigrationService.name}-getBalanceByCard`,
         );
         // TODO Log error activity
+      } else {
+        Logger.debug(
+          `The balance card ${cardId} is ${balance}`,
+          `${PomeloMigrationService.name}-getBalanceByCard`,
+        );
       }
-      Logger.error(
-        `The balance card ${cardId} is ${balance}`,
-        `${PomeloMigrationService.name}-getBalanceByCard`,
-      );
       return balance;
     } catch (error) {
       Logger.error(error, `${PomeloMigrationService.name}-getBalanceByCard`);
