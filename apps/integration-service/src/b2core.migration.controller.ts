@@ -15,6 +15,6 @@ export class B2CoreMigrationController {
   @Post('ignate')
   @UseInterceptors(FileInterceptor('file'))
   async ignateB2CoreMigration(@UploadedFile() file: Express.Multer.File) {
-    await this.migrationService.startB2CoreMigration(file);
+    return this.migrationService.startB2CoreMigration(file);
   }
 }

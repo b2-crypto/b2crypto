@@ -25,43 +25,48 @@ export class B2CoreMigrationService {
               JSON.stringify(data['Email']),
               B2CoreMigrationService.name,
             );
-            if (data['Client status'] === 'Active') {
-              const email = data['Email'];
-              let user = await this.getUserByEmail(email);
-              if (!user._id) {
-                user = await this.builder.getPromiseUserEventClient(
-                  EventsNamesUserEnum.createOne,
-                  {
-                    email: email,
-                    name: data['Client name'],
-                    password: CommonService.generatePassword(8),
-                    confirmPassword: 'send-password',
-                  },
-                );
-                Logger.log(
-                  `User ${email} ${user ? 'was found' : 'was NOT found'}`,
-                  `Created user - ${user.name} - ${user.email}`,
-                );
-              }
-              const walletAccount = this.buildAccount(data, user);
-              Logger.log(
-                `Creating wallet: ${walletAccount.name}-${walletAccount.accountId}`,
-                `${walletAccount.owner} - ${email}`,
-              );
-              const account = await this.migrateWalletAccount(walletAccount);
-              if (account) {
-                results.push(account);
-              }
-            }
+            results.push(this.getWallet(data));
           })
-          .on('end', () => {
-            Logger.log(results, B2CoreMigrationService.name);
-            res(results);
+          .on('end', async () => {
+            Logger.log('Already', B2CoreMigrationService.name);
+            const list = await Promise.all(results);
+            Logger.debug(list, `${B2CoreMigrationService.name} - list`);
+            res(list);
           });
       });
     } catch (error) {
       Logger.error(error, B2CoreMigrationService.name);
     }
+  }
+
+  private async getWallet(data: any) {
+    const email = data['Email'];
+    let user = await this.getUserByEmail(email);
+    if (!user._id) {
+      user = await this.builder.getPromiseUserEventClient(
+        EventsNamesUserEnum.createOne,
+        {
+          email: email,
+          name: data['Client name'],
+          password: CommonService.generatePassword(8),
+          confirmPassword: 'send-password',
+        },
+      );
+      Logger.log(
+        `User ${email} ${user ? 'was found' : 'was NOT found'}`,
+        `Created user - ${user.name} - ${user.email}`,
+      );
+    }
+    const walletAccount = this.buildAccount(data, user);
+    Logger.log(
+      `Creating wallet: ${walletAccount.name}-${walletAccount.accountId}`,
+      `${walletAccount.owner} - ${email}`,
+    );
+    const account = await this.migrateWalletAccount(walletAccount);
+    if (account) {
+      return account;
+    }
+    return null;
   }
 
   private async getUserByEmail(email: string) {
