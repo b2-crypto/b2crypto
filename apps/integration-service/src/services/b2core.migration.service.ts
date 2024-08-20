@@ -24,22 +24,7 @@ export class B2CoreMigrationService {
         Logger.log(JSON.stringify(data['Email']), B2CoreMigrationService.name);
         if (data['Client status'] === 'Active') {
           const email = data['Email'];
-          let user = await this.getUserByEmail(email);
-          if (!user._id) {
-            user = await this.builder.getPromiseUserEventClient(
-              EventsNamesUserEnum.createOne,
-              {
-                email: email,
-                name: data['Client name'],
-                password: CommonService.generatePassword(8),
-                confirmPassword: 'send-password',
-              },
-            );
-            Logger.log(
-              `User ${email} ${user ? 'was found' : 'was NOT found'}`,
-              `Created user - ${user.name} - ${user.email}`,
-            );
-          }
+          const user = await this.getUserByEmail(data);
           const walletAccount = this.buildAccount(data, user);
           Logger.log(
             `Creating wallet: ${walletAccount.name}-${walletAccount.accountId}`,
@@ -103,22 +88,7 @@ export class B2CoreMigrationService {
 
   private async getWallet(data: any) {
     const email = data['Email'];
-    let user = await this.getUserByEmail(email);
-    if (!user._id) {
-      user = await this.builder.getPromiseUserEventClient(
-        EventsNamesUserEnum.createOne,
-        {
-          email: email,
-          name: data['Client name'],
-          password: CommonService.generatePassword(8),
-          confirmPassword: 'send-password',
-        },
-      );
-      Logger.log(
-        `User ${email} ${user ? 'was found' : 'was NOT found'}`,
-        `Created user - ${user.name} - ${user.email}`,
-      );
-    }
+    const user = await this.getUserByEmail(data);
     const walletAccount = this.buildAccount(data, user);
     Logger.log(
       `Creating wallet: ${walletAccount.name}-${walletAccount.accountId}`,
@@ -131,12 +101,24 @@ export class B2CoreMigrationService {
     return null;
   } */
 
-  private async getUserByEmail(email: string) {
+  private async getUserByEmail(data: any) {
     try {
-      const user = await this.builder.getPromiseUserEventClient(
+      const email = data['Email'];
+      let user = await this.builder.getPromiseUserEventClient(
         EventsNamesUserEnum.findOneByEmail,
         email,
       );
+      if (!user._id) {
+        user = await this.builder.getPromiseUserEventClient(
+          EventsNamesUserEnum.createOne,
+          {
+            email: email,
+            name: data['Client name'],
+            password: CommonService.generatePassword(8),
+            confirmPassword: 'send-password',
+          },
+        );
+      }
       Logger.log(
         `User ${email} ${user ? 'was found' : 'was NOT found'}`,
         B2CoreMigrationService.name,
