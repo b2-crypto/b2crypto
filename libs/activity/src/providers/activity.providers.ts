@@ -8,7 +8,7 @@ export const activityProviders = [
   {
     provide: 'ACTIVITY_MODEL_MONGOOSE',
     useFactory: (connection: Connection) => {
-      connection.plugin(mongooseSlugUpdater);
+      //connection.plugin(mongooseSlugUpdater);
       return connection.model('activities', ActivitySchema);
     },
     inject: ['MONGOOSE_CONNECTION'],
