@@ -1,3 +1,4 @@
+
 import { UserChangePasswordDto } from '@user/user/dto/user.change-password.dto';
 import { QuerySearchAnyDto } from '@common/common/models/query_search-any.dto';
 import { UserRegisterDto } from '@user/user/dto/user.register.dto';
@@ -35,6 +36,7 @@ export class UserServiceService {
     user.slugUsername = CommonService.getSlug(user.username);
     user.verifyEmail = true;
     return this.lib.create(user);
+    
   }
 
   async newManyUser(createUsersDto: UserRegisterDto[]) {

@@ -102,7 +102,7 @@ export class PomeloMigrationService {
             );
           }
         }
-      } while (currentPage < totalPages);
+      } while (currentPage <= totalPages);
       return Promise.all(promises);
     } catch (error) {
       Logger.error(

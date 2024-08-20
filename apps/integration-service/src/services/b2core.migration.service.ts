@@ -16,25 +16,28 @@ export class B2CoreMigrationService {
   async startB2CoreMigration(file: Express.Multer.File) {
     const results = [];
     try {
-      createReadStream(file.path)
-        .pipe(csv())
-        .on('data', async (data) => {
-          Logger.log(
-            JSON.stringify(data['Email']),
-            B2CoreMigrationService.name,
-          );
-          const user = await this.getUserByEmail(data['Email']);
-          if (user) {
-            const walletAccount = this.buildAccount(data, user);
-            const account = await this.migrateWalletAccount(walletAccount);
-            if (account) {
-              results.push(account);
+      return new Promise(async (res) => {
+        createReadStream(file.path)
+          .pipe(csv())
+          .on('data', async (data) => {
+            Logger.log(
+              JSON.stringify(data['Email']),
+              B2CoreMigrationService.name,
+            );
+            const user = await this.getUserByEmail(data['Email']);
+            if (user) {
+              const walletAccount = this.buildAccount(data, user);
+              const account = await this.migrateWalletAccount(walletAccount);
+              if (account) {
+                results.push(account);
+              }
             }
-          }
-        })
-        .on('end', () => {
-          Logger.log(results, B2CoreMigrationService.name);
-        });
+          })
+          .on('end', () => {
+            Logger.log(results, B2CoreMigrationService.name);
+            res(results);
+          });
+      });
     } catch (error) {
       Logger.error(error, B2CoreMigrationService.name);
     }

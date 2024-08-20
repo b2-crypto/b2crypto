@@ -200,4 +200,102 @@ export class MessageServiceController implements GenericServiceController {
       Logger.error(err, MessageServiceController.name);
     }
   }
+
+  @AllowAnon()
+  @EventPattern(EventsNamesMessageEnum.sendCardRequestConfirmationEmail)
+  async eventSendCardRequestConfirmationEmail(
+    @Payload() message: MessageCreateDto,
+    @Ctx() ctx: RmqContext,
+  ) {
+    CommonService.ack(ctx);
+    try {
+      await this.messageService.sendCardRequestConfirmationEmail(message);
+    } catch (err) {
+      Logger.error(err, MessageServiceController.name);
+    }
+  }
+
+  @AllowAnon()
+  @EventPattern(EventsNamesMessageEnum.sendProfileRegistrationCreation)
+  async eventSendProfileRegistrationCreation(
+    @Payload() message: MessageCreateDto,
+    @Ctx() ctx: RmqContext,
+  ) {
+    CommonService.ack(ctx);
+    try {
+      await this.messageService.sendProfileRegistrationCreation(message);
+    } catch (err) {
+      Logger.error(err, MessageServiceController.name);
+    }
+  }
+
+  @AllowAnon()
+  @EventPattern(EventsNamesMessageEnum.sendVirtualPhysicalCards)
+  async eventSendVirtualPhysicalCards(
+    @Payload() message: MessageCreateDto,
+    @Ctx() ctx: RmqContext,
+  ) {
+    CommonService.ack(ctx);
+    try {
+      await this.messageService.sendVirtualPhysicalCards(message);
+    } catch (err) {
+      Logger.error(err, MessageServiceController.name);
+    }
+  }
+
+  @AllowAnon()
+  @EventPattern(EventsNamesMessageEnum.sendPurchasesTransactionAdjustments)
+  async eventSendPurchasesTransactionAdjustments(
+    @Payload() message: MessageCreateDto,
+    @Ctx() ctx: RmqContext,
+  ) {
+    CommonService.ack(ctx);
+    try {
+      await this.messageService.sendPurchasesTransactionAdjustments(message);
+    } catch (err) {
+      Logger.error(err, MessageServiceController.name);
+    }
+  }
+
+  @AllowAnon()
+  @EventPattern(EventsNamesMessageEnum.sendCryptoWalletsManagement)
+  async eventSendCryptoWalletsManagement(
+    @Payload() message: MessageCreateDto,
+    @Ctx() ctx: RmqContext,
+  ) {
+    CommonService.ack(ctx);
+    try {
+      await this.messageService.sendCryptoWalletsManagement(message);
+    } catch (err) {
+      Logger.error(err, MessageServiceController.name);
+    }
+  }
+
+  @AllowAnon()
+  @EventPattern(EventsNamesMessageEnum.sendSecurityNotifications)
+  async eventSendSecurityNotifications(
+    @Payload() message: MessageCreateDto,
+    @Ctx() ctx: RmqContext,
+  ) {
+    CommonService.ack(ctx);
+    try {
+      await this.messageService.sendSecurityNotifications(message);
+    } catch (err) {
+      Logger.error(err, MessageServiceController.name);
+    }
+  }
+
+  @AllowAnon()
+  @EventPattern(EventsNamesMessageEnum.sendPasswordRestoredEmail)
+  async eventSendPasswordRestoredEmail(
+    @Payload() message: MessageCreateDto,
+    @Ctx() ctx: RmqContext,
+  ) {
+    CommonService.ack(ctx);
+    try {
+      await this.messageService.sendPasswordRestoredEmail(message);
+    } catch (err) {
+      Logger.error(err, MessageServiceController.name);
+    }
+  }
 }
