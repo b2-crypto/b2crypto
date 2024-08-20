@@ -1,1 +1,25 @@
-p Hi #{vars.name} #{vars.lastname}, your b2crypto OTP is: #{vars.otp}
+doctype html
+html(lang="es")
+  include ./partials/head.pug
+  body
+    .container
+      include ./partials/header.pug
+      .content
+        h2 Código de Verificación OTP
+        p Hola #{vars.name},
+        
+        p Tu código OTP de b2crypto es:
+        
+        .otp-code
+          strong #{vars.otp}
+        
+        p Este código es válido por un tiempo limitado. Por favor, úsalo pronto para completar tu verificación.
+        
+        p Si no has solicitado este código, por favor ignora este correo y contacta con nuestro equipo de soporte.
+        
+        p Gracias por usar b2crypto para tus transacciones seguras.
+        
+        p Saludos cordiales,
+        p El equipo de b2crypto
+
+      include ./partials/footer.pug

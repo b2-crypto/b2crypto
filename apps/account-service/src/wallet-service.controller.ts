@@ -37,8 +37,6 @@ import {
 import EventsNamesAccountEnum from './enum/events.names.account.enum';
 import EventsNamesTransferEnum from 'apps/transfer-service/src/enum/events.names.transfer.enum';
 import { TransferCreateButtonDto } from 'apps/transfer-service/src/dto/transfer.create.button.dto';
-import { CreateAnyDto } from '@common/common/models/create-any.dto';
-import { TransferEntity } from '@transfer/transfer/entities/transfer.entity';
 import TransportEnum from '@common/common/enums/TransportEnum';
 import EventsNamesMessageEnum from 'apps/message-service/src/enum/events.names.message.enum';
 
