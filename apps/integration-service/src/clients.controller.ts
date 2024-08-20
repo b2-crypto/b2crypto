@@ -17,6 +17,7 @@ import { MaintenanceOnDto } from '@user/user/dto/maintenance.on.dto';
 import EventsNamesUserEnum from 'apps/user-service/src/enum/events.names.user.enum';
 import { ClientsTaskNamesEnum } from './enums/clients.task.names.enum';
 import { ApiKeyCheck } from '@auth/auth/decorators/api-key-check.decorator';
+import { NoCache } from '@common/common/decorators/no-cache.decorator';
 
 @Controller('clients')
 @UseGuards(ApiKeyAuthGuard)
@@ -29,6 +30,7 @@ export class ClientsIntegrationController {
 
   @Get('me')
   @ApiKeyCheck()
+  @NoCache()
   async getClientData(@Req() req) {
     const clientApi = await this.builder.getPromiseUserEventClient(
       EventsNamesUserEnum.findOneById,
