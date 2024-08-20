@@ -165,13 +165,16 @@ export class AccountServiceController implements GenericServiceController {
 
   @MessagePattern(EventsNamesAccountEnum.updateOne)
   @EventPattern(EventsNamesAccountEnum.updateOne)
-  updateOneEvent(@Payload() updateDto: UpdateAnyDto, @Ctx() ctx: RmqContext) {
+  updateOneEvent(
+    @Payload() updateDto: AccountCreateDto,
+    @Ctx() ctx: RmqContext,
+  ) {
     CommonService.ack(ctx);
     return this.accountService.updateOneEvent(updateDto, ctx);
   }
   @MessagePattern(EventsNamesAccountEnum.customUpdateOne)
   customUpdateOneEvent(
-    @Payload() updateDto: UpdateAnyDto,
+    @Payload() updateDto: AccountCreateDto,
     @Ctx() ctx: RmqContext,
   ) {
     CommonService.ack(ctx);
@@ -180,7 +183,7 @@ export class AccountServiceController implements GenericServiceController {
 
   @MessagePattern(EventsNamesAccountEnum.updateMany)
   updateManyEvent(
-    @Payload() updatesDto: UpdateAnyDto[],
+    @Payload() updatesDto: AccountCreateDto[],
     @Ctx() ctx: RmqContext,
   ) {
     CommonService.ack(ctx);
