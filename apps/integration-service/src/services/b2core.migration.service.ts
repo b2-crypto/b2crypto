@@ -2,6 +2,7 @@ import StatusAccountEnum from '@account/account/enum/status.account.enum';
 import TypesAccountEnum from '@account/account/enum/types.account.enum';
 import WalletTypesAccountEnum from '@account/account/enum/wallet.types.account.enum';
 import { BuildersService } from '@builder/builders';
+import { CommonService } from '@common/common';
 import CurrencyCodeB2cryptoEnum from '@common/common/enums/currency-code-b2crypto.enum';
 import { Injectable, Logger } from '@nestjs/common';
 import EventsNamesAccountEnum from 'apps/account-service/src/enum/events.names.account.enum';
@@ -24,9 +25,29 @@ export class B2CoreMigrationService {
               JSON.stringify(data['Email']),
               B2CoreMigrationService.name,
             );
-            const user = await this.getUserByEmail(data['Email']);
-            if (user) {
+            if (data['Client status'] === 'Active') {
+              const email = data['Email'];
+              let user = await this.getUserByEmail(email);
+              if (!user._id) {
+                user = await this.builder.getPromiseUserEventClient(
+                  EventsNamesUserEnum.createOne,
+                  {
+                    email: email,
+                    name: data['Client name'],
+                    password: CommonService.generatePassword(8),
+                    confirmPassword: 'send-password',
+                  },
+                );
+                Logger.log(
+                  `User ${email} ${user ? 'was found' : 'was NOT found'}`,
+                  `Created user - ${user.name} - ${user.email}`,
+                );
+              }
               const walletAccount = this.buildAccount(data, user);
+              Logger.log(
+                `Creating wallet: ${walletAccount.name}-${walletAccount.accountId}`,
+                `${walletAccount.owner} - ${email}`,
+              );
               const account = await this.migrateWalletAccount(walletAccount);
               if (account) {
                 results.push(account);
