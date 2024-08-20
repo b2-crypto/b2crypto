@@ -7,7 +7,7 @@ enum TemplatesMessageEnum {
   purchasesTransactionAdjustments = './libs/message/src/templates/purchases-transaction-adjustments.email.pug',
   cryptoWalletsManagement = './libs/message/src/templates/crypto-wallets-management.email.pug',
   securityNotifications = './libs/message/src/templates/security-notifications.email.pug',
-  passwordRestoredConfirmation = './libs/message/src/templates/password-restored-confirmation.pug',
+  passwordRestoredConfirmation = './libs/message/src/templates/password-restored-confirmation-safe.pug',
 }
 
 export default TemplatesMessageEnum;
