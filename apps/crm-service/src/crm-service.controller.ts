@@ -310,7 +310,7 @@ export class CrmServiceController implements GenericServiceController {
     CommonService.ack(ctx);
     const crms = await this.crmService.getAll({
       where: {
-        name: crmName,
+        slug: CommonService.getSlug(crmName),
       },
     });
     if (crms.totalElements) {
