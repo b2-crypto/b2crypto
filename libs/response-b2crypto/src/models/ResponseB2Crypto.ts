@@ -102,7 +102,7 @@ class ResponseB2Crypto {
       this.code = 500;
     }
     message = message ?? this.message;
-    if (this.data[0]) {
+    if (isArray(this.data)) {
       this.code = 201;
     }
     if (!message && !this.message) {
