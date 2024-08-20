@@ -102,6 +102,9 @@ class ResponseB2Crypto {
       this.code = 500;
     }
     message = message ?? this.message;
+    if (this.data[0]) {
+      this.code = 201;
+    }
     if (!message && !this.message) {
       message = MessageResponseB2Crypto.getMessageCode(this.code, this.action);
     } else if (!message) {
