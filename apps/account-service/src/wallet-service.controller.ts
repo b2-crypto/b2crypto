@@ -303,6 +303,7 @@ export class WalletServiceController extends AccountServiceController {
             owner: walletToMigrate.owner,
           },
         );
+        walletList.list[0].owner = walletToMigrate.owner;
         return walletList.list[0];
       }
     } catch (error) {
