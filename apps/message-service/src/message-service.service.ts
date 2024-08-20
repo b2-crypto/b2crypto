@@ -144,10 +144,11 @@ export class MessageServiceService {
       pageTitle: vars.name,
       headerColor: this.getHeaderColorForTemplate(template),
       headerTitle: vars.name,
-      logoUrl: 'https://message-templates-resource.s3.eu-west-3.amazonaws.com/logo.svg',
-      ...vars 
+      logoUrl:
+        'https://message-templates-resource.s3.eu-west-3.amazonaws.com/logo.svg',
+      vars: vars,
     };
-  
+
     const rta = pug.renderFile(template, templateVars);
     return rta;
   }
