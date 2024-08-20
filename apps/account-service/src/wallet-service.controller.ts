@@ -296,6 +296,13 @@ export class WalletServiceController extends AccountServiceController {
       if (!walletList || !walletList.list[0]) {
         return await this.walletService.createOne(walletToMigrate);
       } else {
+        this.ewalletBuilder.emitAccountEventClient(
+          EventsNamesAccountEnum.updateOne,
+          {
+            id: walletList.list[0]._id,
+            owner: walletToMigrate.owner,
+          },
+        );
         return walletList.list[0];
       }
     } catch (error) {

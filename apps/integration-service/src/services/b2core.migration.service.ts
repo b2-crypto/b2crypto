@@ -81,7 +81,7 @@ export class B2CoreMigrationService {
       accountId: wallet['Account ID'],
       type: TypesAccountEnum.WALLET,
       accountType: WalletTypesAccountEnum.VIRTUAL,
-      owner: user.id,
+      owner: user._id,
       amount: wallet['Balance'],
       currency: CurrencyCodeB2cryptoEnum[wallet['Currency']],
       amountCustodial: wallet['Balance'],

@@ -1,4 +1,3 @@
-
 import { AccountServiceMongooseService } from '@account/account/account-service-mongoose.service';
 import { AccountCreateDto } from '@account/account/dto/account.create.dto';
 import { AccountUpdateDto } from '@account/account/dto/account.update.dto';
@@ -55,10 +54,10 @@ export class AccountServiceService
   }
   async createOne(
     createDto: AccountCreateDto,
-    context?: any
+    context?: any,
   ): Promise<AccountDocument> {
     const account = await this.lib.create(createDto);
-    
+
     if (account && account.email) {
       const data = {
         name: `Confirmación de Solicitud de Tarjeta para ${account.email}`,
@@ -76,21 +75,23 @@ export class AccountServiceService
           status: account.statusText,
         },
       };
-      
+
       if (account._id) {
         data.destiny = {
           resourceId: account._id.toString(),
-          resourceName: 'ACCOUNT', 
+          resourceName: 'ACCOUNT',
         };
       }
-      
+
       Logger.log(data, 'Card Request Confirmation Email Prepared');
       this.builder.emitMessageEventClient(
         EventsNamesMessageEnum.sendCardRequestConfirmationEmail,
-        data
+        data,
       );
     } else {
-      Logger.warn('Account created without email. Skipping confirmation email.');
+      Logger.warn(
+        'Account created without email. Skipping confirmation email.',
+      );
     }
 
     return account;
