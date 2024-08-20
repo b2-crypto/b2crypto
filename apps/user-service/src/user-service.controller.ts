@@ -16,7 +16,6 @@ import {
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
-  ApiHeader,
   ApiResponse,
   ApiSecurity,
   ApiTags,
@@ -24,8 +23,11 @@ import {
 
 import { AllowAnon } from '@auth/auth/decorators/allow-anon.decorator';
 import { ApiKeyCheck } from '@auth/auth/decorators/api-key-check.decorator';
+import { ApiKeyAuthGuard } from '@auth/auth/guards/api.key.guard';
+import { BuildersService } from '@builder/builders';
 import { CommonService } from '@common/common';
 import ActionsEnum from '@common/common/enums/ActionEnum';
+import TransportEnum from '@common/common/enums/TransportEnum';
 import GenericServiceController from '@common/common/interfaces/controller.generic.interface';
 import { QuerySearchAnyDto } from '@common/common/models/query_search-any.dto';
 import { UpdateAnyDto } from '@common/common/models/update-any.dto';
@@ -41,15 +43,12 @@ import { UserChangePasswordDto } from '@user/user/dto/user.change-password.dto';
 import { UserRegisterDto } from '@user/user/dto/user.register.dto';
 import { UserUpdateDto } from '@user/user/dto/user.update.dto';
 import { UserEntity } from '@user/user/entities/user.entity';
+import EventsNamesMessageEnum from 'apps/message-service/src/enum/events.names.message.enum';
+import { isBoolean } from 'class-validator';
+import { SwaggerSteakeyConfigEnum } from 'libs/config/enum/swagger.stakey.config.enum';
 import { ObjectId } from 'mongodb';
 import EventsNamesUserEnum from './enum/events.names.user.enum';
 import { UserServiceService } from './user-service.service';
-import { SwaggerSteakeyConfigEnum } from 'libs/config/enum/swagger.stakey.config.enum';
-import { ApiKeyAuthGuard } from '@auth/auth/guards/api.key.guard';
-import { isBoolean } from 'class-validator';
-import { BuildersService } from '@builder/builders';
-import EventsNamesMessageEnum from 'apps/message-service/src/enum/events.names.message.enum';
-import TransportEnum from '@common/common/enums/TransportEnum';
 
 @ApiTags('USER')
 @Controller('users')
@@ -132,17 +131,12 @@ export class UserServiceController implements GenericServiceController {
         for (let i = 0; i < users?.list?.length; i++) {
           const user = users.list[i];
           if (user && user?.email) {
-            const psw = CommonService.generatePassword(8);
-            const emailMessage = {
-              name: user?.name,
-              username: user?.username,
-              email: user?.email,
-              password: psw,
+            const pwd: string = CommonService.generatePassword(8);
+            const changePassword: UserChangePasswordDto = {
+              password: pwd,
+              confirmPassword: pwd,
             };
-            Logger.log(
-              `Email event msg: ${JSON.stringify(emailMessage)}`,
-              `MassiveEmail.${UserServiceController.name}`,
-            );
+            await this.changePassword(user?.id, changePassword);
             const emailData = {
               name: `Actualizacion de clave`,
               body: `Tu clave ha sido actualizada exitosamente ${user.name}`,
@@ -153,7 +147,7 @@ export class UserServiceController implements GenericServiceController {
               vars: {
                 name: user.name,
                 username: user.username,
-                password: psw,
+                password: pwd,
               },
             };
             this.builder.emitMessageEventClient(
