@@ -51,24 +51,31 @@ export class PomeloIntegrationProcessService {
     response: any,
     amount: any,
   ) {
-    this.builder.emitTransferEventClient(
-      EventsNamesTransferEnum.createOneWebhook,
-      {
-        integration: 'Pomelo',
-        requestBodyJson: process,
-        requestHeadersJson: headers,
-        operationType:
-          OperationTransactionType[process?.transaction?.type?.toLowerCase()],
-        status: response?.status ?? CardsEnum.CARD_PROCESS_OK,
-        descriptionStatusPayment:
-          response?.status_detail ?? CardsEnum.CARD_PROCESS_OK,
-        description: response?.message ?? '',
-        amount: amount.amount,
-        amountCustodial: amount.usd,
-        currency: amount.from,
-        currencyCustodial: amount.to,
-      },
-    );
+    try {
+      this.builder.emitTransferEventClient(
+        EventsNamesTransferEnum.createOneWebhook,
+        {
+          integration: 'Pomelo',
+          requestBodyJson: process,
+          requestHeadersJson: headers,
+          operationType:
+            OperationTransactionType[process?.transaction?.type?.toLowerCase()],
+          status: response?.status ?? CardsEnum.CARD_PROCESS_OK,
+          descriptionStatusPayment:
+            response?.status_detail ?? CardsEnum.CARD_PROCESS_OK,
+          description: response?.message ?? '',
+          amount: amount.amount,
+          amountCustodial: amount.usd,
+          currency: amount.from,
+          currencyCustodial: amount.to,
+        },
+      );
+    } catch (error) {
+      Logger.log(
+        `Error creatin transfer: ${error}`,
+        PomeloIntegrationProcessService.name,
+      );
+    }
   }
 
   private async getAmount(txn: any): Promise<any> {
