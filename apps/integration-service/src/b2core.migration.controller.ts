@@ -1,6 +1,7 @@
 import {
   Controller,
   Logger,
+  NotImplementedException,
   Post,
   UploadedFile,
   UseInterceptors,
@@ -15,6 +16,7 @@ export class B2CoreMigrationController {
   @Post('ignate')
   @UseInterceptors(FileInterceptor('file'))
   async ignateB2CoreMigration(@UploadedFile() file: Express.Multer.File) {
-    return this.migrationService.startB2CoreMigration(file);
+    return new NotImplementedException('Method not implemented.');
+    //return this.migrationService.startB2CoreMigration(file);
   }
 }
