@@ -60,12 +60,14 @@ export class UserServiceController implements GenericServiceController {
     readonly builder: BuildersService,
   ) {}
 
+  @NoCache()
   @Get('all')
   // @CheckPoliciesAbility(new PolicyHandlerUserRead())
   async findAll(@Query() query: QuerySearchAnyDto) {
     return this.userService.getAll(query);
   }
 
+  @NoCache()
   @Get('me')
   @ApiTags(SwaggerSteakeyConfigEnum.TAG_SECURITY)
   @ApiBearerAuth('bearerToken')
@@ -80,6 +82,7 @@ export class UserServiceController implements GenericServiceController {
   @ApiKeyCheck()
   @ApiTags(SwaggerSteakeyConfigEnum.TAG_SECURITY)
   @ApiSecurity('b2crypto-key')
+  @NoCache()
   @Get('email/:userEmail')
   // @CheckPoliciesAbility(new PolicyHandlerUserRead())
   async findOneByEmail(@Param('userEmail') email: string) {
@@ -93,6 +96,7 @@ export class UserServiceController implements GenericServiceController {
     };
   }
 
+  @NoCache()
   @Get(':userID')
   // @CheckPoliciesAbility(new PolicyHandlerUserRead())
   async findOneById(@Param('userID') id: string) {

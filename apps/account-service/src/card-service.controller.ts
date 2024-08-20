@@ -103,6 +103,7 @@ export class CardServiceController extends AccountServiceController {
     this.configService.get<number>('AUTHORIZATIONS_BLOCK_BALANCE_PERCENTAGE');
 
   @Get('all')
+  @NoCache()
   @ApiTags(SwaggerSteakeyConfigEnum.TAG_CARD)
   @ApiBearerAuth('bearerToken')
   @ApiHeader({
@@ -516,6 +517,7 @@ export class CardServiceController extends AccountServiceController {
   @ApiBearerAuth('bearerToken')
   @UseGuards(ApiKeyAuthGuard)
   @Get('shipping/:idCard')
+  @NoCache()
   async getShippingPhysicalCard(
     @Param('idCard') idCard: string,
     @Req() req?: any,

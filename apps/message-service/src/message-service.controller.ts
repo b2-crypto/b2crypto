@@ -34,18 +34,21 @@ import {
 } from '@nestjs/microservices';
 import EventsNamesMessageEnum from './enum/events.names.message.enum';
 import { MessageServiceService } from './message-service.service';
+import { NoCache } from '@common/common/decorators/no-cache.decorator';
 
 @ApiTags('MESSAGE')
 @Controller('message')
 export class MessageServiceController implements GenericServiceController {
   constructor(private readonly messageService: MessageServiceService) {}
 
+  @NoCache()
   @Get('all')
   // @CheckPoliciesAbility(new PolicyHandlerMessageRead())
   async findAll(@Query() query: QuerySearchAnyDto) {
     return this.messageService.getAll(query);
   }
 
+  @NoCache()
   @Get(':messageID')
   // @CheckPoliciesAbility(new PolicyHandlerMessageRead())
   async findOneById(@Param('messageID') id: string) {

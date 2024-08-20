@@ -143,6 +143,7 @@ export class AuthServiceController {
     type: String,
     required: true,
   })
+  @NoCache()
   @Get('identity/page/:userId')
   async sumsubGetPage(
     @Param('userId') userId,
@@ -342,6 +343,7 @@ export class AuthServiceController {
   @UseGuards(ApiKeyAuthGuard)
   @ApiSecurity('b2crypto-key')
   @ApiTags(SwaggerSteakeyConfigEnum.TAG_SECURITY)
+  @NoCache()
   @Get('otp/:email')
   async getOtp(@Param('email') email: string) {
     await this.generateOtp({ email } as any);
@@ -356,6 +358,7 @@ export class AuthServiceController {
   @UseGuards(ApiKeyAuthGuard)
   @ApiSecurity('b2crypto-key')
   @ApiTags(SwaggerSteakeyConfigEnum.TAG_SECURITY)
+  @NoCache()
   @Get('otp/:email/:otp')
   async validateOtp(@Param('email') email: string, @Param('otp') otp: string) {
     const otpSended = await this.getOtpGenerated(email);

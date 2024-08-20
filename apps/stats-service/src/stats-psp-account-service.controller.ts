@@ -19,6 +19,7 @@ import { StatsDateCreateDto } from '@stats/stats/dto/stats.date.create.dto';
 import { TransferDocument } from '@transfer/transfer/entities/mongoose/transfer.schema';
 import EventsNamesStatsEnum from './enum/events.names.stats.enum';
 import { StatsPspAccountServiceService } from './stats-psp-account-service.service';
+import { NoCache } from '@common/common/decorators/no-cache.decorator';
 
 @Controller('stats')
 export class StatsPspAccountServiceController {
@@ -26,11 +27,13 @@ export class StatsPspAccountServiceController {
     private readonly statsPspAccountServiceService: StatsPspAccountServiceService,
   ) {}
 
+  @NoCache()
   @Get('transfer')
   async getStatsTransfer(/* @Query() query: QuerySearchAnyDto */) {
     return this.statsPspAccountServiceService.getStatsTransfer(/* query */);
   }
 
+  @NoCache()
   @Get('psp-accounts/global')
   async getStatsPspAccount(@Query() query: QuerySearchAnyDto) {
     return this.statsPspAccountServiceService.getGlobalStatDailyDBPspAccount(
@@ -105,11 +108,13 @@ export class StatsPspAccountServiceController {
     return this.statsPspAccountServiceService.findAllPspAccountStats(query);
   }
 
+  @NoCache()
   @Get('psp-accounts')
   async getStatsDatePspAccounts(@Query() query?: QuerySearchAnyDto) {
     return this.statsPspAccountServiceService.getStatsDatePspAccounts(query);
   }
 
+  @NoCache()
   @Get('psp-accounts/:pspAccountId')
   async getStatsDatePspAccount(@Param('pspAccountId') pspAccountId: string) {
     return this.statsPspAccountServiceService.getStatsDatePspAccount(
@@ -117,31 +122,37 @@ export class StatsPspAccountServiceController {
     );
   }
 
+  @NoCache()
   @Get('brands')
   async getStatsDateBrands(@Query() query?: QuerySearchAnyDto) {
     throw new NotImplementedException();
   }
 
+  @NoCache()
   @Get('brands/:brandId')
   async getStatsDateBrand(@Param('brandId') brandId: string) {
     throw new NotImplementedException();
   }
 
+  @NoCache()
   @Get('crms')
   async getStatsDateCrms(@Query() query?: QuerySearchAnyDto) {
     throw new NotImplementedException();
   }
 
+  @NoCache()
   @Get('crms/:crmId')
   async getStatsDateCrm(@Param('crmId') crmId: string) {
     throw new NotImplementedException();
   }
 
+  @NoCache()
   @Get('psps')
   async getStatsDatePsps(@Query() query?: QuerySearchAnyDto) {
     throw new NotImplementedException();
   }
 
+  @NoCache()
   @Get('psps/:pspId')
   async getStatsDatePsp(@Param('pspId') pspId: string) {
     throw new NotImplementedException();

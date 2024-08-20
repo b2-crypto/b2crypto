@@ -47,6 +47,7 @@ export class BankServiceController extends AccountServiceController {
   }
 
   @Get('all')
+  @NoCache()
   findAll(@Query() query: QuerySearchAnyDto, req?: any) {
     query = query ?? {};
     query.where = query.where ?? {};
@@ -54,6 +55,7 @@ export class BankServiceController extends AccountServiceController {
     return this.bankAccountService.findAll(query);
   }
   @Get('me')
+  @NoCache()
   findAllMe(@Query() query: QuerySearchAnyDto, @Req() req?: any) {
     query = query ?? {};
     query.where = query.where ?? {};

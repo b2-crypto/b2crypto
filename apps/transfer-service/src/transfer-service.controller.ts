@@ -163,12 +163,14 @@ export class TransferServiceController implements GenericServiceController {
       message: 'Transaction updated',
     };
   }
+  @NoCache()
   @Get('searchText')
   // @CheckPoliciesAbility(new PolicyHandlerTransferRead())
   async searchText(@Query() query: QuerySearchAnyDto, @Req() req?) {
     //query = await this.filterFromUserPermissions(query, req);
     return this.transferService.getSearchText(query);
   }
+  @NoCache()
   @Get('all')
   // @CheckPoliciesAbility(new PolicyHandlerTransferRead())
   async findAll(@Query() query: QuerySearchAnyDto, @Req() req?) {
@@ -176,6 +178,7 @@ export class TransferServiceController implements GenericServiceController {
     return this.transferService.getAll(query);
   }
 
+  @NoCache()
   @Get('me')
   // @CheckPoliciesAbility(new PolicyHandlerTransferRead())
   async findAllMe(@Query() query: QuerySearchAnyDto, @Req() req?) {
@@ -184,6 +187,7 @@ export class TransferServiceController implements GenericServiceController {
     return this.transferService.getAll(query);
   }
 
+  @NoCache()
   @Get('deposit')
   // @CheckPoliciesAbility(new PolicyHandlerTransferRead())
   async findDeposit(@Query() query: QuerySearchAnyDto, @Req() req?) {
@@ -194,6 +198,7 @@ export class TransferServiceController implements GenericServiceController {
     return this.transferService.getAll(query);
   }
 
+  @NoCache()
   @Get('credit')
   // @CheckPoliciesAbility(new PolicyHandlerTransferRead())
   async findCredit(@Query() query: QuerySearchAnyDto, @Req() req?) {
@@ -204,6 +209,7 @@ export class TransferServiceController implements GenericServiceController {
     return this.transferService.getAll(query);
   }
 
+  @NoCache()
   @Get('withdrawal')
   // @CheckPoliciesAbility(new PolicyHandlerTransferRead())
   async findWithdrawal(@Query() query: QuerySearchAnyDto, @Req() req?) {
@@ -214,6 +220,7 @@ export class TransferServiceController implements GenericServiceController {
     return this.transferService.getAll(query);
   }
 
+  @NoCache()
   @Get('debit')
   // @CheckPoliciesAbility(new PolicyHandlerTransferRead())
   async findDebit(@Query() query: QuerySearchAnyDto, @Req() req?) {
@@ -224,6 +231,7 @@ export class TransferServiceController implements GenericServiceController {
     return this.transferService.getAll(query);
   }
 
+  @NoCache()
   @Get('chargeback')
   // @CheckPoliciesAbility(new PolicyHandlerTransferRead())
   async findChargeBack(@Query() query: QuerySearchAnyDto, @Req() req?) {
@@ -234,6 +242,7 @@ export class TransferServiceController implements GenericServiceController {
     return this.transferService.getAll(query);
   }
 
+  @NoCache()
   @Get('check-numeric-id')
   // @CheckPoliciesAbility(new PolicyHandlerTransferRead())
   async checkNumericId() {
@@ -241,7 +250,8 @@ export class TransferServiceController implements GenericServiceController {
     //return this.transferService.checkNumericId();
   }
 
-  /* @Get('deposit/:transferID')
+  /* @NoCache()
+  @Get('deposit/:transferID')
   // @CheckPoliciesAbility(new PolicyHandlerTransferRead())
   async findOneDeposit(@Param('transferID') id: string) {
     const deposit = await this.transferService.getOne(id);
@@ -251,6 +261,7 @@ export class TransferServiceController implements GenericServiceController {
     throw new NotFoundException(`Not found deposit "${id}"`);
   } */
 
+  @NoCache()
   @Get('credit/:transferID')
   // @CheckPoliciesAbility(new PolicyHandlerTransferRead())
   async findOneCredit(@Param('transferID') id: string) {
@@ -261,6 +272,7 @@ export class TransferServiceController implements GenericServiceController {
     throw new NotFoundException(`Not found credit "${id}"`);
   }
 
+  @NoCache()
   @Get('withdrawal/:transferID')
   // @CheckPoliciesAbility(new PolicyHandlerTransferRead())
   async findOneWithdrawal(@Param('transferID') id: string) {
@@ -274,6 +286,7 @@ export class TransferServiceController implements GenericServiceController {
     throw new NotFoundException(`Not found withdrawal "${id}"`);
   }
 
+  @NoCache()
   @Get('debit/:transferID')
   // @CheckPoliciesAbility(new PolicyHandlerTransferRead())
   async findOneDebit(@Param('transferID') id: string) {
@@ -284,6 +297,7 @@ export class TransferServiceController implements GenericServiceController {
     throw new NotFoundException(`Not found debit "${id}"`);
   }
 
+  @NoCache()
   @Get('chargeback/:transferID')
   // @CheckPoliciesAbility(new PolicyHandlerTransferRead())
   async findOneChargeback(@Param('transferID') id: string) {
@@ -299,6 +313,7 @@ export class TransferServiceController implements GenericServiceController {
 
   // TODO[hender - 30-01-2024] Add to endpoint list
 
+  @NoCache()
   @Get(':transferID')
   // @CheckPoliciesAbility(new PolicyHandlerTransferRead())
   async findOneById(@Param('transferID') id: string) {
@@ -347,6 +362,7 @@ export class TransferServiceController implements GenericServiceController {
   @ApiQuery({
     name: 'identifier',
   })
+  @NoCache()
   @Get('deposit/link')
   // @CheckPoliciesAbility(new PolicyHandlerTransferCreate())
   async createOneDepositPaymentPage(
@@ -372,6 +388,7 @@ export class TransferServiceController implements GenericServiceController {
 
   @NoCache()
   @AllowAnon()
+  @NoCache()
   @Get('deposit/page/:id')
   // @CheckPoliciesAbility(new PolicyHandlerTransferCreate())
   async paymentPageDeposit(
