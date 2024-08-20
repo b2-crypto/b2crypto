@@ -321,6 +321,7 @@ export class AuthServiceController {
         EventsNamesUserEnum.updateOne,
         {
           id: users.list[0]._id,
+          verifyEmail: false,
           password: CommonService.getHash(psw),
         },
       );
