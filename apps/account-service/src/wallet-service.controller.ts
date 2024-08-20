@@ -39,6 +39,8 @@ import EventsNamesTransferEnum from 'apps/transfer-service/src/enum/events.names
 import { TransferCreateButtonDto } from 'apps/transfer-service/src/dto/transfer.create.button.dto';
 import { CreateAnyDto } from '@common/common/models/create-any.dto';
 import { TransferEntity } from '@transfer/transfer/entities/transfer.entity';
+import TransportEnum from '@common/common/enums/TransportEnum';
+import EventsNamesMessageEnum from 'apps/message-service/src/enum/events.names.message.enum';
 
 @ApiTags('E-WALLET')
 @Controller('wallets')
@@ -107,11 +109,41 @@ export class WalletServiceController extends AccountServiceController {
       parseInt(
         CommonService.getNumberDigits(CommonService.randomIntNumber(9999), 4),
       );
-    const wallet = await this.walletService.createOne(createDto);
+    const createdWallet = await this.walletService.createOne(createDto);
+    const emailData = {
+      name: `Actualización de tu Wallet`,
+      body: `Se ha creado un nuevo wallet en tu cuenta`,
+      originText: 'Sistema',
+      destinyText: user.email,
+      transport: TransportEnum.EMAIL,
+      destiny: null,
+      vars: {
+        name: user.name,
+        accountType: createdWallet.accountType,
+        accountName: createdWallet.accountName,
+        balance: createdWallet.amount,
+        currency: createdWallet.currency,
+        accountId: createdWallet.accountId,
+      },
+    };
+
+    if (createdWallet._id) {
+      emailData.destiny = {
+        resourceId: createdWallet._id.toString(),
+        resourceName: 'WALLET',
+      };
+    }
+
+    setImmediate(() => {
+      this.ewalletBuilder.emitMessageEventClient(
+        EventsNamesMessageEnum.sendCryptoWalletsManagement,
+        emailData,
+      );
+    });
     const transferBtn: TransferCreateButtonDto = {
       amount: '999',
       currency: 'USD',
-      account: wallet._id,
+      account: createdWallet._id,
       creator: createDto.owner,
       details: 'Deposit address',
       customer_name: user.name,
@@ -122,7 +154,7 @@ export class WalletServiceController extends AccountServiceController {
     this.ewalletBuilder.emitAccountEventClient(
       EventsNamesAccountEnum.updateOne,
       {
-        id: wallet._id,
+        id: createdWallet._id,
         responseCreation:
           await this.ewalletBuilder.getPromiseTransferEventClient(
             EventsNamesTransferEnum.createOneDepositLink,
@@ -130,9 +162,8 @@ export class WalletServiceController extends AccountServiceController {
           ),
       },
     );
-    return wallet;
+    return createdWallet;
   }
-
   @Post('recharge')
   async rechargeOne(
     @Body() createDto: WalletDepositCreateDto,
