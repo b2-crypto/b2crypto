@@ -49,6 +49,7 @@ import { SwaggerSteakeyConfigEnum } from 'libs/config/enum/swagger.stakey.config
 import { ObjectId } from 'mongodb';
 import EventsNamesUserEnum from './enum/events.names.user.enum';
 import { UserServiceService } from './user-service.service';
+import { NoCache } from '@common/common/decorators/no-cache.decorator';
 
 @ApiTags('USER')
 @Controller('users')
@@ -116,6 +117,7 @@ export class UserServiceController implements GenericServiceController {
   }
 
   @Post('massive-email')
+  @NoCache()
   async generatePasswordEmail() {
     let page = 1;
     let totalPages = 0;
