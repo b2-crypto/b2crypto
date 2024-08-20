@@ -217,11 +217,7 @@ export class CardServiceController extends AccountServiceController {
         );
         const afg = affinityGroup.data[0]; */
         // TODO[hender - 2024/06/05]
-        const afg =
-          process.env.ENVIRONMENT === 'PROD'
-            ? await this.getAfgVirtualCommercialProd()
-            : null;
-        const group = await this.buildAFG(afg.id);
+        const group = await this.buildAFG();
         account.group = group.list[0];
       }
       // Create Card
@@ -376,12 +372,10 @@ export class CardServiceController extends AccountServiceController {
     };
   }
 
-  private async buildAFG(afgId?: string) {
-    const afg = {
-      id: afgId ?? 'afg-2arMn990ZksFKAHS5PngRPHqRmS',
-      name: afgId
-        ? 'migration'
-        : 'B2Crypto COL physical virtual credit nominated',
+  private getAfgVirtualNominatedStage() {
+    return {
+      id: 'afg-2arMn990ZksFKAHS5PngRPHqRmS',
+      name: 'B2Crypto COL physical virtual credit nominated',
       card_type_supported: ['VIRTUAL'],
       innominate: false,
       months_to_expiration: 84,
@@ -416,6 +410,61 @@ export class CardServiceController extends AccountServiceController {
       start_date: '2024-01-12',
       dcvv_enabled: true,
     };
+  }
+
+  private async buildAFG(afgId?: string) {
+    let afg =
+      process.env.ENVIRONMENT === 'STAGE'
+        ? this.getAfgVirtualNominatedStage()
+        : process.env.ENVIRONMENT === 'PROD'
+        ? this.getAfgVirtualProd()
+        : null;
+    Logger.debug(
+      `AFG: ${JSON.stringify(afg)}`,
+      'CardServiceController.buildAFG',
+    );
+    // TODO[hender-20/08/2024] check the level user (individual/corporate)
+    if (afgId) {
+      afg = {
+        id: afgId ?? 'afg-2arMn990ZksFKAHS5PngRPHqRmS',
+        name: afgId
+          ? 'migration'
+          : 'B2Crypto COL physical virtual credit nominated',
+        card_type_supported: ['VIRTUAL'],
+        innominate: false,
+        months_to_expiration: 84,
+        issued_account: 9,
+        fee_account: 36,
+        exchange_rate_type: 'none',
+        exchange_rate_amount: 100,
+        non_usd_exchange_rate_amount: 100,
+        dcc_exchange_rate_amount: 0,
+        local_withdrawal_allowed: true,
+        international_withdrawal_allowed: true,
+        local_ecommerce_allowed: true,
+        international_ecommerce_allowed: true,
+        local_purchases_allowed: true,
+        international_purchases_allowed: true,
+        product_id: 'prd-2arLJXW8moDb5CppLToizmmw66q',
+        local_extracash_allowed: true,
+        international_extracash_allowed: true,
+        plastic_model: 1,
+        kit_model: 1,
+        status: 'ACTIVE',
+        embossing_company: 'THALES',
+        courier_company: 'DOMINA',
+        exchange_currency_name: 'COP',
+        activation_code_enabled: false,
+        total_exchange_rate: 4169.8,
+        total_non_usd_exchange_rate: 4169.8,
+        total_dcc_exchange_rate: 4128.51,
+        provider: 'MASTERCARD',
+        custom_name_on_card_enabled: false,
+        provider_algorithm: 'MCHIP',
+        start_date: '2024-01-12',
+        dcvv_enabled: true,
+      };
+    }
     const group = await this.groupService.getAll({
       where: {
         slug: CommonService.getSlug(afg.name),
