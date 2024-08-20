@@ -219,7 +219,7 @@ export class CardServiceController extends AccountServiceController {
         // TODO[hender - 2024/06/05]
         const afg =
           process.env.ENVIRONMENT === 'PROD'
-            ? await this.getAfgVirtualProd()
+            ? await this.getAfgVirtualCommercialProd()
             : null;
         const group = await this.buildAFG(afg.id);
         account.group = group.list[0];
@@ -332,6 +332,46 @@ export class CardServiceController extends AccountServiceController {
       custom_name_on_card_enabled: false,
       provider_algorithm: 'MCHIP',
       start_date: '2024-03-06',
+      dcvv_enabled: false,
+    };
+  }
+
+  private getAfgVirtualCommercialProd() {
+    return {
+      id: 'afg-2i3XVNYWvg9u76TFZi4FitF3VpD',
+      name: 'B2Crypto COL Mastercard Commercial credit virtual ',
+      card_type_supported: ['VIRTUAL'],
+      innominate: false,
+      months_to_expiration: 96,
+      issued_account: 9,
+      fee_account: 36,
+      exchange_rate_type: '100',
+      exchange_rate_amount: 0,
+      non_usd_exchange_rate_amount: 0,
+      dcc_exchange_rate_amount: 0,
+      local_withdrawal_allowed: true,
+      international_withdrawal_allowed: true,
+      local_ecommerce_allowed: true,
+      international_ecommerce_allowed: true,
+      local_purchases_allowed: true,
+      international_purchases_allowed: true,
+      product_id: 'prd-2hZAQouC4B4qDag9W21MozKlqzU',
+      local_extracash_allowed: true,
+      international_extracash_allowed: true,
+      plastic_model: 1,
+      kit_model: 1,
+      status: 'ACTIVE',
+      embossing_company: 'THALES',
+      courier_company: 'DOMINA',
+      exchange_currency_name: 'COP',
+      activation_code_enabled: false,
+      total_exchange_rate: 4021.63,
+      total_non_usd_exchange_rate: 4021.63,
+      total_dcc_exchange_rate: 4021.63,
+      provider: 'MASTERCARD',
+      custom_name_on_card_enabled: false,
+      provider_algorithm: 'MCHIP',
+      start_date: '2024-06-18',
       dcvv_enabled: false,
     };
   }
