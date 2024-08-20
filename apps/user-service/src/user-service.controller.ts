@@ -137,6 +137,10 @@ export class UserServiceController implements GenericServiceController {
               confirmPassword: pwd,
             };
             await this.changePassword(user?.id, changePassword);
+            Logger.log(
+              `${user?.email}`,
+              `MassiveEmail.${UserServiceController.name}`,
+            );
             const emailData = {
               name: `Actualizacion de clave`,
               body: `Tu clave ha sido actualizada exitosamente ${user.name}`,
