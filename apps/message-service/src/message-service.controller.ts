@@ -183,7 +183,7 @@ export class MessageServiceController implements GenericServiceController {
     try {
       this.messageService.sendEmailDisclaimer(lead);
     } catch (err) {
-      Logger.error(err, MessageServiceController.name);
+      Logger.error(err, `${MessageServiceController.name}-sendEmailDisclaimer`);
     }
   }
 
@@ -197,7 +197,10 @@ export class MessageServiceController implements GenericServiceController {
     try {
       await this.messageService.sendEmailOtpNotification(message);
     } catch (err) {
-      Logger.error(err, MessageServiceController.name);
+      Logger.error(
+        err,
+        `${MessageServiceController.name}-sendEmailOtpNotification`,
+      );
     }
   }
 
@@ -211,7 +214,10 @@ export class MessageServiceController implements GenericServiceController {
     try {
       await this.messageService.sendCardRequestConfirmationEmail(message);
     } catch (err) {
-      Logger.error(err, MessageServiceController.name);
+      Logger.error(
+        err,
+        `${MessageServiceController.name}-sendCardRequestConfirmationEmail`,
+      );
     }
   }
 
@@ -225,7 +231,10 @@ export class MessageServiceController implements GenericServiceController {
     try {
       await this.messageService.sendProfileRegistrationCreation(message);
     } catch (err) {
-      Logger.error(err, MessageServiceController.name);
+      Logger.error(
+        err,
+        `${MessageServiceController.name}-sendProfileRegistrationCreation`,
+      );
     }
   }
 
@@ -239,7 +248,10 @@ export class MessageServiceController implements GenericServiceController {
     try {
       await this.messageService.sendVirtualPhysicalCards(message);
     } catch (err) {
-      Logger.error(err, MessageServiceController.name);
+      Logger.error(
+        err,
+        `${MessageServiceController.name}-sendVirtualPhysicalCards`,
+      );
     }
   }
 
@@ -253,7 +265,10 @@ export class MessageServiceController implements GenericServiceController {
     try {
       await this.messageService.sendPurchasesTransactionAdjustments(message);
     } catch (err) {
-      Logger.error(err, MessageServiceController.name);
+      Logger.error(
+        err,
+        `${MessageServiceController.name}-sendPurchasesTransactionAdjustments`,
+      );
     }
   }
 
@@ -267,7 +282,10 @@ export class MessageServiceController implements GenericServiceController {
     try {
       await this.messageService.sendCryptoWalletsManagement(message);
     } catch (err) {
-      Logger.error(err, MessageServiceController.name);
+      Logger.error(
+        err,
+        `${MessageServiceController.name}-sendCryptoWalletsManagement`,
+      );
     }
   }
 
@@ -281,7 +299,10 @@ export class MessageServiceController implements GenericServiceController {
     try {
       await this.messageService.sendSecurityNotifications(message);
     } catch (err) {
-      Logger.error(err, MessageServiceController.name);
+      Logger.error(
+        err,
+        `${MessageServiceController.name}-sendSecurityNotifications`,
+      );
     }
   }
 
@@ -295,7 +316,10 @@ export class MessageServiceController implements GenericServiceController {
     try {
       await this.messageService.sendPasswordRestoredEmail(message);
     } catch (err) {
-      Logger.error(err, MessageServiceController.name);
+      Logger.error(
+        err,
+        `${MessageServiceController.name}-sendPasswordRestoredEmail`,
+      );
     }
   }
 }
