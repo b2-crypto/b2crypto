@@ -1,4 +1,3 @@
-
 import { AuthService } from '@auth/auth';
 import { AllowAnon } from '@auth/auth/decorators/allow-anon.decorator';
 import { ApiKeyCheck } from '@auth/auth/decorators/api-key-check.decorator';
@@ -310,7 +309,7 @@ export class AuthServiceController {
         destiny: null,
         vars: {
           name: user.name,
-          username: user.username,
+          username: user.email,
           password: psw,
         },
       };
