@@ -16,6 +16,68 @@ export class B2CoreMigrationService {
 
   async startB2CoreMigration(file: Express.Multer.File) {
     const results = [];
+    const migrated = [];
+    try {
+      const results = await this.getFileRows(file);
+      for (let i = 0; i < results.length; i++) {
+        const data = results[i];
+        Logger.log(JSON.stringify(data['Email']), B2CoreMigrationService.name);
+        if (data['Client status'] === 'Active') {
+          const email = data['Email'];
+          let user = await this.getUserByEmail(email);
+          if (!user._id) {
+            user = await this.builder.getPromiseUserEventClient(
+              EventsNamesUserEnum.createOne,
+              {
+                email: email,
+                name: data['Client name'],
+                password: CommonService.generatePassword(8),
+                confirmPassword: 'send-password',
+              },
+            );
+            Logger.log(
+              `User ${email} ${user ? 'was found' : 'was NOT found'}`,
+              `Created user - ${user.name} - ${user.email}`,
+            );
+          }
+          const walletAccount = this.buildAccount(data, user);
+          Logger.log(
+            `Creating wallet: ${walletAccount.name}-${walletAccount.accountId}`,
+            `${walletAccount.owner} - ${email}`,
+          );
+          const account = await this.migrateWalletAccount(walletAccount);
+          if (account) {
+            migrated.push(account);
+          }
+        }
+      }
+    } catch (error) {
+      Logger.error(error, B2CoreMigrationService.name);
+    }
+    return migrated;
+  }
+
+  async getFileRows(file: Express.Multer.File): Promise<Array<any>> {
+    const results = [];
+    return new Promise(async (res, rej) => {
+      try {
+        createReadStream(file.path)
+          .pipe(csv())
+          .on('data', async (data) => {
+            results.push(data);
+          })
+          .on('end', () => {
+            Logger.log(results, B2CoreMigrationService.name);
+            res(results);
+          });
+      } catch (error) {
+        Logger.error(error, B2CoreMigrationService.name);
+        rej(error);
+      }
+    });
+  }
+  /* async startB2CoreMigration(file: Express.Multer.File) {
+    const results = [];
     try {
       return new Promise(async (res) => {
         createReadStream(file.path)
@@ -67,7 +129,7 @@ export class B2CoreMigrationService {
       return account;
     }
     return null;
-  }
+  } */
 
   private async getUserByEmail(email: string) {
     try {
