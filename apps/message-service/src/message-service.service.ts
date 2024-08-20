@@ -141,14 +141,13 @@ export class MessageServiceService {
   }
   private compileHtml(vars: any, template: TemplatesMessageEnum) {
     const templateVars = {
-      pageTitle: vars.name || 'Notificación', //check html validation
+      pageTitle: vars.name,
       headerColor: this.getHeaderColorForTemplate(template),
-      headerTitle: vars.name || 'Notificación', // check html validation
-      logoUrl:
-        'https://message-templates-resource.s3.eu-west-3.amazonaws.com/logo.svg',
-      vars: vars,
+      headerTitle: vars.name,
+      logoUrl: 'https://message-templates-resource.s3.eu-west-3.amazonaws.com/logo.svg',
+      ...vars 
     };
-
+  
     const rta = pug.renderFile(template, templateVars);
     return rta;
   }
