@@ -419,6 +419,10 @@ export class CardServiceController extends AccountServiceController {
         : process.env.ENVIRONMENT === 'PROD'
         ? this.getAfgVirtualProd()
         : null;
+    Logger.debug(
+      `AFG: ${JSON.stringify(afg)}`,
+      'CardServiceController.buildAFG',
+    );
     // TODO[hender-20/08/2024] check the level user (individual/corporate)
     if (afgId) {
       afg = {
