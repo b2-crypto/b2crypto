@@ -212,7 +212,7 @@ export class MessageServiceController implements GenericServiceController {
   ) {
     CommonService.ack(ctx);
     try {
-      //await this.messageService.sendCardRequestConfirmationEmail(message);
+      await this.messageService.sendCardRequestConfirmationEmail(message);
     } catch (err) {
       Logger.error(
         err,

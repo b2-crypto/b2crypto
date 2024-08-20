@@ -131,12 +131,12 @@ export class MessageServiceService {
     }
     const msg = await this.newMessage(message);
     //send email
-    /* await this.mailerService.sendMail({
+    await this.mailerService.sendMail({
       to: msg.destinyText,
       from,
       subject: msg.name,
       html: this.compileHtml(message.vars ?? message, template),
-    }); */
+    });
     return msg;
   }
   private compileHtml(vars: any, template: TemplatesMessageEnum) {
