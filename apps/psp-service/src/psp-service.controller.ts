@@ -36,24 +36,28 @@ import { PspDocument } from '@psp/psp/entities/mongoose/psp.schema';
 import { ConfigCheckStatsDto } from '@stats/stats/dto/config.check.stats.dto';
 import EventsNamesPspEnum from './enum/events.names.psp.enum';
 import { PspServiceService } from './psp-service.service';
+import { NoCache } from '@common/common/decorators/no-cache.decorator';
 
 @ApiTags('PSP')
 @Controller('psp')
 export class PspServiceController implements GenericServiceController {
   constructor(private readonly pspService: PspServiceService) {}
 
+  @NoCache()
   @Get('all')
   // @CheckPoliciesAbility(new PolicyHandlerPspRead())
   async findAll(@Query() query: QuerySearchAnyDto) {
     return this.pspService.getAll(query);
   }
 
+  @NoCache()
   @Get('manual')
   // @CheckPoliciesAbility(new PolicyHandlerPspRead())
   async getPspManual() {
     return this.pspService.getPspManual();
   }
 
+  @NoCache()
   @Get(':pspID')
   // @CheckPoliciesAbility(new PolicyHandlerPspRead())
   async findOneById(@Param('pspID') id: string) {

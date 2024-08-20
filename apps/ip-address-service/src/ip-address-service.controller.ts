@@ -31,6 +31,7 @@ import {
 } from '@nestjs/microservices';
 import EventsNamesIpAddressEnum from './enum/events.names.ip.address.enum';
 import { IpAddressServiceService } from './ip-address-service.service';
+import { NoCache } from '@common/common/decorators/no-cache.decorator';
 
 @ApiTags('IPADDRESS')
 @Controller('ipAddress')
@@ -38,12 +39,14 @@ export class IpAddressServiceController implements GenericServiceController {
   constructor(private readonly ipaddressService: IpAddressServiceService) {}
 
   @Get('all')
+  @NoCache()
   // @CheckPoliciesAbility(new PolicyHandlerIpAddressRead())
   async findAll(@Query() query: QuerySearchAnyDto) {
     return this.ipaddressService.getAll(query);
   }
 
   @Get(':ipaddressID')
+  @NoCache()
   // @CheckPoliciesAbility(new PolicyHandlerIpAddressRead())
   async findOneById(@Param('ipaddressID') id: string) {
     return this.ipaddressService.getOne(id);

@@ -2,7 +2,7 @@ import { StatusServiceMongooseService } from '@status/status/status-service-mong
 import { QuerySearchAnyDto } from '@common/common/models/query_search-any.dto';
 import { StatusCreateDto } from '@status/status/dto/status.create.dto';
 import { StatusUpdateDto } from '@status/status/dto/status.update.dto';
-import { BadGatewayException, Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { CommonService } from '@common/common';
 import axios from 'axios';
 import ResourcesEnum from '@common/common/enums/ResourceEnum';

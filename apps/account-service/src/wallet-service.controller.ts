@@ -39,6 +39,7 @@ import EventsNamesTransferEnum from 'apps/transfer-service/src/enum/events.names
 import { TransferCreateButtonDto } from 'apps/transfer-service/src/dto/transfer.create.button.dto';
 import TransportEnum from '@common/common/enums/TransportEnum';
 import EventsNamesMessageEnum from 'apps/message-service/src/enum/events.names.message.enum';
+import { NoCache } from '@common/common/decorators/no-cache.decorator';
 
 @ApiTags('E-WALLET')
 @Controller('wallets')
@@ -57,6 +58,7 @@ export class WalletServiceController extends AccountServiceController {
   @ApiBearerAuth('bearerToken')
   @ApiSecurity('b2crypto-key')
   @Get('all')
+  @NoCache()
   findAll(@Query() query: QuerySearchAnyDto, @Req() req?: any) {
     const client = req.clientApi;
     query = query ?? {};
@@ -69,6 +71,7 @@ export class WalletServiceController extends AccountServiceController {
   @ApiBearerAuth('bearerToken')
   @ApiSecurity('b2crypto-key')
   @Get('me')
+  @NoCache()
   findAllMe(@Query() query: QuerySearchAnyDto, @Req() req?: any) {
     query = query ?? {};
     query.where = query.where ?? {};

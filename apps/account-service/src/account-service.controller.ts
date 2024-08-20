@@ -34,6 +34,7 @@ import { CommonService } from '@common/common';
 import EventsNamesUserEnum from 'apps/user-service/src/enum/events.names.user.enum';
 import EventsNamesStatusEnum from 'apps/status-service/src/enum/events.names.status.enum';
 import StatusAccountEnum from '@account/account/enum/status.account.enum';
+import { NoCache } from '@common/common/decorators/no-cache.decorator';
 
 @ApiTags('ACCOUNT')
 @Controller('accounts')
@@ -49,11 +50,13 @@ export class AccountServiceController implements GenericServiceController {
   }
 
   @Get('all')
+  @NoCache()
   findAll(@Query() query: QuerySearchAnyDto, req?: any) {
     return this.accountService.findAll(query);
   }
 
   @Get('me')
+  @NoCache()
   findAllMe(@Query() query: QuerySearchAnyDto, @Req() req?: any) {
     query = CommonService.getQueryWithUserId(query, req, 'owner');
     return this.accountService.findAll(query);
@@ -85,6 +88,7 @@ export class AccountServiceController implements GenericServiceController {
   }
 
   @Get(':accountId')
+  @NoCache()
   findOneById(@Param('accountId') id: string) {
     return this.accountService.findOneById(id);
   }

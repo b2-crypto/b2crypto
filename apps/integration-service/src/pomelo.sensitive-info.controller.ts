@@ -1,3 +1,4 @@
+import { NoCache } from '@common/common/decorators/no-cache.decorator';
 import { PomeloRestClient } from '@integration/integration/client/pomelo.integration.client';
 import { PomeloEnum } from '@integration/integration/enum/pomelo.enum';
 import {
@@ -22,6 +23,7 @@ export class PomeloSensitiveInfoController {
   ) {}
 
   @Get(PomeloEnum.POMELO_SENSITIVE_INFO_PATH)
+  @NoCache()
   @HttpCode(200)
   async issuePomeloPrivateInfoToken(@Request() req: Request): Promise<any> {
     const b2cryptoUser = req['user']?.id || '';
