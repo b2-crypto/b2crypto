@@ -47,6 +47,8 @@
     "start-gateway:debug": "nest start b2crypto-gateway --debug --watch",
     "start-gateway-activity:debug": "nest start activity-service-gateway --debug --watch",
     "start-gateway-activity": "nest start activity-service-gateway",
+    "start-gateway-integration:debug": "nest start integration-service --debug --watch",
+    "start-gateway-integration": "nest start integration-service",
     "start-microservice-activity:debug": "nest start activity-service --debug --watch",
     "start-microservice-activity": "nest start activity-service",
     "start-microservice-affiliate:debug": "nest start affiliate-service --debug --watch",
