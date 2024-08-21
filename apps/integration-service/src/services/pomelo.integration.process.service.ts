@@ -106,6 +106,7 @@ export class PomeloIntegrationProcessService {
     usdAmount: number,
   ): Promise<any> {
     try {
+      Logger.log(JSON.stringify(process), 'ExecuteProcess');
       if (
         process?.installments &&
         parseInt(process?.installments?.quantity) > 1
