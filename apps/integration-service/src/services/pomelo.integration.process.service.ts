@@ -186,17 +186,11 @@ export class PomeloIntegrationProcessService {
     notification: NotificationDto,
     headers: any,
   ): Promise<any> {
-    const time = new Date();
-    Logger.log(
-      'ProcessNotification',
-      `${time.toISOString()} - Message Received`,
-    );
+    Logger.log('ProcessNotification', 'Message Received');
     let cachedResult = await this.cache.getResponse(
       notification.idempotency_key,
     );
-    Logger.log(cachedResult, 'Message Received cachedResult');
     if (cachedResult == null) {
-      Logger.log('No cached response', `Message Received`);
       cachedResult = await this.cache.setTooEarly(notification.idempotency_key);
 
       const amount = {
@@ -209,21 +203,14 @@ export class PomeloIntegrationProcessService {
       cachedResult = await this.cache.setResponseReceived(
         notification.idempotency_key,
       );
-      Logger.log(amount, 'Message Received amount');
-      Logger.log(cachedResult, 'cachedResult after amount');
       this.createTransferRecord(
         notification?.event_detail,
         headers,
         cachedResult,
         amount,
       );
+      return cachedResult;
     }
-    Logger.debug(
-      cachedResult,
-      `${time.toISOString()} - Cache result`,
-      `(${new Date().getTime() - time.getTime()}ms) Cache result`,
-    );
-    Logger.debug(`${new Date().getTime() - time.getTime()}ms`, `Time total`);
     return cachedResult;
   }
   async processAdjustment(adjustment: Adjustment, headers: any): Promise<any> {
