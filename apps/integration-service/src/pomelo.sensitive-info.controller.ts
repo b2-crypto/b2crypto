@@ -42,14 +42,14 @@ export class PomeloSensitiveInfoController {
     if (!user) {
       throw new BadRequestException('User not found');
     }
-    const pomeloUser = user?.userCard?.id || '';
-    if (!pomeloUser) {
-      const userCard = await this.getUserCard(user);
-    }
+    const pomeloUser = await this.getPomeloUserCard(user);
     return await this.pomeloClient.getSensitiveInfoToken(pomeloUser);
   }
 
-  private async getUserCard(user: User) {
+  private async getPomeloUserCard(user: User) {
+    if (user?.userCard?.id) {
+      return user?.userCard?.id;
+    }
     const cardIntegration = await this.integration.getCardIntegration(
       IntegrationCardEnum.POMELO,
     );
@@ -65,7 +65,7 @@ export class PomeloSensitiveInfoController {
         id: user.id,
         userCard: user.userCard,
       });
-      return user;
+      return user?.userCard?.id || '';
     }
     throw new BadRequestException('Card user not found');
   }
