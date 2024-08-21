@@ -115,6 +115,8 @@ export class Adjustment implements ProcessBodyI {
   amount: Amount;
   @IsOptional()
   idempotency?: string;
+  @IsOptional()
+  installments: Installments;
 }
 
 export class Authorization implements ProcessBodyI {
