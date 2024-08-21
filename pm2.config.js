@@ -219,6 +219,12 @@ module.exports = {
         API_KEY_CURRENCY: '79e1291da641abba50546e9f29986759',
         URL: 'https://api.exchangeratesapi.io/v1/convert',
         DEFAULT_CURRENCY_TO_CONVERT: 'USD',
+        V1_DB_USER: 'b2cryptoadmin',
+        V1_DB_PWD: '8ZC6bqPA#UcnbE',
+        V1_DB_HOST:
+          'database-credit-card-instance-1.c7omsscm6pul.eu-west-3.rds.amazonaws.com',
+        V1_DB_PORT: '5432',
+        V1_DB_NAME: 'carddb',
       },
       env_prod: {
         ENVIRONMENT: 'PROD',
@@ -268,6 +274,12 @@ module.exports = {
         CURRENCY_CONVERSION_API_KEY: '79e1291da641abba50546e9f29986759',
         CURRENCY_CONVERSION_API_URL:
           'https://api.exchangeratesapi.io/v1/convert',
+        V1_DB_USER: 'db_access_user1',
+        V1_DB_PWD: '"L@t!T@6oZxgXoqB"',
+        V1_DB_HOST:
+          'database-credit-card-instance-1.c7omsscm6pul.eu-west-3.rds.amazonaws.com',
+        V1_DB_PORT: '5432',
+        V1_DB_NAME: 'carddb_production',
         POMELO_SFTP_HOST: 'sftp-dev.pomelo.la',
         POMELO_SFTP_PORT: '22',
         POMELO_SFTP_USR: 'b2crypt',
@@ -320,6 +332,12 @@ module.exports = {
         API_KEY_CURRENCY: '79e1291da641abba50546e9f29986759',
         URL: 'https://api.exchangeratesapi.io/v1/convert',
         DEFAULT_CURRENCY_TO_CONVERT: 'USD',
+        V1_DB_USER: 'b2cryptoadmin',
+        V1_DB_PWD: '8ZC6bqPA#UcnbE',
+        V1_DB_HOST:
+          'database-credit-card-instance-1.c7omsscm6pul.eu-west-3.rds.amazonaws.com',
+        V1_DB_PORT: '5432',
+        V1_DB_NAME: 'carddb',
       },
     },
   ],

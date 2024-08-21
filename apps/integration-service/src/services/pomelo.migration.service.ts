@@ -39,6 +39,7 @@ export class PomeloMigrationService {
     const pomeloUser = await this.getUser(userId);
     if (pomeloUser && pomeloUser.data) {
       const user = await this.migrateUser(pomeloUser.data);
+      Logger.log(user, 'User migrated result');
       if (user && user.slug) {
         // TODO Log Activity
         const person = await this.migratePerson(pomeloUser.data, user);
@@ -259,6 +260,7 @@ export class PomeloMigrationService {
     } else {
       statusText = StatusAccountEnum.CANCEL;
     }
+    Logger.debug(person, `${PomeloMigrationService.name}-buildCardDto`);
     return {
       name: person?.firstName,
       type: TypesAccountEnum.CARD,
@@ -313,7 +315,7 @@ export class PomeloMigrationService {
         `Migrating User ${pomeloUser?.email}`,
         `${PomeloMigrationService.name}-migrateUser`,
       );
-      const user = await this.builder.getPromiseUserEventClient(
+      return this.builder.getPromiseUserEventClient(
         EventsNamesUserEnum.migrateOne,
         {
           name: pomeloUser.name,
@@ -322,7 +324,6 @@ export class PomeloMigrationService {
           slugEmail: CommonService.getSlug(pomeloUser?.email),
         },
       );
-      return user;
     } catch (error) {
       Logger.error(error, `${PomeloMigrationService.name}-migrateUser`);
       // TODO Log error activity
