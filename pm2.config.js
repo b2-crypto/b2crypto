@@ -327,7 +327,7 @@ module.exports = {
       script: './dist-pm2/apps/integration-service/main-gateway.js',
       watch: ['./dist-pm2/apps/integration-service/main-gateway.js'],
       exp_backoff_restart_delay: 100,
-      instances: 'max',
+      instances: '1',
       exec_mode: 'cluster',
       env: {
         ENVIRONMENT: 'DEV',

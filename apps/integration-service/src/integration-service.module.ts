@@ -49,7 +49,25 @@ import { JwtAuthGuard } from '@auth/auth/guards/jwt-auth.guard';
 @Module({
   imports: [
     ScheduleModule.forRoot(),
-    CacheModule.register({
+    CacheModule.registerAsync({
+      imports: [ConfigModule],
+      useFactory: async (configService: ConfigService) => {
+        const config = {
+          store: redisStore,
+          username: configService.get('REDIS_USERNAME') ?? '',
+          password: configService.get('REDIS_PASSWORD') ?? '',
+          host: configService.get('REDIS_HOST') ?? 'localhost',
+          port: configService.get('REDIS_PORT') ?? 6379,
+          ttl: parseInt(configService.get('CACHE_TTL') ?? '20') * 1000,
+          max: parseInt(configService.get('CACHE_MAX_ITEMS') ?? '10'),
+          isGlobal: true,
+        } as RedisClientOptions;
+        Logger.log(config, 'Redis Config');
+        return config;
+      },
+      inject: [ConfigService],
+    }),
+    /* CacheModule.register({
       store: redisStore,
       username: process.env.REDIS_USERNAME ?? '',
       password: process.env.REDIS_PASSWORD ?? '',
@@ -58,7 +76,7 @@ import { JwtAuthGuard } from '@auth/auth/guards/jwt-auth.guard';
       ttl: parseInt(process.env.CACHE_TTL ?? '20') * 1000,
       max: parseInt(process.env.CACHE_MAX_ITEMS ?? '10'),
       isGlobal: true,
-    } as RedisClientOptions),
+    } as RedisClientOptions), */
     ConfigModule.forRoot({
       isGlobal: true,
       load: [configuration],
