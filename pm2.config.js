@@ -326,7 +326,6 @@ module.exports = {
       name: 'b2fintech-integration',
       script: './dist-pm2/apps/integration-service/main-gateway.js',
       watch: ['./dist-pm2/apps/integration-service/main-gateway.js'],
-      watch_delay: 5000,
       exp_backoff_restart_delay: 100,
       instances: 'max',
       exec_mode: 'cluster',
