@@ -35,6 +35,46 @@ export class PomeloMigrationService {
     })();
   }
 
+  async startPomeloMigrationByUser(userId: string) {
+    const pomeloUser = await this.getUser(userId);
+    if (pomeloUser && pomeloUser.data) {
+      const user = await this.migrateUser(pomeloUser);
+      if (user && user.slug) {
+        // TODO Log Activity
+        const person = await this.migratePerson(pomeloUser, user);
+        if (person) {
+          const pomeloCards = await this.getPomeloCard(pomeloUser.id);
+          Logger.log(
+            `Total cards ${pomeloCards.data.length} by user ${person?.email[0]}`,
+            `${PomeloMigrationService.name}-startPomeloMigration-cards`,
+            `Total cards ${pomeloCards.data.length} by user ${pomeloUser.email}`,
+            `${PomeloMigrationService.name}-startPomeloMigration-cards`,
+          );
+          const hasCards = pomeloCards?.meta?.pagination?.total_pages ?? false;
+          if (hasCards) {
+            for (let j = 0; j < pomeloCards.data.length; j++) {
+              const card = pomeloCards.data[j];
+              const account = await this.migrateCard(
+                card,
+                person,
+                pomeloUser.email,
+              );
+              if (account) {
+                const balance = await this.getBalanceByCard(card?.id);
+                if (balance) {
+                  await this.setBalanceByCard(card?.id, balance);
+                  //this.createTransferRecord(account);
+                }
+              } else {
+                // TODO Log error activity
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
   async startPomeloMigration() {
     try {
       let totalPages = 1;
@@ -111,7 +151,11 @@ export class PomeloMigrationService {
     }
   }
 
-  private async getUsers(page_size: number, page: number) {
+  private async getUser(userId?: string) {
+    return await this.pomeloIntegration.getUsersByQuery({ userId });
+  }
+
+  private async getUsers(page_size?: number, page?: number) {
     return await this.pomeloIntegration.getUsersByQuery({
       page_size: page_size,
       page,
@@ -294,11 +338,13 @@ export class PomeloMigrationService {
   private async migratePerson(
     pomeloUser: any,
     user: any,
-    persons: number,
+    persons?: number,
   ): Promise<any> {
     try {
       Logger.log(
-        `Migrating Person ${pomeloUser?.email} total so far: ${persons}`,
+        `Migrating Person ${pomeloUser?.email} total so far: ${
+          persons ?? 'One'
+        }`,
         `${PomeloMigrationService.name}-migratePerson`,
       );
       const person = await this.builder.getPromisePersonEventClient(

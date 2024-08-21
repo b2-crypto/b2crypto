@@ -159,7 +159,12 @@ export class IntegrationCardService<
     return this.fetch('GET', this.routesMap.searchUser, userCard);
   }
   async getUsersByQuery(query: any) {
-    const path = `${this.routesMap.searchUser}?filter[size]=${query.page_size}&filter[page]=${query.page}`;
+    let path = '';
+    if (query.userId) {
+      path = `${this.routesMap.searchUser}/${query.userId}`;
+    } else {
+      path = `${this.routesMap.searchUser}?filter[size]=${query.page_size}&filter[page]=${query.page}`;
+    }
     return await this.fetch('GET', path);
   }
   async createUser(userCard: TUserCardDto): Promise<AxiosResponse<any[], any>> {

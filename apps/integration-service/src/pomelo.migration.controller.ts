@@ -2,6 +2,7 @@ import {
   Controller,
   Logger,
   NotImplementedException,
+  Param,
   Post,
 } from '@nestjs/common';
 import { PomeloMigrationService } from './services/pomelo.migration.service';
@@ -14,6 +15,16 @@ export class PomeloMigrationController {
     return new NotImplementedException('Method not implemented.');
     Logger.log('Starting ...', 'PomeloMigrationController');
     //await this.migrationService.startPomeloMigration();
+    return {
+      statusCode: 200,
+      data: 'Finnished',
+    };
+  }
+
+  @Post('ignate/:userId')
+  async ignatePomeloIntegrationByUser(@Param('userId') userId: string) {
+    Logger.log('Starting ...', 'PomeloMigrationController');
+    await this.migrationService.startPomeloMigration();
     return {
       statusCode: 200,
       data: 'Finnished',
