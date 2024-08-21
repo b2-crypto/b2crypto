@@ -1,5 +1,10 @@
-import { Type } from "class-transformer";
-import { IsNotEmpty, IsOptional, IsString, ValidateNested } from "class-validator";
+import { Type } from 'class-transformer';
+import {
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  ValidateNested,
+} from 'class-validator';
 
 class Transaction {
   id: string;
@@ -127,6 +132,8 @@ export class Authorization implements ProcessBodyI {
   extra_data: ExtraData;
   @IsOptional()
   idempotency?: string;
+  @IsOptional()
+  installments: Installments;
 }
 
 export class NotificationDto implements ProcessBodyI {
