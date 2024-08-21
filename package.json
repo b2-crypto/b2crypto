@@ -99,7 +99,7 @@
     "start-user:prod": "npm install && npm run prebuild && npm run build-all && pm2 restart pm2.config.js --env prod",
     "start:stage": "npm install && npm run prebuild && npm run build-all && npm run copy:pm2 && pm2 restart pm2.config.js --env stage",
     "start:pm2": "npm run prebuild && nest build b2crypto-microservices && nest build b2crypto-gateway && npm run copy:pm2",
-    "start:pm2-integration-gateway": "npm install && npm run prebuild && npm run build-integration-gateway && npm run copy:pm2 && pm2 restart pm2.config.integration.json --env prod && pm2 log",
+    "start:pm2-integration-gateway": "npm install && npm run prebuild && npm run build-integration-gateway && npm run copy:pm2 && pm2 restart pm2.config.integration.js --env prod && pm2 log",
     "copy:pm2": "cp -vr dist/* dist-pm2/",
     "stop:infra": "docker-compose -f ./infra/docker-compose.yaml down",
     "start:infra": "npm run stop:infra && docker-compose -f ./infra/docker-compose.yaml up -d",
