@@ -106,9 +106,23 @@ export class PomeloIntegrationProcessService {
     usdAmount: number,
   ): Promise<any> {
     try {
+      if (
+        process?.installments &&
+        parseInt(process?.installments?.quantity) > 1
+      ) {
+        Logger.log(
+          'Invalid Installments: ' + process?.installments?.quantity,
+          'ExecuteProcess',
+        );
+        return this.buildErrorResponse(
+          CardsEnum.CARD_PROCESS_INVALID_INSTALLMENTS,
+          authorize,
+        );
+      }
       const cardId = process?.card?.id || '';
       const movement = PomeloProcessEnum[process?.transaction?.type];
       if (usdAmount <= 0) {
+        Logger.log('Invalid Amount: ' + usdAmount, 'ExecuteProcess');
         return this.buildErrorResponse(
           CardsEnum.CARD_PROCESS_INVALID_AMOUNT,
           authorize,
@@ -173,6 +187,12 @@ export class PomeloIntegrationProcessService {
         status: CardsEnum.CARD_PROCESS_REJECTED,
         message: `Transaction rejected.`,
         status_detail: CardsEnum.CARD_PROCESS_INSUFFICIENT_FUNDS,
+      };
+    } else if (result === CardsEnum.CARD_PROCESS_INVALID_INSTALLMENTS) {
+      response = {
+        status: CardsEnum.CARD_PROCESS_REJECTED,
+        message: `Transaction rejected.`,
+        status_detail: CardsEnum.CARD_PROCESS_OTHER,
       };
     }
     if (!authorize) {
