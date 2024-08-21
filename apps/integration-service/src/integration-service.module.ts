@@ -48,42 +48,6 @@ import { SumsubNotificationIntegrationController } from './sumsub.notification.c
 
 @Module({
   imports: [
-    ConfigModule.forRoot({
-      isGlobal: true,
-      load: [configuration],
-    }),
-    /* CacheModule.registerAsync({
-      imports: [ConfigModule, IntegrationServiceModule],
-      useFactory: async (configService: ConfigService) => {
-        const config = {
-          store: redisStore,
-          username: configService.get('REDIS_USERNAME') ?? '',
-          password: configService.get('REDIS_PASSWORD') ?? '',
-          host: configService.get('REDIS_HOST') ?? 'localhost',
-          port: configService.get('REDIS_PORT') ?? 6379,
-          ttl: parseInt(configService.get('CACHE_TTL') ?? '20') * 1000,
-          max: parseInt(configService.get('CACHE_MAX_ITEMS') ?? '10'),
-          isGlobal: true,
-        } as RedisClientOptions;
-        Logger.log(config, 'Redis Config');
-        return config;
-      },
-      inject: [ConfigService],
-    }), */
-    ScheduleModule.forRoot(),
-    CacheModule.register({
-      store: redisStore,
-      username: 'default',
-      password: 'TPhqYUUS44CQlRkhhmkZFxDb3YH0Pdam',
-      host: 'redis-10790.c15.us-east-1-2.ec2.redns.redis-cloud.com',
-      port: 10790,
-      ttl: parseInt('5') * 1000,
-      max: parseInt('50'),
-      isGlobal: true,
-    } as RedisClientOptions),
-    MulterModule.register({
-      dest: './migration/files',
-    }),
     FileModule,
     AuthModule,
     UserModule,
@@ -123,22 +87,6 @@ import { SumsubNotificationIntegrationController } from './sumsub.notification.c
     PomeloIntegrationShippingService,
     SumsubNotificationIntegrationService,
     ResponseB2CryptoService,
-    {
-      provide: APP_INTERCEPTOR,
-      useClass: ResponseInterceptor,
-    },
-    {
-      provide: APP_INTERCEPTOR,
-      useClass: B2CryptoCacheInterceptor,
-    },
-    {
-      provide: APP_FILTER,
-      useClass: ResponseHttpExceptionFilter,
-    },
-    {
-      provide: APP_GUARD,
-      useClass: JwtAuthGuard,
-    },
   ],
 })
 export class IntegrationServiceModule {}
