@@ -18,7 +18,7 @@ export class PomeloSignatureUtils {
       if (headers && body) {
         Logger.log(
           `Headers: ${JSON.stringify(headers)}`,
-          'Pomelo Check Signature',
+          'Pomelo Check Signature - headers',
         );
         let signature = headers.signature;
         if (headers.signature.startsWith('hmac-sha256')) {
@@ -47,7 +47,7 @@ export class PomeloSignatureUtils {
           if (!signaturesMatch) {
             Logger.error(
               `Signature mismatch. Received: ${signature}. Calculated: ${hashResult}`,
-              'Pomelo Check Signature',
+              'Pomelo Check Signature - signature vs calculated',
             );
             return false;
           }
@@ -55,7 +55,7 @@ export class PomeloSignatureUtils {
         } else {
           Logger.error(
             `Unsupported signature algorithm, expecting hmac-sha256, got ${signature}`,
-            'Pomelo Check Signature',
+            'Pomelo Check Signature - algorithm',
           );
           const response = await this.cache.setInvalidSignature(
             headers.idempotency,
@@ -64,7 +64,7 @@ export class PomeloSignatureUtils {
         }
       }
     } catch (error) {
-      Logger.error(error, 'Pomelo Check Signature');
+      Logger.error(error, 'Pomelo Check Signature error');
       return false;
     }
     return false;
