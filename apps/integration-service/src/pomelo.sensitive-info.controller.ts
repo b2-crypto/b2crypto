@@ -11,11 +11,9 @@ import {
   HttpCode,
   Inject,
   Logger,
-  Param,
   Request,
 } from '@nestjs/common';
 import { User } from '@user/user/entities/mongoose/user.schema';
-import { AccountServiceService } from 'apps/account-service/src/account-service.service';
 import EventsNamesUserEnum from 'apps/user-service/src/enum/events.names.user.enum';
 import { UserServiceService } from 'apps/user-service/src/user-service.service';
 
