@@ -96,57 +96,7 @@ export class UserServiceController implements GenericServiceController {
     };
   }
 
-  @Post('massive-email')
-  @NoCache()
-  async generatePasswordEmail() {
-    let page = 1;
-    let totalPages = 0;
-    do {
-      const users = await this.findAll({ page });
-      if (users?.list?.length > 0) {
-        Logger.log(
-          `Users: ${users?.list?.length} & Page: ${page}`,
-          `MassiveEmail.${UserServiceController.name}`,
-        );
-        page++;
-        totalPages = users?.lastPage ?? 0;
-        for (let i = 0; i < users?.list?.length; i++) {
-          const user = users.list[i];
-          if (user && user?.email) {
-            const pwd: string = CommonService.generatePassword(8);
-            const changePassword: UserChangePasswordDto = {
-              password: pwd,
-              confirmPassword: pwd,
-            };
-            await this.changePassword(user?.id, changePassword);
-            Logger.log(
-              `${user?.email}`,
-              `MassiveEmail.${UserServiceController.name}`,
-            );
-            const emailData = {
-              name: `Actualizacion de clave`,
-              body: `Tu clave ha sido actualizada exitosamente ${user.name}`,
-              originText: 'Sistema',
-              destinyText: user.email,
-              transport: TransportEnum.EMAIL,
-              destiny: null,
-              vars: {
-                name: user.name,
-                username: user.username,
-                password: pwd,
-              },
-            };
-            this.builder.emitMessageEventClient(
-              EventsNamesMessageEnum.sendPasswordRestoredEmail,
-              emailData,
-            );
-          }
-        }
-      }
-    } while (page <= totalPages);
-  }
-
-
+ 
   @Get(':userID')
   // @CheckPoliciesAbility(new PolicyHandlerUserRead())
   async findOneById(@Param('userID') id: string) {
