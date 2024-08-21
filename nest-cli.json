@@ -432,6 +432,15 @@
         "tsConfigPath": "libs/transfer/tsconfig.lib.json"
       }
     },
+    "integration-service-gateway": {
+      "type": "application",
+      "root": "apps/integration-service",
+      "entryFile": "main-gateway",
+      "sourceRoot": "apps/integration-service/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/integration-service/tsconfig.app.json"
+      }
+    },
     "integration-service": {
       "type": "application",
       "root": "apps/integration-service",
