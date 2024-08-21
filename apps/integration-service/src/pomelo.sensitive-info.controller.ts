@@ -36,6 +36,9 @@ export class PomeloSensitiveInfoController {
       throw new BadRequestException('User not found');
     }
     const pomeloUser = user?.userCard?.id || '';
+    if (!pomeloUser) {
+      throw new BadRequestException('Card user not found');
+    }
     return await this.pomeloClient.getSensitiveInfoToken(pomeloUser);
   }
 }
