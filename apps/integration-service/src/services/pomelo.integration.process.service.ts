@@ -194,6 +194,7 @@ export class PomeloIntegrationProcessService {
     let cachedResult = await this.cache.getResponse(
       notification.idempotency_key,
     );
+    Logger.log(cachedResult, 'Message Received cachedResult');
     if (cachedResult == null) {
       Logger.log('No cached response', `Message Received`);
       cachedResult = await this.cache.setTooEarly(notification.idempotency_key);
@@ -208,6 +209,8 @@ export class PomeloIntegrationProcessService {
       cachedResult = await this.cache.setResponseReceived(
         notification.idempotency_key,
       );
+      Logger.log(amount, 'Message Received amount');
+      Logger.log(cachedResult, 'cachedResult after amount');
       this.createTransferRecord(
         notification?.event_detail,
         headers,
