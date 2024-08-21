@@ -1,4 +1,7 @@
+import { BuildersService } from '@builder/builders';
 import { NoCache } from '@common/common/decorators/no-cache.decorator';
+import { IntegrationService } from '@integration/integration';
+import IntegrationCardEnum from '@integration/integration/card/enums/IntegrationCardEnum';
 import { PomeloRestClient } from '@integration/integration/client/pomelo.integration.client';
 import { PomeloEnum } from '@integration/integration/enum/pomelo.enum';
 import {
@@ -11,12 +14,16 @@ import {
   Param,
   Request,
 } from '@nestjs/common';
+import { User } from '@user/user/entities/mongoose/user.schema';
 import { AccountServiceService } from 'apps/account-service/src/account-service.service';
+import EventsNamesUserEnum from 'apps/user-service/src/enum/events.names.user.enum';
 import { UserServiceService } from 'apps/user-service/src/user-service.service';
 
 @Controller(PomeloEnum.POMELO_INTEGRATION_CONTROLLER)
 export class PomeloSensitiveInfoController {
   constructor(
+    private readonly builder: BuildersService,
+    private readonly integration: IntegrationService,
     @Inject(UserServiceService)
     private readonly userService: UserServiceService,
     private readonly pomeloClient: PomeloRestClient,
@@ -37,8 +44,29 @@ export class PomeloSensitiveInfoController {
     }
     const pomeloUser = user?.userCard?.id || '';
     if (!pomeloUser) {
-      throw new BadRequestException('Card user not found');
+      const userCard = await this.getUserCard(user);
     }
     return await this.pomeloClient.getSensitiveInfoToken(pomeloUser);
+  }
+
+  private async getUserCard(user: User) {
+    const cardIntegration = await this.integration.getCardIntegration(
+      IntegrationCardEnum.POMELO,
+    );
+    if (!cardIntegration) {
+      throw new BadRequestException('Bad integration card');
+    }
+    const rtaUserCard = await cardIntegration.getUser({
+      email: user.email,
+    });
+    if (rtaUserCard.data.length > 0) {
+      user.userCard = rtaUserCard.data[0];
+      this.builder.emitUserEventClient(EventsNamesUserEnum.updateOne, {
+        id: user.id,
+        userCard: user.userCard,
+      });
+      return user;
+    }
+    throw new BadRequestException('Card user not found');
   }
 }
