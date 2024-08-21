@@ -123,7 +123,7 @@ export class CardServiceController extends AccountServiceController {
       (account.amount === 0 && account.amountCustodial === 0) ||
       req.user.currency === account.currencyCustodial
     ) {
-      return account.amountCustodial || account.amount;
+      return account.amount || account.amountCustodial;
     }
     try {
       const amount = await this.currencyConversion.getCurrencyConversion(
