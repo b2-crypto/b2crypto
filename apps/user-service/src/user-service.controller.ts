@@ -1,8 +1,10 @@
+
 import {
   Body,
   Controller,
   Delete,
   Get,
+  Logger,
   NotFoundException,
   Param,
   ParseArrayPipe,
@@ -45,11 +47,21 @@ import { UserServiceService } from './user-service.service';
 import { SwaggerSteakeyConfigEnum } from 'libs/config/enum/swagger.stakey.config.enum';
 import { ApiKeyAuthGuard } from '@auth/auth/guards/api.key.guard';
 import { isBoolean } from 'class-validator';
+import { NoCache } from '@common/common/decorators/no-cache.decorator';
+import TransportEnum from '@common/common/enums/TransportEnum';
+import EventsNamesMessageEnum from 'apps/message-service/src/enum/events.names.message.enum';
+import { BuildersService } from '@builder/builders';
 
 @ApiTags('USER')
 @Controller('users')
+
+
 export class UserServiceController implements GenericServiceController {
-  constructor(private readonly userService: UserServiceService) {}
+  constructor(
+    private readonly userService: UserServiceService,
+    private readonly builder: BuildersService,
+
+  ) {}
 
   @Get('all')
   // @CheckPoliciesAbility(new PolicyHandlerUserRead())
@@ -84,6 +96,7 @@ export class UserServiceController implements GenericServiceController {
     };
   }
 
+ 
   @Get(':userID')
   // @CheckPoliciesAbility(new PolicyHandlerUserRead())
   async findOneById(@Param('userID') id: string) {

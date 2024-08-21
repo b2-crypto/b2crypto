@@ -16,6 +16,8 @@ import { PomeloProcessEnum } from '../enums/pomelo.process.enum';
 import { CardsEnum } from '@common/common/enums/messages.enum';
 import EventsNamesTransferEnum from 'apps/transfer-service/src/enum/events.names.transfer.enum';
 import { OperationTransactionType } from '@transfer/transfer/enum/operation.transaction.type.enum';
+import EventsNamesMessageEnum from 'apps/message-service/src/enum/events.names.message.enum';
+import TransportEnum from '@common/common/enums/TransportEnum';
 
 @Injectable()
 export class PomeloIntegrationProcessService {
@@ -213,13 +215,73 @@ export class PomeloIntegrationProcessService {
   }
 
   async processAdjustment(adjustment: Adjustment, headers: any): Promise<any> {
-    return await this.process(
-      adjustment,
-      adjustment.idempotency,
-      false,
-      headers,
-    );
+    try {
+      const processed = await this.process(
+        adjustment,
+        adjustment.idempotency,
+        false,
+        headers,
+      );
+
+      setImmediate(() => {
+        this.sendAdjustmentNotificationEmail(adjustment).catch((error) => {
+          Logger.error(
+            'Error sending adjustment notification email',
+            error.stack,
+          );
+        });
+      });
+
+      return processed;
+    } catch (error) {
+      Logger.error('Error processing adjustment', error.stack);
+    }
   }
+
+  private async sendAdjustmentNotificationEmail(
+    adjustment: Adjustment,
+  ): Promise<void> {
+    if (adjustment.user && adjustment.user.id) {
+      const data = {
+        name: `Notificacion de Ajuste de Transaccion`, // Revisar metodos ASCCII
+        body: `Se ha realizado un ajuste en una de tus transacciones`, // Revisar creacion de un ENUM como solición temporal
+        originText: 'Sistema',
+        destinyText: adjustment.user.id,
+        transport: TransportEnum.EMAIL,
+        destiny: null,
+        vars: {
+          userId: adjustment.user.id,
+          transactionId: adjustment.transaction?.id,
+          transactionType: adjustment.transaction?.type,
+          transactionDate: adjustment.transaction?.local_date_time,
+          merchantName: adjustment.merchant?.name,
+          merchantMcc: adjustment.merchant?.mcc,
+          cardLastFour: adjustment.card?.last_four,
+          cardProductType: adjustment.card?.product_type,
+          amountLocal: adjustment.amount?.settlement?.total,
+          currencyLocal: adjustment.amount?.settlement?.currency,
+        },
+      };
+
+      if (adjustment.transaction?.id) {
+        data.destiny = {
+          resourceId: adjustment.transaction.id,
+          resourceName: 'TRANSACTION',
+        };
+      }
+
+      Logger.log(data, 'Purchases/Transaction Adjustments Email Prepared');
+      this.builder.emitMessageEventClient(
+        EventsNamesMessageEnum.sendPurchasesTransactionAdjustments,
+        data,
+      );
+    } else {
+      Logger.warn(
+        'Adjustment processed without valid user ID. Skipping notification email.',
+      );
+    }
+  }
+
 
   async processAuthorization(
     authorization: Authorization,
