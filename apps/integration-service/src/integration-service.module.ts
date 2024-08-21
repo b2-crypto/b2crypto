@@ -73,15 +73,12 @@ import { SumsubNotificationIntegrationController } from './sumsub.notification.c
     ScheduleModule.forRoot(),
     CacheModule.register({
       store: redisStore,
-      username: process.env.REDIS_USERNAME ?? 'default',
-      password:
-        process.env.REDIS_PASSWORD ?? 'TPhqYUUS44CQlRkhhmkZFxDb3YH0Pdam',
-      host:
-        process.env.REDIS_HOST ??
-        'redis-10790.c15.us-east-1-2.ec2.redns.redis-cloud.com',
-      port: process.env.REDIS_PORT ?? 10790,
-      ttl: parseInt(process.env.CACHE_TTL ?? '5') * 1000,
-      max: parseInt(process.env.CACHE_MAX_ITEMS ?? '50'),
+      username: 'default',
+      password: 'TPhqYUUS44CQlRkhhmkZFxDb3YH0Pdam',
+      host: 'redis-10790.c15.us-east-1-2.ec2.redns.redis-cloud.com',
+      port: 10790,
+      ttl: parseInt('5') * 1000,
+      max: parseInt('50'),
       isGlobal: true,
     } as RedisClientOptions),
     MulterModule.register({
