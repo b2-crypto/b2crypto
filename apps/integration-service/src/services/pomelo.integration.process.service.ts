@@ -79,18 +79,12 @@ export class PomeloIntegrationProcessService {
   }
 
   private async getAmount(txn: any): Promise<any> {
+    let conversion: string;
     try {
       const to = process.env.DEFAULT_CURRENCY_CONVERSION_COIN;
       const from = txn.amount.local.currency;
       const amount = txn.amount.local.total;
-      Logger.log(
-        {
-          to,
-          from,
-          amount,
-        },
-        'PomeloProcess getAmount',
-      );
+      conversion = `to: ${to} | from: ${from} | amount: ${amount}`;
       const usd = await this.currencyConversion.getCurrencyConversion(
         to,
         from,
@@ -103,7 +97,10 @@ export class PomeloIntegrationProcessService {
         usd,
       };
     } catch (error) {
-      Logger.error(error, 'PomeloProcess getAmount');
+      Logger.error(
+        `Error: ${error} | Request: ${conversion}`,
+        'PomeloProcess getAmount',
+      );
       throw new InternalServerErrorException(error);
     }
   }
@@ -115,7 +112,7 @@ export class PomeloIntegrationProcessService {
   ): Promise<any> {
     try {
       Logger.log('JSON.stringify(process)', 'ExecuteProcess start');
-      if (
+      /* if (
         process?.installments &&
         parseInt(process?.installments?.quantity) > 1
       ) {
@@ -127,7 +124,7 @@ export class PomeloIntegrationProcessService {
           CardsEnum.CARD_PROCESS_INVALID_INSTALLMENTS,
           authorize,
         );
-      }
+      } */
       const cardId = process?.card?.id || '';
       const movement = PomeloProcessEnum[process?.transaction?.type];
       if (usdAmount <= 0) {
