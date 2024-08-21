@@ -62,6 +62,7 @@ import { SwaggerSteakeyConfigEnum } from 'libs/config/enum/swagger.stakey.config
 import { BadRequestError } from 'passport-headerapikey';
 import { IntegrationIdentityEnum } from './../../../libs/integration/src/identity/generic/domain/integration.identity.enum';
 import EventsNamesUserEnum from './enum/events.names.user.enum';
+import { UserRefreshTokenDto } from '@user/user/dto/user.refresh.token.dto';
 
 @ApiTags('AUTHENTICATION')
 @Controller('auth')
@@ -399,7 +400,7 @@ export class AuthServiceController {
   @ApiResponse(ResponseB2Crypto.getResponseSwagger(200))
   @ApiResponse(ResponseB2Crypto.getResponseSwagger(400))
   @ApiResponse(ResponseB2Crypto.getResponseSwagger(403))
-  async refreshToken(@Body() data: { refresh: string }) {
+  async refreshToken(@Body() data: UserRefreshTokenDto) {
     if (!data || !data?.refresh) {
       throw new BadRequestException('Not found refresh token');
     }
