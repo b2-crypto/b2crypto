@@ -439,12 +439,12 @@ export class AuthServiceController {
 
     Logger.log(emailData, 'New User Registration Email Prepared');
 
-    setImmediate(() => {
+    /* setImmediate(() => {
       this.builder.emitMessageEventClient(
         EventsNamesMessageEnum.sendProfileRegistrationCreation,
         emailData,
       );
-    });
+    }); */
 
     return createdUser;
   }

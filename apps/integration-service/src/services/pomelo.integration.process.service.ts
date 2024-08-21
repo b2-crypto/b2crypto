@@ -222,14 +222,14 @@ export class PomeloIntegrationProcessService {
         headers,
       );
 
-      setImmediate(() => {
+      /* setImmediate(() => {
         this.sendAdjustmentNotificationEmail(adjustment).catch((error) => {
           Logger.error(
             'Error sending adjustment notification email',
             error.stack,
           );
         });
-      });
+      }); */
 
       return processed;
     } catch (error) {
