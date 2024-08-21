@@ -36,7 +36,7 @@ export class PomeloIntegrationServiceController {
   ): Promise<any> {
     Logger.log(
       `Idempotency: ${notification.idempotency_key}`,
-      'NotificationHandler',
+      'NotificationHandler - processNotification',
     );
     return await this.integrationServiceService.processNotification(
       notification,
