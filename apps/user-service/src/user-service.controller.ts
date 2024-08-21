@@ -378,7 +378,7 @@ export class UserServiceController implements GenericServiceController {
       },
     });
     if (!users.totalElements) {
-      throw new NotFoundException();
+      throw new NotFoundException('Not found user');
     }
     return users.list[0];
   }

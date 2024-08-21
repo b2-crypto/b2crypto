@@ -398,7 +398,7 @@ export class TransferServiceController implements GenericServiceController {
     //createTransferDto.userCreator = req?.user?.id;
     const transfer = await this.transferService.getOne(id);
     if (!transfer?.responseAccount?.data?.attributes?.payment_page) {
-      throw new NotFoundException();
+      throw new NotFoundException('URL payment not found');
       //throw new InternalServerErrorException('URL not found');
     }
     return res.redirect(
