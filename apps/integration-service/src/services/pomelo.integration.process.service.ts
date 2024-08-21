@@ -130,7 +130,7 @@ export class PomeloIntegrationProcessService {
       } */
       const cardId = process?.card?.id || '';
       const movement = PomeloProcessEnum[process?.transaction?.type];
-      if (usdAmount <= 0) {
+      if (usdAmount < 0) {
         Logger.log('Invalid Amount: ' + usdAmount, 'ExecuteProcess');
         return this.buildErrorResponse(
           CardsEnum.CARD_PROCESS_INVALID_AMOUNT,
