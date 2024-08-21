@@ -83,6 +83,14 @@ export class PomeloIntegrationProcessService {
       const to = process.env.DEFAULT_CURRENCY_CONVERSION_COIN;
       const from = txn.amount.local.currency;
       const amount = txn.amount.local.total;
+      Logger.log(
+        {
+          to,
+          from,
+          amount,
+        },
+        'PomeloProcess getAmount',
+      );
       const usd = await this.currencyConversion.getCurrencyConversion(
         to,
         from,

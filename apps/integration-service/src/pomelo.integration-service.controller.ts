@@ -55,6 +55,7 @@ export class PomeloIntegrationServiceController {
   ): Promise<any> {
     Logger.log(`Idempotency: ${idempotency}`, 'AdjustmentHandler');
     adjustment.idempotency = idempotency;
+    Logger.log(adjustment, 'AdjustmentHandler');
     return await this.integrationServiceService.processAdjustment(
       adjustment,
       headers,
@@ -72,6 +73,7 @@ export class PomeloIntegrationServiceController {
   ): Promise<any> {
     Logger.log(`Idempotency: ${idempotency}`, 'AuthorizationHandler');
     authorization.idempotency = idempotency;
+    Logger.log(authorization, 'AuthorizationHandler');
     return await this.integrationServiceService.processAuthorization(
       authorization,
       headers,
