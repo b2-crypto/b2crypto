@@ -22,7 +22,7 @@ enum EventsNamesTransferEnum {
   checkTransfersForPspAccountStats = 'TRANSFER.CHECK.FOR.PSP.ACCOUNT.STATS',
   checkTransfersForPspStats = 'TRANSFER.CHECK.FOR.PSP.STATS',
   checkTransferStatsByQuery = 'TRANSFER.CHECK.STATS.BY.QUERY',
-  checkTransferInCashierByStatus = 'TRANSFER.CHECK.CASHIER.STATUS',
+  checkTransferInB2BinPay = 'TRANSFER.CHECK.B2BINPAY',
 }
 
 export default EventsNamesTransferEnum;

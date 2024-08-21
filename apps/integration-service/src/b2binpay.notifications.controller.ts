@@ -1,5 +1,6 @@
 import { AllowAnon } from '@auth/auth/decorators/allow-anon.decorator';
 import { BuildersService } from '@builder/builders';
+import { CommonService } from '@common/common';
 import { StatusCashierEnum } from '@common/common/enums/StatusCashierEnum';
 import TagEnum from '@common/common/enums/TagEnum';
 import {
@@ -11,6 +12,7 @@ import {
   Post,
   Req,
 } from '@nestjs/common';
+import { Ctx, EventPattern, Payload, RmqContext } from '@nestjs/microservices';
 import { SchedulerRegistry } from '@nestjs/schedule';
 import { TransferCreateDto } from '@transfer/transfer/dto/transfer.create.dto';
 import { OperationTransactionType } from '@transfer/transfer/enum/operation.transaction.type.enum';
@@ -29,6 +31,7 @@ export class B2BinPayNotificationsController {
     @Inject(SchedulerRegistry)
     private schedulerRegistry: SchedulerRegistry,
   ) {}
+  //private readonly integrationServiceService: PomeloIntegrationProcessService,
 
   // ----------------------------
   @AllowAnon()
@@ -170,5 +173,15 @@ export class B2BinPayNotificationsController {
       statusCode: 200,
       data: 'Tx updated',
     };
+  }
+
+  @AllowAnon()
+  @EventPattern(EventsNamesTransferEnum.checkTransferInB2BinPay)
+  async checkTransferInB2BinPay(
+    @Payload() typeIntegration: string,
+    @Ctx() ctx: RmqContext,
+  ) {
+    CommonService.ack(ctx);
+    Logger.log(typeIntegration, 'checkTransferInB2BinPay');
   }
 }

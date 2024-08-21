@@ -52,8 +52,8 @@ import { SumsubNotificationIntegrationController } from './sumsub.notification.c
       isGlobal: true,
       load: [configuration],
     }),
-    CacheModule.registerAsync({
-      imports: [ConfigModule],
+    /* CacheModule.registerAsync({
+      imports: [ConfigModule, IntegrationServiceModule],
       useFactory: async (configService: ConfigService) => {
         const config = {
           store: redisStore,
@@ -69,6 +69,20 @@ import { SumsubNotificationIntegrationController } from './sumsub.notification.c
         return config;
       },
       inject: [ConfigService],
+    }), */
+    ScheduleModule.forRoot(),
+    CacheModule.register({
+      store: redisStore,
+      username: 'default',
+      password: 'TPhqYUUS44CQlRkhhmkZFxDb3YH0Pdam',
+      host: 'redis-10790.c15.us-east-1-2.ec2.redns.redis-cloud.com',
+      port: 10790,
+      ttl: parseInt('5') * 1000,
+      max: parseInt('50'),
+      isGlobal: true,
+    } as RedisClientOptions),
+    MulterModule.register({
+      dest: './migration/files',
     }),
     FileModule,
     AuthModule,

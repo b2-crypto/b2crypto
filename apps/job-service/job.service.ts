@@ -17,6 +17,7 @@ export class JobService {
   static periodicTime = {
     checkLeadCreated: CronExpression.EVERY_10_MINUTES,
     checkLeadStatus: CronExpression.EVERY_5_MINUTES,
+    checkB2BinPayTransfers: CronExpression.EVERY_MINUTE,
     //checkLeadStatus: time,
     //checkAffiliateLeadsStats: time,
     /*
@@ -50,6 +51,16 @@ export class JobService {
     private readonly builder: BuildersService,
   ) {
     this.env = configService.get('ENVIRONMENT');
+  }
+
+  @Cron(JobService.periodicTime.checkB2BinPayTransfers, {
+    timeZone: process.env.TZ,
+  })
+  checkB2BinPayTransfers() {
+    this.builder.emitTransferEventClient(
+      EventsNamesTransferEnum.checkTransferInB2BinPay,
+      'b2binpay',
+    );
   }
 
   @Cron(JobService.periodicTime.checkFilesDownloads, {

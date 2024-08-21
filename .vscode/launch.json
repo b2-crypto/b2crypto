@@ -44,12 +44,12 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "Activity gateway",
+      "name": "Integration gateway",
       "runtimeExecutable": "npm",
       "runtimeArgs": [
         "run",
         //"start:debug",
-        "start-gateway-activity:debug",
+        "start-gateway-integration:debug",
         "--",
         "--inspect-brk"
       ],
@@ -58,7 +58,7 @@
       "protocol": "auto",
       "port": 9229,
       "autoAttachChildProcesses": true,
-      "envFile": "${workspaceRoot}/.env"
+      "envFile": "${workspaceRoot}/.env.prod"
     },
     {
       "type": "node",
