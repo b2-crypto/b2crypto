@@ -9,8 +9,8 @@
       "runtimeExecutable": "npm",
       "runtimeArgs": [
         "run",
-        "start:debug",
-        //"start-local-monolith:debug",
+        //"start:debug",
+        "start-local:debug",
         "--",
         "--inspect-brk"
       ],

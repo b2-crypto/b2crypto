@@ -891,7 +891,17 @@ export class CardServiceController extends AccountServiceController {
       if (!cardList || !cardList.list[0]) {
         return await this.cardService.createOne(cardToMigrate);
       } else {
-        return cardList.list[0];
+        const card = cardList.list[0];
+        await this.cardService.customUpdateOne({
+          id: card._id,
+          $inc: {
+            amount: card.amount ? 0 : cardToMigrate.amount,
+            amountCustodial: card.amountCustodial
+              ? 0
+              : cardToMigrate.amountCustodial,
+          },
+        });
+        return card;
       }
     } catch (error) {
       Logger.error(error, CardServiceController.name);
@@ -915,8 +925,8 @@ export class CardServiceController extends AccountServiceController {
       await this.cardService.customUpdateOne({
         id: card._id,
         $inc: {
-          amount: data.amount,
-          amountCustodial: data.amount,
+          amount: card.amount ?? data.amount,
+          amountCustodial: card.amountCustodial ?? data.amount,
         },
       });
     } catch (error) {

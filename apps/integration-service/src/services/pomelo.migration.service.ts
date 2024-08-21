@@ -38,36 +38,29 @@ export class PomeloMigrationService {
   async startPomeloMigrationByUser(userId: string) {
     const pomeloUser = await this.getUser(userId);
     if (pomeloUser && pomeloUser.data) {
-      const user = await this.migrateUser(pomeloUser);
+      const user = await this.migrateUser(pomeloUser.data);
       if (user && user.slug) {
         // TODO Log Activity
-        const person = await this.migratePerson(pomeloUser, user);
+        const person = await this.migratePerson(pomeloUser.data, user);
         if (person) {
-          const pomeloCards = await this.getPomeloCard(pomeloUser.id);
+          const pomeloCards = await this.getPomeloCard(pomeloUser.data.id);
           Logger.log(
             `Total cards ${pomeloCards.data.length} by user ${person?.email[0]}`,
             `${PomeloMigrationService.name}-startPomeloMigration-cards`,
-            `Total cards ${pomeloCards.data.length} by user ${pomeloUser.email}`,
+            `Total cards ${pomeloCards.data.length} by user ${pomeloUser.data.email}`,
             `${PomeloMigrationService.name}-startPomeloMigration-cards`,
           );
           const hasCards = pomeloCards?.meta?.pagination?.total_pages ?? false;
           if (hasCards) {
             for (let j = 0; j < pomeloCards.data.length; j++) {
               const card = pomeloCards.data[j];
+              const balance = await this.getBalanceByCard(card?.id);
               const account = await this.migrateCard(
                 card,
                 person,
-                pomeloUser.email,
+                pomeloUser.data.email,
+                balance,
               );
-              if (account) {
-                const balance = await this.getBalanceByCard(card?.id);
-                if (balance) {
-                  await this.setBalanceByCard(card?.id, balance);
-                  //this.createTransferRecord(account);
-                }
-              } else {
-                // TODO Log error activity
-              }
             }
           }
         }
@@ -116,20 +109,13 @@ export class PomeloMigrationService {
                 if (hasCards) {
                   for (let j = 0; j < pomeloCards.data.length; j++) {
                     const card = pomeloCards.data[j];
+                    const balance = await this.getBalanceByCard(card?.id);
                     const account = await this.migrateCard(
                       card,
                       person,
                       pomeloUser.email,
+                      balance,
                     );
-                    if (account) {
-                      const balance = await this.getBalanceByCard(card?.id);
-                      if (balance) {
-                        await this.setBalanceByCard(card?.id, balance);
-                        //this.createTransferRecord(account);
-                      }
-                    } else {
-                      // TODO Log error activity
-                    }
                   }
                 }
               }
@@ -236,13 +222,17 @@ export class PomeloMigrationService {
     pomeloCard: any,
     person: any,
     email: string,
+    balance: any,
   ): Promise<any> {
     try {
       Logger.log(
         `Migrating Card ${pomeloCard?.id} for user ${email}`,
         PomeloMigrationService.name,
       );
-      const cardDto = this.buildCardDto(pomeloCard, person, email);
+      if (balance) {
+        balance = parseFloat(balance);
+      }
+      const cardDto = this.buildCardDto(pomeloCard, person, email, balance);
       const account = await this.builder.getPromiseAccountEventClient(
         EventsNamesAccountEnum.mingrateOne,
         cardDto,
@@ -255,7 +245,12 @@ export class PomeloMigrationService {
     }
   }
 
-  private buildCardDto(pomeloCard: any, person: any, email: string) {
+  private buildCardDto(
+    pomeloCard: any,
+    person: any,
+    email: string,
+    balance: any,
+  ) {
     let statusText: string;
     if (pomeloCard?.status === 'ACTIVE') {
       statusText = StatusAccountEnum.UNLOCK;
@@ -279,9 +274,9 @@ export class PomeloMigrationService {
       accountId: pomeloCard?.id,
       owner: person?.user,
       statusText,
-      amount: 0,
+      amount: balance ?? 0,
       currency: CurrencyCodeB2cryptoEnum.USD,
-      amountCustodial: 0,
+      amountCustodial: balance ?? 0,
       currencyCustodial: CurrencyCodeB2cryptoEnum.USD,
       amountBlocked: 0,
       currencyBlocked: CurrencyCodeB2cryptoEnum.USD,

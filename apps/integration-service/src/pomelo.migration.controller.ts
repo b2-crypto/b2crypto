@@ -21,10 +21,13 @@ export class PomeloMigrationController {
     };
   }
 
-  @Post('ignate/:userId')
+  @Post('ignate-by-user/:userId')
   async ignatePomeloIntegrationByUser(@Param('userId') userId: string) {
-    Logger.log('Starting ...', 'PomeloMigrationController');
-    await this.migrationService.startPomeloMigration();
+    Logger.log(
+      `Starting migration by user: ${userId}`,
+      'PomeloMigrationController',
+    );
+    await this.migrationService.startPomeloMigrationByUser(userId);
     return {
       statusCode: 200,
       data: 'Finnished',
