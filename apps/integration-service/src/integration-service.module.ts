@@ -1,5 +1,6 @@
 import { AccountModule } from '@account/account/account.module';
 import { AuthModule } from '@auth/auth';
+import { JwtAuthGuard } from '@auth/auth/guards/jwt-auth.guard';
 import { BuildersModule } from '@builder/builders';
 import { CommonModule } from '@common/common';
 import { ResponseHttpExceptionFilter } from '@common/common/exceptions/response.exception';
@@ -10,7 +11,6 @@ import { PomeloHttpUtils } from '@common/common/utils/pomelo.integration.process
 import { PomeloSignatureUtils } from '@common/common/utils/pomelo.integration.process.signature';
 import { SumsubHttpUtils } from '@common/common/utils/sumsub.integration.process.http.utils';
 import { SumsubSignatureUtils } from '@common/common/utils/sumsub.integration.process.signature';
-import configuration from '@config/config';
 import { FileModule } from '@file/file';
 import { IntegrationModule } from '@integration/integration';
 import { PomeloRestClient } from '@integration/integration/client/pomelo.integration.client';
@@ -20,10 +20,13 @@ import { CacheModule, Logger, Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { MulterModule } from '@nestjs/platform-express';
+import { ScheduleModule } from '@nestjs/schedule';
+import { ResponseB2CryptoService } from '@response-b2crypto/response-b2crypto';
 import { UserModule } from '@user/user';
 import { AccountServiceService } from 'apps/account-service/src/account-service.service';
 import { UserServiceService } from 'apps/user-service/src/user-service.service';
 import { redisStore } from 'cache-manager-redis-store';
+import configuration from 'config/configuration';
 import { RedisClientOptions } from 'redis';
 import { B2BinPayNotificationsController } from './b2binpay.notifications.controller';
 import { B2CoreMigrationController } from './b2core.migration.controller';
@@ -42,13 +45,13 @@ import { PomeloIntegrationShippingService } from './services/pomelo.integration.
 import { PomeloMigrationService } from './services/pomelo.migration.service';
 import { SumsubNotificationIntegrationService } from './services/sumsub.notification.integration.service';
 import { SumsubNotificationIntegrationController } from './sumsub.notification.controller';
-import { ResponseB2CryptoService } from '@response-b2crypto/response-b2crypto';
-import { ScheduleModule } from '@nestjs/schedule';
-import { JwtAuthGuard } from '@auth/auth/guards/jwt-auth.guard';
 
 @Module({
   imports: [
-    ScheduleModule.forRoot(),
+    ConfigModule.forRoot({
+      isGlobal: true,
+      load: [configuration],
+    }),
     CacheModule.registerAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => {
@@ -67,6 +70,7 @@ import { JwtAuthGuard } from '@auth/auth/guards/jwt-auth.guard';
       },
       inject: [ConfigService],
     }),
+    ScheduleModule.forRoot(),
     /* CacheModule.register({
       store: redisStore,
       username: process.env.REDIS_USERNAME ?? '',
@@ -77,10 +81,6 @@ import { JwtAuthGuard } from '@auth/auth/guards/jwt-auth.guard';
       max: parseInt(process.env.CACHE_MAX_ITEMS ?? '10'),
       isGlobal: true,
     } as RedisClientOptions), */
-    ConfigModule.forRoot({
-      isGlobal: true,
-      load: [configuration],
-    }),
     MulterModule.register({
       dest: './migration/files',
     }),
