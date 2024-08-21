@@ -85,11 +85,14 @@ export class PomeloIntegrationProcessService {
       const from = txn.amount.local.currency;
       const amount = txn.amount.local.total;
       conversion = `to: ${to} | from: ${from} | amount: ${amount}`;
-      const usd = await this.currencyConversion.getCurrencyConversion(
-        to,
-        from,
-        amount,
-      );
+      let usd = 0;
+      if (parseInt(amount) > 0) {
+        usd = await this.currencyConversion.getCurrencyConversion(
+          to,
+          from,
+          amount,
+        );
+      }
       return {
         to,
         from,
