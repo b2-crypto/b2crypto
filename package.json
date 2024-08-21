@@ -10,7 +10,7 @@
     "build": "./node_modules/.bin/nest build",
     "build-microservices": "nest build b2crypto-microservices",
     "build-gateway": "nest build b2crypto-gateway",
-    "build-all": "npm run build-microservices && npm run build-gateway && npm run build-integration-gateway",
+    "build-all": "npm run build-microservices && npm run build-gateway",
     "build-activity": "nest build activity-service",
     "build-affiliate": "nest build affiliate-service",
     "build-brand:debug": "nest build brand-service",
