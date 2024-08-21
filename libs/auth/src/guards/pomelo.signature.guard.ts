@@ -31,6 +31,16 @@ export class PomeloSignatureGuard implements CanActivate {
       this.reflector
         .get<string[]>(PATH_METADATA, context.getHandler())
         ?.toString() || '';
+    Logger.log(`Path: ${path}`, 'SignatureGuard');
+    Logger.log(
+      `Headers endpoint: ${JSON.stringify(headers.endpoint)}`,
+      'SignatureGuard',
+    );
+    Logger.debug(
+      CommonService.checkWhitelistedIps(context),
+      'checkWhitelistedIps',
+    );
+    Logger.debug(this.checkValidEndpoint(path, headers), 'checkValidEndpoint');
     if (
       CommonService.checkWhitelistedIps(context) &&
       this.checkValidEndpoint(path, headers)
