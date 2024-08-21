@@ -702,7 +702,7 @@ export class TransferServiceController implements GenericServiceController {
       if (!crm) {
         Logger.error(
           `CRM ${webhookTransferDto.integration} was not found`,
-          'WebhookTransfer',
+          'WebhookTransfer CRM',
         );
         return;
       }
@@ -714,7 +714,7 @@ export class TransferServiceController implements GenericServiceController {
       if (!status) {
         Logger.error(
           `Status ${webhookTransferDto.status} was not found`,
-          'WebhookTransfer',
+          'WebhookTransfer Status',
         );
         return;
       }
@@ -730,7 +730,7 @@ export class TransferServiceController implements GenericServiceController {
       if (!account) {
         Logger.error(
           `Account by card ${cardId} was not found`,
-          'WebhookTransfer',
+          'WebhookTransfer Account',
         );
         return;
       }
@@ -749,7 +749,7 @@ export class TransferServiceController implements GenericServiceController {
       if (!category) {
         Logger.error(
           `Category by slug ${movement} was not found`,
-          'WebhookTransfer',
+          'WebhookTransfer Category',
         );
         return;
       }
@@ -775,7 +775,7 @@ export class TransferServiceController implements GenericServiceController {
 
       await this.transferService.newTransfer(transferDto);
     } catch (error) {
-      Logger.error(error, 'WebhookTransfer');
+      Logger.error(error, 'WebhookTransfer createOne');
     }
   }
 
@@ -795,7 +795,7 @@ export class TransferServiceController implements GenericServiceController {
       if (!crm) {
         Logger.error(
           `CRM ${migrationDto.integration} was not found`,
-          'WebhookTransfer',
+          'WebhookTransfer CRM',
         );
         return;
       }
@@ -807,7 +807,7 @@ export class TransferServiceController implements GenericServiceController {
       if (!status) {
         Logger.error(
           `Status ${migrationDto.status} was not found`,
-          'WebhookTransfer',
+          'WebhookTransfer Status',
         );
         return;
       }
@@ -822,7 +822,7 @@ export class TransferServiceController implements GenericServiceController {
       if (!category) {
         Logger.error(
           `Category by slug ${migrationDto.movement} was not found`,
-          'WebhookTransfer',
+          'WebhookTransfer Category',
         );
         return;
       }
@@ -838,7 +838,7 @@ export class TransferServiceController implements GenericServiceController {
 
       await this.transferService.newTransfer(transferDto);
     } catch (error) {
-      Logger.error(error, 'WebhookTransfer');
+      Logger.error(error, 'WebhookTransfer createOne');
     }
   }
 
