@@ -95,7 +95,7 @@ export class PomeloIntegrationProcessService {
         usd,
       };
     } catch (error) {
-      Logger.error(error, 'PomeloProcess');
+      Logger.error(error, 'PomeloProcess getAmount');
       throw new InternalServerErrorException(error);
     }
   }
@@ -106,7 +106,7 @@ export class PomeloIntegrationProcessService {
     usdAmount: number,
   ): Promise<any> {
     try {
-      Logger.log(JSON.stringify(process), 'ExecuteProcess');
+      Logger.log(JSON.stringify(process), 'ExecuteProcess start');
       if (
         process?.installments &&
         parseInt(process?.installments?.quantity) > 1
@@ -140,7 +140,7 @@ export class PomeloIntegrationProcessService {
       );
       return this.buildProcessResponse(processResult, authorize);
     } catch (error) {
-      Logger.error(error, 'PomeloProcess');
+      Logger.error(error, 'PomeloProcess executeProcess');
       throw new InternalServerErrorException(error);
     }
   }
