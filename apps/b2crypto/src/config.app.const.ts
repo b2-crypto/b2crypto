@@ -91,7 +91,6 @@ export const configApp = {
     StatsServiceModule,
     QueueAdminModule,
     //SeedModule,
-    IntegrationServiceModule,
   ],
   controllers: [AppController],
   providers: [
