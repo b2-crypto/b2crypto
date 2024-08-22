@@ -33,6 +33,7 @@ import EventsNamesAccountEnum from './enum/events.names.account.enum';
 import { CreateAnyDto } from '@common/common/models/create-any.dto';
 import { TransferEntity } from '@transfer/transfer/entities/transfer.entity';
 import EventsNamesMessageEnum from 'apps/message-service/src/enum/events.names.message.enum';
+import TransportEnum from '@common/common/enums/TransportEnum';
 
 @ApiTags('E-WALLET')
 @Controller('wallets')
@@ -80,35 +81,35 @@ export class WalletServiceController extends AccountServiceController {
     if (!userId) {
       throw new BadRequestException('Need the user id to continue');
     }
-    const user: User = (
-      await this.userService.getAll({
-        relations: ['personalData'],
-        where: {
-          _id: userId,
-        },
-      })
-    ).list[0];
+    
+    const user: User = (await this.userService.getAll({
+      relations: ['personalData'],
+      where: { _id: userId },
+    })).list[0];
+    
     if (!user.personalData) {
       throw new BadRequestException('Need the personal data to continue');
     }
+    
     createDto.type = TypesAccountEnum.WALLET;
     createDto.accountId = '2177';
     createDto.accountName = 'CoxSQtiWAHVo';
     createDto.accountPassword = 'w7XDOfgfudBvRG';
     createDto.owner = user.id;
-    createDto.pin =
-      createDto.pin ??
-      parseInt(
-        CommonService.getNumberDigits(CommonService.randomIntNumber(9999), 4),
-      );
+    createDto.pin = createDto.pin ?? parseInt(CommonService.getNumberDigits(CommonService.randomIntNumber(9999), 4));
+  
     const createdWallet = await this.walletService.createOne(createDto);
+  
     const emailData = {
       name: `Actualización de tu Wallet`,
       body: `Se ha creado un nuevo wallet en tu cuenta`,
       originText: 'Sistema',
       destinyText: user.email,
       transport: TransportEnum.EMAIL,
-      destiny: null,
+      destiny: createdWallet._id ? {
+        resourceId: createdWallet._id.toString(),
+        resourceName: 'WALLET',
+      } : null,
       vars: {
         name: user.name,
         accountType: createdWallet.accountType,
@@ -118,20 +119,7 @@ export class WalletServiceController extends AccountServiceController {
         accountId: createdWallet.accountId,
       },
     };
-
-    if (createdWallet._id) {
-      emailData.destiny = {
-        resourceId: createdWallet._id.toString(),
-        resourceName: 'WALLET',
-      };
-    }
-
-    setImmediate(() => {
-      this.ewalletBuilder.emitMessageEventClient(
-        EventsNamesMessageEnum.sendCryptoWalletsManagement,
-        emailData,
-      );
-    });
+  
     const transferBtn: TransferCreateButtonDto = {
       amount: '999',
       currency: 'USD',
@@ -143,20 +131,26 @@ export class WalletServiceController extends AccountServiceController {
       public_key: null,
       identifier: createDto.owner,
     };
-    this.ewalletBuilder.emitAccountEventClient(
-      EventsNamesAccountEnum.updateOne,
-      {
-        id: createdWallet._id,
-        responseCreation:
-          await this.ewalletBuilder.getPromiseTransferEventClient(
+  
+    await Promise.all([
+      this.ewalletBuilder.emitMessageEventClient(
+        EventsNamesMessageEnum.sendCryptoWalletsManagement,
+        emailData
+      ),
+      this.ewalletBuilder.emitAccountEventClient(
+        EventsNamesAccountEnum.updateOne,
+        {
+          id: createdWallet._id,
+          responseCreation: await this.ewalletBuilder.getPromiseTransferEventClient(
             EventsNamesTransferEnum.createOneDepositLink,
-            transferBtn,
+            transferBtn
           ),
-      },
-    );
+        }
+      )
+    ]);
+  
     return createdWallet;
   }
-
 
   @Post('recharge')
   async rechargeOne(

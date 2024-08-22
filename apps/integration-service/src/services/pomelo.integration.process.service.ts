@@ -222,19 +222,19 @@ export class PomeloIntegrationProcessService {
         false,
         headers,
       );
-
-      setImmediate(() => {
-        this.sendAdjustmentNotificationEmail(adjustment).catch((error) => {
+  
+      this.sendAdjustmentNotificationEmail(adjustment)
+        .catch((error) => {
           Logger.error(
             'Error sending adjustment notification email',
             error.stack,
           );
         });
-      });
-
+  
       return processed;
     } catch (error) {
       Logger.error('Error processing adjustment', error.stack);
+      throw error; 
     }
   }
 

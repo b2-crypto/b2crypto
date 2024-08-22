@@ -1,4 +1,4 @@
-/* eslint-disable prettier/prettier */
+
 import { BuildersService } from '@builder/builders';
 import { QuerySearchAnyDto } from '@common/common/models/query_search-any.dto';
 import { CrmInterface } from '@crm/crm/entities/crm.interface';
@@ -122,11 +122,12 @@ export class MessageServiceService {
   }
 
   async sendEmail(message: MessageCreateDto, template: TemplatesMessageEnum) {
+  try {
     let from = message.originText;
     if (!isEmail(from)) {
       from = await this.configService.get(
         'AWS_SES_FROM_DEFAULT',
-        'noreply@email.com',
+        'no-reply@b2crypto.com',
       );
       message.originText = from;
     }
@@ -139,6 +140,9 @@ export class MessageServiceService {
       html: this.compileHtml(message.vars ?? message, template),
     });
     return msg;
+  } catch (error) {
+    console.log({error})
+  }
   }
   private compileHtml(vars: any, template: TemplatesMessageEnum) {
     const templateVars = {
@@ -146,7 +150,7 @@ export class MessageServiceService {
       headerColor: this.getHeaderColorForTemplate(template),
       headerTitle: vars.name,
       logoUrl:
-        'https://message-templates-resource.s3.eu-west-3.amazonaws.com/logo.svg',
+        'https://message-templates-resource.s3.eu-west-3.amazonaws.com/logo.png',
       vars: vars,
     };
 

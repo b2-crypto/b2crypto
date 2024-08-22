@@ -1,3 +1,4 @@
+
 import { AuthService } from '@auth/auth';
 import { AllowAnon } from '@auth/auth/decorators/allow-anon.decorator';
 import { ApiKeyCheck } from '@auth/auth/decorators/api-key-check.decorator';
@@ -269,6 +270,7 @@ export class AuthServiceController {
   @ApiSecurity('b2crypto-key')
   @Post('restore-password')
   async restorePassword(@Body() restorePasswordDto: RestorePasswordDto) {
+  try {
     const users = await this.builder.getPromiseUserEventClient(
       EventsNamesUserEnum.findAll,
       {
@@ -336,6 +338,9 @@ export class AuthServiceController {
       statusCode: 201,
       message: 'OTP generated',
     };
+  } catch (error) {
+    console.log({error})
+  }
   }
 
 
@@ -401,24 +406,26 @@ export class AuthServiceController {
   @ApiResponse(ResponseB2Crypto.getResponseSwagger(500, ActionsEnum.LOGIN)) */
   @Post('registry')
   async registryUser(@Body() userDto: UserRegisterDto) {
-    userDto.name =
-      userDto.name ?? userDto.username ?? userDto.email.split('@')[0];
+    userDto.name = userDto.name ?? userDto.username ?? userDto.email.split('@')[0];
     userDto.slugEmail = CommonService.getSlug(userDto.email);
     userDto.username = userDto.username ?? userDto.name;
     userDto.slugUsername = CommonService.getSlug(userDto.username);
-
+  
     const createdUser = await this.builder.getPromiseUserEventClient(
       EventsNamesUserEnum.createOne,
       userDto,
     );
-
+  
     const emailData = {
       name: `Bienvenido a nuestra plataforma, ${createdUser.name}`,
       body: `Tu cuenta ha sido creada exitosamente`,
       originText: 'Sistema',
       destinyText: createdUser.email,
       transport: TransportEnum.EMAIL,
-      destiny: null,
+      destiny: createdUser.id ? {
+        resourceId: createdUser.id.toString(),
+        resourceName: ResourcesEnum.USER,
+      } : null,
       vars: {
         name: createdUser.name,
         email: createdUser.email,
@@ -427,26 +434,18 @@ export class AuthServiceController {
         isActive: createdUser.active,
       },
     };
-
-    if (createdUser._id) {
-      emailData.destiny = {
-        resourceId: createdUser._id.toString(),
-        resourceName: ResourcesEnum.USER,
-      };
-    }
-
-    Logger.log(emailData, 'New User Registration Email Prepared');
-
-    setImmediate(() => {
-      this.builder.emitMessageEventClient(
+  
+    try {
+      await this.builder.emitMessageEventClient(
         EventsNamesMessageEnum.sendProfileRegistrationCreation,
         emailData,
       );
-    });
-
+    } catch (error) {
+      Logger.error('Error sending user registration email', error.stack);
+    }
+  
     return createdUser;
   }
-
   @IsRefresh()
   @ApiKeyCheck()
   @UseGuards(ApiKeyAuthGuard)
