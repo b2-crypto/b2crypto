@@ -19,6 +19,7 @@ import {
   Post,
   Query,
   Req,
+  UnauthorizedException,
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiSecurity, ApiTags } from '@nestjs/swagger';
@@ -282,6 +283,7 @@ export class WalletServiceController extends AccountServiceController {
 
   @Delete(':walletID')
   deleteOneById(@Param('walletID') id: string, req?: any) {
+    throw new UnauthorizedException();
     return this.getAccountService().deleteOneById(id);
   }
 

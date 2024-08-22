@@ -26,6 +26,7 @@ import {
   Post,
   Query,
   Req,
+  UnauthorizedException,
   UseGuards,
 } from '@nestjs/common';
 import {
@@ -796,6 +797,7 @@ export class CardServiceController extends AccountServiceController {
 
   @Delete(':cardID')
   deleteOneById(@Param('cardID') id: string, req?: any) {
+    throw new UnauthorizedException();
     return this.getAccountService().deleteOneById(id);
   }
 

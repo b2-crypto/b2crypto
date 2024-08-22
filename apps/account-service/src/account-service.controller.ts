@@ -10,6 +10,7 @@ import {
   Post,
   Query,
   Req,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 
@@ -126,11 +127,13 @@ export class AccountServiceController implements GenericServiceController {
     @Body(new ParseArrayPipe({ items: UpdateAnyDto })) ids: AccountUpdateDto[],
     req?: any,
   ) {
+    throw new UnauthorizedException();
     return this.accountService.deleteManyById(ids);
   }
 
   @Delete(':accountID')
   deleteOneById(@Param('accountID') id: string, req?: any) {
+    throw new UnauthorizedException();
     return this.accountService.deleteOneById(id);
   }
 
