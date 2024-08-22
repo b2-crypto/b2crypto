@@ -329,6 +329,9 @@ export class AuthServiceController {
     return {
       statusCode: 201,
       message: 'OTP Sended',
+      data: {
+        duration: 60000,
+      },
     };
   }
 
@@ -547,7 +550,10 @@ export class AuthServiceController {
     );
   }
 
-  private async generateOtp(user: UserDocument, msOTP = 60000) {
+  private async generateOtp(user: UserDocument, msOTP?: number) {
+    if (!msOTP) {
+      msOTP = this.configService.get<number>('OTP_VALIDATION_TIME', 90000);
+    }
     let otpSended = await this.getOtpGenerated(user.email);
     if (!otpSended) {
       otpSended = CommonService.randomIntNumber(999999);
