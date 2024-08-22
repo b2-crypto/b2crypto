@@ -234,6 +234,10 @@ export class PomeloMigrationService {
         balance = parseFloat(balance);
       }
       const cardDto = this.buildCardDto(pomeloCard, person, email, balance);
+      Logger.debug(
+        cardDto,
+        `${PomeloMigrationService.name}-migrateCard.cardDto`,
+      );
       const account = await this.builder.getPromiseAccountEventClient(
         EventsNamesAccountEnum.mingrateOne,
         cardDto,
@@ -371,7 +375,7 @@ export class PomeloMigrationService {
             },
           },
           country: CountryCodeEnum.Colombia,
-          user,
+          user: user?._id,
         },
       );
       return person;
