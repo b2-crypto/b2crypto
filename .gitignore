@@ -43,3 +43,5 @@ lerna-debug.log*
 # SFTP report files
 /sftp/downloads
 /sftp/downloads/*
+# SUpload files
+upload/*

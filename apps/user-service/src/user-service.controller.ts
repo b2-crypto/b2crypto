@@ -286,10 +286,7 @@ export class UserServiceController implements GenericServiceController {
 
   @AllowAnon()
   @MessagePattern(EventsNamesUserEnum.migrateOne)
-  async migrateOne(
-    @Payload() createDto: UserRegisterDto,
-    @Ctx() ctx: RmqContext,
-  ) {
+  async migrateOne(@Payload() createDto: any, @Ctx() ctx: RmqContext) {
     try {
       let user: any;
       const users = await this.findAll({
@@ -299,6 +296,9 @@ export class UserServiceController implements GenericServiceController {
       });
       if (users?.list?.length > 0) {
         user = users.list[0];
+        user.verifyIdentity = createDto.verifyIdentity;
+        user.verifyIdentityLevelName = createDto.verifyIdentityLevelName;
+        user = await this.updateOne(user);
       } else {
         user = await this.createOne(createDto);
       }
