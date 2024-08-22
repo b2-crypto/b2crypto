@@ -386,7 +386,7 @@ export class UserServiceController implements GenericServiceController {
   private async findUserByEmail(email: string) {
     const query = {
       where: {
-        email: email,
+        slugEmail: CommonService.getSlug(email),
       },
     };
     return await this.userService.getAll(query);
