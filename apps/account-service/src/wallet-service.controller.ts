@@ -220,11 +220,14 @@ export class WalletServiceController extends AccountServiceController {
       const host = req.get('Host');
       //const url = `${req.protocol}://${host}/transfers/deposit/page/${transfer?._id}`;
       const url = `https://${host}/transfers/deposit/page/${depositAddress?._id}`;
+      const data = depositAddress.responseAccount.data;
       return {
         statusCode: 200,
         data: {
           txId: depositAddress?._id,
-          url,
+          //url,
+          address: data?.attributes?.address,
+          chain: 'TRON BLOCKCHAIN',
         },
       };
     } catch (error) {
