@@ -41,6 +41,32 @@ export class B2CoreMigrationService {
     }
     return migrated;
   }
+  async migrateB2CoreVerification(file: Express.Multer.File) {
+    const migrated = [];
+    try {
+      const results = await this.getFileRows(file);
+      for (let i = 0; i < results.length; i++) {
+        const data = results[i];
+        Logger.log(JSON.stringify(data['Email']), B2CoreMigrationService.name);
+        if (data['Client status'] === 'Active') {
+          const email = data['Email'];
+          const user = await this.migrateUser(data);
+          const walletAccount = this.buildAccount(data, user);
+          Logger.log(
+            `Creating wallet: ${walletAccount.name}-${walletAccount.accountId}`,
+            `${walletAccount.owner} - ${email}`,
+          );
+          const account = await this.migrateWalletAccount(walletAccount);
+          if (account) {
+            migrated.push(account);
+          }
+        }
+      }
+    } catch (error) {
+      Logger.error(error, B2CoreMigrationService.name);
+    }
+    return migrated;
+  }
 
   async getFileRows(file: Express.Multer.File): Promise<Array<any>> {
     const results = [];
@@ -110,9 +136,9 @@ export class B2CoreMigrationService {
       );
       if (!user._id) {
         user = await this.builder.getPromiseUserEventClient(
-          EventsNamesUserEnum.createOne,
+          EventsNamesUserEnum.migrateOne,
           {
-            email: email,
+            email: data['Email'],
             name: data['Client name'],
             password: CommonService.generatePassword(8),
             confirmPassword: 'send-password',
@@ -127,6 +153,50 @@ export class B2CoreMigrationService {
     } catch (error) {
       Logger.error(error, B2CoreMigrationService.name);
     }
+  }
+
+  private async migrateUser(data: any) {
+    try {
+      const userToMigrate = this.buildUser(data);
+      const user = await this.builder.getPromiseUserEventClient(
+        EventsNamesUserEnum.migrateOne,
+        userToMigrate,
+      );
+      return user;
+    } catch (error) {
+      Logger.error(error, B2CoreMigrationService.name);
+    }
+  }
+
+  private buildUser(data: any) {
+    let verifyIdentity = false;
+    // Valida si debe pasar con verifyIdentity
+    if (
+      !data['Client verification level'] ||
+      data['Client verification level'] !== 'Level 1'
+    ) {
+      verifyIdentity = true;
+    }
+    let individual = false;
+    // Valida si es individual o corporativo
+    if (verifyIdentity && data['Client verification level'] === 'Level 2') {
+      individual = true;
+    }
+    let verifyIdentityLevelName: string;
+    // Valida si debe pasar el valor de verifyIdentityLevelName
+    if (verifyIdentity) {
+      verifyIdentityLevelName = data['Client verification level'];
+    }
+    return {
+      email: data['Email'],
+      name: data['Client name'],
+      password: CommonService.generatePassword(8),
+      confirmPassword: 'send-password',
+      verifyIdentity,
+      individual,
+      verifyIdentityLevelName,
+      verifyEmail: true,
+    };
   }
 
   private async migrateWalletAccount(walletAccount: any) {

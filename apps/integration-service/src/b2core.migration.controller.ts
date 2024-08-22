@@ -19,4 +19,13 @@ export class B2CoreMigrationController {
     return new NotImplementedException('Method not implemented.');
     //return this.migrationService.startB2CoreMigration(file);
   }
+
+  @Post('verification/ignate')
+  @UseInterceptors(FileInterceptor('file'))
+  async migrationB2CoreVerification(@UploadedFile() file: Express.Multer.File) {
+    //return new NotImplementedException('Method not implemented.');
+
+    Logger.log(`File: ${file.path}`);
+    return this.migrationService.migrateB2CoreVerification(file);
+  }
 }

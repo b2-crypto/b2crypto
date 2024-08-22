@@ -48,6 +48,9 @@ import { SumsubNotificationIntegrationController } from './sumsub.notification.c
 
 @Module({
   imports: [
+    MulterModule.register({
+      dest: './upload',
+    }),
     FileModule,
     AuthModule,
     UserModule,

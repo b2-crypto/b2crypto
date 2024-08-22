@@ -84,4 +84,16 @@ export class UserCreateDto extends UserChangePasswordDto {
   @IsOptional()
   @IsMongoId({ each: true })
   permissions: Array<ObjectId>;
+
+  @IsBoolean()
+  @IsOptional()
+  verifyIdentity?: boolean;
+
+  @IsString()
+  @IsOptional()
+  verifyIdentityLevelName?: string;
+
+  @IsBoolean()
+  @IsOptional()
+  verifyEmail?: boolean;
 }
