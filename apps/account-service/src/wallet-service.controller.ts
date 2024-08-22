@@ -30,9 +30,8 @@ import EventsNamesTransferEnum from 'apps/transfer-service/src/enum/events.names
 import { TransferCreateButtonDto } from 'apps/transfer-service/src/dto/transfer.create.button.dto';
 import { Ctx, EventPattern, Payload, RmqContext } from '@nestjs/microservices';
 import EventsNamesAccountEnum from './enum/events.names.account.enum';
-import { CreateAnyDto } from '@common/common/models/create-any.dto';
-import { TransferEntity } from '@transfer/transfer/entities/transfer.entity';
 import EventsNamesMessageEnum from 'apps/message-service/src/enum/events.names.message.enum';
+import TransportEnum from '@common/common/enums/TransportEnum';
 
 @ApiTags('E-WALLET')
 @Controller('wallets')
@@ -156,7 +155,6 @@ export class WalletServiceController extends AccountServiceController {
     );
     return createdWallet;
   }
-
 
   @Post('recharge')
   async rechargeOne(
