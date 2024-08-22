@@ -294,7 +294,7 @@ export class UserServiceController implements GenericServiceController {
       let user: any;
       const users = await this.findAll({
         where: {
-          email: createDto.email,
+          slugEmail: CommonService.getSlug(createDto.email),
         },
       });
       if (users?.list?.length > 0) {
