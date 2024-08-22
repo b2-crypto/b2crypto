@@ -143,6 +143,7 @@ export class AuthServiceController {
     type: String,
     required: true,
   })
+  @NoCache()
   @Get('identity/page/:userId')
   async sumsubGetPage(
     @Param('userId') userId,
@@ -338,11 +339,11 @@ export class AuthServiceController {
     };
   }
 
-
   @ApiKeyCheck()
   @UseGuards(ApiKeyAuthGuard)
   @ApiSecurity('b2crypto-key')
   @ApiTags(SwaggerSteakeyConfigEnum.TAG_SECURITY)
+  @NoCache()
   @Get('otp/:email')
   async getOtp(@Param('email') email: string) {
     await this.generateOtp({ email } as any);
@@ -357,6 +358,7 @@ export class AuthServiceController {
   @UseGuards(ApiKeyAuthGuard)
   @ApiSecurity('b2crypto-key')
   @ApiTags(SwaggerSteakeyConfigEnum.TAG_SECURITY)
+  @NoCache()
   @Get('otp/:email/:otp')
   async validateOtp(@Param('email') email: string, @Param('otp') otp: string) {
     const otpSended = await this.getOtpGenerated(email);
@@ -437,12 +439,12 @@ export class AuthServiceController {
 
     Logger.log(emailData, 'New User Registration Email Prepared');
 
-    setImmediate(() => {
+    /* setImmediate(() => {
       this.builder.emitMessageEventClient(
         EventsNamesMessageEnum.sendProfileRegistrationCreation,
         emailData,
       );
-    });
+    }); */
 
     return createdUser;
   }
@@ -606,7 +608,10 @@ export class AuthServiceController {
   private async generateOtp(user: UserDocument, msOTP = 60000) {
     let otpSended = await this.getOtpGenerated(user.email);
     if (!otpSended) {
-      otpSended = CommonService.randomIntNumber(999999);
+      otpSended = CommonService.getNumberDigits(
+        CommonService.randomIntNumber(999999),
+        6,
+      );
       await this.cacheManager.set(user.email, otpSended, msOTP);
     }
     const data = {

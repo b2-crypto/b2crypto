@@ -118,6 +118,18 @@ enum CurrencyCodeB2cryptoEnum {
   ZAR = 'ZAR',
   ZMK = 'ZMK',
   ZWL = 'ZWL',
+  DASH = 'DASH',
+  TRX = 'TRX',
+  XLM = 'XLM',
+  BCH = 'BCH',
+  ADA = 'ADA',
+  LTC = 'LTC',
+  XRP = 'XRP',
+  ETH = 'ETH',
+  BTC = 'BTC',
+  USDC = 'USDC',
+  DAI = 'DAI',
+  USDT = 'USDT',
 }
 
 export default CurrencyCodeB2cryptoEnum;

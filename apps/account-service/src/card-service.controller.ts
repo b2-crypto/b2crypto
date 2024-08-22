@@ -26,6 +26,7 @@ import {
   Post,
   Query,
   Req,
+  UnauthorizedException,
   UseGuards,
 } from '@nestjs/common';
 import {
@@ -75,6 +76,7 @@ import { StatusCashierEnum } from '@common/common/enums/StatusCashierEnum';
 import EventsNamesStatusEnum from 'apps/status-service/src/enum/events.names.status.enum';
 import EventsNamesPspAccountEnum from 'apps/psp-service/src/enum/events.names.psp.acount.enum';
 import { PspAccount } from '@psp-account/psp-account/entities/mongoose/psp-account.schema';
+import { NoCache } from '@common/common/decorators/no-cache.decorator';
 
 @ApiTags('CARD')
 @Controller('cards')
@@ -102,6 +104,7 @@ export class CardServiceController extends AccountServiceController {
     this.configService.get<number>('AUTHORIZATIONS_BLOCK_BALANCE_PERCENTAGE');
 
   @Get('all')
+  @NoCache()
   @ApiTags(SwaggerSteakeyConfigEnum.TAG_CARD)
   @ApiBearerAuth('bearerToken')
   @ApiHeader({
@@ -121,7 +124,7 @@ export class CardServiceController extends AccountServiceController {
       (account.amount === 0 && account.amountCustodial === 0) ||
       req.user.currency === account.currencyCustodial
     ) {
-      return account.amountCustodial || account.amount;
+      return account.amount || account.amountCustodial;
     }
     try {
       const amount = await this.currencyConversion.getCurrencyConversion(
@@ -142,6 +145,7 @@ export class CardServiceController extends AccountServiceController {
   }
 
   @Get('me')
+  @NoCache()
   @ApiTags(SwaggerSteakeyConfigEnum.TAG_CARD)
   @ApiBearerAuth('bearerToken')
   async findAllMe(@Query() query: QuerySearchAnyDto, @Req() req?: any) {
@@ -217,86 +221,7 @@ export class CardServiceController extends AccountServiceController {
         );
         const afg = affinityGroup.data[0]; */
         // TODO[hender - 2024/06/05]
-        const afg = {
-          id: 'afg-2arMn990ZksFKAHS5PngRPHqRmS',
-          name: 'B2Crypto COL physical virtual credit nominated',
-          card_type_supported: ['VIRTUAL'],
-          innominate: false,
-          months_to_expiration: 84,
-          issued_account: 9,
-          fee_account: 36,
-          exchange_rate_type: 'none',
-          exchange_rate_amount: 100,
-          non_usd_exchange_rate_amount: 100,
-          dcc_exchange_rate_amount: 0,
-          local_withdrawal_allowed: true,
-          international_withdrawal_allowed: true,
-          local_ecommerce_allowed: true,
-          international_ecommerce_allowed: true,
-          local_purchases_allowed: true,
-          international_purchases_allowed: true,
-          product_id: 'prd-2arLJXW8moDb5CppLToizmmw66q',
-          local_extracash_allowed: true,
-          international_extracash_allowed: true,
-          plastic_model: 1,
-          kit_model: 1,
-          status: 'ACTIVE',
-          embossing_company: 'THALES',
-          courier_company: 'DOMINA',
-          exchange_currency_name: 'COP',
-          activation_code_enabled: false,
-          total_exchange_rate: 4169.8,
-          total_non_usd_exchange_rate: 4169.8,
-          total_dcc_exchange_rate: 4128.51,
-          provider: 'MASTERCARD',
-          custom_name_on_card_enabled: false,
-          provider_algorithm: 'MCHIP',
-          start_date: '2024-01-12',
-          dcvv_enabled: true,
-        };
-        if (!afg) {
-          throw new BadRequestException('Affinity group list is empty');
-        }
-        const group = await this.groupService.getAll({
-          where: {
-            slug: CommonService.getSlug(afg.name),
-          },
-        });
-        if (group.totalElements < 1) {
-          const categoryAffinityGroupList = await this.categoryService.getAll({
-            where: {
-              slug: 'affinity-group',
-            },
-          });
-          if (categoryAffinityGroupList.totalElements < 1) {
-            categoryAffinityGroupList.list.push(
-              await this.categoryService.newCategory({
-                name: 'Affinity Group',
-                description: 'Affinity Group to Cards',
-                type: TagEnum.CATEGORY,
-                resources: [ResourcesEnum.GROUP],
-              }),
-            );
-          }
-          const categoryAffinityGroup = categoryAffinityGroupList.list[0];
-          const statusActive = await this.statusService.getAll({
-            where: {
-              slug: 'active',
-            },
-          });
-          if (!statusActive.totalElements) {
-            throw new BadRequestException('Status active not found');
-          }
-          // Create Affinity Group
-          group.list.push(
-            await this.groupService.newGroup({
-              name: afg.name,
-              valueGroup: afg.id,
-              status: statusActive.list[0]?._id,
-              category: categoryAffinityGroup._id,
-            }),
-          );
-        }
+        const group = await this.buildAFG();
         account.group = group.list[0];
       }
       // Create Card
@@ -371,11 +296,229 @@ export class CardServiceController extends AccountServiceController {
     }
   }
 
+  private getAfgVirtualProd() {
+    return {
+      id: 'afg-2dK0sh37O9A2pPMxdBaaUcfApIb',
+      name: 'B2Crypto COL Mastercard credit virtual',
+      card_type_supported: ['VIRTUAL'],
+      innominate: false,
+      months_to_expiration: 96,
+      issued_account: 9,
+      fee_account: 36,
+      exchange_rate_type: '100',
+      exchange_rate_amount: 0,
+      non_usd_exchange_rate_amount: 0,
+      dcc_exchange_rate_amount: 0,
+      local_withdrawal_allowed: true,
+      international_withdrawal_allowed: true,
+      local_ecommerce_allowed: true,
+      international_ecommerce_allowed: true,
+      local_purchases_allowed: true,
+      international_purchases_allowed: true,
+      product_id: 'prd-2dK0YVgQ2DnpvfNcq8pmdNnwz0I',
+      local_extracash_allowed: true,
+      international_extracash_allowed: true,
+      plastic_model: 1,
+      kit_model: 1,
+      status: 'ACTIVE',
+      embossing_company: 'THALES',
+      courier_company: 'DOMINA',
+      exchange_currency_name: 'COP',
+      activation_code_enabled: false,
+      total_exchange_rate: 4021.63,
+      total_non_usd_exchange_rate: 4021.63,
+      total_dcc_exchange_rate: 4021.63,
+      provider: 'MASTERCARD',
+      custom_name_on_card_enabled: false,
+      provider_algorithm: 'MCHIP',
+      start_date: '2024-03-06',
+      dcvv_enabled: false,
+    };
+  }
+
+  private getAfgVirtualCommercialProd() {
+    return {
+      id: 'afg-2i3XVNYWvg9u76TFZi4FitF3VpD',
+      name: 'B2Crypto COL Mastercard Commercial credit virtual ',
+      card_type_supported: ['VIRTUAL'],
+      innominate: false,
+      months_to_expiration: 96,
+      issued_account: 9,
+      fee_account: 36,
+      exchange_rate_type: '100',
+      exchange_rate_amount: 0,
+      non_usd_exchange_rate_amount: 0,
+      dcc_exchange_rate_amount: 0,
+      local_withdrawal_allowed: true,
+      international_withdrawal_allowed: true,
+      local_ecommerce_allowed: true,
+      international_ecommerce_allowed: true,
+      local_purchases_allowed: true,
+      international_purchases_allowed: true,
+      product_id: 'prd-2hZAQouC4B4qDag9W21MozKlqzU',
+      local_extracash_allowed: true,
+      international_extracash_allowed: true,
+      plastic_model: 1,
+      kit_model: 1,
+      status: 'ACTIVE',
+      embossing_company: 'THALES',
+      courier_company: 'DOMINA',
+      exchange_currency_name: 'COP',
+      activation_code_enabled: false,
+      total_exchange_rate: 4021.63,
+      total_non_usd_exchange_rate: 4021.63,
+      total_dcc_exchange_rate: 4021.63,
+      provider: 'MASTERCARD',
+      custom_name_on_card_enabled: false,
+      provider_algorithm: 'MCHIP',
+      start_date: '2024-06-18',
+      dcvv_enabled: false,
+    };
+  }
+
+  private getAfgVirtualNominatedStage() {
+    return {
+      id: 'afg-2arMn990ZksFKAHS5PngRPHqRmS',
+      name: 'B2Crypto COL physical virtual credit nominated',
+      card_type_supported: ['VIRTUAL'],
+      innominate: false,
+      months_to_expiration: 84,
+      issued_account: 9,
+      fee_account: 36,
+      exchange_rate_type: 'none',
+      exchange_rate_amount: 100,
+      non_usd_exchange_rate_amount: 100,
+      dcc_exchange_rate_amount: 0,
+      local_withdrawal_allowed: true,
+      international_withdrawal_allowed: true,
+      local_ecommerce_allowed: true,
+      international_ecommerce_allowed: true,
+      local_purchases_allowed: true,
+      international_purchases_allowed: true,
+      product_id: 'prd-2arLJXW8moDb5CppLToizmmw66q',
+      local_extracash_allowed: true,
+      international_extracash_allowed: true,
+      plastic_model: 1,
+      kit_model: 1,
+      status: 'ACTIVE',
+      embossing_company: 'THALES',
+      courier_company: 'DOMINA',
+      exchange_currency_name: 'COP',
+      activation_code_enabled: false,
+      total_exchange_rate: 4169.8,
+      total_non_usd_exchange_rate: 4169.8,
+      total_dcc_exchange_rate: 4128.51,
+      provider: 'MASTERCARD',
+      custom_name_on_card_enabled: false,
+      provider_algorithm: 'MCHIP',
+      start_date: '2024-01-12',
+      dcvv_enabled: true,
+    };
+  }
+
+  private async buildAFG(afgId?: string) {
+    let afg =
+      process.env.ENVIRONMENT === 'STAGE'
+        ? this.getAfgVirtualNominatedStage()
+        : process.env.ENVIRONMENT === 'PROD'
+        ? this.getAfgVirtualProd()
+        : null;
+    Logger.debug(
+      `AFG: ${JSON.stringify(afg)}`,
+      'CardServiceController.buildAFG',
+    );
+    // TODO[hender-20/08/2024] check the level user (individual/corporate)
+    if (afgId) {
+      afg = {
+        id: afgId ?? 'afg-2arMn990ZksFKAHS5PngRPHqRmS',
+        name: afgId
+          ? 'migration'
+          : 'B2Crypto COL physical virtual credit nominated',
+        card_type_supported: ['VIRTUAL'],
+        innominate: false,
+        months_to_expiration: 84,
+        issued_account: 9,
+        fee_account: 36,
+        exchange_rate_type: 'none',
+        exchange_rate_amount: 100,
+        non_usd_exchange_rate_amount: 100,
+        dcc_exchange_rate_amount: 0,
+        local_withdrawal_allowed: true,
+        international_withdrawal_allowed: true,
+        local_ecommerce_allowed: true,
+        international_ecommerce_allowed: true,
+        local_purchases_allowed: true,
+        international_purchases_allowed: true,
+        product_id: 'prd-2arLJXW8moDb5CppLToizmmw66q',
+        local_extracash_allowed: true,
+        international_extracash_allowed: true,
+        plastic_model: 1,
+        kit_model: 1,
+        status: 'ACTIVE',
+        embossing_company: 'THALES',
+        courier_company: 'DOMINA',
+        exchange_currency_name: 'COP',
+        activation_code_enabled: false,
+        total_exchange_rate: 4169.8,
+        total_non_usd_exchange_rate: 4169.8,
+        total_dcc_exchange_rate: 4128.51,
+        provider: 'MASTERCARD',
+        custom_name_on_card_enabled: false,
+        provider_algorithm: 'MCHIP',
+        start_date: '2024-01-12',
+        dcvv_enabled: true,
+      };
+    }
+    const group = await this.groupService.getAll({
+      where: {
+        slug: CommonService.getSlug(afg.name),
+      },
+    });
+    if (group.totalElements < 1) {
+      const categoryAffinityGroupList = await this.categoryService.getAll({
+        where: {
+          slug: 'affinity-group',
+        },
+      });
+      if (categoryAffinityGroupList.totalElements < 1) {
+        categoryAffinityGroupList.list.push(
+          await this.categoryService.newCategory({
+            name: 'Affinity Group',
+            description: 'Affinity Group to Cards',
+            type: TagEnum.CATEGORY,
+            resources: [ResourcesEnum.GROUP],
+          }),
+        );
+      }
+      const categoryAffinityGroup = categoryAffinityGroupList.list[0];
+      const statusActive = await this.statusService.getAll({
+        where: {
+          slug: 'active',
+        },
+      });
+      if (!statusActive.totalElements) {
+        throw new BadRequestException('Status active not found');
+      }
+      // Create Affinity Group
+      group.list.push(
+        await this.groupService.newGroup({
+          name: afg.name,
+          valueGroup: afg.id,
+          status: statusActive.list[0]?._id,
+          category: categoryAffinityGroup._id,
+        }),
+      );
+    }
+    return group;
+  }
+
   @ApiTags(SwaggerSteakeyConfigEnum.TAG_CARD)
+  @ApiTags('Stakey Card')
   @ApiSecurity('b2crypto-key')
   @ApiBearerAuth('bearerToken')
   @UseGuards(ApiKeyAuthGuard)
   @Get('shipping/:idCard')
+  @NoCache()
   async getShippingPhysicalCard(
     @Param('idCard') idCard: string,
     @Req() req?: any,
@@ -467,6 +610,7 @@ export class CardServiceController extends AccountServiceController {
           user.personalData.phoneNumber,
       },
     });
+
     if (rtaShippingCard.data.id) {
       const account = await this.cardService.createOne({
         type: TypesAccountEnum.CARD,
@@ -653,6 +797,7 @@ export class CardServiceController extends AccountServiceController {
 
   @Delete(':cardID')
   deleteOneById(@Param('cardID') id: string, req?: any) {
+    throw new UnauthorizedException();
     return this.getAccountService().deleteOneById(id);
   }
 
@@ -661,7 +806,7 @@ export class CardServiceController extends AccountServiceController {
     CommonService.ack(ctx);
     try {
       let txnAmount = 0;
-      Logger.log(`Looking for card: ${data.id}`, 'CardController');
+      Logger.log(`Looking for card: ${data.id}`, CardServiceController.name);
       const cardList = await this.cardService.findAll({
         where: {
           statusText: StatusAccountEnum.UNLOCK,
@@ -675,7 +820,7 @@ export class CardServiceController extends AccountServiceController {
       if (data.authorize) {
         Logger.log(
           `Card balance: ${card.amount} | Movement amount: ${data.amount}`,
-          'CardController',
+          CardServiceController.name,
         );
         const allowedBalance =
           card.amount * (1.0 - this.BLOCK_BALANCE_PERCENTAGE);
@@ -697,7 +842,7 @@ export class CardServiceController extends AccountServiceController {
       });
       return CardsEnum.CARD_PROCESS_OK;
     } catch (error) {
-      Logger.error(error, 'CardController');
+      Logger.error(error, CardServiceController.name);
       return CardsEnum.CARD_PROCESS_FAILURE;
     }
   }
@@ -706,7 +851,70 @@ export class CardServiceController extends AccountServiceController {
   async findByCardId(@Ctx() ctx: RmqContext, @Payload() data: any) {
     CommonService.ack(ctx);
     try {
-      Logger.log(`Looking for card: ${data.id}`, 'CardController');
+      Logger.log(`Looking for card: ${data.id}`, CardServiceController.name);
+      const cardList = await this.getCardById(data.id);
+      if (!cardList || !cardList.list[0]) {
+        throw new NotFoundException(`Card ${data.id} was not found`);
+      }
+      return cardList.list[0];
+    } catch (error) {
+      Logger.error(error, CardServiceController.name);
+    }
+  }
+
+  private async getCardById(cardId: string) {
+    try {
+      Logger.log(`Looking for card: ${cardId}`, CardServiceController.name);
+      const cardList = await this.cardService.findAll({
+        where: {
+          'cardConfig.id': cardId,
+        },
+      });
+      return cardList;
+    } catch (error) {
+      Logger.error(error, CardServiceController.name);
+    }
+  }
+
+  @MessagePattern(EventsNamesAccountEnum.mingrateOne)
+  async migrateCard(
+    @Ctx() ctx: RmqContext,
+    @Payload() cardToMigrate: CardCreateDto,
+  ) {
+    try {
+      CommonService.ack(ctx);
+      Logger.log(
+        `Migrating card ${cardToMigrate?.cardConfig?.id}`,
+        CardServiceController.name,
+      );
+      const group = await this.buildAFG(cardToMigrate.afgId);
+      cardToMigrate.group = group?.list[0];
+      const cardList = await this.getCardById(cardToMigrate?.cardConfig?.id);
+      if (!cardList || !cardList.list[0]) {
+        return await this.cardService.createOne(cardToMigrate);
+      } else {
+        const card = cardList.list[0];
+        await this.cardService.customUpdateOne({
+          id: card._id,
+          $inc: {
+            amount: card.amount ? 0 : cardToMigrate.amount,
+            amountCustodial: card.amountCustodial
+              ? 0
+              : cardToMigrate.amountCustodial,
+          },
+        });
+        return card;
+      }
+    } catch (error) {
+      Logger.error(error, CardServiceController.name);
+    }
+  }
+
+  @MessagePattern(EventsNamesAccountEnum.setBalanceByCard)
+  async setBalanceByCard(@Ctx() ctx: RmqContext, @Payload() data: any) {
+    CommonService.ack(ctx);
+    try {
+      Logger.log(`Looking for card: ${data.id}`, CardServiceController.name);
       const cardList = await this.cardService.findAll({
         where: {
           'cardConfig.id': data.id,
@@ -715,9 +923,16 @@ export class CardServiceController extends AccountServiceController {
       if (!cardList || !cardList.list[0]) {
         throw new NotFoundException(`Card ${data.id} was not found`);
       }
-      return cardList.list[0];
+      const card = cardList.list[0];
+      await this.cardService.customUpdateOne({
+        id: card._id,
+        $inc: {
+          amount: card.amount ? 0 : data.amount,
+          amountCustodial: card.amountCustodial ? 0 : data.amount,
+        },
+      });
     } catch (error) {
-      Logger.error(error, 'CardController');
+      Logger.error(error, CardServiceController.name);
     }
   }
 

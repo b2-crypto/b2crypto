@@ -43,6 +43,7 @@ import { CreateLeadOnCrmDto } from './dto/create.lead.on.crm.dto';
 import { CreateTransferOnCrmDto } from './dto/create.transfer.on.crm.dto';
 import EventsNamesCrmEnum from './enum/events.names.crm.enum';
 import { BuildersService } from '@builder/builders';
+import { NoCache } from '@common/common/decorators/no-cache.decorator';
 
 @ApiTags('CRM')
 @Controller('crm')
@@ -55,6 +56,7 @@ export class CrmServiceController implements GenericServiceController {
   ) {}
 
   @Get('all/retention')
+  @NoCache()
   // @CheckPoliciesAbility(new PolicyHandlerCategoryRead())
   @ApiResponse({
     status: 200,
@@ -70,6 +72,7 @@ export class CrmServiceController implements GenericServiceController {
   }
 
   @Get('all/sales')
+  @NoCache()
   // @CheckPoliciesAbility(new PolicyHandlerCategoryRead())
   @ApiResponse({
     status: 200,
@@ -85,6 +88,7 @@ export class CrmServiceController implements GenericServiceController {
   }
 
   @Get('all/:departmentName')
+  @NoCache()
   // @CheckPoliciesAbility(new PolicyHandlerCategoryRead())
   @ApiResponse({
     status: 200,
@@ -103,6 +107,7 @@ export class CrmServiceController implements GenericServiceController {
   }
 
   @Get('all')
+  @NoCache()
   // @CheckPoliciesAbility(new PolicyHandlerCategoryRead())
   @ApiResponse({
     status: 200,
@@ -118,6 +123,7 @@ export class CrmServiceController implements GenericServiceController {
   }
 
   @Get(':crmID')
+  @NoCache()
   // @CheckPoliciesAbility(new PolicyHandlerCrmRead())
   @ApiResponse({
     status: 200,
@@ -133,6 +139,7 @@ export class CrmServiceController implements GenericServiceController {
   }
 
   @Get('/name/:crmName')
+  @NoCache()
   // @CheckPoliciesAbility(new PolicyHandlerCrmRead())
   @ApiResponse({
     status: 200,
@@ -310,13 +317,13 @@ export class CrmServiceController implements GenericServiceController {
     CommonService.ack(ctx);
     const crms = await this.crmService.getAll({
       where: {
-        name: crmName,
+        slug: CommonService.getSlug(crmName),
       },
     });
     if (crms.totalElements) {
       return crms.list[0];
     }
-    throw new NotFoundException('Not found Crm');
+    throw new NotFoundException('Not found Crm with name: ' + crmName);
   }
   @AllowAnon()
   @CacheTTL(5)

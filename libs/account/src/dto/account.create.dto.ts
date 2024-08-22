@@ -267,6 +267,8 @@ export class AccountCreateDto extends CreateAnyDto implements AccountInterface {
   createdAt: Date;
   @IsEmpty()
   updatedAt: Date;
+  @IsEmpty()
+  cardConfig: any;
   @IsOptional()
   prevAccount?: AccountInterface;
   @IsEmpty()
@@ -285,4 +287,6 @@ export class AccountCreateDto extends CreateAnyDto implements AccountInterface {
   amountBlockedCustodial: number;
   @IsEmpty()
   currencyBlockedCustodial: CurrencyCodeB2cryptoEnum;
+  @IsEmpty()
+  afgId: string;
 }

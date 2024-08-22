@@ -6,6 +6,7 @@ enum EventsNamesPersonEnum {
   //
   createMany = 'PERSON.CREATE.MANY',
   createOne = 'PERSON.CREATE.ONE',
+  migrateOne = 'PERSON.MIGRATE.ONE',
   updateMany = 'PERSON.UPDATE.MANY',
   updateOne = 'PERSON.UPDATE.ONE',
   findAll = 'PERSON.FIND.ALL',

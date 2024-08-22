@@ -30,6 +30,7 @@ import EventsNamesAffiliateEnum from 'apps/affiliate-service/src/enum/events.nam
 import { BuildersService } from '@builder/builders';
 import ActionsEnum from '@common/common/enums/ActionEnum';
 import ResourcesEnum from '@common/common/enums/ResourceEnum';
+import { NoCache } from '@common/common/decorators/no-cache.decorator';
 
 @Controller('stats')
 export class StatsServiceController {
@@ -39,16 +40,19 @@ export class StatsServiceController {
     private readonly builder: BuildersService,
   ) {}
 
+  @NoCache()
   @Get()
   async checkStatsDateAll(@Query() query?: QuerySearchAnyDto) {
     return this.statsServiceService.checkStatsDateAll(query);
   }
 
+  @NoCache()
   @Get('transfer')
   async getStatsTransfer(/* @Query() query: QuerySearchAnyDto */) {
     return this.statsServiceService.getStatsTransfer(/* query */);
   }
 
+  @NoCache()
   @Get('affiliates/global')
   async getStatsAffiliate(@Query() query: QuerySearchAnyDto, @Req() req?) {
     query = await this.filterFromUserPermissions(query, req);
@@ -58,18 +62,21 @@ export class StatsServiceController {
     );
   }
 
+  @NoCache()
   @Get('psp-accounts/global')
   async getStatsPspAccount(@Query() query: QuerySearchAnyDto, @Req() req?) {
     query = await this.filterFromUserPermissions(query, req);
     return this.statsServiceService.getGlobalStatDailyDBPspAccount(query);
   }
 
+  @NoCache()
   @Get('retention')
   async getStatsDateRetention(@Query() query?: QuerySearchAnyDto, @Req() req?) {
     query = await this.filterFromUserPermissions(query, req);
     return this.statsServiceService.getStatsDateRetention(query);
   }
 
+  @NoCache()
   @Get('affiliates')
   async getStatsDateAffiliates(
     @Query() query?: QuerySearchAnyDto,
@@ -82,11 +89,13 @@ export class StatsServiceController {
     );
   }
 
+  @NoCache()
   @Get('affiliates/:affiliateId')
   async getStatsDateAffiliate(@Param('affiliateId') affiliateId: string) {
     return this.statsServiceService.getStatsDateAffiliate(affiliateId);
   }
 
+  @NoCache()
   @Get('psp-accounts')
   async getStatsDatePspAccounts(
     @Query() query?: QuerySearchAnyDto,
@@ -99,36 +108,43 @@ export class StatsServiceController {
     );
   }
 
+  @NoCache()
   @Get('psp-accounts/:pspAccountId')
   async getStatsDatePspAccount(@Param('pspAccountId') pspAccountId: string) {
     return this.statsServiceService.getStatsDatePspAccount(pspAccountId);
   }
 
+  @NoCache()
   @Get('brands')
   async getStatsDateBrands(@Query() query?: QuerySearchAnyDto) {
     throw new NotImplementedException();
   }
 
+  @NoCache()
   @Get('brands/:brandId')
   async getStatsDateBrand(@Param('brandId') brandId: string) {
     throw new NotImplementedException();
   }
 
+  @NoCache()
   @Get('crms')
   async getStatsDateCrms(@Query() query?: QuerySearchAnyDto) {
     throw new NotImplementedException();
   }
 
+  @NoCache()
   @Get('crms/:crmId')
   async getStatsDateCrm(@Param('crmId') crmId: string) {
     throw new NotImplementedException();
   }
 
+  @NoCache()
   @Get('psps')
   async getStatsDatePsps(@Query() query?: QuerySearchAnyDto) {
     throw new NotImplementedException();
   }
 
+  @NoCache()
   @Get('psps/:pspId')
   async getStatsDatePsp(@Param('pspId') pspId: string) {
     throw new NotImplementedException();

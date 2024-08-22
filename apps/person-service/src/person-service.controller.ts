@@ -34,6 +34,7 @@ import { PersonServiceService } from './person-service.service';
 import { ApiKeyAuthGuard } from '@auth/auth/guards/api.key.guard';
 import { AddressSchema } from '@person/person/entities/mongoose/address.schema';
 import { SwaggerSteakeyConfigEnum } from 'libs/config/enum/swagger.stakey.config.enum';
+import { NoCache } from '@common/common/decorators/no-cache.decorator';
 
 @ApiTags('PERSON')
 @Controller('persons')
@@ -44,12 +45,14 @@ export class PersonServiceController implements GenericServiceController {
     private readonly userService: UserServiceService,
   ) {}
 
+  @NoCache()
   @Get('all')
   // @CheckPoliciesAbility(new PolicyHandlerPersonRead())
   async findAll(@Query() query: QuerySearchAnyDto) {
     return this.personService.getAll(query);
   }
 
+  @NoCache()
   @Get('me')
   @UseGuards(ApiKeyAuthGuard)
   @ApiTags(SwaggerSteakeyConfigEnum.TAG_PROFILE)
@@ -61,6 +64,7 @@ export class PersonServiceController implements GenericServiceController {
     return this.personService.getAll(query);
   }
 
+  @NoCache()
   @Get(':personID')
   // @CheckPoliciesAbility(new PolicyHandlerPersonRead())
   async findOneById(@Param('personID') id: string) {
@@ -210,6 +214,34 @@ export class PersonServiceController implements GenericServiceController {
     @Ctx() ctx: RmqContext,
   ) {
     const person = this.createOne(createDto);
+    CommonService.ack(ctx);
+    return person;
+  }
+
+  @AllowAnon()
+  @MessagePattern(EventsNamesPersonEnum.migrateOne)
+  async migrateOne(
+    @Payload() createDto: PersonCreateDto,
+    @Ctx() ctx: RmqContext,
+  ) {
+    let person;
+    let query: QuerySearchAnyDto = new QuerySearchAnyDto();
+    query = query ?? {};
+    query.where = query.where ?? {};
+    query.where['user'] = createDto?.user?.id ?? createDto?.user?._id;
+    const persons = await this.personService.getAll(query);
+    if (persons?.list?.length > 0) {
+      person = persons?.list[0];
+    } else {
+      const personalData = await this.personService.newPerson(createDto);
+      if (personalData.user) {
+        await this.userService.updateUser({
+          id: personalData.user._id,
+          personalData: personalData._id,
+        });
+      }
+      person = personalData;
+    }
     CommonService.ack(ctx);
     return person;
   }

@@ -1,9 +1,9 @@
-
 import {
   Body,
   Controller,
   Delete,
   Get,
+  Inject,
   Logger,
   NotFoundException,
   Param,
@@ -16,7 +16,6 @@ import {
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
-  ApiHeader,
   ApiResponse,
   ApiSecurity,
   ApiTags,
@@ -24,8 +23,11 @@ import {
 
 import { AllowAnon } from '@auth/auth/decorators/allow-anon.decorator';
 import { ApiKeyCheck } from '@auth/auth/decorators/api-key-check.decorator';
+import { ApiKeyAuthGuard } from '@auth/auth/guards/api.key.guard';
+import { BuildersService } from '@builder/builders';
 import { CommonService } from '@common/common';
 import ActionsEnum from '@common/common/enums/ActionEnum';
+import TransportEnum from '@common/common/enums/TransportEnum';
 import GenericServiceController from '@common/common/interfaces/controller.generic.interface';
 import { QuerySearchAnyDto } from '@common/common/models/query_search-any.dto';
 import { UpdateAnyDto } from '@common/common/models/update-any.dto';
@@ -41,34 +43,31 @@ import { UserChangePasswordDto } from '@user/user/dto/user.change-password.dto';
 import { UserRegisterDto } from '@user/user/dto/user.register.dto';
 import { UserUpdateDto } from '@user/user/dto/user.update.dto';
 import { UserEntity } from '@user/user/entities/user.entity';
+import EventsNamesMessageEnum from 'apps/message-service/src/enum/events.names.message.enum';
+import { isBoolean } from 'class-validator';
+import { SwaggerSteakeyConfigEnum } from 'libs/config/enum/swagger.stakey.config.enum';
 import { ObjectId } from 'mongodb';
 import EventsNamesUserEnum from './enum/events.names.user.enum';
 import { UserServiceService } from './user-service.service';
-import { SwaggerSteakeyConfigEnum } from 'libs/config/enum/swagger.stakey.config.enum';
-import { ApiKeyAuthGuard } from '@auth/auth/guards/api.key.guard';
-import { isBoolean } from 'class-validator';
 import { NoCache } from '@common/common/decorators/no-cache.decorator';
-import TransportEnum from '@common/common/enums/TransportEnum';
-import EventsNamesMessageEnum from 'apps/message-service/src/enum/events.names.message.enum';
-import { BuildersService } from '@builder/builders';
 
 @ApiTags('USER')
 @Controller('users')
-
-
 export class UserServiceController implements GenericServiceController {
   constructor(
     private readonly userService: UserServiceService,
-    private readonly builder: BuildersService,
-
+    @Inject(BuildersService)
+    readonly builder: BuildersService,
   ) {}
 
+  @NoCache()
   @Get('all')
   // @CheckPoliciesAbility(new PolicyHandlerUserRead())
   async findAll(@Query() query: QuerySearchAnyDto) {
     return this.userService.getAll(query);
   }
 
+  @NoCache()
   @Get('me')
   @ApiTags(SwaggerSteakeyConfigEnum.TAG_SECURITY)
   @ApiBearerAuth('bearerToken')
@@ -83,6 +82,7 @@ export class UserServiceController implements GenericServiceController {
   @ApiKeyCheck()
   @ApiTags(SwaggerSteakeyConfigEnum.TAG_SECURITY)
   @ApiSecurity('b2crypto-key')
+  @NoCache()
   @Get('email/:userEmail')
   // @CheckPoliciesAbility(new PolicyHandlerUserRead())
   async findOneByEmail(@Param('userEmail') email: string) {
@@ -96,7 +96,7 @@ export class UserServiceController implements GenericServiceController {
     };
   }
 
- 
+  @NoCache()
   @Get(':userID')
   // @CheckPoliciesAbility(new PolicyHandlerUserRead())
   async findOneById(@Param('userID') id: string) {
@@ -118,6 +118,56 @@ export class UserServiceController implements GenericServiceController {
     createUsersDto: UserRegisterDto[],
   ) {
     return this.userService.newManyUser(createUsersDto);
+  }
+
+  @Post('massive-email')
+  @NoCache()
+  async generatePasswordEmail() {
+    let page = 1;
+    let totalPages = 0;
+    do {
+      const users = await this.findAll({ page });
+      if (users?.list?.length > 0) {
+        Logger.log(
+          `Users: ${users?.list?.length} & Page: ${page}`,
+          `MassiveEmail.${UserServiceController.name}`,
+        );
+        page++;
+        totalPages = users?.lastPage ?? 0;
+        for (let i = 0; i < users?.list?.length; i++) {
+          const user = users.list[i];
+          if (user && user?.email) {
+            const pwd: string = CommonService.generatePassword(8);
+            const changePassword: UserChangePasswordDto = {
+              password: pwd,
+              confirmPassword: pwd,
+            };
+            await this.changePassword(user?.id, changePassword);
+            Logger.log(
+              `${user?.email}`,
+              `MassiveEmail.${UserServiceController.name}`,
+            );
+            const emailData = {
+              name: `Actualizacion de clave`,
+              body: `Tu clave ha sido actualizada exitosamente ${user.name}`,
+              originText: 'Sistema',
+              destinyText: user.email,
+              transport: TransportEnum.EMAIL,
+              destiny: null,
+              vars: {
+                name: user.name,
+                username: user.username,
+                password: pwd,
+              },
+            };
+            this.builder.emitMessageEventClient(
+              EventsNamesMessageEnum.sendPasswordRestoredEmail,
+              emailData,
+            );
+          }
+        }
+      }
+    } while (page <= totalPages);
   }
 
   @Patch()
@@ -186,6 +236,17 @@ export class UserServiceController implements GenericServiceController {
   }
 
   @AllowAnon()
+  @MessagePattern(EventsNamesUserEnum.findOneByEmail)
+  async findOneByEmailEvent(@Payload() email: string, @Ctx() ctx: RmqContext) {
+    CommonService.ack(ctx);
+    const users = await this.userService.getAll({
+      where: {
+        slugEmail: CommonService.getSlug(email),
+      },
+    });
+    return users.list[0];
+  }
+
   @EventPattern(EventsNamesUserEnum.verifyEmail)
   async verifyEmail(@Payload() email: string, @Ctx() ctx: RmqContext) {
     CommonService.ack(ctx);
@@ -210,6 +271,37 @@ export class UserServiceController implements GenericServiceController {
   ) {
     try {
       const user = await this.createOne(createDto);
+      CommonService.ack(ctx);
+      return user;
+    } catch (err) {
+      CommonService.ack(ctx);
+      //throw new RpcException(err);
+      return {
+        data: err,
+        message: err.errmsg,
+        statusCode: err.statusCode,
+      };
+    }
+  }
+
+  @AllowAnon()
+  @MessagePattern(EventsNamesUserEnum.migrateOne)
+  async migrateOne(@Payload() createDto: any, @Ctx() ctx: RmqContext) {
+    try {
+      let user: any;
+      const users = await this.findAll({
+        where: {
+          slugEmail: CommonService.getSlug(createDto.email),
+        },
+      });
+      if (users?.list?.length > 0) {
+        user = users.list[0];
+        user.verifyIdentity = createDto.verifyIdentity;
+        user.verifyIdentityLevelName = createDto.verifyIdentityLevelName;
+        user = await this.updateOne(user);
+      } else {
+        user = await this.createOne(createDto);
+      }
       CommonService.ack(ctx);
       return user;
     } catch (err) {
@@ -286,7 +378,7 @@ export class UserServiceController implements GenericServiceController {
       },
     });
     if (!users.totalElements) {
-      throw new NotFoundException();
+      throw new NotFoundException('Not found user');
     }
     return users.list[0];
   }
@@ -294,7 +386,7 @@ export class UserServiceController implements GenericServiceController {
   private async findUserByEmail(email: string) {
     const query = {
       where: {
-        email: email,
+        slugEmail: CommonService.getSlug(email),
       },
     };
     return await this.userService.getAll(query);

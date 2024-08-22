@@ -23,6 +23,7 @@ import { UserDocument } from '../../user/src/entities/mongoose/user.schema';
 import { UserLoginDto } from './dto/user.login.dto';
 import { randomUUID } from 'crypto';
 import { UserInterface } from '@user/user/entities/user.interface';
+import { CommonService } from '@common/common';
 
 @Injectable()
 export class AuthService {
@@ -72,7 +73,7 @@ export class AuthService {
     const listUser = await this.userService.findAll({
       relations: ['personalData'],
       where: {
-        email: email,
+        slugEmail: CommonService.getSlug(email),
       },
     } as QuerySearchAnyDto);
     const user = listUser.list[0];

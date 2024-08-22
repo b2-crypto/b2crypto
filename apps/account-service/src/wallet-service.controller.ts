@@ -13,11 +13,13 @@ import {
   Delete,
   Get,
   Inject,
+  Logger,
   Param,
   Patch,
   Post,
   Query,
   Req,
+  UnauthorizedException,
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiSecurity, ApiTags } from '@nestjs/swagger';
@@ -26,12 +28,19 @@ import { UserServiceService } from 'apps/user-service/src/user-service.service';
 import { AccountServiceController } from './account-service.controller';
 import { AccountServiceService } from './account-service.service';
 import { SwaggerSteakeyConfigEnum } from 'libs/config/enum/swagger.stakey.config.enum';
+import {
+  Ctx,
+  EventPattern,
+  MessagePattern,
+  Payload,
+  RmqContext,
+} from '@nestjs/microservices';
+import EventsNamesAccountEnum from './enum/events.names.account.enum';
 import EventsNamesTransferEnum from 'apps/transfer-service/src/enum/events.names.transfer.enum';
 import { TransferCreateButtonDto } from 'apps/transfer-service/src/dto/transfer.create.button.dto';
-import { Ctx, EventPattern, Payload, RmqContext } from '@nestjs/microservices';
-import EventsNamesAccountEnum from './enum/events.names.account.enum';
 import EventsNamesMessageEnum from 'apps/message-service/src/enum/events.names.message.enum';
 import TransportEnum from '@common/common/enums/TransportEnum';
+import { NoCache } from '@common/common/decorators/no-cache.decorator';
 
 @ApiTags('E-WALLET')
 @Controller('wallets')
@@ -50,6 +59,7 @@ export class WalletServiceController extends AccountServiceController {
   @ApiBearerAuth('bearerToken')
   @ApiSecurity('b2crypto-key')
   @Get('all')
+  @NoCache()
   findAll(@Query() query: QuerySearchAnyDto, @Req() req?: any) {
     const client = req.clientApi;
     query = query ?? {};
@@ -62,6 +72,7 @@ export class WalletServiceController extends AccountServiceController {
   @ApiBearerAuth('bearerToken')
   @ApiSecurity('b2crypto-key')
   @Get('me')
+  @NoCache()
   findAllMe(@Query() query: QuerySearchAnyDto, @Req() req?: any) {
     query = query ?? {};
     query.where = query.where ?? {};
@@ -155,7 +166,6 @@ export class WalletServiceController extends AccountServiceController {
     );
     return createdWallet;
   }
-
   @Post('recharge')
   async rechargeOne(
     @Body() createDto: WalletDepositCreateDto,
@@ -211,11 +221,14 @@ export class WalletServiceController extends AccountServiceController {
       const host = req.get('Host');
       //const url = `${req.protocol}://${host}/transfers/deposit/page/${transfer?._id}`;
       const url = `https://${host}/transfers/deposit/page/${depositAddress?._id}`;
+      const data = depositAddress.responseAccount.data;
       return {
         statusCode: 200,
         data: {
           txId: depositAddress?._id,
-          url,
+          url: `https://tronscan.org/#/address/${data?.attributes?.address}`,
+          address: data?.attributes?.address,
+          chain: 'TRON BLOCKCHAIN',
         },
       };
     } catch (error) {
@@ -270,7 +283,40 @@ export class WalletServiceController extends AccountServiceController {
 
   @Delete(':walletID')
   deleteOneById(@Param('walletID') id: string, req?: any) {
+    throw new UnauthorizedException();
     return this.getAccountService().deleteOneById(id);
+  }
+
+  @MessagePattern(EventsNamesAccountEnum.migrateOneWallet)
+  async migrateWallet(@Ctx() ctx: RmqContext, @Payload() walletToMigrate: any) {
+    try {
+      CommonService.ack(ctx);
+      Logger.log(
+        `Migrating wallet ${walletToMigrate.accountId}`,
+        WalletServiceController.name,
+      );
+      const walletList = await this.walletService.findAll({
+        where: {
+          accountId: walletToMigrate.accountId,
+          type: TypesAccountEnum.WALLET,
+        },
+      });
+      if (!walletList || !walletList.list[0]) {
+        return await this.walletService.createOne(walletToMigrate);
+      } else {
+        this.ewalletBuilder.emitAccountEventClient(
+          EventsNamesAccountEnum.updateOne,
+          {
+            id: walletList.list[0]._id,
+            owner: walletToMigrate.owner,
+          },
+        );
+        walletList.list[0].owner = walletToMigrate.owner;
+        return walletList.list[0];
+      }
+    } catch (error) {
+      Logger.error(error, WalletServiceController.name);
+    }
   }
 
   @EventPattern(EventsNamesAccountEnum.createOneWallet)

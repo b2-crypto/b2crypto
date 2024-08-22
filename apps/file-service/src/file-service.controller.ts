@@ -35,6 +35,7 @@ import {
 import { Response as ExpressResponse } from 'express';
 import EventsNamesFileEnum from './enum/events.names.file.enum';
 import { FileServiceService } from './file-service.service';
+import { NoCache } from '@common/common/decorators/no-cache.decorator';
 
 @ApiTags('FILE')
 @Controller('file')
@@ -42,12 +43,14 @@ export class FileServiceController implements GenericServiceController {
   constructor(private readonly fileService: FileServiceService) {}
 
   @Get('all')
+  @NoCache()
   // @CheckPoliciesAbility(new PolicyHandlerFileRead())
   async findAll(@Query() query: QuerySearchAnyDto) {
     return this.fileService.getAll(query);
   }
 
   @Get(':fileID')
+  @NoCache()
   // @CheckPoliciesAbility(new PolicyHandlerFileRead())
   async findOneById(@Param('fileID') id: string) {
     return this.fileService.getOne(id);

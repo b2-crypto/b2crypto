@@ -162,12 +162,14 @@ export class TransferServiceController implements GenericServiceController {
       message: 'Transaction updated',
     };
   }
+  @NoCache()
   @Get('searchText')
   // @CheckPoliciesAbility(new PolicyHandlerTransferRead())
   async searchText(@Query() query: QuerySearchAnyDto, @Req() req?) {
     //query = await this.filterFromUserPermissions(query, req);
     return this.transferService.getSearchText(query);
   }
+  @NoCache()
   @Get('all')
   // @CheckPoliciesAbility(new PolicyHandlerTransferRead())
   async findAll(@Query() query: QuerySearchAnyDto, @Req() req?) {
@@ -175,6 +177,7 @@ export class TransferServiceController implements GenericServiceController {
     return this.transferService.getAll(query);
   }
 
+  @NoCache()
   @Get('me')
   // @CheckPoliciesAbility(new PolicyHandlerTransferRead())
   async findAllMe(@Query() query: QuerySearchAnyDto, @Req() req?) {
@@ -183,6 +186,7 @@ export class TransferServiceController implements GenericServiceController {
     return this.transferService.getAll(query);
   }
 
+  @NoCache()
   @Get('deposit')
   // @CheckPoliciesAbility(new PolicyHandlerTransferRead())
   async findDeposit(@Query() query: QuerySearchAnyDto, @Req() req?) {
@@ -193,6 +197,7 @@ export class TransferServiceController implements GenericServiceController {
     return this.transferService.getAll(query);
   }
 
+  @NoCache()
   @Get('credit')
   // @CheckPoliciesAbility(new PolicyHandlerTransferRead())
   async findCredit(@Query() query: QuerySearchAnyDto, @Req() req?) {
@@ -203,6 +208,7 @@ export class TransferServiceController implements GenericServiceController {
     return this.transferService.getAll(query);
   }
 
+  @NoCache()
   @Get('withdrawal')
   // @CheckPoliciesAbility(new PolicyHandlerTransferRead())
   async findWithdrawal(@Query() query: QuerySearchAnyDto, @Req() req?) {
@@ -213,6 +219,7 @@ export class TransferServiceController implements GenericServiceController {
     return this.transferService.getAll(query);
   }
 
+  @NoCache()
   @Get('debit')
   // @CheckPoliciesAbility(new PolicyHandlerTransferRead())
   async findDebit(@Query() query: QuerySearchAnyDto, @Req() req?) {
@@ -223,6 +230,7 @@ export class TransferServiceController implements GenericServiceController {
     return this.transferService.getAll(query);
   }
 
+  @NoCache()
   @Get('chargeback')
   // @CheckPoliciesAbility(new PolicyHandlerTransferRead())
   async findChargeBack(@Query() query: QuerySearchAnyDto, @Req() req?) {
@@ -233,6 +241,7 @@ export class TransferServiceController implements GenericServiceController {
     return this.transferService.getAll(query);
   }
 
+  @NoCache()
   @Get('check-numeric-id')
   // @CheckPoliciesAbility(new PolicyHandlerTransferRead())
   async checkNumericId() {
@@ -240,7 +249,8 @@ export class TransferServiceController implements GenericServiceController {
     //return this.transferService.checkNumericId();
   }
 
-  /* @Get('deposit/:transferID')
+  /* @NoCache()
+  @Get('deposit/:transferID')
   // @CheckPoliciesAbility(new PolicyHandlerTransferRead())
   async findOneDeposit(@Param('transferID') id: string) {
     const deposit = await this.transferService.getOne(id);
@@ -250,6 +260,7 @@ export class TransferServiceController implements GenericServiceController {
     throw new NotFoundException(`Not found deposit "${id}"`);
   } */
 
+  @NoCache()
   @Get('credit/:transferID')
   // @CheckPoliciesAbility(new PolicyHandlerTransferRead())
   async findOneCredit(@Param('transferID') id: string) {
@@ -260,6 +271,7 @@ export class TransferServiceController implements GenericServiceController {
     throw new NotFoundException(`Not found credit "${id}"`);
   }
 
+  @NoCache()
   @Get('withdrawal/:transferID')
   // @CheckPoliciesAbility(new PolicyHandlerTransferRead())
   async findOneWithdrawal(@Param('transferID') id: string) {
@@ -273,6 +285,7 @@ export class TransferServiceController implements GenericServiceController {
     throw new NotFoundException(`Not found withdrawal "${id}"`);
   }
 
+  @NoCache()
   @Get('debit/:transferID')
   // @CheckPoliciesAbility(new PolicyHandlerTransferRead())
   async findOneDebit(@Param('transferID') id: string) {
@@ -283,6 +296,7 @@ export class TransferServiceController implements GenericServiceController {
     throw new NotFoundException(`Not found debit "${id}"`);
   }
 
+  @NoCache()
   @Get('chargeback/:transferID')
   // @CheckPoliciesAbility(new PolicyHandlerTransferRead())
   async findOneChargeback(@Param('transferID') id: string) {
@@ -298,6 +312,7 @@ export class TransferServiceController implements GenericServiceController {
 
   // TODO[hender - 30-01-2024] Add to endpoint list
 
+  @NoCache()
   @Get(':transferID')
   // @CheckPoliciesAbility(new PolicyHandlerTransferRead())
   async findOneById(@Param('transferID') id: string) {
@@ -346,6 +361,7 @@ export class TransferServiceController implements GenericServiceController {
   @ApiQuery({
     name: 'identifier',
   })
+  @NoCache()
   @Get('deposit/link')
   // @CheckPoliciesAbility(new PolicyHandlerTransferCreate())
   async createOneDepositPaymentPage(
@@ -371,6 +387,7 @@ export class TransferServiceController implements GenericServiceController {
 
   @NoCache()
   @AllowAnon()
+  @NoCache()
   @Get('deposit/page/:id')
   // @CheckPoliciesAbility(new PolicyHandlerTransferCreate())
   async paymentPageDeposit(
@@ -381,7 +398,7 @@ export class TransferServiceController implements GenericServiceController {
     //createTransferDto.userCreator = req?.user?.id;
     const transfer = await this.transferService.getOne(id);
     if (!transfer?.responseAccount?.data?.attributes?.payment_page) {
-      throw new NotFoundException();
+      throw new NotFoundException('URL payment not found');
       //throw new InternalServerErrorException('URL not found');
     }
     return res.redirect(
@@ -685,7 +702,7 @@ export class TransferServiceController implements GenericServiceController {
       if (!crm) {
         Logger.error(
           `CRM ${webhookTransferDto.integration} was not found`,
-          'WebhookTransfer',
+          'WebhookTransfer CRM',
         );
         return;
       }
@@ -697,7 +714,7 @@ export class TransferServiceController implements GenericServiceController {
       if (!status) {
         Logger.error(
           `Status ${webhookTransferDto.status} was not found`,
-          'WebhookTransfer',
+          'WebhookTransfer Status',
         );
         return;
       }
@@ -713,7 +730,7 @@ export class TransferServiceController implements GenericServiceController {
       if (!account) {
         Logger.error(
           `Account by card ${cardId} was not found`,
-          'WebhookTransfer',
+          'WebhookTransfer Account',
         );
         return;
       }
@@ -732,7 +749,7 @@ export class TransferServiceController implements GenericServiceController {
       if (!category) {
         Logger.error(
           `Category by slug ${movement} was not found`,
-          'WebhookTransfer',
+          'WebhookTransfer Category',
         );
         return;
       }
@@ -758,7 +775,70 @@ export class TransferServiceController implements GenericServiceController {
 
       await this.transferService.newTransfer(transferDto);
     } catch (error) {
-      Logger.error(error, 'WebhookTransfer');
+      Logger.error(error, 'WebhookTransfer createOne');
+    }
+  }
+
+  @AllowAnon()
+  @EventPattern(EventsNamesTransferEnum.createOneMigration)
+  async createOneMigration(
+    @Payload() migrationDto: any,
+    @Ctx() ctx: RmqContext,
+  ) {
+    try {
+      CommonService.ack(ctx);
+
+      const crm = await this.builder.getPromiseCrmEventClient(
+        EventsNamesCrmEnum.findOneByName,
+        migrationDto.integration,
+      );
+      if (!crm) {
+        Logger.error(
+          `CRM ${migrationDto.integration} was not found`,
+          'WebhookTransfer CRM',
+        );
+        return;
+      }
+
+      const status = await this.builder.getPromiseStatusEventClient(
+        EventsNamesStatusEnum.findOneByName,
+        migrationDto.status,
+      );
+      if (!status) {
+        Logger.error(
+          `Status ${migrationDto.status} was not found`,
+          'WebhookTransfer Status',
+        );
+        return;
+      }
+
+      const category = await this.builder.getPromiseCategoryEventClient(
+        EventsNamesCategoryEnum.findOneByNameType,
+        {
+          slug: CommonService.getSlug(migrationDto.movement),
+          type: TagEnum.MONETARY_TRANSACTION_TYPE,
+        },
+      );
+      if (!category) {
+        Logger.error(
+          `Category by slug ${migrationDto.movement} was not found`,
+          'WebhookTransfer Category',
+        );
+        return;
+      }
+
+      const transferDto: TransferCreateDto = new TransferCreateDto();
+      transferDto.crm = crm;
+      transferDto.status = status;
+      transferDto.typeTransaction = category;
+      transferDto.account = migrationDto?.account;
+      transferDto.userAccount = migrationDto?.account?.owner;
+      transferDto.amount = migrationDto?.account?.amount;
+      transferDto.confirmedAt = new Date();
+
+      await this.transferService.newTransfer(transferDto);
+    } catch (error) {
+      Logger.error(error, 'WebhookTransfer createOne');
     }
   }
 

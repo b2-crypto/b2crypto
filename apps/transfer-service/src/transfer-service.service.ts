@@ -303,7 +303,7 @@ export class TransferServiceService
                 confirmations_needed: 1,
                 // TODO[hender-2024/05/30] Change callback_url to environment params
                 callback_url:
-                  process.env.env === 'PROD'
+                  process.env.ENVIRONMENT === 'PROD'
                     ? 'https://api.b2fintech.com/b2binpay/status'
                     : 'https://stage.b2fintech.com/b2binpay/status',
               },
