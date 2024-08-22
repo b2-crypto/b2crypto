@@ -272,6 +272,12 @@ module.exports = {
         POMELO_SFTP_PORT: '22',
         POMELO_SFTP_USR: 'b2crypt',
         POMELO_SFTP_PASSPHRASE: 'b2crypto',
+        V1_DB_USER: 'db_access_user1',
+        V1_DB_PWD: 'L@t!T@6oZxgXoqB',
+        V1_DB_HOST:
+          'database-credit-card-instance-1.c7omsscm6pul.eu-west-3.rds.amazonaws.com',
+        V1_DB_PORT: '5432',
+        V1_DB_NAME: 'carddb_production',
       },
       env_stage: {
         ENVIRONMENT: 'STAGE',
