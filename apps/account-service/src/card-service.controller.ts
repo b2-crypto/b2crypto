@@ -910,6 +910,50 @@ export class CardServiceController extends AccountServiceController {
     }
   }
 
+  @MessagePattern(EventsNamesAccountEnum.findAllCardsToMigrate)
+  async finalALlCardsToMigrate(@Ctx() ctx: RmqContext, @Payload() data: any) {
+    CommonService.ack(ctx);
+    try {
+      Logger.log(`Looking for all cards: `, CardServiceController.name);
+      const cardList = await this.cardService.findAll({
+        where: {
+          type: data.type,
+          page: data.page,
+          owner: data.owner,
+        },
+      });
+      if (!cardList) {
+        throw new NotFoundException(`No card was found`);
+      }
+      return cardList;
+    } catch (error) {
+      Logger.error(error, CardServiceController.name);
+    }
+  }
+
+  @MessagePattern(EventsNamesAccountEnum.updateMigratedOwner)
+  async setCardOwner(@Ctx() ctx: RmqContext, @Payload() data: any) {
+    CommonService.ack(ctx);
+    try {
+      Logger.log(`Looking for card: ${data.id}`, CardServiceController.name);
+      const cardList = await this.cardService.findAll({
+        where: {
+          'cardConfig.id': data.id,
+        },
+      });
+      if (!cardList || !cardList.list[0]) {
+        throw new NotFoundException(`Card ${data.id} was not found`);
+      }
+      const card = cardList.list[0];
+      await this.cardService.customUpdateOne({
+        id: card._id,
+        owner: data.owner,
+      });
+    } catch (error) {
+      Logger.error(error, CardServiceController.name);
+    }
+  }
+
   @MessagePattern(EventsNamesAccountEnum.setBalanceByCard)
   async setBalanceByCard(@Ctx() ctx: RmqContext, @Payload() data: any) {
     CommonService.ack(ctx);
