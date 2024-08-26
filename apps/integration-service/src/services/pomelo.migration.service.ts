@@ -363,10 +363,12 @@ export class PomeloMigrationService {
         `${PomeloMigrationService.name}-migrateUser`,
       );
       const user = {
-        name: pomeloUser?.data?.name,
-        email: pomeloUser?.data?.email,
+        name: pomeloUser?.data?.name ?? pomeloUser?.name,
+        email: pomeloUser?.data?.email ?? pomeloUser?.email,
         password: '123Abc',
-        slugEmail: CommonService.getSlug(pomeloUser?.data?.email),
+        slugEmail: CommonService.getSlug(
+          pomeloUser?.data?.email ?? pomeloUser?.email,
+        ),
       };
       return this.builder.getPromiseUserEventClient(
         EventsNamesUserEnum.migrateOne,
