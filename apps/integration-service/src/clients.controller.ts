@@ -1,6 +1,9 @@
+import { AllowAnon } from '@auth/auth/decorators/allow-anon.decorator';
+import { ApiKeyCheck } from '@auth/auth/decorators/api-key-check.decorator';
 import { ApiKeyAuthGuard } from '@auth/auth/guards/api.key.guard';
 import { BuildersService } from '@builder/builders';
 import { CommonService } from '@common/common';
+import { NoCache } from '@common/common/decorators/no-cache.decorator';
 import {
   Body,
   Controller,
@@ -8,19 +11,19 @@ import {
   Inject,
   Logger,
   NotFoundException,
+  Post,
   Put,
   Req,
+  Res,
   UseGuards,
 } from '@nestjs/common';
 import { SchedulerRegistry } from '@nestjs/schedule';
 import { MaintenanceOnDto } from '@user/user/dto/maintenance.on.dto';
 import EventsNamesUserEnum from 'apps/user-service/src/enum/events.names.user.enum';
+import * as pug from 'pug';
 import { ClientsTaskNamesEnum } from './enums/clients.task.names.enum';
-import { ApiKeyCheck } from '@auth/auth/decorators/api-key-check.decorator';
-import { NoCache } from '@common/common/decorators/no-cache.decorator';
 
 @Controller('clients')
-@UseGuards(ApiKeyAuthGuard)
 export class ClientsIntegrationController {
   constructor(
     private readonly builder: BuildersService,
@@ -30,6 +33,7 @@ export class ClientsIntegrationController {
 
   @Get('me')
   @ApiKeyCheck()
+  @UseGuards(ApiKeyAuthGuard)
   @NoCache()
   async getClientData(@Req() req) {
     const clientApi = await this.builder.getPromiseUserEventClient(
@@ -53,6 +57,7 @@ export class ClientsIntegrationController {
   }
 
   @Put('maintenance-on')
+  @UseGuards(ApiKeyAuthGuard)
   async maintenanceOn(
     @Req() req,
     @Body()
@@ -124,6 +129,7 @@ export class ClientsIntegrationController {
   }
 
   @Put('maintenance-off')
+  @UseGuards(ApiKeyAuthGuard)
   async maintenanceOff(@Req() req) {
     const clientId = req.clientApi;
     if (!clientId) {
@@ -142,6 +148,31 @@ export class ClientsIntegrationController {
       statusCode: 200,
       message: 'Maintenance status inactive',
     };
+  }
+
+  @AllowAnon()
+  @Get('sign-in')
+  async signIn(@Res() res) {
+    const pathTemplate =
+      './apps/integration-service/src/templates/manual.tx.sign-in.pug';
+    return (
+      res
+        .setHeader('Content-Type', 'text/html; charset=utf-8')
+        .setHeader('Content-Encoding', 'gzip')
+        .setHeader('Content-Security-Policy', 'frame-ancestors *')
+        .status(200)
+        //.send(pug.renderFile(pathTemplate, {}));
+        .send(`<h1>${pathTemplate}</h1>`)
+    );
+  }
+
+  @AllowAnon()
+  @Post('sign-in')
+  async manualTxRecharge(@Res() res: Response) {
+    return pug.renderFile(
+      './apps/integration-service/src/templates/manual.tx.recharge.pug',
+      {},
+    );
   }
 
   private getTaskOnName(clientId) {
