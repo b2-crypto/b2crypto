@@ -92,7 +92,7 @@ export class PomeloMigrationService {
   async startPomeloMigrationByUser(userId: string) {
     const pomeloUser = await this.getUser(userId);
     if (pomeloUser && pomeloUser.data) {
-      const user = await this.migrateUser(pomeloUser.data);
+      const user = await this.migrateUser(pomeloUser);
       Logger.log(user, 'User migrated result');
       if (user && user.slug) {
         // TODO Log Activity
