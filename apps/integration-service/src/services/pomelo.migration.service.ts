@@ -35,6 +35,49 @@ export class PomeloMigrationService {
     })();
   }
 
+  async setAllCardsOwner() {
+    const log = `${PomeloMigrationService.name}-setAllCardsOwner`;
+    let page = 0;
+    let pages = 0;
+    try {
+      do {
+        const cards = await this.builder.getPromiseAccountEventClient(
+          EventsNamesAccountEnum.findAllCardsToMigrate,
+          {
+            type: 'CARD',
+            page,
+            owner: { $exists: false },
+          },
+        );
+        page++;
+        pages = cards.lastPage;
+        Logger.log(`Cards found: ${cards.list.length}`, log);
+        for (let i = 0; i < cards.list.length; i++) {
+          const card = cards.list[0];
+          if (!card?.owner) {
+            const pomeloUser = await this.getUser(card?.cardConfig?.user_id);
+            const user = await this.migrateUser(pomeloUser);
+            const id = card?.cardConfig?.id;
+            const ownedBy = user?._id || user?.id;
+            Logger.log(
+              `About to update card's owner. Card: ${id}. Owner: ${ownedBy}`,
+              log,
+            );
+            await this.builder.getPromiseAccountEventClient(
+              EventsNamesAccountEnum.updateMigratedOwner,
+              {
+                id,
+                owner: ownedBy,
+              },
+            );
+          }
+        }
+      } while (page <= pages);
+    } catch (error) {
+      Logger.error(error, log);
+    }
+  }
+
   async startPomeloMigrationByUser(userId: string) {
     const pomeloUser = await this.getUser(userId);
     if (pomeloUser && pomeloUser.data) {
@@ -319,14 +362,15 @@ export class PomeloMigrationService {
         `Migrating User ${pomeloUser?.email}`,
         `${PomeloMigrationService.name}-migrateUser`,
       );
+      const user = {
+        name: pomeloUser?.data?.name,
+        email: pomeloUser?.data?.email,
+        password: '123Abc',
+        slugEmail: CommonService.getSlug(pomeloUser?.data?.email),
+      };
       return this.builder.getPromiseUserEventClient(
         EventsNamesUserEnum.migrateOne,
-        {
-          name: pomeloUser.name,
-          email: pomeloUser?.email,
-          password: '123Abc',
-          slugEmail: CommonService.getSlug(pomeloUser?.email),
-        },
+        user,
       );
     } catch (error) {
       Logger.error(error, `${PomeloMigrationService.name}-migrateUser`);

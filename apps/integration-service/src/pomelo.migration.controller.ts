@@ -33,4 +33,14 @@ export class PomeloMigrationController {
       data: 'Finnished',
     };
   }
+
+  @Post('set-cards-owner')
+  async setCardsOwner() {
+    Logger.log(`Starting to set cards owner`, 'PomeloMigrationController');
+    await this.migrationService.setAllCardsOwner();
+    return {
+      statusCode: 200,
+      data: 'Finnished',
+    };
+  }
 }

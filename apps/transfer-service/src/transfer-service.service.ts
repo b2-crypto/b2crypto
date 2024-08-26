@@ -331,6 +331,7 @@ export class TransferServiceService
           throw new BadRequestException(err);
         }
       }
+      await this.updateAccount(data.account, transferSaved);
       return transferSaved;
     }
     throw new BadRequestException(this.getMessageError(data));
