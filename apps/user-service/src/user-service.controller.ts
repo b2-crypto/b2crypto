@@ -296,9 +296,9 @@ export class UserServiceController implements GenericServiceController {
       });
       if (users?.list?.length > 0) {
         user = users.list[0];
-        user.verifyIdentity = createDto.verifyIdentity;
+        /*user.verifyIdentity = createDto.verifyIdentity;
         user.verifyIdentityLevelName = createDto.verifyIdentityLevelName;
-        user = await this.updateOne(user);
+        user = await this.updateOne(user);*/
       } else {
         user = await this.createOne(createDto);
       }
