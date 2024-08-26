@@ -46,29 +46,49 @@ export class PomeloMigrationService {
           {
             type: 'CARD',
             page,
-            owner: { $exists: false },
           },
         );
         page++;
         pages = cards.lastPage;
         Logger.log(`Cards found: ${cards.list.length}`, log);
         for (let i = 0; i < cards.list.length; i++) {
-          const card = cards.list[0];
-          if (!card?.owner) {
-            const pomeloUser = await this.getUser(card?.cardConfig?.user_id);
+          const card = cards.list[i];
+          const pomeloUser = await this.getUser(card?.cardConfig?.user_id);
+          if (pomeloUser) {
             const user = await this.migrateUser(pomeloUser);
-            const id = card?.cardConfig?.id;
-            const ownedBy = user?._id || user?.id;
-            Logger.log(
-              `About to update card's owner. Card: ${id}. Owner: ${ownedBy}`,
-              log,
-            );
-            await this.builder.getPromiseAccountEventClient(
-              EventsNamesAccountEnum.updateMigratedOwner,
-              {
-                id,
-                owner: ownedBy,
-              },
+            if (user) {
+              if (!user?.userCard?.id && pomeloUser?.data) {
+                this.builder.emitUserEventClient(
+                  EventsNamesUserEnum.updateOne,
+                  {
+                    id: user._id ?? user.id,
+                    userCard: pomeloUser?.data,
+                  },
+                );
+              }
+              const id = card?.cardConfig?.id;
+              const ownedBy = user?._id || user?.id;
+              Logger.log(
+                `About to update card's owner. Card: ${id}. Owner: ${ownedBy}`,
+                log,
+              );
+              await this.builder.getPromiseAccountEventClient(
+                EventsNamesAccountEnum.updateMigratedOwner,
+                {
+                  id,
+                  owner: ownedBy,
+                },
+              );
+            } else {
+              Logger.error(
+                `Unable to migrate user ${pomeloUser?.data?.email}`,
+                `${PomeloMigrationService.name}-setAllCardsOwner`,
+              );
+            }
+          } else {
+            Logger.error(
+              `Unable to find pomelo user ${card?.cardConfig?.user_id}`,
+              `${PomeloMigrationService.name}-setAllCardsOwner`,
             );
           }
         }
@@ -81,7 +101,7 @@ export class PomeloMigrationService {
   async startPomeloMigrationByUser(userId: string) {
     const pomeloUser = await this.getUser(userId);
     if (pomeloUser && pomeloUser.data) {
-      const user = await this.migrateUser(pomeloUser.data);
+      const user = await this.migrateUser(pomeloUser);
       Logger.log(user, 'User migrated result');
       if (user && user.slug) {
         // TODO Log Activity
@@ -359,7 +379,7 @@ export class PomeloMigrationService {
   private async migrateUser(pomeloUser: any): Promise<any> {
     try {
       Logger.log(
-        `Migrating User ${pomeloUser?.email}`,
+        `Migrating User ${pomeloUser?.data?.email}`,
         `${PomeloMigrationService.name}-migrateUser`,
       );
       const user = {

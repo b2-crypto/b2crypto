@@ -919,7 +919,6 @@ export class CardServiceController extends AccountServiceController {
         where: {
           type: data.type,
           page: data.page,
-          owner: data.owner,
         },
       });
       if (!cardList) {
