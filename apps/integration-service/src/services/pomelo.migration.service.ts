@@ -57,6 +57,15 @@ export class PomeloMigrationService {
           if (pomeloUser) {
             const user = await this.migrateUser(pomeloUser);
             if (user) {
+              if (!user?.userCard?.id && pomeloUser?.data) {
+                this.builder.emitUserEventClient(
+                  EventsNamesUserEnum.updateOne,
+                  {
+                    id: user._id ?? user.id,
+                    userCard: pomeloUser?.data,
+                  },
+                );
+              }
               const id = card?.cardConfig?.id;
               const ownedBy = user?._id || user?.id;
               Logger.log(
