@@ -55,7 +55,7 @@ export class PomeloSensitiveInfoController {
       throw new BadRequestException('Bad integration card');
     }
     const rtaUserCard = await cardIntegration.getUser({
-      email: user.email,
+      email: user?.email?.toLowerCase() || '',
     });
     if (rtaUserCard.data.length > 0) {
       user.userCard = rtaUserCard.data[0];
