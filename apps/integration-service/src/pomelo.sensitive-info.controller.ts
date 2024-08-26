@@ -11,6 +11,7 @@ import {
   HttpCode,
   Inject,
   Logger,
+  PreconditionFailedException,
   Request,
 } from '@nestjs/common';
 import { User } from '@user/user/entities/mongoose/user.schema';
@@ -54,8 +55,11 @@ export class PomeloSensitiveInfoController {
     if (!cardIntegration) {
       throw new BadRequestException('Bad integration card');
     }
+    if (!user?.email) {
+      throw new PreconditionFailedException(`User's email not found`);
+    }
     const rtaUserCard = await cardIntegration.getUser({
-      email: user.email,
+      email: user?.email.toLowerCase(),
     });
     if (rtaUserCard.data.length > 0) {
       user.userCard = rtaUserCard.data[0];
