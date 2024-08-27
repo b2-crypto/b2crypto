@@ -40,7 +40,7 @@ export class UserCard {
   identification_type: string;
 
   @Prop()
-  identification_value: number;
+  identification_value: string;
 
   @Prop()
   birthdate: string;
@@ -58,7 +58,7 @@ export class UserCard {
   tax_identification_type: string;
 
   @Prop()
-  tax_identification_value: number;
+  tax_identification_value: string;
 
   @Prop()
   nationality: string;
