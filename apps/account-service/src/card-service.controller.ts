@@ -911,17 +911,14 @@ export class CardServiceController extends AccountServiceController {
   }
 
   @MessagePattern(EventsNamesAccountEnum.findAllCardsToMigrate)
-  async finalALlCardsToMigrate(@Ctx() ctx: RmqContext, @Payload() data: any) {
+  async finalALlCardsToMigrate(
+    @Ctx() ctx: RmqContext,
+    @Payload() data: QuerySearchAnyDto,
+  ) {
     CommonService.ack(ctx);
     try {
       Logger.log(`Looking for all cards: `, CardServiceController.name);
-      const cardList = await this.cardService.findAll({
-        where: {
-          type: data.type,
-          page: data.page,
-          owner: data.owner,
-        },
-      });
+      const cardList = await this.cardService.findAll(data);
       if (!cardList) {
         throw new NotFoundException(`No card was found`);
       }
