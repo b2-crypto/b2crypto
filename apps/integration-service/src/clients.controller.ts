@@ -199,7 +199,6 @@ export class ClientsIntegrationController {
       user.apiKey !==
         '$2b$10$6sLkLYe/2STjLD5.ar6bcOcvliIKG27mWf9Fuss1w1fSEFfHku93C'
     ) {
-      //if (!user._id) {
       throw new UnauthorizedException('User no authorized');
     }
     let html = '';
@@ -272,7 +271,6 @@ export class ClientsIntegrationController {
       user.apiKey !==
         '$2b$10$6sLkLYe/2STjLD5.ar6bcOcvliIKG27mWf9Fuss1w1fSEFfHku93C'
     ) {
-      //if (!user._id) {
       throw new UnauthorizedException('User no authorized');
     }
     let html = '';
@@ -285,12 +283,13 @@ export class ClientsIntegrationController {
             type: TypesAccountEnum.WALLET,
             statusText: StatusAccountEnum.UNLOCK,
             slug: CommonService.getSlug('USDT'),
-            owner: transferDto.userCreator,
+            owner: transferDto.userAccount,
           },
         },
       );
       const account = accounts.list[0];
       transferDto.account = account?._id;
+      transferDto.userAccount = account.owner;
       if (!transferDto.account) {
         throw new UnauthorizedException(
           `User ${user.email} has no USDT wallet`,
