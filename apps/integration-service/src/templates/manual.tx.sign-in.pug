@@ -8,146 +8,42 @@ html
         meta(name="description" content="Connecting the world | Follow the whales")
         link(rel="apple-touch-icon" href="/favicon.png")
         link(rel="manifest" href="/manifest.json")
-        title(Sign In | B2Pay - Worldwide Financial Services</title)
+        title(Sign In | B2Pay - Worldwide Financial Services)
         link(rel="preconnect" href="https://fonts.googleapis.com")
         link(rel="preconnect" href="https://fonts.gstatic.com" crossorigin="")
         link(href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet")
-        link(rel="stylesheet" href="/assets/index-af89ae14.css")
+        link(rel="stylesheet" href="https://www.pay.b2fintech.com/assets/index-af89ae14.css")
         link(rel="stylesheet" href="/assets/manual.tx.css")
 
 body 
     div(id="root")
         div(class="horizontal full ltr main-section antialiased relative font-nunito text-sm font-normal")
             div(class="text-black dark:text-white-dark min-h-screen")
-            div
-                div(class="absolute inset-0")
-                img(
-                    src="/assets/images/auth/bg-gradient.png"
-                    alt="Bg gradient"
-                    class="h-full w-full object-cover"
-                )
-                div (
-                    class="relative flex min-h-screen items-center justify-center bg-[url(/assets/images/auth/map.png)] bg-cover bg-center bg-no-repeat p-6 dark:bg-[#060818] sm:px-16 h-auto"
-                )
-                img(
-                    src="/assets/images/auth/coming-soon-object1.png"
-                    alt="Comming soon object 1"
-                    class="absolute left-0 top-1/2 h-full max-h-[893px] -translate-y-1/2"
-                )
-                img
-                    src="/assets/images/auth/coming-soon-object2.png"
-                    alt="Comming soon object 2"
-                    class="absolute left-24 top-0 h-40 md:left-[30%]"
-                img(
-                    src="/assets/images/auth/coming-soon-object3.png"
-                    alt="Comming soon object 3"
-                    class="absolute right-0 top-0 h-[300px]"
-                )
-                img(
-                    src="/assets/images/auth/polygon-object.svg"
-                    alt="Polygon object"
-                    class="absolute bottom-0 end-[28%]"
-                )
-                div(
-                    class="relative flex w-full max-w-[1502px] flex-col justify-between overflow-hidden rounded-md bg-white/60 backdrop-blur-lg dark:bg-black/50 lg:flex-row 2xl:h-[80%] lg:h-auto"
-                )
-                    div(
-                        class="relative hidden w-full items-center justify-center bg-[linear-gradient(225deg,rgba(32,28,53,1)_0%,rgba(58,97,166,1)_100%)] p-5 lg:inline-flex lg:max-w-[835px] xl:-ms-28 ltr:xl:skew-x-[14deg] rtl:xl:skew-x-[-14deg] min-h-[90vh] h-auto"
+                div(class="w-full max-w-[440px] p-4")
+                    div
+                        h1(
+                            class="text-3xl font-extrabold uppercase !leading-snug text-primary md:text-4xl"
+                        )
+                            | INICIAR SESIÓN
+                        p(class="text-base font-bold leading-normal text-white-dark")
+                            | Ingresa tu correo electrónico y contraseña para iniciar sesión.
+                    form(
+                        class="space-y-5 py-10 dark:text-white"
+                        action="http://localhost:3000/clients/sign-in/check"
+                        method="post"
+                        target="_self"
                     )
-                    div(
-                        class="absolute inset-y-0 w-8 from-primary/10 via-transparent to-transparent ltr:-right-10 ltr:bg-gradient-to-r rtl:-left-10 rtl:bg-gradient-to-l xl:w-16 ltr:xl:-right-20 rtl:xl:-left-20 min-h-screen"
-                    )
-                    div(
-                        class="ltr:xl:-skew-x-[14deg] rtl:xl:skew-x-[14deg] flex justify-center flex-col h-[70vh]"
-                    )
-                    
-                        button(
-                            class="w-48 lg:w-72 ms-10 flex flex-row items-center gap-4"
-                            aria-label="Reload page"
-                        )
-                        img(
-                            src="/assets/images/logob2pay_whale.png"
-                            alt="Logotext"
-                            class="w-full h-30"
-                        )
-                        div(
-                            class="mt-0 hidden w-full max-w-[600px] lg:block h-full"
-                        )
-                        img(
-                            src="/assets/images/login_card.gif"
-                            alt="git inicio de sesión"
-                            class="w-full h-full"
-                        )
-                    div(
-                        class="relative w-full grid justify-center items-center px-8 sm:px-6 lg:max-w-[667px]"
-                    )
-                    div(
-                        class="flex w-full max-w-[440px] items-center gap-2 lg:absolute lg:end-6 lg:top-6 lg:max-w-full"
-                    )
-                        div(
-                            class="flex-column"
-                        )
-                        button(class="lg:hidden flex flex-row cursor-pointer gap-2")
-                            img(
-                                src="/assets/images/logob2paydark_whale.png"
-                                alt="Logotextmobile"
-                                class="w-44 h-20"
-                            )
-                        div(class="dropdown ms-auto w-max")
-                        button(
-                            type="button"
-                            class="flex items-center gap-2.5 rounded-lg border border-white-dark/30 bg-white px-2 py-1.5 text-white-dark hover:border-primary hover:text-primary dark:bg-black"
-                        )
-                            div
-                                img(
-                                    src="/assets/images/flags/ES.svg"
-                                    alt="Changes language flags"
-                                    class="h-5 w-5 rounded-full object-cover"
-                                )
-                            div(class="text-base font-bold uppercase")
-                                | es
-                            span(class="shrink-0")
-                                svg(
-                                    width="16"
-                                    height="16"
-                                    viewBox="0 0 24 24"
-                                    fill="none"
-                                    xmlns="http://www.w3.org/2000/svg"
-                                )
-                                    path(
-                                        d="M19 9L12 15L5 9"
-                                        stroke="currentColor"
-                                        stroke-width="1.5"
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                    )
-                        div(
-                            class="z-50"
-                            style="position: absolute; inset: 0px 0px auto auto; transform: translate(0px, 46px);"
-                            data-popper-reference-hidden="false"
-                            data-popper-escaped="false"
-                            data-popper-placement="bottom-end"
-                        )
-                    div(class="w-full max-w-[440px] p-4")
-                        div
-                            h1(
-                                class="text-3xl font-extrabold uppercase !leading-snug text-primary md:text-4xl"
-                            )
-                                | INICIAR SESIÓN
-                            p(class="text-base font-bold leading-normal text-white-dark")
-                                | Ingresa tu correo electrónico y contraseña para iniciar sesión.
-                        form(class="space-y-5 py-10 dark:text-white")
                         div
                             label(for="email") Correo electrónico
                             div(class="relative text-white-dark")
-                            input(
-                                id="email"
-                                name="email"
-                                type="email"
-                                placeholder="Ingresa correo electrónico"
-                                class="form-input ps-10 placeholder:text-white-dark"
-                                value=""
-                            )
+                                input(
+                                    id="email"
+                                    name="email"
+                                    type="email"
+                                    placeholder="Ingresa correo electrónico"
+                                    class="form-input ps-10 placeholder:text-white-dark"
+                                    value=""
+                                )
                                 span(class="absolute start-4 top-1/2 -translate-y-1/2")
                                     svg(
                                         width="18"
@@ -155,7 +51,7 @@ body
                                         viewBox="0 0 18 18"
                                         fill="none"
                                     )
-                                        path (
+                                        path(
                                             opacity="0.5"
                                             d="M10.65 2.25H7.35C4.23873 2.25 2.6831 2.25 1.71655 3.23851C0.75 4.22703 0.75 5.81802 0.75 9C0.75 12.182 0.75 13.773 1.71655 14.7615C2.6831 15.75 4.23873 15.75 7.35 15.75H10.65C13.7613 15.75 15.3169 15.75 16.2835 14.7615C17.25 13.773 17.25 12.182 17.25 9C17.25 5.81802 17.25 4.22703 16.2835 3.23851C15.3169 2.25 13.7613 2.25 10.65 2.25Z"
                                             fill="currentColor"
@@ -175,52 +71,38 @@ body
                                     class="form-input ps-10 placeholder:text-white-dark"
                                     value=""
                                 )
-                                    span(class="absolute start-4 top-1/2 -translate-y-1/2")
-                                        svg(
-                                            width="18"
-                                            height="18"
-                                            viewBox="0 0 18 18"
-                                            fill="none"
+                                span(class="absolute start-4 top-1/2 -translate-y-1/2")
+                                    svg(
+                                        width="18"
+                                        height="18"
+                                        viewBox="0 0 18 18"
+                                        fill="none"
+                                    )
+                                        path(
+                                            opacity="0.5"
+                                            d="M1.5 12C1.5 9.87868 1.5 8.81802 2.15901 8.15901C2.81802 7.5 3.87868 7.5 6 7.5H12C14.1213 7.5 15.182 7.5 15.841 8.15901C16.5 8.81802 16.5 9.87868 16.5 12C16.5 14.1213 16.5 15.182 15.841 15.841C15.182 16.5 14.1213 16.5 12 16.5H6C3.87868 16.5 2.81802 16.5 2.15901 15.841C1.5 15.182 1.5 14.1213 1.5 12Z"
+                                            fill="currentColor"
                                         )
-                                            path(
-                                                opacity="0.5"
-                                                d="M1.5 12C1.5 9.87868 1.5 8.81802 2.15901 8.15901C2.81802 7.5 3.87868 7.5 6 7.5H12C14.1213 7.5 15.182 7.5 15.841 8.15901C16.5 8.81802 16.5 9.87868 16.5 12C16.5 14.1213 16.5 15.182 15.841 15.841C15.182 16.5 14.1213 16.5 12 16.5H6C3.87868 16.5 2.81802 16.5 2.15901 15.841C1.5 15.182 1.5 14.1213 1.5 12Z"
-                                                fill="currentColor"
-                                            )
-                                            path(
-                                                d="M6 12.75C6.41421 12.75 6.75 12.4142 6.75 12C6.75 11.5858 6.41421 11.25 6 11.25C5.58579 11.25 5.25 11.5858 5.25 12C5.25 12.4142 5.58579 12.75 6 12.75Z"
-                                                fill="currentColor"
-                                            )
-                                            path(
-                                                d="M9 12.75C9.41421 12.75 9.75 12.4142 9.75 12C9.75 11.5858 9.41421 11.25 9 11.25C8.58579 11.25 8.25 11.5858 8.25 12C8.25 12.4142 8.58579 12.75 9 12.75Z"
-                                                fill="currentColor"
-                                            )
-                                            path(
-                                                d="M12.75 12C12.75 12.4142 12.4142 12.75 12 12.75C11.5858 12.75 11.25 12.4142 11.25 12C11.25 11.5858 11.5858 11.25 12 11.25C12.4142 11.25 12.75 11.5858 12.75 12Z"
-                                                fill="currentColor"
-                                            )
-                                            path(
-                                                d="M5.0625 6C5.0625 3.82538 6.82538 2.0625 9 2.0625C11.1746 2.0625 12.9375 3.82538 12.9375 6V7.50268C13.363 7.50665 13.7351 7.51651 14.0625 7.54096V6C14.0625 3.20406 11.7959 0.9375 9 0.9375C6.20406 0.9375 3.9375 3.20406 3.9375 6V7.54096C4.26488 7.51651 4.63698 7.50665 5.0625 7.50268V6Z"
-                                                fill="currentColor"
-                                            )
-                        div(class="flex flex-row justify-between")
-                            label(class="flex cursor-pointer items-center")
-                                input(
-                                    type="checkbox"
-                                    class="form-checkbox bg-white dark:bg-black"
-                                    value="false"
-                                )
-                                span (class="text-white-dark") Mostrar contraseña
-                            label(class="flex cursor-pointer items-center hover:underline")
-                                span( class="text-primary") ¿Olvidaste tu contraseña?
+                                        path(
+                                            d="M6 12.75C6.41421 12.75 6.75 12.4142 6.75 12C6.75 11.5858 6.41421 11.25 6 11.25C5.58579 11.25 5.25 11.5858 5.25 12C5.25 12.4142 5.58579 12.75 6 12.75Z"
+                                            fill="currentColor"
+                                        )
+                                        path(
+                                            d="M9 12.75C9.41421 12.75 9.75 12.4142 9.75 12C9.75 11.5858 9.41421 11.25 9 11.25C8.58579 11.25 8.25 11.5858 8.25 12C8.25 12.4142 8.58579 12.75 9 12.75Z"
+                                            fill="currentColor"
+                                        )
+                                        path(
+                                            d="M12.75 12C12.75 12.4142 12.4142 12.75 12 12.75C11.5858 12.75 11.25 12.4142 11.25 12C11.25 11.5858 11.5858 11.25 12 11.25C12.4142 11.25 12.75 11.5858 12.75 12Z"
+                                            fill="currentColor"
+                                        )
+                                        path(
+                                            d="M5.0625 6C5.0625 3.82538 6.82538 2.0625 9 2.0625C11.1746 2.0625 12.9375 3.82538 12.9375 6V7.50268C13.363 7.50665 13.7351 7.51651 14.0625 7.54096V6C14.0625 3.20406 11.7959 0.9375 9 0.9375C6.20406 0.9375 3.9375 3.20406 3.9375 6V7.54096C4.26488 7.51651 4.63698 7.50665 5.0625 7.50268V6Z"
+                                            fill="currentColor"
+                                        )
                         div
-                            button(
+                            input(
                                 type="submit"
+                                value="INICIAR SESIÓN"
                                 class="btn btn-gradient w-full border-0 uppercase shadow-[0_10px_20px_-10px_rgba(59,97,166,0.44)]"
                             )
-                            | INICIAR SESIÓN
-                            div (class="flex flex-row text-center justify-center align-center mt-2")
-                                label(class="flex cursor-pointer items-center hover:underline text-center")
-                                    span(class="text-primary text-center") CREAR CUENTA
-                    p(class="absolute bottom-1 w-full text-center dark:text-white")
-                        | © 2024 | B2Pay Todos los derechos reservados.
+                    p(class="absolute bottom-1 w-full text-center dark:text-white") © 2024 | B2Pay Todos los derechos reservados

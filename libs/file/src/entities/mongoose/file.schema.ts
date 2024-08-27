@@ -1,4 +1,5 @@
 import { Category } from '@category/category/entities/mongoose/category.schema';
+import ResourcesEnum from '@common/common/enums/ResourceEnum';
 import { FileEntity } from '@file/file/entities/file.entity';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { User } from '@user/user/entities/mongoose/user.schema';
@@ -32,6 +33,9 @@ export class File extends FileEntity {
   path: string;
 
   @Prop()
+  encodeBase64: string;
+
+  @Prop()
   mimetype: string;
 
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'categories' })
@@ -39,6 +43,12 @@ export class File extends FileEntity {
 
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'users' })
   user: User;
+
+  @Prop()
+  resourceId: string;
+
+  @Prop({ type: String, enum: ResourcesEnum })
+  resourceType: ResourcesEnum;
 }
 
 export const FileSchema = SchemaFactory.createForClass(File);

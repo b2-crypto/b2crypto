@@ -128,6 +128,7 @@ export class FileServiceController implements GenericServiceController {
 
   @AllowAnon()
   @MessagePattern(EventsNamesFileEnum.createOne)
+  @EventPattern(EventsNamesFileEnum.createOne)
   createOneEvent(@Payload() createDto: FileCreateDto, @Ctx() ctx: RmqContext) {
     const file = this.createOne(createDto);
     CommonService.ack(ctx);
