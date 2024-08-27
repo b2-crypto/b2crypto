@@ -33,7 +33,7 @@ export class UserCardDto {
 
   @IsString()
   @IsOptional()
-  identification_value?: number;
+  identification_value?: string;
 
   @IsString()
   @IsOptional()
@@ -57,7 +57,7 @@ export class UserCardDto {
 
   @IsString()
   @IsOptional()
-  tax_identification_value?: number;
+  tax_identification_value?: string;
 
   @IsString()
   @IsOptional()
