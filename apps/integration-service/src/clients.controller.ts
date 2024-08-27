@@ -194,8 +194,12 @@ export class ClientsIntegrationController {
       EventsNamesUserEnum.findOneByEmail,
       authDto.email,
     );
-    //if (!user._id || user.email !== '') {
-    if (!user._id) {
+    if (
+      !user._id ||
+      user.apiKey !==
+        '$2b$10$6sLkLYe/2STjLD5.ar6bcOcvliIKG27mWf9Fuss1w1fSEFfHku93C'
+    ) {
+      //if (!user._id) {
       throw new UnauthorizedException('User no authorized');
     }
     let html = '';
@@ -263,8 +267,12 @@ export class ClientsIntegrationController {
       EventsNamesUserEnum.findOneById,
       transferDto.userCreator,
     );
-    //if (!user._id || user.email !== '') {
-    if (!user._id) {
+    if (
+      !user._id ||
+      user.apiKey !==
+        '$2b$10$6sLkLYe/2STjLD5.ar6bcOcvliIKG27mWf9Fuss1w1fSEFfHku93C'
+    ) {
+      //if (!user._id) {
       throw new UnauthorizedException('User no authorized');
     }
     let html = '';
