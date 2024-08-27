@@ -91,7 +91,6 @@ export class BasicServiceModel<
     session: ClientSession = null,
   ): Promise<ResponsePaginator<TBasicEntity>> {
     let filter: Promise<TBasicEntity[]>;
-    Logger.debug(`Query: ${JSON.stringify(query)}`, 'Pagination');
     if (!query) {
       query = {
         start: 0,
