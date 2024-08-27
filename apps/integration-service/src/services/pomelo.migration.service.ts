@@ -37,7 +37,7 @@ export class PomeloMigrationService {
 
   async setAllCardsOwner() {
     const log = `${PomeloMigrationService.name}-setAllCardsOwner`;
-    let page = 0;
+    let page = 1;
     let pages = 0;
     try {
       do {
