@@ -53,7 +53,8 @@ export class PomeloMigrationService {
         for (let i = 0; i < cards.list.length; i++) {
           const card = cards.list[i];
           const pomeloUser = await this.getUser(card?.cardConfig?.user_id);
-          if (pomeloUser) {
+          if (pomeloUser && pomeloUser.data) {
+            Logger.log(`Pomelo User: ${JSON.stringify(pomeloUser)}`, log);
             const user = await this.migrateUser(pomeloUser);
             if (user) {
               if (!user?.userCard?.id && pomeloUser?.data) {
