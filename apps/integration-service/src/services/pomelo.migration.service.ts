@@ -44,11 +44,10 @@ export class PomeloMigrationService {
         const cards = await this.builder.getPromiseAccountEventClient(
           EventsNamesAccountEnum.findAllCardsToMigrate,
           {
-            type: 'CARD',
-            page,
+            where: { type: 'CARD' },
+            page: page++,
           },
         );
-        page = cards.nextPage;
         pages = cards.lastPage;
         Logger.log(`Cards found: ${cards.list.length}`, log);
         for (let i = 0; i < cards.list.length; i++) {
