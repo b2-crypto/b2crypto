@@ -12,6 +12,9 @@ export class FileCreateDto extends CreateAnyDto {
   path: string;
   @IsString()
   @IsOptional()
+  encodeBase64: string;
+  @IsString()
+  @IsOptional()
   mimetype: string;
   @IsMongoId()
   @IsOptional()
