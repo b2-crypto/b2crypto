@@ -236,7 +236,7 @@ export class AuthServiceController {
       });
       return code;
     } catch (err) {
-      Logger.error(err, 'Bad request Identity');
+      Logger.error(err, 'Bad request Identity code');
       throw new BadGatewayException();
     }
   }
@@ -254,7 +254,7 @@ export class AuthServiceController {
       }
       return rta;
     } catch (err) {
-      Logger.error(err, 'Bad request Identity');
+      Logger.error(err, 'Bad request Identity token');
       throw new BadGatewayException();
     }
   }
