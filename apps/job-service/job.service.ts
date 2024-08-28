@@ -17,7 +17,7 @@ export class JobService {
   static periodicTime = {
     checkLeadCreated: CronExpression.EVERY_10_MINUTES,
     checkLeadStatus: CronExpression.EVERY_5_MINUTES,
-    checkB2BinPayTransfers: '0 */2 * * * *',
+    checkB2BinPayTransfers: '0 */5 * * * *',
     //checkLeadStatus: time,
     //checkAffiliateLeadsStats: time,
     /*
