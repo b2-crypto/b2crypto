@@ -1,8 +1,12 @@
+import { AccountDocument } from '@account/account/entities/mongoose/account.schema';
 import { AllowAnon } from '@auth/auth/decorators/allow-anon.decorator';
 import { BuildersService } from '@builder/builders';
 import { CommonService } from '@common/common';
 import { StatusCashierEnum } from '@common/common/enums/StatusCashierEnum';
 import TagEnum from '@common/common/enums/TagEnum';
+import { ResponsePaginator } from '@common/common/interfaces/response-pagination.interface';
+import { IntegrationService } from '@integration/integration';
+import IntegrationCryptoEnum from '@integration/integration/crypto/enums/IntegrationCryptoEnum';
 import {
   BadRequestException,
   Body,
@@ -13,7 +17,6 @@ import {
   Req,
 } from '@nestjs/common';
 import { Ctx, EventPattern, Payload, RmqContext } from '@nestjs/microservices';
-import { SchedulerRegistry } from '@nestjs/schedule';
 import { TransferCreateDto } from '@transfer/transfer/dto/transfer.create.dto';
 import { OperationTransactionType } from '@transfer/transfer/enum/operation.transaction.type.enum';
 import EventsNamesAccountEnum from 'apps/account-service/src/enum/events.names.account.enum';
@@ -28,8 +31,8 @@ import { isEmpty } from 'class-validator';
 export class B2BinPayNotificationsController {
   constructor(
     private readonly builder: BuildersService,
-    @Inject(SchedulerRegistry)
-    private schedulerRegistry: SchedulerRegistry,
+    @Inject(IntegrationService)
+    private integrationService: IntegrationService,
   ) {}
   //private readonly integrationServiceService: PomeloIntegrationProcessService,
 
@@ -58,8 +61,8 @@ export class B2BinPayNotificationsController {
   // @CheckPoliciesAbility(new PolicyHandlerTransferRead())
   async status(@Req() req: any, @Body() data: any) {
     Logger.debug(data, 'B2BinPayNotificationsController.status');
-    const headers = req.headers;
-    const body = req.body;
+    const headers = req?.headers;
+    const body = req?.body;
     Logger.debug(
       headers,
       'B2BinPayNotificationsController.status:request.headers',
@@ -129,8 +132,9 @@ export class B2BinPayNotificationsController {
       if (!account) {
         throw new BadRequestException('B2BinPay Account not found');
       }
-      let status = rejectedStatus;
-      if (transfer.status === 3) {
+      //let status = rejectedStatus;
+      // Verify exist transfer
+      /* if (transfer.status === 2) {
         // Paid
         status = approvedStatus;
         this.builder.emitAccountEventClient(
@@ -166,7 +170,7 @@ export class B2BinPayNotificationsController {
         crm: account.crm,
         confirmedAt: new Date(),
         approvedAt: new Date(),
-      } as unknown as TransferCreateDto);
+      } as unknown as TransferCreateDto); */
     } catch (err) {}
 
     return {
@@ -183,5 +187,135 @@ export class B2BinPayNotificationsController {
   ) {
     CommonService.ack(ctx);
     Logger.log(typeIntegration, 'checkTransferInB2BinPay');
+    let accounts: ResponsePaginator<AccountDocument> = {
+      nextPage: 1,
+      prevPage: 0,
+      lastPage: 0,
+      firstPage: 0,
+      currentPage: 0,
+      totalElements: 0,
+      elementsPerPage: 0,
+      order: [],
+      list: [],
+    };
+    const promises = [];
+    do {
+      accounts = await this.builder.getPromiseAccountEventClient(
+        EventsNamesAccountEnum.findAll,
+        {
+          page: accounts.nextPage,
+          where: {
+            'responseCreation.responseAccount.data.id': { $exists: true },
+          },
+        },
+      );
+      Logger.debug(accounts.totalElements, 'checkTransferInB2BinPay');
+      promises.push(this.checkAccounts(accounts));
+    } while (accounts.nextPage !== accounts.firstPage);
+    Logger.log(typeIntegration, 'checkTransferInB2BinPay');
+    return Promise.all(promises);
+  }
+
+  private async checkAccounts(accounts: ResponsePaginator<AccountDocument>) {
+    const promises = [];
+    for (const account of accounts.list) {
+      const responseAccount = account.responseCreation?.responseAccount.data;
+      if (responseAccount.id) {
+        const url = 'https://api.b2binpay.com';
+        const integration = await this.integrationService.getCryptoIntegration(
+          account,
+          IntegrationCryptoEnum.B2BINPAY,
+          url,
+        );
+        try {
+          const minute = 180 * 60 * 1000;
+          const now = new Date();
+          const listTransfers = await integration.getTransferByDeposit(
+            responseAccount.id,
+            1,
+            {
+              from: new Date(now.getTime() - minute).toISOString(),
+              to: now.toISOString(),
+            },
+          );
+          if (listTransfers?.data) {
+            for (const transfer of listTransfers.data) {
+              promises.push(this.checkTransfer(account, transfer));
+            }
+          } else {
+            Logger.error(listTransfers, `checkAccounts-${responseAccount.id}`);
+          }
+        } catch (err) {
+          Logger.error(err, `checkAccounts-${responseAccount.id}`);
+        }
+      }
+    }
+    return Promise.all(promises);
+  }
+  private async checkTransfer(account, transfer) {
+    return new Promise(async (res) => {
+      const attributes = transfer.attributes;
+      if (attributes.status !== 2) {
+        res(false);
+      }
+      const transfers = await this.builder.getPromiseTransferEventClient(
+        EventsNamesTransferEnum.findAll,
+        {
+          where: {
+            crmTransactionId: transfer.id,
+          },
+        },
+      );
+      if (!transfers.totalElements) {
+        const depositWalletCategory =
+          await this.builder.getPromiseCategoryEventClient(
+            EventsNamesCategoryEnum.findOneByNameType,
+            {
+              slug: 'deposit-wallet',
+              type: TagEnum.MONETARY_TRANSACTION_TYPE,
+            },
+          );
+        const internalPspAccount =
+          await this.builder.getPromisePspAccountEventClient(
+            EventsNamesPspAccountEnum.findOneByName,
+            'internal',
+          );
+        const approvedStatus = await this.builder.getPromiseStatusEventClient(
+          EventsNamesStatusEnum.findOneByName,
+          'approved',
+        );
+        const dto = {
+          name: `Deposit wallet ${account.name}`,
+          description: `Deposit wallet ${account.name}`,
+          currency: account.currency,
+          amount: attributes.amount_target,
+          crmTransactionId: transfer.id,
+          responsePayment: transfer,
+          currencyCustodial: account.currencyCustodial,
+          amountCustodial: attributes.amount_target,
+          account: account._id,
+          userCreator: account.owner,
+          userAccount: account.owner,
+          typeTransaction: depositWalletCategory._id,
+          psp: internalPspAccount.psp,
+          pspAccount: internalPspAccount._id,
+          operationType: OperationTransactionType.deposit,
+          statusPayment: StatusCashierEnum.APPROVED,
+          approve: true,
+          status: approvedStatus._id,
+          brand: account.brand,
+          crm: account.crm,
+          confirmedAt: new Date(),
+          isApprove: true,
+          approvedAt: attributes.updated_at,
+        } as unknown as TransferCreateDto;
+        Logger.debug(dto.name, `checkTransfer-save-${transfer.id}`);
+        this.builder.emitTransferEventClient(
+          EventsNamesTransferEnum.createOne,
+          dto,
+        );
+        res(true);
+      }
+    });
   }
 }

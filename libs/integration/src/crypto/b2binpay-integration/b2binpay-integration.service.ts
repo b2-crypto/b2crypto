@@ -29,6 +29,7 @@ export class B2BinPayIntegrationService extends IntegrationCryptoService<
       // Deposit
       createDeposit: '/deposit',
       getDeposit: '/deposit/{id}',
+      getTransferByDeposit: '/transfer',
     });
   }
 }
