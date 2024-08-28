@@ -209,7 +209,7 @@ export class B2BinPayNotificationsController {
           },
         },
       );
-      Logger.debug(
+      Logger.log(
         accounts.totalElements,
         `checkTransferInB2BinPay.totalElements - page ${accounts.currentPage}`,
       );
@@ -311,7 +311,7 @@ export class B2BinPayNotificationsController {
           isApprove: true,
           approvedAt: attributes.updated_at,
         } as unknown as TransferCreateDto;
-        Logger.debug(dto.name, `checkTransfer-save-${transfer.id}`);
+        Logger.log(dto.name, `checkTransfer-save-${transfer.id}`);
         this.builder.emitTransferEventClient(
           EventsNamesTransferEnum.createOne,
           dto,
