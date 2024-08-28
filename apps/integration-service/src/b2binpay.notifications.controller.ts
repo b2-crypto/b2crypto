@@ -228,7 +228,7 @@ export class B2BinPayNotificationsController {
           url,
         );
         try {
-          const minute = 180 * 60 * 1000;
+          const minute = 5 * 60 * 1000;
           const now = new Date();
           const listTransfers = await integration.getTransferByDeposit(
             responseAccount.id,
