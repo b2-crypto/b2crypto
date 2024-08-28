@@ -3,6 +3,8 @@ export class ResponseCreationAccount {
   id: string;
   responseAccount: {
     data: {
+      id: string;
+      type: string;
       attributes: {
         address: string;
       };

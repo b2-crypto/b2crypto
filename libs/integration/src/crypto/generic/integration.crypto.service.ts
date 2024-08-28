@@ -145,4 +145,40 @@ export class IntegrationCryptoService<
     );
     return rta;
   }
+  async getTransferByDeposit(
+    depositId: string,
+    pageNumber = 1,
+    dateRange = null,
+  ): Promise<AxiosResponse<any[]>> {
+    let query =
+      `${this.routesMap.getTransferByDeposit}` +
+      `?filter[op_id]=${depositId}` +
+      `&filter[op_type]=1` +
+      `&filter[status]=2` +
+      `&filter[created_at_from]=` +
+      `&filter[created_at_to]=` +
+      `&page[number]=${pageNumber}` +
+      `&page[SIZE]=100`;
+    if (dateRange) {
+      const { from, to } = dateRange;
+      if (from) {
+        query = query.replace(
+          'filter[created_at_from]=',
+          `filter[created_at_from]=${from}`,
+        );
+      } else {
+        query = query.replace('&filter[created_at_from]=', '');
+      }
+      if (to) {
+        query = query.replace(
+          'filter[created_at_to]=',
+          `filter[created_at_to]=${to}`,
+        );
+      } else {
+        query = query.replace('&filter[created_at_to]=', '');
+      }
+    }
+    const rta = await this.fetch('GET', query);
+    return rta;
+  }
 }
