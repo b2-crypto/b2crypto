@@ -210,7 +210,7 @@ export class B2BinPayNotificationsController {
         },
       );
       Logger.log(
-        accounts.totalElements,
+        accounts.list.length,
         `checkTransferInB2BinPay.totalElements - page ${accounts.currentPage}`,
       );
       promises.push(this.checkAccounts(accounts));
