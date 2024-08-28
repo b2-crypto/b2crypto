@@ -10,9 +10,15 @@ html(lang="es")
         p Te informamos sobre el estado de tu tarjeta:
         
         ul
-          li Tipo de Tarjeta: #{vars.cardType}
-          li Número de Tarjeta: **** **** **** #{vars.lastFourDigits}
-          li Estado: #{vars.status}
+          li
+            strong Tipo de Tarjeta: 
+            | #{vars.cardType}
+          li
+            strong Número de Tarjeta: 
+            | **** **** **** #{vars.lastFourDigits}
+          li
+            strong Estado: 
+            | #{vars.status}
 
         if vars.cardType === 'Física'
           p Tu tarjeta física será enviada a la dirección registrada en los próximos días hábiles.

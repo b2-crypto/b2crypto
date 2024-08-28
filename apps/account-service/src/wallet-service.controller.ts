@@ -90,28 +90,25 @@ export class WalletServiceController extends AccountServiceController {
     if (!userId) {
       throw new BadRequestException('Need the user id to continue');
     }
-    const user: User = (
-      await this.userService.getAll({
-        relations: ['personalData'],
-        where: {
-          _id: userId,
-        },
-      })
-    ).list[0];
+
+    const user: User = (await this.userService.getAll({
+      relations: ['personalData'],
+      where: { _id: userId },
+    })).list[0];
+
     if (!user.personalData) {
       throw new BadRequestException('Need the personal data to continue');
     }
+
     createDto.type = TypesAccountEnum.WALLET;
     createDto.accountId = '2177';
     createDto.accountName = 'CoxSQtiWAHVo';
     createDto.accountPassword = 'w7XDOfgfudBvRG';
     createDto.owner = user.id;
-    createDto.pin =
-      createDto.pin ??
-      parseInt(
-        CommonService.getNumberDigits(CommonService.randomIntNumber(9999), 4),
-      );
+    createDto.pin = createDto.pin ?? parseInt(CommonService.getNumberDigits(CommonService.randomIntNumber(9999), 4));
+
     const createdWallet = await this.walletService.createOne(createDto);
+
     const emailData = {
       name: `Actualización de tu Wallet`,
       body: `Se ha creado un nuevo wallet en tu cuenta`,
@@ -129,23 +126,10 @@ export class WalletServiceController extends AccountServiceController {
       },
     };
 
-    if (createdWallet._id) {
-      emailData.destiny = {
-        resourceId: createdWallet._id.toString(),
-        resourceName: 'WALLET',
-      };
-    }
-
-    setImmediate(() => {
-      this.ewalletBuilder.emitMessageEventClient(
-        EventsNamesMessageEnum.sendCryptoWalletsManagement,
-        emailData,
-      );
-    });
     const transferBtn: TransferCreateButtonDto = {
       amount: '999',
       currency: 'USD',
-      account: createdWallet._id,
+      account: createdWallet.id,
       creator: createDto.owner,
       details: 'Deposit address',
       customer_name: user.name,
@@ -153,19 +137,27 @@ export class WalletServiceController extends AccountServiceController {
       public_key: null,
       identifier: createDto.owner,
     };
-    this.ewalletBuilder.emitAccountEventClient(
-      EventsNamesAccountEnum.updateOne,
-      {
-        id: createdWallet._id,
-        responseCreation:
-          await this.ewalletBuilder.getPromiseTransferEventClient(
+
+    this.ewalletBuilder.emitMessageEventClient(
+      EventsNamesMessageEnum.sendCryptoWalletsManagement,
+      emailData
+    )
+    if (process.env.NODE_ENV === 'production') {
+      this.ewalletBuilder.emitAccountEventClient(
+        EventsNamesAccountEnum.updateOne,
+        {
+          id: createdWallet._id,
+          responseCreation: await this.ewalletBuilder.getPromiseTransferEventClient(
             EventsNamesTransferEnum.createOneDepositLink,
-            transferBtn,
+            transferBtn
           ),
-      },
-    );
+        }
+      );
+    }
+
     return createdWallet;
   }
+
   @Post('recharge')
   async rechargeOne(
     @Body() createDto: WalletDepositCreateDto,

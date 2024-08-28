@@ -25,7 +25,7 @@ export class PomeloIntegrationProcessService {
     private readonly cache: PomeloCache,
     private readonly currencyConversion: FiatIntegrationClient,
     private readonly builder: BuildersService,
-  ) {}
+  ) { }
 
   private async process(
     process: any,
@@ -251,14 +251,14 @@ export class PomeloIntegrationProcessService {
         headers,
       );
 
-      /* setImmediate(() => {
-        this.sendAdjustmentNotificationEmail(adjustment).catch((error) => {
-          Logger.error(
-            'Error sending adjustment notification email',
-            error.stack,
-          );
-        });
-      }); */
+
+      this.sendAdjustmentNotificationEmail(adjustment).catch((error) => {
+        Logger.error(
+          'Error sending adjustment notification email',
+          error.stack,
+        );
+      });
+
 
       return processed;
     } catch (error) {
@@ -274,29 +274,24 @@ export class PomeloIntegrationProcessService {
         name: `Notificacion de Ajuste de Transaccion`, // Revisar metodos ASCCII
         body: `Se ha realizado un ajuste en una de tus transacciones`, // Revisar creacion de un ENUM como solición temporal
         originText: 'Sistema',
-        destinyText: adjustment.user.id,
+        destinyText: adjustment.card.id,
         transport: TransportEnum.EMAIL,
         destiny: null,
         vars: {
-          userId: adjustment.user.id,
-          transactionId: adjustment.transaction?.id,
           transactionType: adjustment.transaction?.type,
-          transactionDate: adjustment.transaction?.local_date_time,
           merchantName: adjustment.merchant?.name,
-          merchantMcc: adjustment.merchant?.mcc,
           cardLastFour: adjustment.card?.last_four,
-          cardProductType: adjustment.card?.product_type,
           amountLocal: adjustment.amount?.settlement?.total,
           currencyLocal: adjustment.amount?.settlement?.currency,
         },
       };
-
-      if (adjustment.transaction?.id) {
-        data.destiny = {
-          resourceId: adjustment.transaction.id,
-          resourceName: 'TRANSACTION',
-        };
-      }
+      /*       if (adjustment.transaction.id) {
+              data.destiny = {
+                resourceId: adjustment.transaction.id.toString(),
+                resourceName: 'TRANSACTION',
+              };
+            }
+       */
 
       Logger.log(data, 'Purchases/Transaction Adjustments Email Prepared');
       this.builder.emitMessageEventClient(
@@ -309,6 +304,7 @@ export class PomeloIntegrationProcessService {
       );
     }
   }
+
 
   async processAuthorization(
     authorization: Authorization,

@@ -15,6 +15,10 @@ import axios from 'axios';
 import * as pug from 'pug';
 import TemplatesMessageEnum from './enum/templates.message.enum';
 import { isEmail } from 'class-validator';
+import EventsNamesTrafficEnum from 'apps/traffic-service/src/enum/events.names.traffic.enum';
+import { Types } from 'mongoose';
+import EventsNamesAccountEnum from 'apps/account-service/src/enum/events.names.account.enum';
+import EventsNamesUserEnum from 'apps/user-service/src/enum/events.names.user.enum';
 
 @Injectable()
 export class MessageServiceService {
@@ -94,12 +98,29 @@ export class MessageServiceService {
   async sendVirtualPhysicalCards(message: MessageCreateDto) {
     return this.sendEmail(message, TemplatesMessageEnum.virtualPhysicalCards);
   }
-
   async sendPurchasesTransactionAdjustments(message: MessageCreateDto) {
-    return this.sendEmail(
-      message,
-      TemplatesMessageEnum.purchasesTransactionAdjustments,
+
+    const getCard = await this.builder.getPromiseAccountEventClient(
+      EventsNamesAccountEnum.findOneByCardId,
+      { id: message.destinyText } // Reemplazar esta implementación por un cambio en el dto 
     );
+
+    if (getCard && getCard.owner) {
+
+      const user = await this.builder.getPromiseUserEventClient(
+        EventsNamesUserEnum.findOneById,
+        { _id: getCard.owner }
+      );
+
+      if (user && user.email) {
+        message.destinyText = user.email;
+
+        return this.sendEmail(
+          message,
+          TemplatesMessageEnum.purchasesTransactionAdjustments,
+        );
+      }
+    }
   }
 
   async sendCryptoWalletsManagement(message: MessageCreateDto) {
@@ -121,23 +142,27 @@ export class MessageServiceService {
   }
 
   async sendEmail(message: MessageCreateDto, template: TemplatesMessageEnum) {
-    let from = message.originText;
-    if (!isEmail(from)) {
-      from = await this.configService.get(
-        'AWS_SES_FROM_DEFAULT',
-        'noreply@email.com',
-      );
-      message.originText = from;
+    try {
+      let from = message.originText;
+      if (!isEmail(from)) {
+        from = await this.configService.get(
+          'AWS_SES_FROM_DEFAULT',
+          'no-reply@b2crypto.com',
+        );
+        message.originText = from;
+      }
+      const msg = await this.newMessage(message);
+      //send email
+      await this.mailerService.sendMail({
+        to: msg.destinyText,
+        from,
+        subject: msg.name,
+        html: this.compileHtml(message.vars ?? message, template),
+      });
+      return msg;
+    } catch (error) {
+      console.log({ error })
     }
-    const msg = await this.newMessage(message);
-    //send email
-    await this.mailerService.sendMail({
-      to: msg.destinyText,
-      from,
-      subject: msg.name,
-      html: this.compileHtml(message.vars ?? message, template),
-    });
-    return msg;
   }
   private compileHtml(vars: any, template: TemplatesMessageEnum) {
     const templateVars = {
@@ -145,7 +170,7 @@ export class MessageServiceService {
       headerColor: this.getHeaderColorForTemplate(template),
       headerTitle: vars.name,
       logoUrl:
-        'https://message-templates-resource.s3.eu-west-3.amazonaws.com/logo.svg',
+        'https://message-templates-resource.s3.eu-west-3.amazonaws.com/logo.png',
       vars: vars,
     };
 
