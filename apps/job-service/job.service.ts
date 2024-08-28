@@ -57,10 +57,14 @@ export class JobService {
     timeZone: process.env.TZ,
   })
   checkB2BinPayTransfers() {
-    this.builder.emitTransferEventClient(
-      EventsNamesTransferEnum.checkTransferInB2BinPay,
-      'b2binpay',
-    );
+    if (this.env === EnvironmentEnum.prod) {
+      this.builder.emitTransferEventClient(
+        EventsNamesTransferEnum.checkTransferInB2BinPay,
+        'b2binpay',
+      );
+    } else {
+      Logger.log('Checking B2BinPay transfers', JobService.name);
+    }
   }
 
   @Cron(JobService.periodicTime.checkFilesDownloads, {
