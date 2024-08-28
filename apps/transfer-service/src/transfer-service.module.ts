@@ -22,6 +22,7 @@ import { StatusServiceService } from 'apps/status-service/src/status-service.ser
 import { AffiliateModule } from '@affiliate/affiliate';
 import { PspServiceService } from 'apps/psp-service/src/psp-service.service';
 import { PspModule } from '@psp/psp';
+import { HttpModule } from '@nestjs/axios';
 
 @Module({
   imports: [
@@ -36,6 +37,7 @@ import { PspModule } from '@psp/psp';
     IntegrationModule,
     AffiliateModule,
     PspModule,
+    HttpModule,
   ],
   controllers: [TransferServiceController],
   providers: [
