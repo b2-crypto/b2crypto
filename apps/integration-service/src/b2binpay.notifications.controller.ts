@@ -68,7 +68,8 @@ export class B2BinPayNotificationsController {
       'B2BinPayNotificationsController.status:request.headers',
     );
     Logger.debug(body, 'B2BinPayNotificationsController.status:request.body');
-    const attributes = data.data.attributes;
+    Logger.debug(data, 'B2BinPayNotificationsController.status:body');
+    /* const attributes = data.data.attributes;
     const relationships = data.data.relationships;
     const transferId = relationships.transfer?.data?.id;
     const currencyId = relationships.currency?.data?.id;
@@ -132,9 +133,9 @@ export class B2BinPayNotificationsController {
       if (!account) {
         throw new BadRequestException('B2BinPay Account not found');
       }
-      //let status = rejectedStatus;
+      let status = rejectedStatus;
       // Verify exist transfer
-      /* if (transfer.status === 2) {
+      if (transfer.status === 2) {
         // Paid
         status = approvedStatus;
         this.builder.emitAccountEventClient(
@@ -170,8 +171,8 @@ export class B2BinPayNotificationsController {
         crm: account.crm,
         confirmedAt: new Date(),
         approvedAt: new Date(),
-      } as unknown as TransferCreateDto); */
-    } catch (err) {}
+      } as unknown as TransferCreateDto);
+    } catch (err) {} */
 
     return {
       statusCode: 200,
