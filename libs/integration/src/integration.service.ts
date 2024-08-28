@@ -3,6 +3,7 @@ import { CreateLeadAffiliateDto } from '@affiliate/affiliate/domain/dto/create-l
 import { CrmDocument } from '@crm/crm/entities/mongoose/crm.schema';
 import { AntelopeIntegrationService } from '@integration/integration/crm/antelope-integration/antelope-integration.service';
 import { LeverateIntegrationService } from '@integration/integration/crm/leverate-integration/leverate-integration.service';
+import { HttpService } from '@nestjs/axios';
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { RpcException } from '@nestjs/microservices';
@@ -22,7 +23,10 @@ import { IntegrationIdentityService } from './identity/generic/integration.ident
 @Injectable()
 export class IntegrationService {
   private env: string;
-  constructor(private readonly configService: ConfigService) {
+  constructor(
+    private readonly configService: ConfigService,
+    private httpService: HttpService,
+  ) {
     this.env = configService.get('ENVIRONMENT');
   }
 
@@ -109,12 +113,15 @@ export class IntegrationService {
     let identityType: IntegrationIdentityService;
     switch (identityCategoryName.toUpperCase()) {
       case IntegrationIdentityEnum.SUMSUB:
-        identityType = new IntegrationIdentityService({
-          urlApi: 'https://api.sumsub.com/',
-          token:
-            'prd:4GTDd9lXlksugzFcLwvUPrer.06DQ3vvaaTDReWC6YhKSJqsCBlFeWRfU',
-          privateKey: 'DQZbSZExLTNC7xX1FP2pcffonu4cDrzc',
-        });
+        identityType = new IntegrationIdentityService(
+          {
+            urlApi: 'https://api.sumsub.com',
+            token:
+              'prd:4GTDd9lXlksugzFcLwvUPrer.06DQ3vvaaTDReWC6YhKSJqsCBlFeWRfU',
+            privateKey: 'DQZbSZExLTNC7xX1FP2pcffonu4cDrzc',
+          },
+          this.httpService,
+        );
         break;
     }
     if (!identityType) {

@@ -1,5 +1,5 @@
 export enum SumsubEnum {
-  SUMSUB_HEADER_TIMESTAMP = 'x-app-access-ts',
+  SUMSUB_HEADER_TIMESTAMP = 'X-App-Access-Ts',
   SUMSUB_HEADER_DIGEST = 'x-payload-digest',
   SUMSUB_HEADER_DIGEST_ALGORITHM = 'x-payload-digest-alg',
   SUMSUB_HEADER_SIGNATURE = 'X-App-Access-Sig',
