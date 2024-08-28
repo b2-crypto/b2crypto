@@ -209,10 +209,12 @@ export class B2BinPayNotificationsController {
           },
         },
       );
-      Logger.debug(accounts.totalElements, 'checkTransferInB2BinPay');
+      Logger.debug(
+        accounts.totalElements,
+        `checkTransferInB2BinPay.totalElements - page ${accounts.currentPage}`,
+      );
       promises.push(this.checkAccounts(accounts));
     } while (accounts.nextPage !== accounts.firstPage);
-    Logger.log(typeIntegration, 'checkTransferInB2BinPay');
     return Promise.all(promises);
   }
 
