@@ -325,4 +325,20 @@ export class MessageServiceController implements GenericServiceController {
       );
     }
   }
+  @AllowAnon()
+  @EventPattern(EventsNamesMessageEnum.sendPurchases)
+  async eventSendPurchases(
+    @Payload() message: MessageCreateDto,
+    @Ctx() ctx: RmqContext,
+  ) {
+    CommonService.ack(ctx);
+    try {
+      await this.messageService.sendPurchases(message);
+    } catch (err) {
+      Logger.error(
+        err,
+        `${MessageServiceController.name}-sendPurchasesEmail`,
+      );
+    }
+  }
 }

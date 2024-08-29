@@ -123,6 +123,37 @@ export class MessageServiceService {
     }
   }
 
+  async sendPurchases(message: MessageCreateDto) {
+    const getCard = await this.builder.getPromiseAccountEventClient(
+      EventsNamesAccountEnum.findOneByCardId,
+      { id: message.destinyText } // Reemplazar esta implementación por un cambio en el dto 
+    );
+
+    if (getCard && getCard.owner) {
+
+      const user = await this.builder.getPromiseUserEventClient(
+        EventsNamesUserEnum.findOneById,
+        { _id: getCard.owner }
+      );
+
+      if (user && user.email) {
+        message.destinyText = user.email;
+        const newMessageBody = {
+          ...message,
+          vars: {
+            ...message.vars,
+            customerName: user.name
+          }
+
+        };
+        return this.sendEmail(
+          newMessageBody,
+          TemplatesMessageEnum.purchases,
+        );
+      }
+    }
+  }
+
   async sendCryptoWalletsManagement(message: MessageCreateDto) {
     return this.sendEmail(
       message,

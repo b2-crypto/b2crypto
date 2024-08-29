@@ -310,11 +310,47 @@ export class PomeloIntegrationProcessService {
     authorization: Authorization,
     headers: any,
   ): Promise<any> {
-    return await this.process(
+
+    const process = await this.process(
       authorization,
       authorization.idempotency,
       true,
       headers,
     );
+
+    const data = {
+      name: `Notificación de Autorización de Transacción`,
+      body: `Se ha realizado una autorización en una de tus transacciones`,
+      originText: 'Sistema',
+      destinyText: authorization.card.id,
+      transport: TransportEnum.EMAIL,
+      destiny: null,
+      vars: {
+        transactionDate: new Date().toLocaleString('es-ES', {
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit',
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit'
+        }),
+        customerName: "",
+        transactionStatus: process.status,
+        transactionType: authorization.transaction?.type,
+        merchantName: authorization.merchant?.name,
+        cardLastFour: authorization.card?.last_four,
+        amountLocal: authorization.amount?.local?.total,
+        currencyLocal: authorization.amount?.local?.currency,
+      },
+    };
+
+    this.builder.emitMessageEventClient(
+      EventsNamesMessageEnum.sendPurchases,
+      data,
+    );
+
+    return process;
   }
+
+
 }

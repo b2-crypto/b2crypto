@@ -5,32 +5,49 @@ html(lang="es")
     .container
       include ./partials/header.pug
       .content
-        h2 ¡Compra aprobada exitosamente! 🥳
-        p #{vars.customerName}, ¡tu compra ha sido aprobada exitosamente!
+        h2= vars.title 
 
-        p Nos complace informarte que tu compra realizada el día #{vars.purchaseDate} a las #{vars.purchaseTime} en #{vars.merchantName} ha sido aprobada con éxito. A continuación, te compartimos los detalles de tu transacción:
+        p Estimada #{vars.customerName}, 
 
-        h3 Detalles de la Compra:
+        p= vars.introMessage
+
+        h3 Detalles de la Transacción:
         ul
           li
-            strong Fecha y hora:
-            | #{vars.purchaseDate} #{vars.purchaseTime}
+            strong Fecha y hora: 
+            | #{vars.transactionDate}
           li
-            strong Establecimiento:
+            strong Establecimiento: 
             | #{vars.merchantName}
           li
-            strong Monto:
-            | #{vars.amount}
+            strong Monto: 
+            | #{vars.amountLocal} #{vars.currencyLocal}
           li
-            strong Método de Pago:
-            | XXXX XXXX XXXX #{vars.cardLastFour}
-          li
-            strong Productos/Servicios adquiridos:
-            | #{vars.productName}
+            strong Método de pago: 
+            | #{vars.cardLastFour}
 
-        p Para ver tu transacción de compra en detalle, por favor haz clic en el siguiente enlace:
-        a.btn(href="#{vars.transactionLink}" target="_blank") Ver transacción
+        if vars.transactionStatus == 'REJECTED'
+          h3 Motivo del Rechazo:
+          p #{vars.reason}
 
-        p Gracias por utilizar nuestros servicios para realizar tu compra.
+          p Lamentamos informarte que tu intento de compra realizado el #{vars.transactionDate} en #{vars.merchantName} no pudo ser procesado. A continuación, te proporcionamos más detalles sobre esta situación:
+
+          h3 Próximos Pasos:
+          ul
+            li Verificar el saldo de tu cuenta: Asegúrate de que cuentas con los fondos suficientes antes de realizar una compra.
+            li Actualizar la información de tu tarjeta: Si has cambiado de tarjeta o tu información ha caducado, actualiza los datos en tus métodos de pago.
+            li Revisar la información de la transacción: Asegúrate de que los detalles de la compra y el establecimiento sean correctos.
+
+          p Si deseas más información o tienes alguna pregunta, no dudes en contactarnos a través de asistencia@b2fintech.com.
+          p Ofrecemos disculpas por cualquier inconveniente causado por esta situación y estamos aquí para asistirte en lo que necesites. Tu satisfacción es nuestra prioridad.
+
+        if vars.transactionStatus == 'APPROVED'
+          h3 ¡Compra aprobada exitosamente! 📦
+          p #{vars.customerName}, ¡tu compra ha sido aprobada exitosamente! 
+          p Nos complace informarte que tu compra realizada el #{vars.transactionDate} en #{vars.merchantName} ha sido aprobada con éxito.
+
+          p Gracias por utilizar nuestros servicios para realizar tu compra.
+          p Si tienes alguna pregunta o necesitas asistencia, no dudes en contactarnos a través de asistencia@b2fintech.com.
+          p Gracias por unirte a nosotros. ¡Esperamos que disfrutes de tu experiencia con B2fintech!
 
       include ./partials/footer.pug
