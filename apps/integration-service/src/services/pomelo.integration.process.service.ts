@@ -295,7 +295,7 @@ export class PomeloIntegrationProcessService {
 
       Logger.log(data, 'Purchases/Transaction Adjustments Email Prepared');
       this.builder.emitMessageEventClient(
-        EventsNamesMessageEnum.sendPurchasesTransactionAdjustments,
+        EventsNamesMessageEnum.sendAdjustments,
         data,
       );
     } else {

@@ -98,7 +98,7 @@ export class MessageServiceService {
   async sendVirtualPhysicalCards(message: MessageCreateDto) {
     return this.sendEmail(message, TemplatesMessageEnum.virtualPhysicalCards);
   }
-  async sendPurchasesTransactionAdjustments(message: MessageCreateDto) {
+  async sendAdjustments(message: MessageCreateDto) {
 
     const getCard = await this.builder.getPromiseAccountEventClient(
       EventsNamesAccountEnum.findOneByCardId,
@@ -117,7 +117,7 @@ export class MessageServiceService {
 
         return this.sendEmail(
           message,
-          TemplatesMessageEnum.purchasesTransactionAdjustments,
+          TemplatesMessageEnum.adjustments,
         );
       }
     }
@@ -182,7 +182,7 @@ export class MessageServiceService {
     const colors = {
       [TemplatesMessageEnum.profileRegistrationCreation]: '#0056b3',
       [TemplatesMessageEnum.virtualPhysicalCards]: '#28a745',
-      [TemplatesMessageEnum.purchasesTransactionAdjustments]: '#17a2b8',
+      [TemplatesMessageEnum.adjustments]: '#17a2b8',
       [TemplatesMessageEnum.cryptoWalletsManagement]: '#6f42c1',
     };
     return colors[template] || '#007bff';

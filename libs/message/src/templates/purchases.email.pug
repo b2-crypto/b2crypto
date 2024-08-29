@@ -1,0 +1,36 @@
+doctype html
+html(lang="es")
+  include ./partials/head.pug
+  body
+    .container
+      include ./partials/header.pug
+      .content
+        h2 ¡Compra aprobada exitosamente! 🥳
+        p #{vars.customerName}, ¡tu compra ha sido aprobada exitosamente!
+
+        p Nos complace informarte que tu compra realizada el día #{vars.purchaseDate} a las #{vars.purchaseTime} en #{vars.merchantName} ha sido aprobada con éxito. A continuación, te compartimos los detalles de tu transacción:
+
+        h3 Detalles de la Compra:
+        ul
+          li
+            strong Fecha y hora:
+            | #{vars.purchaseDate} #{vars.purchaseTime}
+          li
+            strong Establecimiento:
+            | #{vars.merchantName}
+          li
+            strong Monto:
+            | #{vars.amount}
+          li
+            strong Método de Pago:
+            | XXXX XXXX XXXX #{vars.cardLastFour}
+          li
+            strong Productos/Servicios adquiridos:
+            | #{vars.productName}
+
+        p Para ver tu transacción de compra en detalle, por favor haz clic en el siguiente enlace:
+        a.btn(href="#{vars.transactionLink}" target="_blank") Ver transacción
+
+        p Gracias por utilizar nuestros servicios para realizar tu compra.
+
+      include ./partials/footer.pug

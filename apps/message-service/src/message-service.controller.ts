@@ -39,7 +39,7 @@ import { NoCache } from '@common/common/decorators/no-cache.decorator';
 @ApiTags('MESSAGE')
 @Controller('message')
 export class MessageServiceController implements GenericServiceController {
-  constructor(private readonly messageService: MessageServiceService) {}
+  constructor(private readonly messageService: MessageServiceService) { }
 
   @NoCache()
   @Get('all')
@@ -259,18 +259,18 @@ export class MessageServiceController implements GenericServiceController {
   }
 
   @AllowAnon()
-  @EventPattern(EventsNamesMessageEnum.sendPurchasesTransactionAdjustments)
-  async eventSendPurchasesTransactionAdjustments(
+  @EventPattern(EventsNamesMessageEnum.sendAdjustments)
+  async eventSendAdjustments(
     @Payload() message: MessageCreateDto,
     @Ctx() ctx: RmqContext,
   ) {
     CommonService.ack(ctx);
     try {
-      await this.messageService.sendPurchasesTransactionAdjustments(message);
+      await this.messageService.sendAdjustments(message);
     } catch (err) {
       Logger.error(
         err,
-        `${MessageServiceController.name}-sendPurchasesTransactionAdjustments`,
+        `${MessageServiceController.name}-sendAdjustments`,
       );
     }
   }
