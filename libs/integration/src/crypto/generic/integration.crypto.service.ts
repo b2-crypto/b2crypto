@@ -90,7 +90,11 @@ export class IntegrationCryptoService<
               );
             }
             this.token = token.data?.attributes.access;
-            await this.cacheManager.set('token-B2BinPay', this.token, 4 * 60);
+            await this.cacheManager.set(
+              'token-B2BinPay',
+              this.token,
+              4 * 60 * 1000,
+            );
             const expireIn = token.data?.expiresIn || token.data?.ExpiresIn;
           }
         } catch (err) {
