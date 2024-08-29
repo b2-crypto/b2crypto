@@ -38,9 +38,6 @@ export class Category extends CategoryEntity implements CategoryInterface {
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'categories' })
   categoryParent: Category;
 
-  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'groups' })
-  groups: Group[];
-
   @Prop({ type: [String], enum: ResourcesEnum })
   resources: ResourcesEnum[];
 

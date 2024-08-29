@@ -1,10 +1,5 @@
-import { LeadEntity } from '@lead/lead/entities/lead.entity';
-import { CategoryEntity } from '@category/category/entities/category.entity';
-import { PspEntity } from '@psp/psp/entities/psp.entity';
-import { StatusEntity } from '@status/status/entities/status.entity';
-import { CrmEntity } from '@crm/crm/entities/crm.entity';
+import { CategoryInterface } from '@category/category/entities/category.interface';
 import { ObjectId } from 'mongoose';
-import { AffiliateEntity } from '@affiliate/affiliate/domain/entities/affiliate.entity';
 
 export interface GroupInterface {
   _id?: ObjectId;
@@ -14,12 +9,9 @@ export interface GroupInterface {
   valueGroup: string;
   description: string;
   searchText: string;
-  category: CategoryEntity;
-  /* pspGroup: PspEntity[];
-  status: StatusEntity;
-  crmOptions: CrmEntity[];
-  leads: LeadEntity[];
-  affiliates: AffiliateEntity[]; */
+  category: CategoryInterface;
+  groupParent: GroupInterface;
+  rules: CategoryInterface[];
   createdAt: Date;
   updatedAt: Date;
 }
