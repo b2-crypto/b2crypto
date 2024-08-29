@@ -104,7 +104,7 @@ export class WalletServiceController extends AccountServiceController {
     createDto.accountId = '2177';
     createDto.accountName = 'CoxSQtiWAHVo';
     createDto.accountPassword = 'w7XDOfgfudBvRG';
-    createDto.owner = user.id;
+    createDto.owner = user.id ?? user._id;
     createDto.pin = createDto.pin ?? parseInt(CommonService.getNumberDigits(CommonService.randomIntNumber(9999), 4));
 
     const createdWallet = await this.walletService.createOne(createDto);
@@ -129,7 +129,7 @@ export class WalletServiceController extends AccountServiceController {
     const transferBtn: TransferCreateButtonDto = {
       amount: '999',
       currency: 'USD',
-      account: createdWallet.id,
+      account: createdWallet.id ?? createdWallet._id,
       creator: createDto.owner,
       details: 'Deposit address',
       customer_name: user.name,
@@ -146,7 +146,7 @@ export class WalletServiceController extends AccountServiceController {
       this.ewalletBuilder.emitAccountEventClient(
         EventsNamesAccountEnum.updateOne,
         {
-          id: createdWallet._id,
+          id: createdWallet.id ?? createdWallet._id,
           responseCreation: await this.ewalletBuilder.getPromiseTransferEventClient(
             EventsNamesTransferEnum.createOneDepositLink,
             transferBtn
