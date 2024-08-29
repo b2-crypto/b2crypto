@@ -30,6 +30,12 @@ export class Group extends GroupEntity implements GroupInterface {
 
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'categories' })
   category: Category;
+
+  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'groups' })
+  groupParent: Group;
+
+  @Prop({ type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'groups' }] })
+  rules: Category[];
 }
 
 export const GroupSchema = SchemaFactory.createForClass(Group);

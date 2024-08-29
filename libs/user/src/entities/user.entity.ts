@@ -10,6 +10,9 @@ import { UserChangePasswordDto } from '@user/user/dto/user.change-password.dto';
 import { UserInterface } from '@user/user/entities/user.interface';
 import { ObjectId } from 'mongoose';
 import UserVerifyIdentityDto from '../dto/user.verify.identity.dto';
+import { BrandEntity } from '@brand/brand/entities/brand.entity';
+import { AffiliateEntity } from '@affiliate/affiliate/domain/entities/affiliate.entity';
+import { GroupEntity } from '@group/group/entities/group.entity';
 
 export class UserEntity implements UserInterface {
   _id?: ObjectId;
@@ -43,6 +46,9 @@ export class UserEntity implements UserInterface {
   authorizations: Array<string>;
   category: CategoryEntity;
   personalData: PersonEntity;
+  brand: BrandEntity;
+  affiliate: AffiliateEntity;
+  group: GroupEntity;
   userParent: UserEntity;
   verifyIdentity: boolean;
   verifyIdentityTtl: number;
