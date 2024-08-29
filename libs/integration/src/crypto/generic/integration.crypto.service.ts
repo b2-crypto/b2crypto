@@ -1,5 +1,8 @@
+import { AccountDocument } from '@account/account/entities/mongoose/account.schema';
+import { CommonService } from '@common/common';
 import { EnvironmentEnum } from '@common/common/enums/environment.enum';
-import { CrmDocument } from '@crm/crm/entities/mongoose/crm.schema';
+import { FetchData } from '@common/common/models/fetch-data.model';
+import { Cache } from '@nestjs/cache-manager';
 import { BadRequestException, Logger, NotFoundException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import axios, {
@@ -11,9 +14,6 @@ import { DepositDto } from './dto/deposit.dto';
 import { WalletDto } from './dto/wallet.dto';
 import { IntegrationCryptoInterface } from './integration.crypto.interface';
 import { CryptoRoutesInterface } from './interface/crypto.routes.interface';
-import { AccountDocument } from '@account/account/entities/mongoose/account.schema';
-import { CommonService } from '@common/common';
-import { FetchData } from '@common/common/models/fetch-data.model';
 
 export class IntegrationCryptoService<
   // DTO
@@ -33,6 +33,7 @@ export class IntegrationCryptoService<
   constructor(
     public cryptoAccount: AccountDocument,
     protected configService: ConfigService,
+    protected cacheManager: Cache,
   ) {
     this.isProd =
       this.configService.get<string>('ENVIRONMENT') === EnvironmentEnum.prod;
@@ -78,16 +79,20 @@ export class IntegrationCryptoService<
           },
         };
         try {
-          const token = await this.fetch('POST', this.routesMap.auth, req);
-          const today = new Date();
-          if (!token.data) {
-            throw new NotFoundException(
-              'Token crypto not found',
-              IntegrationCryptoService.name,
-            );
+          this.token = await this.cacheManager.get('token-B2BinPay');
+          if (!this.token) {
+            const token = await this.fetch('POST', this.routesMap.auth, req);
+            const today = new Date();
+            if (!token.data) {
+              throw new NotFoundException(
+                'Token crypto not found',
+                IntegrationCryptoService.name,
+              );
+            }
+            this.token = token.data?.attributes.access;
+            await this.cacheManager.set('token-B2BinPay', this.token, 4 * 60);
+            const expireIn = token.data?.expiresIn || token.data?.ExpiresIn;
           }
-          this.token = token.data?.attributes.access;
-          const expireIn = token.data?.expiresIn || token.data?.ExpiresIn;
         } catch (err) {
           Logger.error(err, `${IntegrationCryptoService.name}:err`);
           Logger.error(

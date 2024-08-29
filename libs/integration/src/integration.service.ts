@@ -4,7 +4,7 @@ import { CrmDocument } from '@crm/crm/entities/mongoose/crm.schema';
 import { AntelopeIntegrationService } from '@integration/integration/crm/antelope-integration/antelope-integration.service';
 import { LeverateIntegrationService } from '@integration/integration/crm/leverate-integration/leverate-integration.service';
 import { HttpService } from '@nestjs/axios';
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { RpcException } from '@nestjs/microservices';
 import IntegrationCardEnum from './card/enums/IntegrationCardEnum';
@@ -19,11 +19,14 @@ import IntegrationCryptoEnum from './crypto/enums/IntegrationCryptoEnum';
 import { IntegrationCryptoService } from './crypto/generic/integration.crypto.service';
 import { IntegrationIdentityEnum } from './identity/generic/domain/integration.identity.enum';
 import { IntegrationIdentityService } from './identity/generic/integration.identity.service';
+import { CACHE_MANAGER, Cache } from '@nestjs/cache-manager';
 
 @Injectable()
 export class IntegrationService {
   private env: string;
   constructor(
+    @Inject(CACHE_MANAGER)
+    private cacheManager: Cache,
     private readonly configService: ConfigService,
     private httpService: HttpService,
   ) {
@@ -160,7 +163,11 @@ export class IntegrationService {
         //cryptoType = new B2CoreIntegrationService(crypto, this.configService);
         break;
       case IntegrationCryptoEnum.B2BINPAY:
-        cryptoType = new B2BinPayIntegrationService(crypto, this.configService);
+        cryptoType = new B2BinPayIntegrationService(
+          crypto,
+          this.configService,
+          this.cacheManager,
+        );
         break;
     }
     if (!cryptoType) {
