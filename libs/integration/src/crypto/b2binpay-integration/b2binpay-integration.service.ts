@@ -1,4 +1,5 @@
 import { AccountDocument } from '@account/account/entities/mongoose/account.schema';
+import { Cache } from '@nestjs/cache-manager';
 import { ConfigService } from '@nestjs/config';
 import { DepositDto } from '../generic/dto/deposit.dto';
 import { WalletDto } from '../generic/dto/wallet.dto';
@@ -12,8 +13,9 @@ export class B2BinPayIntegrationService extends IntegrationCryptoService<
   constructor(
     public account: AccountDocument,
     protected configService: ConfigService,
+    protected cacheManager: Cache,
   ) {
-    super(account, configService);
+    super(account, configService, cacheManager);
     this.setRouteMap({
       // Auth
       auth: '/token',
