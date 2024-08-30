@@ -142,18 +142,18 @@ export class WalletServiceController extends AccountServiceController {
       EventsNamesMessageEnum.sendCryptoWalletsManagement,
       emailData
     )
-    if (process.env.NODE_ENV === 'production') {
-      this.ewalletBuilder.emitAccountEventClient(
-        EventsNamesAccountEnum.updateOne,
-        {
-          id: createdWallet.id ?? createdWallet._id,
-          responseCreation: await this.ewalletBuilder.getPromiseTransferEventClient(
-            EventsNamesTransferEnum.createOneDepositLink,
-            transferBtn
-          ),
-        }
-      );
-    }
+    //---En local esta parte se debe de comentar-----/
+    this.ewalletBuilder.emitAccountEventClient(
+      EventsNamesAccountEnum.updateOne,
+      {
+        id: createdWallet.id ?? createdWallet._id,
+        responseCreation: await this.ewalletBuilder.getPromiseTransferEventClient(
+          EventsNamesTransferEnum.createOneDepositLink,
+          transferBtn
+        ),
+      }
+    );
+    //------------------------------------------//
 
     return createdWallet;
   }

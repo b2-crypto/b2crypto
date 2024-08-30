@@ -305,7 +305,6 @@ export class PomeloIntegrationProcessService {
     }
   }
 
-
   async processAuthorization(
     authorization: Authorization,
     headers: any,

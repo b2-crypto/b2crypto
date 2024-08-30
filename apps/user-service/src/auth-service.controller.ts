@@ -275,31 +275,36 @@ export class AuthServiceController {
         EventsNamesUserEnum.findAll,
         {
           where: {
-            email: `/${restorePasswordDto.email}/gi`,
+            email: restorePasswordDto.email
           },
+          collation: { locale: 'en', strength: 2, numericOrdering: true, alternate: 'shifted' }
         },
       );
-      // Validate user
+
       if (!users.list[0]) {
         throw new BadRequestException('User not found');
       }
+
       if (
         restorePasswordDto.otp &&
         restorePasswordDto.password &&
         restorePasswordDto.password2
       ) {
-        // Validate password
+
         if (restorePasswordDto.password !== restorePasswordDto.password2) {
           throw new BadRequestException('Bad password');
         }
+
         const otpSended = await this.getOtpGenerated(restorePasswordDto.email);
-        // Validate OTP
+
         if (!otpSended) {
           throw new BadRequestException('Expired OTP');
         } else if (restorePasswordDto.otp != otpSended) {
           throw new BadRequestException('Bad OTP');
         }
+
         await this.deleteOtpGenerated(restorePasswordDto.email);
+
         const psw = restorePasswordDto.password;
         const user = users.list[0];
         const emailData = {
@@ -315,10 +320,12 @@ export class AuthServiceController {
             password: psw,
           },
         };
+
         this.builder.emitMessageEventClient(
           EventsNamesMessageEnum.sendPasswordRestoredEmail,
           emailData,
         );
+
         await this.builder.getPromiseUserEventClient(
           EventsNamesUserEnum.updateOne,
           {
@@ -327,19 +334,22 @@ export class AuthServiceController {
             password: CommonService.getHash(psw),
           },
         );
+
         return {
           statusCode: 200,
           message: 'Password updated',
         };
       }
-      // send otp
+
+
       await this.generateOtp({ email: restorePasswordDto.email } as any);
       return {
         statusCode: 201,
         message: 'OTP generated',
       };
     } catch (error) {
-      console.log({ error })
+      console.log({ error });
+      throw error;
     }
   }
 
