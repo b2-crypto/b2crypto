@@ -482,6 +482,10 @@ export class CardServiceController extends AccountServiceController {
   }
 
   @Post('recharge')
+  @ApiTags(SwaggerSteakeyConfigEnum.TAG_CARD)
+  @ApiSecurity('b2crypto-key')
+  @ApiBearerAuth('bearerToken')
+  @UseGuards(ApiKeyAuthGuard)
   async rechargeOne(@Body() createDto: CardDepositCreateDto, @Req() req?: any) {
     const user: User = await this.getUser(req?.user?.id);
     if (!user.personalData) {

@@ -1,13 +1,22 @@
 import { CreateAnyDto } from '@common/common/models/create-any.dto';
+import { ApiProperty } from '@nestjs/swagger';
 import { IsMongoId, IsNumber, IsOptional, IsString } from 'class-validator';
 import { ObjectId } from 'mongoose';
 
 export class CardDepositCreateDto extends CreateAnyDto {
   @IsMongoId()
+  @ApiProperty({
+    required: true,
+    description: 'Card to which it arrives',
+  })
   to: ObjectId;
 
   @IsMongoId()
   @IsOptional()
+  @ApiProperty({
+    required: true,
+    description: 'Wallet from which it comes',
+  })
   from?: ObjectId;
 
   @IsString()
@@ -17,6 +26,10 @@ export class CardDepositCreateDto extends CreateAnyDto {
   @IsNumber({
     allowNaN: false,
     allowInfinity: false,
+  })
+  @ApiProperty({
+    required: true,
+    description: 'Amount to recharge. Must be a positive number',
   })
   amount: number;
 

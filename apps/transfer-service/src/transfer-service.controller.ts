@@ -27,6 +27,7 @@ import {
   ApiHeader,
   ApiQuery,
   ApiResponse,
+  ApiSecurity,
   ApiTags,
 } from '@nestjs/swagger';
 
@@ -176,6 +177,10 @@ export class TransferServiceController implements GenericServiceController {
   }
 
   @Get('me')
+  @ApiTags(SwaggerSteakeyConfigEnum.TAG_DEPOSIT)
+  @ApiSecurity('b2crypto-key')
+  @ApiBearerAuth('bearerToken')
+  @UseGuards(ApiKeyAuthGuard)
   // @CheckPoliciesAbility(new PolicyHandlerTransferRead())
   async findAllMe(@Query() query: QuerySearchAnyDto, @Req() req?) {
     //query = await this.filterFromUserPermissions(query, req);
