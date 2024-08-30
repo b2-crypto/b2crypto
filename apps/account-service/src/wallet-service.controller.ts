@@ -167,6 +167,11 @@ export class WalletServiceController extends AccountServiceController {
     return createdWallet;
   }
   @Post('recharge')
+  @ApiTags(SwaggerSteakeyConfigEnum.TAG_WALLET)
+  @ApiTags('Stakey Card')
+  @ApiSecurity('b2crypto-key')
+  @ApiBearerAuth('bearerToken')
+  @UseGuards(ApiKeyAuthGuard)
   async rechargeOne(
     @Body() createDto: WalletDepositCreateDto,
     @Req() req?: any,
