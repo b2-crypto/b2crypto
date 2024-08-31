@@ -271,12 +271,7 @@ export class PomeloIntegrationProcessService {
   ): Promise<void> {
     if (adjustment.user && adjustment.user.id) {
       const data = {
-        name: `Notificacion de Ajuste de Transaccion`, // Revisar metodos ASCCII
-        body: `Se ha realizado un ajuste en una de tus transacciones`, // Revisar creacion de un ENUM como solición temporal
-        originText: 'Sistema',
         destinyText: adjustment.card.id,
-        transport: TransportEnum.EMAIL,
-        destiny: null,
         vars: {
           transactionType: adjustment.transaction?.type,
           merchantName: adjustment.merchant?.name,
@@ -285,13 +280,6 @@ export class PomeloIntegrationProcessService {
           currencyLocal: adjustment.amount?.settlement?.currency,
         },
       };
-      /*       if (adjustment.transaction.id) {
-              data.destiny = {
-                resourceId: adjustment.transaction.id.toString(),
-                resourceName: 'TRANSACTION',
-              };
-            }
-       */
 
       Logger.log(data, 'Purchases/Transaction Adjustments Email Prepared');
       this.builder.emitMessageEventClient(
@@ -318,14 +306,11 @@ export class PomeloIntegrationProcessService {
     );
 
     const data = {
-      name: `Notificación de Autorización de Transacción`,
-      body: `Se ha realizado una autorización en una de tus transacciones`,
-      originText: 'Sistema',
       destinyText: authorization.card.id,
       transport: TransportEnum.EMAIL,
-      destiny: null,
       vars: {
         transactionDate: new Date().toLocaleString('es-ES', {
+          timeZone: 'America/Bogota',
           year: 'numeric',
           month: '2-digit',
           day: '2-digit',

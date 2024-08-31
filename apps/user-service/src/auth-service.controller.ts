@@ -308,12 +308,7 @@ export class AuthServiceController {
         const psw = restorePasswordDto.password;
         const user = users.list[0];
         const emailData = {
-          name: `Actualizacion de clave`,
-          body: `Tu clave ha sido actualizada exitosamente ${user.name}`,
-          originText: 'Sistema',
           destinyText: user.email,
-          transport: TransportEnum.EMAIL,
-          destiny: null,
           vars: {
             name: user.name,
             username: user.email,
@@ -428,15 +423,7 @@ export class AuthServiceController {
     );
 
     const emailData = {
-      name: `Bienvenido a nuestra plataforma, ${createdUser.name}`,
-      body: `Tu cuenta ha sido creada exitosamente`,
-      originText: 'Sistema',
       destinyText: createdUser.email,
-      transport: TransportEnum.EMAIL,
-      destiny: createdUser.id ? {
-        resourceId: createdUser.id.toString(),
-        resourceName: ResourcesEnum.USER,
-      } : null,
       vars: {
         name: createdUser.name,
         email: createdUser.email,
@@ -622,11 +609,7 @@ export class AuthServiceController {
       await this.cacheManager.set(user.email, otpSended, msOTP);
     }
     const data = {
-      name: `OTP to ${user.email}`,
-      body: `The OTP is ${otpSended}`,
-      originText: `System`,
       destinyText: user.email,
-      transport: TransportEnum.EMAIL,
       destiny: null,
       vars: {
         name: user.name ?? user.email,

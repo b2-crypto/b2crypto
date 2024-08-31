@@ -1,29 +1,29 @@
 import { BuildersService } from '@builder/builders';
 import { QuerySearchAnyDto } from '@common/common/models/query_search-any.dto';
-import { CrmInterface } from '@crm/crm/entities/crm.interface';
-import { Crm } from '@crm/crm/entities/mongoose/crm.schema';
-import { LeadDocument } from '@lead/lead/entities/mongoose/lead.schema';
 import { MessageServiceMongooseService } from '@message/message';
 import { MessageCreateDto } from '@message/message/dto/message.create.dto';
 import { MessageUpdateDto } from '@message/message/dto/message.update.dto';
 import { MailerService } from '@nestjs-modules/mailer';
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import EventsNamesCrmEnum from 'apps/crm-service/src/enum/events.names.crm.enum';
-import EventsNamesLeadEnum from 'apps/lead-service/src/enum/events.names.lead.enum';
-import axios from 'axios';
-import * as pug from 'pug';
+import { EmailMessageBuilder } from './email-message.builder';
 import TemplatesMessageEnum from './enum/templates.message.enum';
-import { isEmail } from 'class-validator';
-import EventsNamesTrafficEnum from 'apps/traffic-service/src/enum/events.names.traffic.enum';
-import { Types } from 'mongoose';
 import EventsNamesAccountEnum from 'apps/account-service/src/enum/events.names.account.enum';
 import EventsNamesUserEnum from 'apps/user-service/src/enum/events.names.user.enum';
+import { isEmail } from 'class-validator';
+import EventsNamesCrmEnum from 'apps/crm-service/src/enum/events.names.crm.enum';
+import { Crm } from '@crm/crm/entities/mongoose/crm.schema';
+import { CrmInterface } from '@crm/crm/entities/crm.interface';
+import EventsNamesLeadEnum from 'apps/lead-service/src/enum/events.names.lead.enum';
+import axios from 'axios';
+import { LeadDocument } from '@lead/lead/entities/mongoose/lead.schema';
+import * as pug from 'pug';
 
 @Injectable()
 export class MessageServiceService {
   private apiKey: string;
   private url: string;
+
   constructor(
     @Inject(ConfigService)
     readonly configService: ConfigService,
@@ -73,52 +73,89 @@ export class MessageServiceService {
   }
 
   async download() {
-    // TODO[hender] Not implemented download
+    // TODO: Implement download logic if needed
     return Promise.resolve(undefined);
   }
 
   async sendEmailOtpNotification(message: MessageCreateDto) {
-    return this.sendEmail(message, TemplatesMessageEnum.otpNotification);
+    const emailMessage = new EmailMessageBuilder()
+      .setName('OTP Notification')
+      .setBody(`Your OTP code is ${message.vars.otp}`)
+      .setOriginText('no-reply@yourdomain.com')
+      .setDestinyText(message.destinyText)
+      .setVars(message.vars)
+      .build();
+    return this.sendEmail(emailMessage, TemplatesMessageEnum.otpNotification);
   }
 
   async sendCardRequestConfirmationEmail(message: MessageCreateDto) {
-    return this.sendEmail(
-      message,
-      TemplatesMessageEnum.cardRequestConfirmation,
-    );
+    const emailMessage = new EmailMessageBuilder()
+      .setName('Card Request Confirmation')
+      .setBody('Your card request has been confirmed')
+      .setOriginText('no-reply@yourdomain.com')
+      .setDestinyText(message.destinyText)
+      .setVars(message.vars)
+      .build();
+    return this.sendEmail(emailMessage, TemplatesMessageEnum.cardRequestConfirmation);
   }
 
   async sendProfileRegistrationCreation(message: MessageCreateDto) {
-    return this.sendEmail(
-      message,
-      TemplatesMessageEnum.profileRegistrationCreation,
-    );
+    const emailMessage = new EmailMessageBuilder()
+      .setName('Profile Registration Creation')
+      .setBody('Your profile has been created')
+      .setOriginText('no-reply@yourdomain.com')
+      .setDestinyText(message.destinyText)
+      .setVars(message.vars)
+      .build();
+    return this.sendEmail(emailMessage, TemplatesMessageEnum.profileRegistrationCreation);
+  }
+
+  async sendPasswordRestoredEmail(message: MessageCreateDto) {
+    const emailMessage = new EmailMessageBuilder()
+      .setName('Password Restored')
+      .setBody('Your password has been successfully restored.')
+      .setOriginText('no-reply@yourdomain.com')
+      .setDestinyText(message.destinyText)
+      .setVars(message.vars)
+      .build();
+    return this.sendEmail(emailMessage, TemplatesMessageEnum.passwordRestoredConfirmation);
   }
 
   async sendVirtualPhysicalCards(message: MessageCreateDto) {
-    return this.sendEmail(message, TemplatesMessageEnum.virtualPhysicalCards);
+    const emailMessage = new EmailMessageBuilder()
+      .setName('Virtual/Physical Cards')
+      .setBody('Your virtual/physical card details')
+      .setOriginText('no-reply@yourdomain.com')
+      .setDestinyText(message.destinyText)
+      .setVars(message.vars)
+      .build();
+    return this.sendEmail(emailMessage, TemplatesMessageEnum.virtualPhysicalCards);
   }
-  async sendAdjustments(message: MessageCreateDto) {
 
+  async sendAdjustments(message: MessageCreateDto) {
     const getCard = await this.builder.getPromiseAccountEventClient(
       EventsNamesAccountEnum.findOneByCardId,
-      { id: message.destinyText } // Reemplazar esta implementación por un cambio en el dto 
+      { id: message.destinyText }
     );
 
     if (getCard && getCard.owner) {
-
       const user = await this.builder.getPromiseUserEventClient(
         EventsNamesUserEnum.findOneById,
         { _id: getCard.owner }
       );
 
       if (user && user.email) {
-        message.destinyText = user.email;
-
-        return this.sendEmail(
-          message,
-          TemplatesMessageEnum.adjustments,
-        );
+        const emailMessage = new EmailMessageBuilder()
+          .setName('Adjustments')
+          .setBody('Your card adjustments')
+          .setOriginText('no-reply@yourdomain.com')
+          .setDestinyText(user.email)
+          .setVars({
+            ...message.vars,
+            customerName: user.name,
+          })
+          .build();
+        return this.sendEmail(emailMessage, TemplatesMessageEnum.adjustments);
       }
     }
   }
@@ -126,73 +163,83 @@ export class MessageServiceService {
   async sendPurchases(message: MessageCreateDto) {
     const getCard = await this.builder.getPromiseAccountEventClient(
       EventsNamesAccountEnum.findOneByCardId,
-      { id: message.destinyText } // Reemplazar esta implementación por un cambio en el dto 
+      { id: message.destinyText }
     );
 
     if (getCard && getCard.owner) {
-
       const user = await this.builder.getPromiseUserEventClient(
         EventsNamesUserEnum.findOneById,
         { _id: getCard.owner }
       );
 
       if (user && user.email) {
-        message.destinyText = user.email;
-        const newMessageBody = {
-          ...message,
-          vars: {
+        const emailMessage = new EmailMessageBuilder()
+          .setName('Purchases')
+          .setBody('Your recent purchases')
+          .setOriginText('no-reply@yourdomain.com')
+          .setDestinyText(user.email)
+          .setVars({
             ...message.vars,
-            customerName: user.name
-          }
-
-        };
-        return this.sendEmail(
-          newMessageBody,
-          TemplatesMessageEnum.purchases,
-        );
+            customerName: user.name,
+          })
+          .build();
+        return this.sendEmail(emailMessage, TemplatesMessageEnum.purchases);
       }
     }
   }
 
   async sendCryptoWalletsManagement(message: MessageCreateDto) {
-    return this.sendEmail(
-      message,
-      TemplatesMessageEnum.cryptoWalletsManagement,
-    );
+    const emailMessage = new EmailMessageBuilder()
+      .setName('Crypto Wallets Management')
+      .setBody('Your crypto wallets management')
+      .setOriginText('no-reply@yourdomain.com')
+      .setDestinyText(message.destinyText)
+      .setVars(message.vars)
+      .build();
+    return this.sendEmail(emailMessage, TemplatesMessageEnum.cryptoWalletsManagement);
   }
 
   async sendSecurityNotifications(message: MessageCreateDto) {
-    return this.sendEmail(message, TemplatesMessageEnum.securityNotifications);
+    const emailMessage = new EmailMessageBuilder()
+      .setName('Security Notifications')
+      .setBody('Your security notifications')
+      .setOriginText('no-reply@yourdomain.com')
+      .setDestinyText(message.destinyText)
+      .setVars(message.vars)
+      .build();
+    return this.sendEmail(emailMessage, TemplatesMessageEnum.securityNotifications);
   }
 
-  async sendPasswordRestoredEmail(message: MessageCreateDto) {
-    return this.sendEmail(
-      message,
-      TemplatesMessageEnum.passwordRestoredConfirmation,
-    );
-  }
-
-  async sendEmail(message: MessageCreateDto, template: TemplatesMessageEnum) {
+  private async sendEmail(message: MessageCreateDto, template: TemplatesMessageEnum) {
     try {
-      let from = message.originText;
-      if (!isEmail(from)) {
-        from = await this.configService.get(
-          'AWS_SES_FROM_DEFAULT',
-          'no-reply@b2crypto.com',
-        );
-        message.originText = from;
+
+      const recipient = message.destinyText;
+      let from;
+
+      if (!isEmail(recipient)) {
+        throw new Error('Invalid recipient email address');
       }
-      const msg = await this.newMessage(message);
-      //send email
+
+      from = await this.configService.get(
+        'AWS_SES_FROM_DEFAULT',
+        'no-reply@b2crypto.com',
+      );
+      const html = this.compileHtml(message.vars ?? message, template);
+
       await this.mailerService.sendMail({
-        to: msg.destinyText,
+        to: recipient,
         from,
-        subject: msg.name,
-        html: this.compileHtml(message.vars ?? message, template),
+        subject: message.name,
+        text: message.body,
+        template: template,
+        context: message.vars,
+        html
       });
-      return msg;
+
+      return { success: true };
     } catch (error) {
-      console.log({ error })
+      console.error('Error sending email:', error);
+      return { success: false, error: error.message };
     }
   }
   private compileHtml(vars: any, template: TemplatesMessageEnum) {
@@ -246,6 +293,7 @@ export class MessageServiceService {
       return null;
     }
   }
+
   async getDomainCrm(crmId: Crm, triggerError = false): Promise<string> {
     const crm: CrmInterface = await this.builder.getPromiseCrmEventClient(
       EventsNamesCrmEnum.findOneById,

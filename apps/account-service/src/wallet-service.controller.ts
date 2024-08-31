@@ -46,6 +46,7 @@ import { NoCache } from '@common/common/decorators/no-cache.decorator';
 @Controller('wallets')
 export class WalletServiceController extends AccountServiceController {
   constructor(
+
     readonly walletService: AccountServiceService,
     @Inject(UserServiceService)
     private readonly userService: UserServiceService,
@@ -110,12 +111,7 @@ export class WalletServiceController extends AccountServiceController {
     const createdWallet = await this.walletService.createOne(createDto);
 
     const emailData = {
-      name: `Actualización de tu Wallet`,
-      body: `Se ha creado un nuevo wallet en tu cuenta`,
-      originText: 'Sistema',
       destinyText: user.email,
-      transport: TransportEnum.EMAIL,
-      destiny: null,
       vars: {
         name: user.name,
         accountType: createdWallet.accountType,
@@ -142,18 +138,19 @@ export class WalletServiceController extends AccountServiceController {
       EventsNamesMessageEnum.sendCryptoWalletsManagement,
       emailData
     )
-    //---En local esta parte se debe de comentar-----/
-    this.ewalletBuilder.emitAccountEventClient(
-      EventsNamesAccountEnum.updateOne,
-      {
-        id: createdWallet.id ?? createdWallet._id,
-        responseCreation: await this.ewalletBuilder.getPromiseTransferEventClient(
-          EventsNamesTransferEnum.createOneDepositLink,
-          transferBtn
-        ),
-      }
-    );
-    //------------------------------------------//
+
+    if (process.env.SERVER_ENV !== "development") {
+      this.ewalletBuilder.emitAccountEventClient(
+        EventsNamesAccountEnum.updateOne,
+        {
+          id: createdWallet.id ?? createdWallet._id,
+          responseCreation: await this.ewalletBuilder.getPromiseTransferEventClient(
+            EventsNamesTransferEnum.createOneDepositLink,
+            transferBtn
+          ),
+        }
+      );
+    }
 
     return createdWallet;
   }
