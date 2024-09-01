@@ -180,8 +180,7 @@ export class TransferServiceController implements GenericServiceController {
 
   @NoCache()
   @Get('me')
-  @ApiTags(SwaggerSteakeyConfigEnum.TAG_CARD)
-  @ApiTags('Stakey Card')
+  @ApiTags(SwaggerSteakeyConfigEnum.TAG_DEPOSIT)
   @ApiSecurity('b2crypto-key')
   @ApiBearerAuth('bearerToken')
   @UseGuards(ApiKeyAuthGuard)

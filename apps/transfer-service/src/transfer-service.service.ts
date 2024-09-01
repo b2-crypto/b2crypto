@@ -300,7 +300,7 @@ export class TransferServiceService
                 target_amount_requested: transferSaved.amount.toString(),
                 label: transferSaved.name,
                 tracking_id: transferSaved._id,
-                confirmations_needed: 4,
+                confirmations_needed: 2,
                 // TODO[hender-2024/05/30] Change callback_url to environment params
                 callback_url:
                   process.env.ENVIRONMENT === 'PROD'
