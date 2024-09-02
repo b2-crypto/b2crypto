@@ -38,10 +38,16 @@ import {
 import EventsNamesAccountEnum from './enum/events.names.account.enum';
 import EventsNamesTransferEnum from 'apps/transfer-service/src/enum/events.names.transfer.enum';
 import { TransferCreateButtonDto } from 'apps/transfer-service/src/dto/transfer.create.button.dto';
-import TransportEnum from '@common/common/enums/TransportEnum';
 import EventsNamesMessageEnum from 'apps/message-service/src/enum/events.names.message.enum';
 import { NoCache } from '@common/common/decorators/no-cache.decorator';
 import { EnvironmentEnum } from '@common/common/enums/environment.enum';
+import EventsNamesStatusEnum from 'apps/status-service/src/enum/events.names.status.enum';
+import TagEnum from '@common/common/enums/TagEnum';
+import EventsNamesCategoryEnum from 'apps/category-service/src/enum/events.names.category.enum';
+import EventsNamesPspAccountEnum from 'apps/psp-service/src/enum/events.names.psp.acount.enum';
+import { OperationTransactionType } from '@transfer/transfer/enum/operation.transaction.type.enum';
+import { StatusCashierEnum } from '@common/common/enums/StatusCashierEnum';
+import { TransferCreateDto } from '@transfer/transfer/dto/transfer.create.dto';
 
 @ApiTags('E-WALLET')
 @Controller('wallets')
@@ -157,6 +163,10 @@ export class WalletServiceController extends AccountServiceController {
   }
 
   @Post('recharge')
+  @ApiTags(SwaggerSteakeyConfigEnum.TAG_WALLET)
+  @ApiSecurity('b2crypto-key')
+  @ApiBearerAuth('bearerToken')
+  @UseGuards(ApiKeyAuthGuard)
   async rechargeOne(
     @Body() createDto: WalletDepositCreateDto,
     @Req() req?: any,
@@ -181,48 +191,150 @@ export class WalletServiceController extends AccountServiceController {
     if (to.type != TypesAccountEnum.WALLET) {
       throw new BadRequestException('Wallet not found');
     }
-    const transferBtn: TransferCreateButtonDto = {
-      amount: createDto.amount.toString(),
-      currency: 'USD',
-      account: to._id,
-      creator: req?.user.id,
-      details: 'Recharge in wallet',
-      customer_name: user.name,
-      customer_email: user.email,
-      public_key: null,
-      identifier: user._id.toString(),
-    };
-    try {
-      let depositAddress = to.responseCreation;
-      if (!depositAddress) {
-        depositAddress =
-          await this.ewalletBuilder.getPromiseTransferEventClient(
-            EventsNamesTransferEnum.createOneDepositLink,
-            transferBtn,
-          );
-        this.ewalletBuilder.emitAccountEventClient(
-          EventsNamesAccountEnum.updateOne,
+    if (createDto.from) {
+      const from = await this.getAccountService().findOneById(
+        createDto.from.toString(),
+      );
+      if (from.type != TypesAccountEnum.WALLET) {
+        throw new BadRequestException('Wallet not found');
+      }
+      const depositWalletCategory =
+        await this.ewalletBuilder.getPromiseCategoryEventClient(
+          EventsNamesCategoryEnum.findOneByNameType,
           {
-            id: to._id,
-            responseCreation: depositAddress,
+            slug: 'deposit-wallet',
+            type: TagEnum.MONETARY_TRANSACTION_TYPE,
           },
         );
-      }
-      const host = req.get('Host');
-      //const url = `${req.protocol}://${host}/transfers/deposit/page/${transfer?._id}`;
-      const url = `https://${host}/transfers/deposit/page/${depositAddress?._id}`;
-      const data = depositAddress.responseAccount.data;
-      return {
-        statusCode: 200,
-        data: {
-          txId: depositAddress?._id,
-          url: `https://tronscan.org/#/address/${data?.attributes?.address}`,
-          address: data?.attributes?.address,
-          chain: 'TRON BLOCKCHAIN',
-        },
+      const withDrawalWalletCategory =
+        await this.ewalletBuilder.getPromiseCategoryEventClient(
+          EventsNamesCategoryEnum.findOneByNameType,
+          {
+            slug: 'withdrawal-wallet',
+            type: TagEnum.MONETARY_TRANSACTION_TYPE,
+          },
+        );
+      const approvedStatus =
+        await this.ewalletBuilder.getPromiseStatusEventClient(
+          EventsNamesStatusEnum.findOneByName,
+          'approved',
+        );
+      const internalPspAccount =
+        await this.ewalletBuilder.getPromisePspAccountEventClient(
+          EventsNamesPspAccountEnum.findOneByName,
+          'internal',
+        );
+      const result = Promise.all([
+        this.walletService.customUpdateOne({
+          id: createDto.to,
+          $inc: {
+            amount: createDto.amount,
+          },
+        }),
+        this.walletService.customUpdateOne({
+          id: createDto.from.toString(),
+          $inc: {
+            amount: createDto.amount * -1,
+          },
+        }),
+      ]).then((list) => list[0]);
+      this.ewalletBuilder.emitTransferEventClient(
+        EventsNamesTransferEnum.createOne,
+        {
+          name: `Recharge wallet ${to.name}`,
+          description: `Recharge from wallet ${from.name} to card ${to.name}`,
+          currency: to.currency,
+          amount: createDto.amount,
+          currencyCustodial: to.currencyCustodial,
+          amountCustodial: createDto.amount,
+          account: to._id,
+          userCreator: req?.user?.id,
+          userAccount: to.owner,
+          typeTransaction: depositWalletCategory._id,
+          psp: internalPspAccount.psp,
+          pspAccount: internalPspAccount._id,
+          operationType: OperationTransactionType.deposit,
+          page: req.get('Host'),
+          statusPayment: StatusCashierEnum.APPROVED,
+          approve: true,
+          status: approvedStatus._id,
+          brand: to.brand,
+          crm: to.crm,
+          confirmedAt: new Date(),
+          approvedAt: new Date(),
+        } as unknown as TransferCreateDto,
+      );
+      this.ewalletBuilder.emitTransferEventClient(
+        EventsNamesTransferEnum.createOne,
+        {
+          name: `Withdrawal wallet ${from.name}`,
+          description: `Recharge from wallet ${from.name} to card ${to.name}`,
+          currency: from.currency,
+          amount: createDto.amount,
+          currencyCustodial: from.currencyCustodial,
+          amountCustodial: createDto.amount,
+          account: from._id,
+          userCreator: req?.user?.id,
+          userAccount: from.owner,
+          typeTransaction: withDrawalWalletCategory._id,
+          psp: internalPspAccount.psp,
+          pspAccount: internalPspAccount._id,
+          operationType: OperationTransactionType.withdrawal,
+          page: req.get('Host'),
+          statusPayment: StatusCashierEnum.APPROVED,
+          approve: true,
+          status: approvedStatus._id,
+          brand: from.brand,
+          crm: from.crm,
+          confirmedAt: new Date(),
+          approvedAt: new Date(),
+        } as unknown as TransferCreateDto,
+      );
+      return result;
+    } else {
+      const transferBtn: TransferCreateButtonDto = {
+        amount: createDto.amount.toString(),
+        currency: 'USD',
+        account: to._id,
+        creator: req?.user.id,
+        details: 'Recharge in wallet',
+        customer_name: user.name,
+        customer_email: user.email,
+        public_key: null,
+        identifier: user._id.toString(),
       };
-    } catch (error) {
-      throw new BadRequestException(error);
+      try {
+        let depositAddress = to.responseCreation;
+        if (!depositAddress) {
+          depositAddress =
+            await this.ewalletBuilder.getPromiseTransferEventClient(
+              EventsNamesTransferEnum.createOneDepositLink,
+              transferBtn,
+            );
+          this.ewalletBuilder.emitAccountEventClient(
+            EventsNamesAccountEnum.updateOne,
+            {
+              id: to._id,
+              responseCreation: depositAddress,
+            },
+          );
+        }
+        const host = req.get('Host');
+        //const url = `${req.protocol}://${host}/transfers/deposit/page/${transfer?._id}`;
+        const url = `https://${host}/transfers/deposit/page/${depositAddress?._id}`;
+        const data = depositAddress.responseAccount.data;
+        return {
+          statusCode: 200,
+          data: {
+            txId: depositAddress?._id,
+            url: `https://tronscan.org/#/address/${data?.attributes?.address}`,
+            address: data?.attributes?.address,
+            chain: 'TRON BLOCKCHAIN',
+          },
+        };
+      } catch (error) {
+        throw new BadRequestException(error);
+      }
     }
   }
 

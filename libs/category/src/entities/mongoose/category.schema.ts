@@ -1,7 +1,6 @@
 import { CategoryEntity } from '@category/category/entities/category.entity';
 import ResourcesEnum from '@common/common/enums/ResourceEnum';
 import TagEnum from '@common/common/enums/TagEnum';
-import { Group } from '@group/group/entities/mongoose/group.schema';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose, { Document, ObjectId } from 'mongoose';
 import { CategoryInterface } from '../category.interface';
@@ -37,9 +36,6 @@ export class Category extends CategoryEntity implements CategoryInterface {
 
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'categories' })
   categoryParent: Category;
-
-  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'groups' })
-  groups: Group[];
 
   @Prop({ type: [String], enum: ResourcesEnum })
   resources: ResourcesEnum[];

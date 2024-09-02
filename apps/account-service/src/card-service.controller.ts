@@ -265,7 +265,7 @@ export class CardServiceController extends AccountServiceController {
             },
           },
         );
-      if (countWalletsUser < 1)
+      if (countWalletsUser < 1) {
         this.cardBuilder.emitAccountEventClient(
           EventsNamesAccountEnum.createOneWallet,
           {
@@ -278,6 +278,7 @@ export class CardServiceController extends AccountServiceController {
             accountType: 'STABLECOIN',
           },
         );
+      }
       return account;
     } catch (err) {
       await this.getAccountService().deleteOneById(account._id);
@@ -513,7 +514,6 @@ export class CardServiceController extends AccountServiceController {
   }
 
   @ApiTags(SwaggerSteakeyConfigEnum.TAG_CARD)
-  @ApiTags('Stakey Card')
   @ApiSecurity('b2crypto-key')
   @ApiBearerAuth('bearerToken')
   @UseGuards(ApiKeyAuthGuard)
@@ -626,6 +626,10 @@ export class CardServiceController extends AccountServiceController {
   }
 
   @Post('recharge')
+  @ApiTags(SwaggerSteakeyConfigEnum.TAG_CARD)
+  @ApiSecurity('b2crypto-key')
+  @ApiBearerAuth('bearerToken')
+  @UseGuards(ApiKeyAuthGuard)
   async rechargeOne(@Body() createDto: CardDepositCreateDto, @Req() req?: any) {
     const user: User = await this.getUser(req?.user?.id);
     if (!user.personalData) {
@@ -637,16 +641,32 @@ export class CardServiceController extends AccountServiceController {
     if (!createDto.from) {
       throw new BadRequestException('I need a wallet to recharge card');
     }
+    if (!createDto.to) {
+      throw new BadRequestException('I need a card to recharge');
+    }
     const to = await this.getAccountService().findOneById(
       createDto.to.toString(),
     );
     if (to.type != TypesAccountEnum.CARD) {
+      Logger.error(
+        'Type not same',
+        CardServiceController.name,
+        'Card.rechargeOne.card',
+      );
       throw new BadRequestException('Card not found');
+    }
+    if (!to) {
+      throw new BadRequestException('Card is not valid');
     }
     const from = await this.getAccountService().findOneById(
       createDto.from.toString(),
     );
     if (from.type != TypesAccountEnum.WALLET) {
+      Logger.error(
+        'Type not same',
+        CardServiceController.name,
+        'Card.rechargeOne.wallet',
+      );
       throw new BadRequestException('Wallet not found');
     }
     if (!from) {
@@ -911,16 +931,14 @@ export class CardServiceController extends AccountServiceController {
   }
 
   @MessagePattern(EventsNamesAccountEnum.findAllCardsToMigrate)
-  async finalALlCardsToMigrate(@Ctx() ctx: RmqContext, @Payload() data: any) {
+  async finalALlCardsToMigrate(
+    @Ctx() ctx: RmqContext,
+    @Payload() data: QuerySearchAnyDto,
+  ) {
     CommonService.ack(ctx);
     try {
       Logger.log(`Looking for all cards: `, CardServiceController.name);
-      const cardList = await this.cardService.findAll({
-        where: {
-          type: data.type,
-          page: data.page,
-        },
-      });
+      const cardList = await this.cardService.findAll(data);
       if (!cardList) {
         throw new NotFoundException(`No card was found`);
       }

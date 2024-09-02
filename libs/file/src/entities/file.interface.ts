@@ -1,4 +1,5 @@
 import { CategoryEntity } from '@category/category/entities/category.entity';
+import ResourcesEnum from '@common/common/enums/ResourceEnum';
 import { UserEntity } from '@user/user/entities/user.entity';
 
 export interface FileInterface {
@@ -9,11 +10,14 @@ export interface FileInterface {
   searchText: string;
   uri: string;
   path: string;
+  encodeBase64: string;
   mimetype: string;
   category: CategoryEntity;
   user: UserEntity;
   createdAt: Date;
   updatedAt: Date;
+  resourceId: string;
+  resourceType: ResourcesEnum;
 }
 
 export const FilePropertiesRelations = ['category', 'user'];

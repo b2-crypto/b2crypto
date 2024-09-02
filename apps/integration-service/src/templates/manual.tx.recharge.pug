@@ -1,0 +1,102 @@
+doctype html
+html
+    head
+        meta(charset="utf-8")
+        link(rel="icon" href="/favicon.png")
+        meta(name="viewport" content="width=device-width, initial-scale=1")
+        meta(name="theme-color" content="#000000")
+        meta(name="description" content="Connecting the world | Follow the whales")
+        link(rel="apple-touch-icon" href="/favicon.png")
+        link(rel="manifest" href="/manifest.json")
+        title(Sign In | B2Pay - Worldwide Financial Services)
+        link(rel="preconnect" href="https://fonts.googleapis.com")
+        link(rel="preconnect" href="https://fonts.gstatic.com" crossorigin="")
+        link(href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet")
+        link(rel="stylesheet" href="https://www.pay.b2fintech.com/assets/index-af89ae14.css")
+        link(rel="stylesheet" href="/assets/manual.tx.css")
+
+body 
+    div(id="root")
+        div(class="horizontal full ltr main-section antialiased relative font-nunito text-sm font-normal")
+            div(class="text-black dark:text-white-dark min-h-screen")
+                div(class="w-full max-w-[440px] p-4")
+                    div
+                        h1(
+                            class="text-3xl font-extrabold uppercase !leading-snug text-primary md:text-4xl"
+                        )
+                            | RECARGA MANUAL
+                        p(class="text-base font-bold leading-normal text-white-dark")
+                            | Hola #{name}, aca podras registrar una recarga manualmente.
+                    form(
+                        class="space-y-5 py-10 dark:text-white"
+                        action="https://api.b2fintech.com/clients/recharge"
+                        method="post"
+                        target="_self"
+                        enctype="multipart/form-data"
+                    )
+                        div
+                            label(for="userAccount") Usuario
+                            div(class="relative text-white-dark")
+                                select(name="userAccount" id="userAccount")
+                                    each user in users
+                                        option(value=user._id) #{user.email}
+                                    option(value="" selected) Selecciona un usuario
+                        div
+                            label(for="typeTransaction") Tipo de transaccion
+                            div(class="relative text-white-dark")
+                                select(name="typeTransaction" id="typeTransaction")
+                                    each typeTransaction in typeTransactions
+                                        option(value=typeTransaction._id) #{typeTransaction.name}
+                                    option(value="" selected) Selecciona un tipo de transaccion
+                        div
+                            label(for="amount") Monto (USD)
+                            div(class="relative text-white-dark")
+                                input(
+                                    name="amount"
+                                    id="amount"
+                                    type="number"
+                                    placeholder="Monto (USD)"
+                                    class="form-input ps-10 placeholder:text-white-dark"
+                                    value=""
+                                )
+                        div
+                            label(for="page") Concepto
+                            div(class="relative text-white-dark")
+                                input(
+                                    name="page"
+                                    id="page"
+                                    type="text"
+                                    placeholder="Concepto"
+                                    class="form-input ps-10 placeholder:text-white-dark"
+                                    value=""
+                                )
+                        div
+                            label(for="file") Captura de la recarga
+                            div(class="relative text-white-dark")
+                                input(
+                                    name="file"
+                                    id="file"
+                                    type="file"
+                                    accept="'image/jpeg', 'image/gif', 'image/png', 'image/svg+xml'"
+                                    placeholder="Captura de la recarga"
+                                    class="form-input ps-10 placeholder:text-white-dark"
+                                )
+                        div
+                            input(
+                                name="token"
+                                id="token"
+                                type="hidden"
+                                value=token
+                            )
+                            input(
+                                name="userCreator"
+                                id="userCreator"
+                                type="hidden"
+                                value=userCreator
+                            )
+                            input(
+                                type="submit"
+                                value="Recargar"
+                                class="btn btn-gradient w-full border-0 uppercase shadow-[0_10px_20px_-10px_rgba(59,97,166,0.44)]"
+                            )
+                    p(class="absolute bottom-1 w-full text-center dark:text-white") © 2024 | B2Pay Todos los derechos reservados

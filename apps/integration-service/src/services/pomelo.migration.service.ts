@@ -37,24 +37,24 @@ export class PomeloMigrationService {
 
   async setAllCardsOwner() {
     const log = `${PomeloMigrationService.name}-setAllCardsOwner`;
-    let page = 0;
+    let page = 1;
     let pages = 0;
     try {
       do {
         const cards = await this.builder.getPromiseAccountEventClient(
           EventsNamesAccountEnum.findAllCardsToMigrate,
           {
-            type: 'CARD',
-            page,
+            where: { type: 'CARD' },
+            page: page++,
           },
         );
-        page++;
         pages = cards.lastPage;
         Logger.log(`Cards found: ${cards.list.length}`, log);
         for (let i = 0; i < cards.list.length; i++) {
           const card = cards.list[i];
           const pomeloUser = await this.getUser(card?.cardConfig?.user_id);
-          if (pomeloUser) {
+          if (pomeloUser && pomeloUser.data) {
+            Logger.log(`Pomelo User: ${JSON.stringify(pomeloUser)}`, log);
             const user = await this.migrateUser(pomeloUser);
             if (user) {
               if (!user?.userCard?.id && pomeloUser?.data) {

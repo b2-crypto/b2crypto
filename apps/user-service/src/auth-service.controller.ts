@@ -18,7 +18,6 @@ import {
   BadGatewayException,
   BadRequestException,
   Body,
-  CACHE_MANAGER,
   Controller,
   Get,
   HttpStatus,
@@ -56,12 +55,12 @@ import { UserDocument } from '@user/user/entities/mongoose/user.schema';
 import { UserEntity } from '@user/user/entities/user.entity';
 import EventsNamesActivityEnum from 'apps/activity-service/src/enum/events.names.activity.enum';
 import EventsNamesMessageEnum from 'apps/message-service/src/enum/events.names.message.enum';
-import { Cache } from 'cache-manager';
 import { isBoolean } from 'class-validator';
 import { SwaggerSteakeyConfigEnum } from 'libs/config/enum/swagger.stakey.config.enum';
 import { BadRequestError } from 'passport-headerapikey';
 import { IntegrationIdentityEnum } from './../../../libs/integration/src/identity/generic/domain/integration.identity.enum';
 import EventsNamesUserEnum from './enum/events.names.user.enum';
+import { CACHE_MANAGER, Cache } from '@nestjs/cache-manager';
 
 @ApiTags('AUTHENTICATION')
 @Controller('auth')
@@ -237,7 +236,7 @@ export class AuthServiceController {
       });
       return code;
     } catch (err) {
-      Logger.error(err, 'Bad request Identity');
+      Logger.error(err, 'Bad request Identity code');
       throw new BadGatewayException();
     }
   }
@@ -255,7 +254,7 @@ export class AuthServiceController {
       }
       return rta;
     } catch (err) {
-      Logger.error(err, 'Bad request Identity');
+      Logger.error(err, 'Bad request Identity token');
       throw new BadGatewayException();
     }
   }

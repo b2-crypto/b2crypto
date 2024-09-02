@@ -180,6 +180,7 @@ export class AccountServiceController implements GenericServiceController {
     return this.accountService.updateOneEvent(updateDto, ctx);
   }
   @MessagePattern(EventsNamesAccountEnum.customUpdateOne)
+  @EventPattern(EventsNamesAccountEnum.customUpdateOne)
   customUpdateOneEvent(
     @Payload() updateDto: AccountCreateDto,
     @Ctx() ctx: RmqContext,
