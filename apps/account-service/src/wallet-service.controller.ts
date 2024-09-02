@@ -41,6 +41,7 @@ import { TransferCreateButtonDto } from 'apps/transfer-service/src/dto/transfer.
 import TransportEnum from '@common/common/enums/TransportEnum';
 import EventsNamesMessageEnum from 'apps/message-service/src/enum/events.names.message.enum';
 import { NoCache } from '@common/common/decorators/no-cache.decorator';
+import { EnvironmentEnum } from '@common/common/enums/environment.enum';
 
 @ApiTags('E-WALLET')
 @Controller('wallets')
@@ -139,7 +140,7 @@ export class WalletServiceController extends AccountServiceController {
       emailData
     )
 
-    if (process.env.ENVIRONMENT === "PROD") {
+    if (process.env.ENVIRONMENT === EnvironmentEnum.prod) {
       this.ewalletBuilder.emitAccountEventClient(
         EventsNamesAccountEnum.updateOne,
         {
