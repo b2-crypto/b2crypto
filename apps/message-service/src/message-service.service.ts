@@ -77,11 +77,16 @@ export class MessageServiceService {
     return Promise.resolve(undefined);
   }
 
+  private getOriginEmail(): string {
+    return this.configService.get('AWS_SES_FROM_DEFAULT', 'no-reply@b2crypto.com');
+  }
+
+
   async sendEmailOtpNotification(message: MessageCreateDto) {
     const emailMessage = new EmailMessageBuilder()
       .setName('OTP Notification')
       .setBody(`Your OTP code is ${message.vars.otp}`)
-      .setOriginText('no-reply@yourdomain.com')
+      .setOriginText(this.getOriginEmail())
       .setDestinyText(message.destinyText)
       .setVars(message.vars)
       .build();
@@ -92,7 +97,7 @@ export class MessageServiceService {
     const emailMessage = new EmailMessageBuilder()
       .setName('Card Request Confirmation')
       .setBody('Your card request has been confirmed')
-      .setOriginText('no-reply@yourdomain.com')
+      .setOriginText(this.getOriginEmail())
       .setDestinyText(message.destinyText)
       .setVars(message.vars)
       .build();
@@ -103,7 +108,7 @@ export class MessageServiceService {
     const emailMessage = new EmailMessageBuilder()
       .setName('Profile Registration Creation')
       .setBody('Your profile has been created')
-      .setOriginText('no-reply@yourdomain.com')
+      .setOriginText(this.getOriginEmail())
       .setDestinyText(message.destinyText)
       .setVars(message.vars)
       .build();
@@ -114,7 +119,7 @@ export class MessageServiceService {
     const emailMessage = new EmailMessageBuilder()
       .setName('Password Restored')
       .setBody('Your password has been successfully restored.')
-      .setOriginText('no-reply@yourdomain.com')
+      .setOriginText(this.getOriginEmail())
       .setDestinyText(message.destinyText)
       .setVars(message.vars)
       .build();
@@ -125,7 +130,7 @@ export class MessageServiceService {
     const emailMessage = new EmailMessageBuilder()
       .setName('Virtual/Physical Cards')
       .setBody('Your virtual/physical card details')
-      .setOriginText('no-reply@yourdomain.com')
+      .setOriginText(this.getOriginEmail())
       .setDestinyText(message.destinyText)
       .setVars(message.vars)
       .build();
@@ -148,7 +153,7 @@ export class MessageServiceService {
         const emailMessage = new EmailMessageBuilder()
           .setName('Adjustments')
           .setBody('Your card adjustments')
-          .setOriginText('no-reply@yourdomain.com')
+          .setOriginText(this.getOriginEmail())
           .setDestinyText(user.email)
           .setVars({
             ...message.vars,
@@ -176,7 +181,7 @@ export class MessageServiceService {
         const emailMessage = new EmailMessageBuilder()
           .setName('Purchases')
           .setBody('Your recent purchases')
-          .setOriginText('no-reply@yourdomain.com')
+          .setOriginText(this.getOriginEmail())
           .setDestinyText(user.email)
           .setVars({
             ...message.vars,
@@ -192,7 +197,7 @@ export class MessageServiceService {
     const emailMessage = new EmailMessageBuilder()
       .setName('Crypto Wallets Management')
       .setBody('Your crypto wallets management')
-      .setOriginText('no-reply@yourdomain.com')
+      .setOriginText(this.getOriginEmail())
       .setDestinyText(message.destinyText)
       .setVars(message.vars)
       .build();
@@ -203,7 +208,7 @@ export class MessageServiceService {
     const emailMessage = new EmailMessageBuilder()
       .setName('Security Notifications')
       .setBody('Your security notifications')
-      .setOriginText('no-reply@yourdomain.com')
+      .setOriginText(this.getOriginEmail())
       .setDestinyText(message.destinyText)
       .setVars(message.vars)
       .build();
