@@ -139,7 +139,7 @@ export class WalletServiceController extends AccountServiceController {
       emailData
     )
 
-    if (process.env.SERVER_ENV !== "development") {
+    if (process.env.ENVIRONMENT === "PROD") {
       this.ewalletBuilder.emitAccountEventClient(
         EventsNamesAccountEnum.updateOne,
         {

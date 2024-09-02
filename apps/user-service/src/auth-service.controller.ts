@@ -275,9 +275,8 @@ export class AuthServiceController {
         EventsNamesUserEnum.findAll,
         {
           where: {
-            email: restorePasswordDto.email
-          },
-          collation: { locale: 'en', strength: 2, numericOrdering: true, alternate: 'shifted' }
+            slugEmail: CommonService.getSlug(restorePasswordDto.email),
+          }
         },
       );
 
