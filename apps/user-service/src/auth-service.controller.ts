@@ -269,73 +269,81 @@ export class AuthServiceController {
   @ApiSecurity('b2crypto-key')
   @Post('restore-password')
   async restorePassword(@Body() restorePasswordDto: RestorePasswordDto) {
-    const users = await this.builder.getPromiseUserEventClient(
-      EventsNamesUserEnum.findAll,
-      {
-        where: {
-          email: `/${restorePasswordDto.email}/gi`,
-        },
-      },
-    );
-    // Validate user
-    if (!users.list[0]) {
-      throw new BadRequestException('User not found');
-    }
-    if (
-      restorePasswordDto.otp &&
-      restorePasswordDto.password &&
-      restorePasswordDto.password2
-    ) {
-      // Validate password
-      if (restorePasswordDto.password !== restorePasswordDto.password2) {
-        throw new BadRequestException('Bad password');
-      }
-      const otpSended = await this.getOtpGenerated(restorePasswordDto.email);
-      // Validate OTP
-      if (!otpSended) {
-        throw new BadRequestException('Expired OTP');
-      } else if (restorePasswordDto.otp != otpSended) {
-        throw new BadRequestException('Bad OTP');
-      }
-      await this.deleteOtpGenerated(restorePasswordDto.email);
-      const psw = restorePasswordDto.password;
-      const user = users.list[0];
-      const emailData = {
-        name: `Actualizacion de clave`,
-        body: `Tu clave ha sido actualizada exitosamente ${user.name}`,
-        originText: 'Sistema',
-        destinyText: user.email,
-        transport: TransportEnum.EMAIL,
-        destiny: null,
-        vars: {
-          name: user.name,
-          username: user.username,
-          password: psw,
-        },
-      };
-      this.builder.emitMessageEventClient(
-        EventsNamesMessageEnum.sendPasswordRestoredEmail,
-        emailData,
-      );
-      await this.builder.getPromiseUserEventClient(
-        EventsNamesUserEnum.updateOne,
+    try {
+      const users = await this.builder.getPromiseUserEventClient(
+        EventsNamesUserEnum.findAll,
         {
-          id: users.list[0]._id,
-          verifyEmail: false,
-          password: CommonService.getHash(psw),
+          where: {
+            slugEmail: CommonService.getSlug(restorePasswordDto.email),
+          }
         },
       );
+
+      if (!users.list[0]) {
+        throw new BadRequestException('User not found');
+      }
+
+      if (
+        restorePasswordDto.otp &&
+        restorePasswordDto.password &&
+        restorePasswordDto.password2
+      ) {
+
+        if (restorePasswordDto.password !== restorePasswordDto.password2) {
+          throw new BadRequestException('Bad password');
+        }
+
+        const otpSended = await this.getOtpGenerated(restorePasswordDto.email);
+
+        if (!otpSended) {
+          throw new BadRequestException('Expired OTP');
+        } else if (restorePasswordDto.otp != otpSended) {
+          throw new BadRequestException('Bad OTP');
+        }
+
+        await this.deleteOtpGenerated(restorePasswordDto.email);
+
+        const psw = restorePasswordDto.password;
+        const user = users.list[0];
+        const emailData = {
+          destinyText: user.email,
+          vars: {
+            name: user.name,
+            username: user.email,
+            password: psw,
+          },
+        };
+
+        this.builder.emitMessageEventClient(
+          EventsNamesMessageEnum.sendPasswordRestoredEmail,
+          emailData,
+        );
+
+        await this.builder.getPromiseUserEventClient(
+          EventsNamesUserEnum.updateOne,
+          {
+            id: users.list[0]._id,
+            verifyEmail: false,
+            password: CommonService.getHash(psw),
+          },
+        );
+
+        return {
+          statusCode: 200,
+          message: 'Password updated',
+        };
+      }
+
+
+      await this.generateOtp({ email: restorePasswordDto.email } as any);
       return {
-        statusCode: 200,
-        message: 'Password updated',
+        statusCode: 201,
+        message: 'OTP generated',
       };
+    } catch (error) {
+      console.log({ error });
+      throw error;
     }
-    // send otp
-    await this.generateOtp({ email: restorePasswordDto.email } as any);
-    return {
-      statusCode: 201,
-      message: 'OTP generated',
-    };
   }
 
   @ApiKeyCheck()
@@ -402,8 +410,7 @@ export class AuthServiceController {
   @ApiResponse(ResponseB2Crypto.getResponseSwagger(500, ActionsEnum.LOGIN)) */
   @Post('registry')
   async registryUser(@Body() userDto: UserRegisterDto) {
-    userDto.name =
-      userDto.name ?? userDto.username ?? userDto.email.split('@')[0];
+    userDto.name = userDto.name ?? userDto.username ?? userDto.email.split('@')[0];
     userDto.slugEmail = CommonService.getSlug(userDto.email);
     userDto.username = userDto.username ?? userDto.name;
     userDto.slugUsername = CommonService.getSlug(userDto.username);
@@ -414,12 +421,7 @@ export class AuthServiceController {
     );
 
     const emailData = {
-      name: `Bienvenido a nuestra plataforma, ${createdUser.name}`,
-      body: `Tu cuenta ha sido creada exitosamente`,
-      originText: 'Sistema',
       destinyText: createdUser.email,
-      transport: TransportEnum.EMAIL,
-      destiny: null,
       vars: {
         name: createdUser.name,
         email: createdUser.email,
@@ -429,24 +431,18 @@ export class AuthServiceController {
       },
     };
 
-    if (createdUser._id) {
-      emailData.destiny = {
-        resourceId: createdUser._id.toString(),
-        resourceName: ResourcesEnum.USER,
-      };
-    }
-
-    Logger.log(emailData, 'New User Registration Email Prepared');
-
-    /* setImmediate(() => {
-      this.builder.emitMessageEventClient(
+    try {
+      await this.builder.emitMessageEventClient(
         EventsNamesMessageEnum.sendProfileRegistrationCreation,
         emailData,
       );
-    }); */
+    } catch (error) {
+      Logger.error('Error sending user registration email', error.stack);
+    }
 
     return createdUser;
   }
+
 
   @IsRefresh()
   @ApiKeyCheck()
@@ -546,7 +542,7 @@ export class AuthServiceController {
     // Checks verified email (first time sing-in)
     const statusCode =
       !isBoolean(userCodeDto.user.verifyEmail) ||
-      userCodeDto.user.verifyEmail === true
+        userCodeDto.user.verifyEmail === true
         ? 301
         : 201;
     // Get token
@@ -607,18 +603,11 @@ export class AuthServiceController {
   private async generateOtp(user: UserDocument, msOTP = 60000) {
     let otpSended = await this.getOtpGenerated(user.email);
     if (!otpSended) {
-      otpSended = CommonService.getNumberDigits(
-        CommonService.randomIntNumber(999999),
-        6,
-      );
+      otpSended = CommonService.randomIntNumber(999999);
       await this.cacheManager.set(user.email, otpSended, msOTP);
     }
     const data = {
-      name: `OTP to ${user.email}`,
-      body: `The OTP is ${otpSended}`,
-      originText: `System`,
       destinyText: user.email,
-      transport: TransportEnum.EMAIL,
       destiny: null,
       vars: {
         name: user.name ?? user.email,

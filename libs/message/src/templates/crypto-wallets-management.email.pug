@@ -10,10 +10,18 @@ html(lang="es")
         p Se ha creado un nuevo wallet en tu cuenta. Aquí están los detalles:
         
         ul
-          li Tipo de Cuenta: #{vars.accountType}
-          li Nombre de la Cuenta: #{vars.accountName}
-          li ID de la Cuenta: #{vars.accountId}
-          li Saldo Inicial: #{vars.balance} #{vars.currency}
+          li
+            strong Tipo de Cuenta: 
+            | #{vars.accountType}
+          li
+            strong Nombre de la Cuenta: 
+            | #{vars.accountName}
+          li
+            strong ID de la Cuenta: 
+            | #{vars.accountId}
+          li
+            strong Saldo Inicial: 
+            | #{vars.balance} #{vars.currency}
 
         p Puedes acceder a tu nuevo wallet a través de nuestra plataforma. Si no reconoces esta actividad, por favor contáctanos inmediatamente.
 

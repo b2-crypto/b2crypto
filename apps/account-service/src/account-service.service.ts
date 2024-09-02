@@ -24,15 +24,14 @@ import EventsNamesStatusEnum from 'apps/status-service/src/enum/events.names.sta
 
 @Injectable()
 export class AccountServiceService
-  implements BasicMicroserviceService<AccountDocument>
-{
+  implements BasicMicroserviceService<AccountDocument> {
   constructor(
     private configService: ConfigService,
     @Inject(BuildersService)
     private readonly builder: BuildersService,
     @Inject(AccountServiceMongooseService)
     private lib: AccountServiceMongooseService,
-  ) {}
+  ) { }
   async download(
     query: QuerySearchAnyDto,
     context?: any,
@@ -60,12 +59,7 @@ export class AccountServiceService
 
     if (account && account.email) {
       const data = {
-        name: `Confirmación de Solicitud de Tarjeta para ${account.email}`,
-        body: `Tu solicitud de tarjeta ha sido recibida`,
-        originText: 'Sistema',
         destinyText: account.email,
-        transport: TransportEnum.EMAIL,
-        destiny: null,
         vars: {
           name: account.firstName,
           lastName: account.lastName,
@@ -75,13 +69,6 @@ export class AccountServiceService
           status: account.statusText,
         },
       };
-
-      if (account._id) {
-        data.destiny = {
-          resourceId: account._id.toString(),
-          resourceName: 'ACCOUNT',
-        };
-      }
 
       Logger.log(data, 'Card Request Confirmation Email Prepared');
       this.builder.emitMessageEventClient(
