@@ -140,7 +140,7 @@ export class MessageServiceService {
   async sendAdjustments(message: MessageCreateDto) {
     const getCard = await this.builder.getPromiseAccountEventClient(
       EventsNamesAccountEnum.findOneByCardId,
-      { id: message.destinyText }
+      { id: message.vars.cardId }
     );
 
     if (getCard && getCard.owner) {
@@ -168,7 +168,7 @@ export class MessageServiceService {
   async sendPurchases(message: MessageCreateDto) {
     const getCard = await this.builder.getPromiseAccountEventClient(
       EventsNamesAccountEnum.findOneByCardId,
-      { id: message.destinyText }
+      { id: message.vars.cardId }
     );
 
     if (getCard && getCard.owner) {
@@ -252,8 +252,7 @@ export class MessageServiceService {
       pageTitle: vars.name,
       headerColor: this.getHeaderColorForTemplate(template),
       headerTitle: vars.name,
-      logoUrl:
-        'https://message-templates-resource.s3.eu-west-3.amazonaws.com/logo.png',
+      logoUrl: process.env.LOGO_URL,
       vars: vars,
     };
 

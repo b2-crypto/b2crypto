@@ -271,8 +271,8 @@ export class PomeloIntegrationProcessService {
   ): Promise<void> {
     if (adjustment.user && adjustment.user.id) {
       const data = {
-        destinyText: adjustment.card.id,
         vars: {
+          cardId: adjustment.card.id,
           transactionType: adjustment.transaction?.type,
           merchantName: adjustment.merchant?.name,
           cardLastFour: adjustment.card?.last_four,
@@ -306,9 +306,9 @@ export class PomeloIntegrationProcessService {
     );
 
     const data = {
-      destinyText: authorization.card.id,
       transport: TransportEnum.EMAIL,
       vars: {
+        cardId: authorization.card.id,
         transactionDate: new Date().toLocaleString('es-ES', {
           timeZone: 'America/Bogota',
           year: 'numeric',
