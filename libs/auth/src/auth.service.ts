@@ -15,7 +15,7 @@ import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { PermissionServiceMongooseService } from '@permission/permission';
 import { UserServiceMongooseService } from '@user/user';
-import EventsNamesAffiliateEnum from 'apps/affiliate-service/src/enum/events.names.affiliate.enum';
+import EventsNamesAffiliateEnum from '../../../apps/affiliate-service/src/enum/events.names.affiliate.enum';
 import * as bcrypt from 'bcrypt';
 import * as qrcode from 'qrcode';
 import * as speakeasy from 'speakeasy';

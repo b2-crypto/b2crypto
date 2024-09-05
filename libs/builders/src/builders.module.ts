@@ -10,13 +10,13 @@ import { QueueAdminModule } from '@common/common/queue-admin-providers/queue.adm
   providers: [
     BuildersService,
     ConfigService,
-    {
+    /*{
       provide: EventClientEnum.SERVICE_NAME,
       useFactory: QueueAdminModule.factoryEventClient(
         EventClientEnum.SERVICE_NAME,
       ),
       inject: [ConfigService],
-    },
+    },*/
     {
       provide: EventClientEnum.ACTIVITY,
       useFactory: QueueAdminModule.factoryEventClient(EventClientEnum.ACTIVITY),

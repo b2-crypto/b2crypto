@@ -1,4 +1,4 @@
-import { BrandModule } from 'libs/brand/src';
+import { BrandModule } from '@brand/brand/brand.module';
 import { CategoryModule } from '@category/category';
 import { CommonModule } from '@common/common';
 import { CrmServiceMongooseService } from '@crm/crm/crm-service-mongoose.service';

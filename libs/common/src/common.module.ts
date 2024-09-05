@@ -7,11 +7,15 @@ import { PomeloSignatureUtils } from './utils/pomelo.integration.process.signatu
 import { PomeloHttpUtils } from './utils/pomelo.integration.process.http.utils';
 import { PomeloCache } from '@integration/integration/util/pomelo.integration.process.cache';
 import { PomeloProcessConstants } from './utils/pomelo.integration.process.constants';
+import { CacheModule } from '@nestjs/cache-manager';
+import { ConfigService } from '@nestjs/config';
 
 @Module({
+  imports: [CacheModule.register({})],
   providers: [
     PomeloCache,
     CommonService,
+    ConfigService,
     PomeloHttpUtils,
     IntegrationModule,
     PomeloSignatureUtils,

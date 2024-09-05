@@ -1,11 +1,12 @@
 import {
+  Inject,
   Injectable,
   InternalServerErrorException,
   Logger,
 } from '@nestjs/common';
 import { FiatIntegrationClient } from '../clients/fiat.integration.client';
 import { BuildersService } from '@builder/builders';
-import EventsNamesAccountEnum from 'apps/account-service/src/enum/events.names.account.enum';
+import EventsNamesAccountEnum from '../../../../apps/account-service/src/enum/events.names.account.enum';
 import {
   Adjustment,
   Authorization,
@@ -14,9 +15,9 @@ import {
 import { PomeloCache } from '@integration/integration/util/pomelo.integration.process.cache';
 import { PomeloProcessEnum } from '../enums/pomelo.process.enum';
 import { CardsEnum } from '@common/common/enums/messages.enum';
-import EventsNamesTransferEnum from 'apps/transfer-service/src/enum/events.names.transfer.enum';
+import EventsNamesTransferEnum from '../../../../apps/transfer-service/src/enum/events.names.transfer.enum';
 import { OperationTransactionType } from '@transfer/transfer/enum/operation.transaction.type.enum';
-import EventsNamesMessageEnum from 'apps/message-service/src/enum/events.names.message.enum';
+import EventsNamesMessageEnum from '../../../../apps/message-service/src/enum/events.names.message.enum';
 import TransportEnum from '@common/common/enums/TransportEnum';
 
 @Injectable()
@@ -24,8 +25,9 @@ export class PomeloIntegrationProcessService {
   constructor(
     private readonly cache: PomeloCache,
     private readonly currencyConversion: FiatIntegrationClient,
+    @Inject(BuildersService)
     private readonly builder: BuildersService,
-  ) { }
+  ) {}
 
   private async process(
     process: any,
@@ -251,14 +253,12 @@ export class PomeloIntegrationProcessService {
         headers,
       );
 
-
       this.sendAdjustmentNotificationEmail(adjustment).catch((error) => {
         Logger.error(
           'Error sending adjustment notification email',
           error.stack,
         );
       });
-
 
       return processed;
     } catch (error) {
@@ -297,7 +297,6 @@ export class PomeloIntegrationProcessService {
     authorization: Authorization,
     headers: any,
   ): Promise<any> {
-
     const process = await this.process(
       authorization,
       authorization.idempotency,
@@ -316,9 +315,9 @@ export class PomeloIntegrationProcessService {
           day: '2-digit',
           hour: '2-digit',
           minute: '2-digit',
-          second: '2-digit'
+          second: '2-digit',
         }),
-        customerName: "",
+        customerName: '',
         transactionStatus: process.status,
         transactionType: authorization.transaction?.type,
         merchantName: authorization.merchant?.name,
@@ -335,6 +334,4 @@ export class PomeloIntegrationProcessService {
 
     return process;
   }
-
-
 }

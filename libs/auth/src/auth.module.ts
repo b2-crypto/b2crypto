@@ -22,9 +22,12 @@ import { PomeloCache } from '@integration/integration/util/pomelo.integration.pr
 import { SumsubSignatureGuard } from './guards/sumsub.signature.guard';
 import { SumsubHttpUtils } from '@common/common/utils/sumsub.integration.process.http.utils';
 import { SumsubSignatureUtils } from '@common/common/utils/sumsub.integration.process.signature';
+import { ConfigService } from '@nestjs/config';
+import { CacheModule } from '@nestjs/cache-manager';
 
 @Module({
   imports: [
+    CacheModule.register({}),
     CrmModule,
     UserModule,
     BuildersModule,
@@ -44,6 +47,7 @@ import { SumsubSignatureUtils } from '@common/common/utils/sumsub.integration.pr
     PomeloCache,
     JwtStrategy,
     LocalStrategy,
+    ConfigService,
     ApiKeyStrategy,
     PomeloSignatureUtils,
     PomeloHttpUtils,

@@ -6,7 +6,7 @@ import { BrandDocument } from '@brand/brand/entities/mongoose/brand.schema';
 import { IpAddressDocument } from '../../ip-address/src/entities/mongoose/ip-address.schema';
 import { AffiliateCreateDto } from '@affiliate/affiliate/domain/dto/affiliate.create.dto';
 import { AffiliateUpdateDto } from '@affiliate/affiliate/domain/dto/affiliate.update.dto';
-import { BrandServiceMongooseService } from 'libs/brand/src';
+import { BrandServiceMongooseService } from '@brand/brand';
 import { PersonDocument } from '@person/person/entities/mongoose/person.schema';
 import { BasicServiceModel } from '@common/common/models/basic-service.model';
 import { UserDocument } from '../../user/src/entities/mongoose/user.schema';

@@ -26,8 +26,8 @@ import { Observable, lastValueFrom, startWith } from 'rxjs';
 @Injectable()
 export class BuildersService {
   constructor(
-    @Inject(EventClientEnum.SERVICE_NAME)
-    private eventClient: ClientProxy,
+    /*@Inject(EventClientEnum.SERVICE_NAME)
+    private eventClient: ClientProxy,*/
     @Inject(EventClientEnum.ACCOUNT)
     private accountClient: ClientProxy,
     @Inject(EventClientEnum.ACTIVITY)
@@ -70,9 +70,9 @@ export class BuildersService {
     private groupClient: ClientProxy,
   ) {}
 
-  getEventClient(): ClientProxy {
+  /*getEventClient(): ClientProxy {
     return this.eventClient;
-  }
+  }*/
 
   getPermissionEventClient(): ClientProxy {
     return this.permissionClient;

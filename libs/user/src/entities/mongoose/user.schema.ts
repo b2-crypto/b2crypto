@@ -1,20 +1,19 @@
-import {
-  UserCard,
-  UserCardSchema,
-} from '@account/account/entities/mongoose/user-card.schema';
 import CurrencyCodeB2cryptoEnum from '@common/common/enums/currency-code-b2crypto.enum';
 import { FileInterface } from '@file/file/entities/file.interface';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Permission } from '@permission/permission/entities/mongoose/permission.schema';
 import { Person } from '@person/person/entities/mongoose/person.schema';
 import { Role } from '@role/role/entities/mongoose/role.schema';
-import UserVerifyIdentityDto from '@user/user/dto/user.verify.identity.dto';
 import { UserEntity } from '@user/user/entities/user.entity';
 import mongoose, { Document, ObjectId } from 'mongoose';
 import { UserVerifyIdentitySchema } from './user.verify.identity.schema';
 import { Affiliate } from '@affiliate/affiliate/infrastructure/mongoose/affiliate.schema';
 import { Brand } from '@brand/brand/entities/mongoose/brand.schema';
 import { Group } from '@group/group/entities/mongoose/group.schema';
+import {
+  UserCard,
+  UserCardSchema,
+} from '@account/account/entities/mongoose/user-card.schema';
 
 export type UserDocument = User & Document;
 

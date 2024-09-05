@@ -118,7 +118,7 @@
     "@nestjs/cache-manager": "^2.2.2",
     "@nestjs/common": "^9.0.0",
     "@nestjs/config": "^2.2.0",
-    "@nestjs/core": "^9.0.0",
+    "@nestjs/core": "^9.4.3",
     "@nestjs/jwt": "^9.0.0",
     "@nestjs/mapped-types": "*",
     "@nestjs/microservices": "^9.1.6",
@@ -172,7 +172,7 @@
   "devDependencies": {
     "@nestjs/cli": "^9.0.0",
     "@nestjs/schematics": "^9.0.0",
-    "@nestjs/testing": "^9.0.0",
+    "@nestjs/testing": "^9.4.3",
     "@types/aws-lambda": "^8.10.108",
     "@types/bcrypt": "^5.0.0",
     "@types/cron": "^2.0.1",
@@ -250,7 +250,8 @@
       "^@response-b2crypto/response-b2crypto(|/.*)$": "<rootDir>/libs/response-b2crypto/src/$1",
       "^@auth/auth(|/.*)$": "<rootDir>/libs/auth/src/$1",
       "^@integration/integration(|/.*)$": "<rootDir>/libs/integration/src/$1",
-      "^@transfer/transfer(|/.*)$": "<rootDir>/libs/transfer/src/$1"
+      "^@transfer/transfer(|/.*)$": "<rootDir>/libs/transfer/src/$1",
+      "^@account/account(|/.*)$": "<rootDir>/libs/account/src/$1"
     }
   }
 }

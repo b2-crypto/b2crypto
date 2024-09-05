@@ -28,7 +28,7 @@ export default registerAs('config', () => ({
   DATABASE_URL:
     process.env.ENVIRONMENT == EnvironmentEnum.prod
       ? process.env.DATABASE_URL
-      : 'mongodb://localhost:27017/b2crypto',
+      : 'mongodb://root:dbpwd@localhost:27017/b2crypto',
   REDIS_HOST:
     process.env.ENVIRONMENT == EnvironmentEnum.prod
       ? process.env.REDIS_HOST
@@ -55,7 +55,7 @@ export default registerAs('config', () => ({
       : 5,
   RABBIT_MQ_HOST: process.env.RABBIT_MQ_HOST ?? 'localhost',
   RABBIT_MQ_PORT: process.env.RABBIT_MQ_PORT ?? '5672',
-  RABBIT_MQ_QUEUE: process.env.RABBIT_MQ_QUEUE ?? 'DEV',
+  RABBIT_MQ_QUEUE: process.env.RABBIT_MQ_QUEUE ?? 'local',
   RABBIT_MQ_USERNAME: process.env.RABBIT_MQ_USERNAME ?? 'admin',
   RABBIT_MQ_PASSWORD: process.env.RABBIT_MQ_PASSWORD ?? 'admin',
   TESTING: process.env.TESTING ?? true,

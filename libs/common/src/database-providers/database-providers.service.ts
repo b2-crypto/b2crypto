@@ -9,6 +9,7 @@ export const databaseProviders = [
       const dbName = configService.get('DATABASE_NAME');
       const dbUrl = configService.get('DATABASE_URL');
       Logger.log(dbUrl, 'Database URL Connection');
+      console.log(`databaseProviders.service <<<${dbUrl}>>>`);
       return mongoose
         .connect(dbUrl, {
           w: 'majority',
@@ -18,6 +19,7 @@ export const databaseProviders = [
           keepAliveInitialDelay: 300000,
         })
         .catch((reason) => {
+          console.log(`reason.service <<<${reason}>>>`);
           return reason;
         });
     },

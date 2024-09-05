@@ -11,7 +11,7 @@ export type ScopeDocument = Scope & Document;
 export class Scope extends ScopeEntity {
   id: ObjectId;
 
-  @Prop()
+  @Prop({ type: Object })
   resourceId: ObjectId;
 
   @Prop({ type: String, enum: ResourcesEnum })

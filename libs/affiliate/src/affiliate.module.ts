@@ -1,5 +1,5 @@
 import { AffiliateServiceMongooseService } from '@affiliate/affiliate/affiliate-service-mongoose.service';
-import { BrandModule } from 'libs/brand/src';
+import { BrandModule } from '@brand/brand/brand.module';
 import { CommonModule } from '@common/common';
 import { CrmModule } from '@crm/crm';
 import { GroupModule } from '@group/group';

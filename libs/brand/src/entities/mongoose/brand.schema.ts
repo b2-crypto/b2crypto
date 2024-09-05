@@ -1,4 +1,4 @@
-import { BrandEntity } from 'libs/brand/src/entities/brand.entity';
+import { BrandEntity } from '@brand/brand/entities/brand.entity';
 import { Category } from '@category/category/entities/mongoose/category.schema';
 import { Crm } from '@crm/crm/entities/mongoose/crm.schema';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
