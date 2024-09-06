@@ -1,4 +1,5 @@
-import { EnvironmentEnum } from '@common/common/enums/environment.enum';
+//import { EnvironmentEnum } from '@common/common/enums/environment.enum';
+import { EnvironmentEnum } from '../libs/common/src/enums/environment.enum';
 import { registerAs } from '@nestjs/config';
 
 export default registerAs('config', () => ({
