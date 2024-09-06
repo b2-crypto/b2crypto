@@ -1,4 +1,5 @@
 import { Account } from '@account/account/entities/mongoose/account.schema';
+import TypesAccountEnum from '@account/account/enum/types.account.enum';
 import { Affiliate } from '@affiliate/affiliate/infrastructure/mongoose/affiliate.schema';
 import { Brand } from '@brand/brand/entities/mongoose/brand.schema';
 import { Category } from '@category/category/entities/mongoose/category.schema';
@@ -136,6 +137,12 @@ export class Transfer extends TransferEntity {
 
   @Prop({ type: String, enum: CountryCodeEnum })
   leadCountry: CountryCodeEnum;
+
+  @Prop({ type: String, enum: TypesAccountEnum })
+  typeAccount: TypesAccountEnum;
+
+  @Prop()
+  typeAccountType: string;
 
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'leads' })
   lead: Lead;

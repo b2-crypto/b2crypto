@@ -278,6 +278,8 @@ export class TransferServiceService
         throw new BadRequestException('AccountId not found');
       }
       transfer.account = account._id;
+      transfer.typeAccount = account.type;
+      transfer.typeAccountType = account.accountType;
       transfer.userCreator = transfer.userCreator ?? account.owner;
       transfer.userAccount = account.owner ?? transfer.userCreator;
       const transferSaved = await this.lib.create(transfer);

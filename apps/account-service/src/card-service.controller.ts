@@ -591,6 +591,8 @@ export class CardServiceController extends AccountServiceController {
         currencyCustodial: from.currencyCustodial,
         amountCustodial: createDto.amount,
         account: from._id,
+        typeAccount: from.type,
+        typeAccountType: from.accountType,
         userCreator: req?.user?.id,
         userAccount: from.owner,
         typeTransaction: withDrawalWalletCategory._id,
