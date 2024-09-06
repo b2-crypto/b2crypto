@@ -1,9 +1,9 @@
 import { Prop } from '@nestjs/mongoose';
 
 class UserBalanceGeneric {
-  @Prop()
+  @Prop({ default: 0 })
   amount: 0;
-  @Prop()
+  @Prop({ default: 'USDT' })
   currency: 'USDT';
 }
 
