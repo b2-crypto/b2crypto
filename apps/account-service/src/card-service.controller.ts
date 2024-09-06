@@ -169,10 +169,11 @@ export class CardServiceController extends AccountServiceController {
   async createOne(@Body() createDto: CardCreateDto, @Req() req?: any) {
     createDto.accountType =
       createDto.accountType ?? CardTypesAccountEnum.VIRTUAL;
-    if (createDto.accountType === CardTypesAccountEnum.PHYSICAL) {
-      throw new BadRequestException(
-        'You must be use "/cards/shipping" to get a PHYSICAL card',
-      );
+    if (
+      createDto.accountType === CardTypesAccountEnum.PHYSICAL &&
+      !createDto?.address
+    ) {
+      throw new BadRequestException('PHYSICAL card requires a valid address');
     }
     const user: User = await this.getUser(req?.user?.id);
     if (!user.personalData) {
@@ -225,28 +226,57 @@ export class CardServiceController extends AccountServiceController {
         account.group = group.list[0];
       }
       // Create Card
-      const address = {
-        street_name: user.personalData.location.address.street_name,
-        street_number: user.personalData.location.address.street_number ?? ' ',
-        floor: user.personalData.location.address.floor,
-        apartment: user.personalData.location.address.apartment,
-        city: user.personalData.location.address.city,
-        region: user.personalData.location.address.region,
-        country: 'COL',
-        /* country: countries.filter(
-          (c) => c.alpha2 === user.personalData.nationality,
-        )[0].alpha3, */
-        zip_code: user.personalData.location.address.zip_code ?? '110231',
-        neighborhood: user.personalData.location.address.neighborhood,
-      };
+      let address;
+
+      if (
+        createDto?.address &&
+        createDto.accountType === CardTypesAccountEnum.PHYSICAL
+      ) {
+        address = {
+          street_name: createDto?.address?.street_name,
+          street_number: createDto?.address?.street_number ?? ' ',
+          floor: createDto?.address?.floor,
+          apartment: createDto?.address?.apartment,
+          city: createDto?.address?.city,
+          region: createDto?.address?.region,
+          country: 'COL',
+          /* country: countries.filter(
+            (c) => c.alpha2 === user.personalData.nationality,
+          )[0].alpha3, */
+          zip_code: createDto?.address?.zip_code,
+          neighborhood: createDto?.address.neighborhood,
+        };
+      } else {
+        address = {
+          street_name: user.personalData.location.address.street_name,
+          street_number:
+            user.personalData.location.address.street_number ?? ' ',
+          floor: user.personalData.location.address.floor,
+          apartment: user.personalData.location.address.apartment,
+          city: user.personalData.location.address.city,
+          region: user.personalData.location.address.region,
+          country: 'COL',
+          /* country: countries.filter(
+            (c) => c.alpha2 === user.personalData.nationality,
+          )[0].alpha3, */
+          zip_code: user.personalData.location.address.zip_code ?? '110231',
+          neighborhood: user.personalData.location.address.neighborhood,
+        };
+      }
       const card = await cardIntegration.createCard({
         user_id: account.userCardConfig.id,
-        affinity_group_id: account.group.valueGroup,
+        affinity_group_id:
+          createDto.accountType === CardTypesAccountEnum.PHYSICAL
+            ? 'afg-2fdxV2deQc0qHDbTtCwOlbFZJBL'
+            : account.group.valueGroup,
         card_type: account.accountType,
         email: account.email,
         address: address,
         previous_card_id: account.prevAccount?.cardConfig?.id ?? null,
-        //name_on_card: account.name,
+        name_on_card:
+          createDto.accountType === CardTypesAccountEnum.PHYSICAL
+            ? `${user.personalData.name} ${user.personalData.lastName}`
+            : undefined,
       });
       const error = card['error'];
       if (error) {
