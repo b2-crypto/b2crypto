@@ -280,7 +280,7 @@ export class CardServiceController extends AccountServiceController {
         previous_card_id: account.prevAccount?.cardConfig?.id ?? null,
         name_on_card:
           createDto.accountType === CardTypesAccountEnum.PHYSICAL
-            ? `${user.personalData.name}`
+            ? `${user.name}`
             : undefined,
       });
       const error = card['error'];
