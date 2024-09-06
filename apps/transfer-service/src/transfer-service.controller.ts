@@ -583,6 +583,8 @@ export class TransferServiceController implements GenericServiceController {
     createTransferDto.amount = parseFloat(createTransferButtonDto.amount);
     createTransferDto.currency = createTransferButtonDto.currency;
     createTransferDto.account = createTransferButtonDto.account;
+    createTransferDto.typeAccount = createTransferButtonDto.typeAccount;
+    createTransferDto.typeAccountType = createTransferButtonDto.typeAccountType;
     if (!createTransferButtonDto.account) {
       const list = await this.affliateService.getAll({
         where: {
@@ -746,6 +748,8 @@ export class TransferServiceController implements GenericServiceController {
       transferDto.crm = crm;
       transferDto.status = status;
       transferDto.account = account;
+      transferDto.typeAccount = account.type;
+      transferDto.typeAccountType = account.accountType;
       transferDto.userAccount = account.owner;
       transferDto.typeTransaction = category;
       transferDto.amount = webhookTransferDto.amount;
