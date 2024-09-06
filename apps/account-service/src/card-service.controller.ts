@@ -175,7 +175,12 @@ export class CardServiceController extends AccountServiceController {
     ) {
       throw new BadRequestException('PHYSICAL card requires a valid address');
     }
-    const user: User = await this.getUser(req?.user?.id);
+    let user: User;
+    if (createDto.owner) {
+      user = await this.getUser(createDto.owner);
+    } else {
+      user = await this.getUser(req?.user?.id);
+    }
     if (!user.personalData) {
       throw new BadRequestException('Need the personal data to continue');
     }
