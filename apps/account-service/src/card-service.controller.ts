@@ -272,7 +272,7 @@ export class CardServiceController extends AccountServiceController {
         user_id: account.userCardConfig.id,
         affinity_group_id:
           createDto.accountType === CardTypesAccountEnum.PHYSICAL
-            ? 'afg-2fdxV2deQc0qHDbTtCwOlbFZJBL'
+            ? 'afg-2lDQEYPH1AgLCf0fjPhr2KKxPrW'
             : account.group.valueGroup,
         card_type: account.accountType,
         email: account.email,
