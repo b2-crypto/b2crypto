@@ -1,17 +1,28 @@
-import { LegalAddress } from './../../../libs/integration/src/card/generic/dto/user.card.dto';
+import { AccountCreateDto } from '@account/account/dto/account.create.dto';
 import { CardDepositCreateDto } from '@account/account/dto/card-deposit.create.dto';
 import { CardCreateDto } from '@account/account/dto/card.create.dto';
+import { AccountEntity } from '@account/account/entities/account.entity';
+import { AccountDocument } from '@account/account/entities/mongoose/account.schema';
 import { Card } from '@account/account/entities/mongoose/card.schema';
 import { UserCard } from '@account/account/entities/mongoose/user-card.schema';
+import CardTypesAccountEnum from '@account/account/enum/card.types.account.enum';
+import StatusAccountEnum from '@account/account/enum/status.account.enum';
 import TypesAccountEnum from '@account/account/enum/types.account.enum';
+import { ApiKeyAuthGuard } from '@auth/auth/guards/api.key.guard';
 import { BuildersService } from '@builder/builders';
 import { CommonService } from '@common/common';
+import { NoCache } from '@common/common/decorators/no-cache.decorator';
+import CountryCodeEnum from '@common/common/enums/country.code.b2crypto.enum';
+import CurrencyCodeB2cryptoEnum from '@common/common/enums/currency-code-b2crypto.enum';
+import { CardsEnum } from '@common/common/enums/messages.enum';
 import ResourcesEnum from '@common/common/enums/ResourceEnum';
+import { StatusCashierEnum } from '@common/common/enums/StatusCashierEnum';
 import TagEnum from '@common/common/enums/TagEnum';
 import { QuerySearchAnyDto } from '@common/common/models/query_search-any.dto';
 import { IntegrationService } from '@integration/integration';
 import IntegrationCardEnum from '@integration/integration/card/enums/IntegrationCardEnum';
 import { UserCardDto } from '@integration/integration/card/generic/dto/user.card.dto';
+import { IntegrationCardService } from '@integration/integration/card/generic/integration.card.service';
 import {
   BadRequestException,
   Body,
@@ -29,54 +40,40 @@ import {
   UnauthorizedException,
   UseGuards,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import {
+  Ctx,
+  MessagePattern,
+  Payload,
+  RmqContext,
+} from '@nestjs/microservices';
 import {
   ApiBearerAuth,
   ApiHeader,
   ApiSecurity,
   ApiTags,
 } from '@nestjs/swagger';
+import { AddressSchema } from '@person/person/entities/mongoose/address.schema';
+import { TransferCreateDto } from '@transfer/transfer/dto/transfer.create.dto';
+import { OperationTransactionType } from '@transfer/transfer/enum/operation.transaction.type.enum';
 import { User } from '@user/user/entities/mongoose/user.schema';
 import { CategoryServiceService } from 'apps/category-service/src/category-service.service';
+import EventsNamesCategoryEnum from 'apps/category-service/src/enum/events.names.category.enum';
 import { GroupServiceService } from 'apps/group-service/src/group-service.service';
+import { FiatIntegrationClient } from 'apps/integration-service/src/clients/fiat.integration.client';
+import EventsNamesPspAccountEnum from 'apps/psp-service/src/enum/events.names.psp.acount.enum';
+import EventsNamesStatusEnum from 'apps/status-service/src/enum/events.names.status.enum';
 import { StatusServiceService } from 'apps/status-service/src/status-service.service';
+import EventsNamesTransferEnum from 'apps/transfer-service/src/enum/events.names.transfer.enum';
+import EventsNamesUserEnum from 'apps/user-service/src/enum/events.names.user.enum';
 import { UserServiceService } from 'apps/user-service/src/user-service.service';
+import { isEmpty, isString } from 'class-validator';
+import { SwaggerSteakeyConfigEnum } from 'libs/config/enum/swagger.stakey.config.enum';
+
 import { AccountServiceController } from './account-service.controller';
 import { AccountServiceService } from './account-service.service';
 import EventsNamesAccountEnum from './enum/events.names.account.enum';
-import {
-  Ctx,
-  EventPattern,
-  MessagePattern,
-  Payload,
-  RmqContext,
-} from '@nestjs/microservices';
-import { TransferUpdateDto } from '@transfer/transfer/dto/transfer.update.dto';
-import CardTypesAccountEnum from '@account/account/enum/card.types.account.enum';
-import { ConfigService } from '@nestjs/config';
-import { AccountCreateDto } from '@account/account/dto/account.create.dto';
-import { IntegrationCardService } from '@integration/integration/card/generic/integration.card.service';
-import { AccountDocument } from '@account/account/entities/mongoose/account.schema';
-import { CardsEnum } from '@common/common/enums/messages.enum';
-import EventsNamesUserEnum from 'apps/user-service/src/enum/events.names.user.enum';
-import StatusAccountEnum from '@account/account/enum/status.account.enum';
-import { ApiKeyAuthGuard } from '@auth/auth/guards/api.key.guard';
-import { AddressSchema } from '@person/person/entities/mongoose/address.schema';
-import CountryCodeEnum from '@common/common/enums/country.code.b2crypto.enum';
-import { FiatIntegrationClient } from 'apps/integration-service/src/clients/fiat.integration.client';
-import { AccountEntity } from '@account/account/entities/account.entity';
-import CurrencyCodeB2cryptoEnum from '@common/common/enums/currency-code-b2crypto.enum';
-import { SwaggerSteakeyConfigEnum } from 'libs/config/enum/swagger.stakey.config.enum';
-import { countries } from 'apps/seed-service/const/countries.const';
-import { isEmpty, isString } from 'class-validator';
-import EventsNamesTransferEnum from 'apps/transfer-service/src/enum/events.names.transfer.enum';
-import { TransferCreateDto } from '@transfer/transfer/dto/transfer.create.dto';
-import EventsNamesCategoryEnum from 'apps/category-service/src/enum/events.names.category.enum';
-import { OperationTransactionType } from '@transfer/transfer/enum/operation.transaction.type.enum';
-import { StatusCashierEnum } from '@common/common/enums/StatusCashierEnum';
-import EventsNamesStatusEnum from 'apps/status-service/src/enum/events.names.status.enum';
-import EventsNamesPspAccountEnum from 'apps/psp-service/src/enum/events.names.psp.acount.enum';
-import { PspAccount } from '@psp-account/psp-account/entities/mongoose/psp-account.schema';
-import { NoCache } from '@common/common/decorators/no-cache.decorator';
+import { ResponsePaginator } from '../../../libs/common/src/interfaces/response-pagination.interface';
 
 @ApiTags('CARD')
 @Controller('cards')
@@ -176,11 +173,11 @@ export class CardServiceController extends AccountServiceController {
       throw new BadRequestException('PHYSICAL card requires a valid address');
     }
     let user: User;
-    if (createDto.owner) {
-      user = await this.getUser(createDto.owner);
-    } else {
-      user = await this.getUser(req?.user?.id);
-    }
+    // if (createDto.owner) {
+    //   user = await this.getUser(createDto.owner);
+    // } else {
+    //   user = await this.getUser(req?.user?.id);
+    // }
     if (!user.personalData) {
       throw new BadRequestException('Need the personal data to continue');
     }
@@ -192,7 +189,7 @@ export class CardServiceController extends AccountServiceController {
     });
     // TODO[hender - 2024/08/12] Limit virtual card
     if (virtualCardPending.totalElements === 10) {
-      throw new BadRequestException('Already have 10 virtual cards');
+      throw new BadRequestException('Already have 10 cards');
     }
     createDto.owner = user._id;
     createDto.pin =
@@ -278,10 +275,10 @@ export class CardServiceController extends AccountServiceController {
         email: account.email,
         address: address,
         previous_card_id: account.prevAccount?.cardConfig?.id ?? null,
-        name_on_card:
-          createDto.accountType === CardTypesAccountEnum.PHYSICAL
-            ? `${user.name}`
-            : undefined,
+        // name_on_card:
+        //   createDto.accountType === CardTypesAccountEnum.PHYSICAL
+        //     ? `${user.name}`
+        //     : undefined,
       });
       const error = card['error'];
       if (error) {
@@ -856,6 +853,19 @@ export class CardServiceController extends AccountServiceController {
     return this.getAccountService().deleteOneById(id);
   }
 
+  @Get('pomelo/check')
+  async checkCardsInPomelo() {
+    //await this.checkCardsCreatedInPomelo(null, null);
+    this.cardBuilder.emitAccountEventClient(
+      EventsNamesAccountEnum.checkCardsCreatedInPomelo,
+      'pomelo',
+    );
+    return {
+      statusCode: 200,
+      message: 'Started',
+    };
+  }
+
   @MessagePattern(EventsNamesAccountEnum.pomeloTransaction)
   async processPomeloTransaction(@Ctx() ctx: RmqContext, @Payload() data: any) {
     CommonService.ack(ctx);
@@ -981,6 +991,137 @@ export class CardServiceController extends AccountServiceController {
     } catch (error) {
       Logger.error(error, CardServiceController.name);
     }
+  }
+
+  @MessagePattern(EventsNamesAccountEnum.checkCardsCreatedInPomelo)
+  async checkCardsCreatedInPomelo(
+    @Ctx() ctx: RmqContext,
+    @Payload() data: any,
+  ) {
+    CommonService.ack(ctx);
+    try {
+      Logger.log(`Start`, CardServiceController.name);
+      const paginator: ResponsePaginator<User> = new ResponsePaginator<User>();
+      paginator.currentPage = 1;
+      paginator.firstPage = 1;
+      const cardIntegration = await this.integration.getCardIntegration(
+        IntegrationCardEnum.POMELO,
+      );
+      if (!cardIntegration) {
+        throw new BadRequestException('Bad integration card');
+      }
+      do {
+        const usersPaginator: ResponsePaginator<User> =
+          await this.cardBuilder.getPromiseUserEventClient(
+            EventsNamesUserEnum.findAll,
+            {
+              relations: ['personalData'],
+              page: paginator.currentPage,
+              where: {
+                email: '/hender/ig',
+              },
+            },
+          );
+        Logger.debug(
+          `page ${paginator.currentPage} de ${usersPaginator.lastPage}`,
+          `Check cards users ${usersPaginator.totalElements}`,
+        );
+        for (const usr of usersPaginator.list) {
+          //Logger.debug(usr?.userCard?.id, `User ${usr.email}`);
+          if (usr.userCard) {
+            const cards = await cardIntegration.getCardByQuery({
+              user_id: usr.userCard.id,
+              page_size: 1000,
+            });
+            //Logger.debug(cards, `Result pomelo`);
+            for (const crd of cards.data) {
+              //Logger.debug(crd.id, `Search card`);
+              const card = await this.cardService.findAll({
+                where: {
+                  'cardConfig.id': crd.id,
+                },
+              });
+              if (!card.totalElements) {
+                const cardDto = this.buildCardDto(
+                  crd,
+                  usr.personalData,
+                  usr.email,
+                );
+                const n_card = await this.cardService.createOne(
+                  cardDto as AccountCreateDto,
+                );
+                Logger.debug(n_card.id, `Card created for ${usr.email}`);
+              }
+            }
+          }
+        }
+        paginator.currentPage = usersPaginator.nextPage;
+        paginator.nextPage = usersPaginator.nextPage;
+      } while (paginator.nextPage !== paginator.firstPage);
+    } catch (error) {
+      Logger.error(error, CardServiceController.name);
+    }
+  }
+  private buildCardDto(
+    pomeloCard: any,
+    person: any,
+    email: string,
+    balance = 0,
+  ) {
+    let statusText: string;
+    if (pomeloCard?.status === 'ACTIVE') {
+      statusText = StatusAccountEnum.UNLOCK;
+    } else if (pomeloCard?.status === 'BLOCKED') {
+      statusText = StatusAccountEnum.LOCK;
+    } else {
+      statusText = StatusAccountEnum.CANCEL;
+    }
+    return {
+      name: person?.firstName,
+      type: TypesAccountEnum.CARD,
+      accountType: CardTypesAccountEnum[pomeloCard.card_type],
+      firstName: person?.firstName ?? person?.name,
+      lastName: person?.lastName,
+      docId: person?.numDocId,
+      address: person?.location?.address,
+      email: email,
+      telephone: person?.phoneNumber,
+      description: pomeloCard?.affinity_group_name,
+      afgId: pomeloCard?.affinity_group_id,
+      accountId: pomeloCard?.id,
+      owner: person?.user,
+      statusText,
+      amount: balance ?? 0,
+      currency: CurrencyCodeB2cryptoEnum.USD,
+      amountCustodial: balance ?? 0,
+      currencyCustodial: CurrencyCodeB2cryptoEnum.USD,
+      amountBlocked: 0,
+      currencyBlocked: CurrencyCodeB2cryptoEnum.USD,
+      amountBlockedCustodial: 0,
+      currencyBlockedCustodial: CurrencyCodeB2cryptoEnum.USD,
+      cardConfig: {
+        id: pomeloCard?.id,
+        user_id: pomeloCard?.user_id,
+        affinity_group_id: pomeloCard?.affinity_group_id,
+        card_type: pomeloCard?.card_type,
+        status: pomeloCard?.status,
+        start_date: pomeloCard?.start_date,
+        last_four: pomeloCard?.last_four,
+        provider: pomeloCard?.provider,
+        product_type: pomeloCard?.product_type,
+        address: {
+          street_name: person?.location?.address?.street_name,
+          street_number: person?.location?.address?.street_number,
+          floor: person?.location?.address?.floor ?? '',
+          apartment: person?.location?.address?.apartment ?? '',
+          city: person?.location?.address?.city,
+          region: person?.location?.address?.region,
+          country: CountryCodeEnum.Colombia,
+          zip_code: person?.location?.address?.zip_code,
+          neighborhood: person?.location?.address?.neighborhood,
+        },
+      },
+    };
   }
 
   @MessagePattern(EventsNamesAccountEnum.updateMigratedOwner)

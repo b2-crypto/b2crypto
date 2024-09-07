@@ -11,12 +11,14 @@ import EventsNamesFileEnum from 'apps/file-service/src/enum/events.names.file.en
 import EventsNamesLeadEnum from 'apps/lead-service/src/enum/events.names.lead.enum';
 import EventsNamesPspEnum from 'apps/psp-service/src/enum/events.names.psp.enum';
 import EventsNamesTransferEnum from 'apps/transfer-service/src/enum/events.names.transfer.enum';
+import EventsNamesAccountEnum from '../account-service/src/enum/events.names.account.enum';
 const time = '0 */20 * * * *';
 @Injectable()
 export class JobService {
   static periodicTime = {
     checkLeadCreated: CronExpression.EVERY_10_MINUTES,
     checkLeadStatus: CronExpression.EVERY_5_MINUTES,
+    checkCardsInPomelo: '0 */6 * * * *',
     checkB2BinPayTransfers: '0 */5 * * * *',
     //checkLeadStatus: time,
     //checkAffiliateLeadsStats: time,
@@ -51,6 +53,20 @@ export class JobService {
     private readonly builder: BuildersService,
   ) {
     this.env = configService.get('ENVIRONMENT');
+  }
+
+  @Cron(JobService.periodicTime.checkCardsInPomelo, {
+    timeZone: process.env.TZ,
+  })
+  checkCardsInPomelo() {
+    if (this.env === EnvironmentEnum.prod) {
+      this.builder.emitAccountEventClient(
+        EventsNamesAccountEnum.checkCardsCreatedInPomelo,
+        'pomelo',
+      );
+    } else {
+      Logger.log('Checking Cards in pomelo', JobService.name);
+    }
   }
 
   @Cron(JobService.periodicTime.checkB2BinPayTransfers, {
