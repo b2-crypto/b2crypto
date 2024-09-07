@@ -1017,9 +1017,6 @@ export class CardServiceController extends AccountServiceController {
             {
               relations: ['personalData'],
               page: paginator.currentPage,
-              where: {
-                email: '/hender/ig',
-              },
             },
           );
         Logger.debug(
