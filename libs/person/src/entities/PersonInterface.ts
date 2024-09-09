@@ -19,6 +19,7 @@ export interface PersonInterface {
   slug: string;
   description: string;
   searchText: string;
+  verifiedIdentity: boolean;
   lastName: string;
   email: string[];
   telephones: TelephoneModel[];
