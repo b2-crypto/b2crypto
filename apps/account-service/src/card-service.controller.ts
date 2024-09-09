@@ -236,16 +236,14 @@ export class CardServiceController extends AccountServiceController {
       ) {
         address = {
           street_name: createDto?.address?.street_name,
-          street_number: createDto?.address?.street_number ?? ' ',
-          floor: createDto?.address?.floor,
+          street_number: ' ',
           apartment: createDto?.address?.apartment,
           city: createDto?.address?.city,
           region: createDto?.address?.region,
-          country: 'COL',
+          country: 'Colombia',
           /* country: countries.filter(
             (c) => c.alpha2 === user.personalData.nationality,
           )[0].alpha3, */
-          zip_code: createDto?.address?.zip_code,
           neighborhood: createDto?.address.neighborhood,
         };
       } else {
@@ -272,9 +270,7 @@ export class CardServiceController extends AccountServiceController {
             ? 'afg-2fdxV2deQc0qHDbTtCwOlbFZJBL'
             : account.group.valueGroup,
         card_type: account.accountType,
-        email: account.email,
         address: address,
-        previous_card_id: account.prevAccount?.cardConfig?.id ?? null,
         // name_on_card:
         //   createDto.accountType === CardTypesAccountEnum.PHYSICAL
         //     ? `${user.name}`
