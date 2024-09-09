@@ -48,7 +48,7 @@ export class UserServiceService {
         for (const usr of users.list) {
           if (!usr.slugEmail) {
             Logger.debug(usr.email, 'slug email');
-            promises.push(this.updateSlugEmail(usr._id));
+            promises.push(this.updateSlugEmail(usr._id.toString()));
           }
         }
         users = await this.getAll({
@@ -64,57 +64,51 @@ export class UserServiceService {
       if (!usr._id) {
         throw new NotFoundException('User not found');
       }
-      if (!usr.balance) {
-        Logger.debug(usr.balance, `email ${usr.email}`);
-        const userBalance = {
-          wallets: {
-            amount: 0,
-            currency: 'USDT',
-          },
-          cards: {
-            amount: 0,
-            currency: 'USD',
-          },
-          banks: {
-            amount: 0,
-            currency: 'USD',
-          },
-        } as UserBalanceModel;
-        const accounts = await this.builder.getPromiseAccountEventClient<
-          ResponsePaginator<Account>
-        >(EventsNamesAccountEnum.findAll, {
-          take: 999999,
-          where: {
-            owner: usr._id,
-          },
-        });
-        for (const account of accounts.list) {
-          if (account.type === TypesAccountEnum.WALLET) {
-            userBalance.wallets.amount += account.amount;
-            // Swap if currency is different
-          } else if (account.type === TypesAccountEnum.CARD) {
-            userBalance.cards.amount += account.amount;
-            // Swap if currency is different
-          } else if (account.type === TypesAccountEnum.BANK) {
-            userBalance.banks.amount += account.amount;
-            // Swap if currency is different
-          }
+      const userBalance = {
+        wallets: {
+          amount: 0,
+          currency: 'USDT',
+        },
+        cards: {
+          amount: 0,
+          currency: 'USD',
+        },
+        banks: {
+          amount: 0,
+          currency: 'USD',
+        },
+      } as UserBalanceModel;
+      const accounts = await this.builder.getPromiseAccountEventClient<
+        ResponsePaginator<Account>
+      >(EventsNamesAccountEnum.findAll, {
+        take: 999999,
+        where: {
+          owner: usr._id,
+        },
+      });
+      for (const account of accounts.list) {
+        if (account.type === TypesAccountEnum.WALLET) {
+          userBalance.wallets.amount += account.amount;
+          // Swap if currency is different
+        } else if (account.type === TypesAccountEnum.CARD) {
+          userBalance.cards.amount += account.amount;
+          // Swap if currency is different
+        } else if (account.type === TypesAccountEnum.BANK) {
+          userBalance.banks.amount += account.amount;
+          // Swap if currency is different
         }
-        return this.updateUser({
-          id: usr._id,
-          balance: userBalance,
-        });
       }
-      return usr;
+      Logger.debug(userBalance, `balance ${usr.email}`);
+      return this.updateUser({
+        id: usr._id,
+        balance: userBalance,
+      });
     } else {
       let users = await this.getAll({});
       const promises = [];
       do {
         for (const usr of users.list) {
-          if (!usr.balance) {
-            Logger.debug(usr.balance, `email ${usr.email}`);
-            promises.push(this.updateBalance(usr._id));
-          }
+          promises.push(this.updateBalance(usr._id.toString()));
         }
         users = await this.getAll({
           page: users.nextPage,
