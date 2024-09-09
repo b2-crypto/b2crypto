@@ -249,17 +249,14 @@ export class CardServiceController extends AccountServiceController {
       } else {
         address = {
           street_name: user.personalData.location.address.street_name,
-          street_number:
-            user.personalData.location.address.street_number ?? ' ',
-          floor: user.personalData.location.address.floor,
+          street_number: ' ',
           apartment: user.personalData.location.address.apartment,
           city: user.personalData.location.address.city,
           region: user.personalData.location.address.region,
-          country: 'COL',
+          country: 'Colombia',
           /* country: countries.filter(
             (c) => c.alpha2 === user.personalData.nationality,
           )[0].alpha3, */
-          zip_code: user.personalData.location.address.zip_code ?? '110231',
           neighborhood: user.personalData.location.address.neighborhood,
         };
       }
