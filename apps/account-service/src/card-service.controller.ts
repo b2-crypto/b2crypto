@@ -173,11 +173,11 @@ export class CardServiceController extends AccountServiceController {
       throw new BadRequestException('PHYSICAL card requires a valid address');
     }
     let user: User;
-    // if (createDto.owner) {
-    //   user = await this.getUser(createDto.owner);
-    // } else {
-    //   user = await this.getUser(req?.user?.id);
-    // }
+    if (createDto.owner) {
+      user = await this.getUser(createDto.owner);
+    } else {
+      user = await this.getUser(req?.user?.id);
+    }
     if (!user.personalData) {
       throw new BadRequestException('Need the personal data to continue');
     }
@@ -269,7 +269,7 @@ export class CardServiceController extends AccountServiceController {
         user_id: account.userCardConfig.id,
         affinity_group_id:
           createDto.accountType === CardTypesAccountEnum.PHYSICAL
-            ? 'afg-2lDQEYPH1AgLCf0fjPhr2KKxPrW'
+            ? 'afg-2fdxV2deQc0qHDbTtCwOlbFZJBL'
             : account.group.valueGroup,
         card_type: account.accountType,
         email: account.email,
@@ -411,9 +411,9 @@ export class CardServiceController extends AccountServiceController {
 
   private getAfgVirtualNominatedStage() {
     return {
-      id: 'afg-2arMn990ZksFKAHS5PngRPHqRmS',
+      id: 'afg-2fdxV2deQc0qHDbTtCwOlbFZJBL',
       name: 'B2Crypto COL physical virtual credit nominated',
-      card_type_supported: ['VIRTUAL'],
+      card_type_supported: ['PHYSICAL'],
       innominate: false,
       months_to_expiration: 84,
       issued_account: 9,
@@ -451,7 +451,7 @@ export class CardServiceController extends AccountServiceController {
 
   private async buildAFG(afgId?: string) {
     let afg =
-      process.env.ENVIRONMENT === 'STAGE'
+      process.env.ENVIRONMENT === 'DEV'
         ? this.getAfgVirtualNominatedStage()
         : process.env.ENVIRONMENT === 'PROD'
         ? this.getAfgVirtualProd()
