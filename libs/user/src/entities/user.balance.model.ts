@@ -1,10 +1,10 @@
+export interface UserBalanceGenericModel {
+  amount: number;
+  currency: string;
+}
+
 export interface UserBalanceModel {
-  wallets: {
-    amount: 0;
-    currency: 'USDT';
-  };
-  cards: {
-    amount: 0;
-    currency: 'USDT';
-  };
+  wallets: UserBalanceGenericModel;
+  cards: UserBalanceGenericModel;
+  banks: UserBalanceGenericModel;
 }

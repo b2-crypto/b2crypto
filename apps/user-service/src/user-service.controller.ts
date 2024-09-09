@@ -3,6 +3,7 @@ import {
   Controller,
   Delete,
   Get,
+  Logger,
   NotFoundException,
   Param,
   ParseArrayPipe,
@@ -44,7 +45,7 @@ import EventsNamesUserEnum from './enum/events.names.user.enum';
 import { UserServiceService } from './user-service.service';
 import { SwaggerSteakeyConfigEnum } from 'libs/config/enum/swagger.stakey.config.enum';
 import { ApiKeyAuthGuard } from '@auth/auth/guards/api.key.guard';
-import { isBoolean } from 'class-validator';
+import { isBoolean, isMongoId } from 'class-validator';
 
 @ApiTags('USER')
 @Controller('users')
@@ -88,6 +89,18 @@ export class UserServiceController implements GenericServiceController {
   // @CheckPoliciesAbility(new PolicyHandlerUserRead())
   async findOneById(@Param('userID') id: string) {
     return this.userService.getOne(id);
+  }
+
+  @Get('check-balance/:userID')
+  // @CheckPoliciesAbility(new PolicyHandlerUserRead())
+  async checkBalance(@Param('userID') id?: string) {
+    return this.userService.updateBalance(id);
+  }
+
+  @Get('check-slug-email/:userID')
+  // @CheckPoliciesAbility(new PolicyHandlerUserRead())
+  async checkSlugEmail(@Param('userID') id?: string) {
+    return this.userService.updateSlugEmail(id);
   }
 
   @Post()

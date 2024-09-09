@@ -1,15 +1,21 @@
 import { Prop } from '@nestjs/mongoose';
+import {
+  UserBalanceGenericModel,
+  UserBalanceModel,
+} from '../user.balance.model';
 
-class UserBalanceGeneric {
+class UserBalanceGeneric implements UserBalanceGenericModel {
   @Prop({ default: 0 })
-  amount: 0;
-  @Prop({ default: 'USDT' })
-  currency: 'USDT';
+  amount: number;
+  @Prop({ default: 'NA' })
+  currency: string;
 }
 
-export class UserBalance {
+export class UserBalance implements UserBalanceModel {
   @Prop({ type: UserBalanceGeneric })
   wallets: UserBalanceGeneric;
   @Prop({ type: UserBalanceGeneric })
   cards: UserBalanceGeneric;
+  @Prop({ type: UserBalanceGeneric })
+  banks: UserBalanceGeneric;
 }
