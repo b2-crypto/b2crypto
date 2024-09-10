@@ -20,18 +20,16 @@ import {
   Req,
   UseGuards,
 } from '@nestjs/common';
+import { Ctx, EventPattern, Payload, RmqContext } from '@nestjs/microservices';
 import { ApiBearerAuth, ApiSecurity, ApiTags } from '@nestjs/swagger';
 import { User } from '@user/user/entities/mongoose/user.schema';
+import { TransferCreateButtonDto } from 'apps/transfer-service/src/dto/transfer.create.button.dto';
+import EventsNamesTransferEnum from 'apps/transfer-service/src/enum/events.names.transfer.enum';
 import { UserServiceService } from 'apps/user-service/src/user-service.service';
+import { SwaggerSteakeyConfigEnum } from 'libs/config/enum/swagger.stakey.config.enum';
 import { AccountServiceController } from './account-service.controller';
 import { AccountServiceService } from './account-service.service';
-import { SwaggerSteakeyConfigEnum } from 'libs/config/enum/swagger.stakey.config.enum';
-import EventsNamesTransferEnum from 'apps/transfer-service/src/enum/events.names.transfer.enum';
-import { TransferCreateButtonDto } from 'apps/transfer-service/src/dto/transfer.create.button.dto';
-import { Ctx, EventPattern, Payload, RmqContext } from '@nestjs/microservices';
 import EventsNamesAccountEnum from './enum/events.names.account.enum';
-import { CreateAnyDto } from '@common/common/models/create-any.dto';
-import { TransferEntity } from '@transfer/transfer/entities/transfer.entity';
 
 @ApiTags('E-WALLET')
 @Controller('wallets')
