@@ -39,7 +39,7 @@ import { NoCache } from '@common/common/decorators/no-cache.decorator';
 @ApiTags('MESSAGE')
 @Controller('message')
 export class MessageServiceController implements GenericServiceController {
-  constructor(private readonly messageService: MessageServiceService) { }
+  constructor(private readonly messageService: MessageServiceService) {}
 
   @NoCache()
   @Get('all')
@@ -268,10 +268,7 @@ export class MessageServiceController implements GenericServiceController {
     try {
       await this.messageService.sendAdjustments(message);
     } catch (err) {
-      Logger.error(
-        err,
-        `${MessageServiceController.name}-sendAdjustments`,
-      );
+      Logger.error(err, `${MessageServiceController.name}-sendAdjustments`);
     }
   }
 
@@ -335,10 +332,7 @@ export class MessageServiceController implements GenericServiceController {
     try {
       await this.messageService.sendPurchases(message);
     } catch (err) {
-      Logger.error(
-        err,
-        `${MessageServiceController.name}-sendPurchasesEmail`,
-      );
+      Logger.error(err, `${MessageServiceController.name}-sendPurchasesEmail`);
     }
   }
 }

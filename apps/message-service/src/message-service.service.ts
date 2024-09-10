@@ -78,9 +78,11 @@ export class MessageServiceService {
   }
 
   private getOriginEmail(): string {
-    return this.configService.get('AWS_SES_FROM_DEFAULT', 'no-reply@b2crypto.com');
+    return this.configService.get(
+      'AWS_SES_FROM_DEFAULT',
+      'no-reply@b2crypto.com',
+    );
   }
-
 
   async sendEmailOtpNotification(message: MessageCreateDto) {
     const emailMessage = new EmailMessageBuilder()
@@ -101,7 +103,10 @@ export class MessageServiceService {
       .setDestinyText(message.destinyText)
       .setVars(message.vars)
       .build();
-    return this.sendEmail(emailMessage, TemplatesMessageEnum.cardRequestConfirmation);
+    return this.sendEmail(
+      emailMessage,
+      TemplatesMessageEnum.cardRequestConfirmation,
+    );
   }
 
   async sendProfileRegistrationCreation(message: MessageCreateDto) {
@@ -112,7 +117,10 @@ export class MessageServiceService {
       .setDestinyText(message.destinyText)
       .setVars(message.vars)
       .build();
-    return this.sendEmail(emailMessage, TemplatesMessageEnum.profileRegistrationCreation);
+    return this.sendEmail(
+      emailMessage,
+      TemplatesMessageEnum.profileRegistrationCreation,
+    );
   }
 
   async sendPasswordRestoredEmail(message: MessageCreateDto) {
@@ -123,7 +131,10 @@ export class MessageServiceService {
       .setDestinyText(message.destinyText)
       .setVars(message.vars)
       .build();
-    return this.sendEmail(emailMessage, TemplatesMessageEnum.passwordRestoredConfirmation);
+    return this.sendEmail(
+      emailMessage,
+      TemplatesMessageEnum.passwordRestoredConfirmation,
+    );
   }
 
   async sendVirtualPhysicalCards(message: MessageCreateDto) {
@@ -134,19 +145,22 @@ export class MessageServiceService {
       .setDestinyText(message.destinyText)
       .setVars(message.vars)
       .build();
-    return this.sendEmail(emailMessage, TemplatesMessageEnum.virtualPhysicalCards);
+    return this.sendEmail(
+      emailMessage,
+      TemplatesMessageEnum.virtualPhysicalCards,
+    );
   }
 
   async sendAdjustments(message: MessageCreateDto) {
     const getCard = await this.builder.getPromiseAccountEventClient(
       EventsNamesAccountEnum.findOneByCardId,
-      { id: message.vars.cardId }
+      { id: message.vars.cardId },
     );
 
     if (getCard && getCard.owner) {
       const user = await this.builder.getPromiseUserEventClient(
         EventsNamesUserEnum.findOneById,
-        { _id: getCard.owner }
+        { _id: getCard.owner },
       );
 
       if (user && user.email) {
@@ -168,13 +182,13 @@ export class MessageServiceService {
   async sendPurchases(message: MessageCreateDto) {
     const getCard = await this.builder.getPromiseAccountEventClient(
       EventsNamesAccountEnum.findOneByCardId,
-      { id: message.vars.cardId }
+      { id: message.vars.cardId },
     );
 
     if (getCard && getCard.owner) {
       const user = await this.builder.getPromiseUserEventClient(
         EventsNamesUserEnum.findOneById,
-        { _id: getCard.owner }
+        { _id: getCard.owner },
       );
 
       if (user && user.email) {
@@ -201,7 +215,10 @@ export class MessageServiceService {
       .setDestinyText(message.destinyText)
       .setVars(message.vars)
       .build();
-    return this.sendEmail(emailMessage, TemplatesMessageEnum.cryptoWalletsManagement);
+    return this.sendEmail(
+      emailMessage,
+      TemplatesMessageEnum.cryptoWalletsManagement,
+    );
   }
 
   async sendSecurityNotifications(message: MessageCreateDto) {
@@ -212,20 +229,24 @@ export class MessageServiceService {
       .setDestinyText(message.destinyText)
       .setVars(message.vars)
       .build();
-    return this.sendEmail(emailMessage, TemplatesMessageEnum.securityNotifications);
+    return this.sendEmail(
+      emailMessage,
+      TemplatesMessageEnum.securityNotifications,
+    );
   }
 
-  private async sendEmail(message: MessageCreateDto, template: TemplatesMessageEnum) {
+  private async sendEmail(
+    message: MessageCreateDto,
+    template: TemplatesMessageEnum,
+  ) {
     try {
-
       const recipient = message.destinyText;
-      let from;
 
       if (!isEmail(recipient)) {
         throw new Error('Invalid recipient email address');
       }
 
-      from = await this.configService.get(
+      const from = await this.configService.get(
         'AWS_SES_FROM_DEFAULT',
         'no-reply@b2crypto.com',
       );
@@ -238,7 +259,7 @@ export class MessageServiceService {
         text: message.body,
         template: template,
         context: message.vars,
-        html
+        html,
       });
 
       return { success: true };

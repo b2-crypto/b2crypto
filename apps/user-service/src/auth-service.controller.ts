@@ -275,7 +275,7 @@ export class AuthServiceController {
         {
           where: {
             slugEmail: CommonService.getSlug(restorePasswordDto.email),
-          }
+          },
         },
       );
 
@@ -288,7 +288,6 @@ export class AuthServiceController {
         restorePasswordDto.password &&
         restorePasswordDto.password2
       ) {
-
         if (restorePasswordDto.password !== restorePasswordDto.password2) {
           throw new BadRequestException('Bad password');
         }
@@ -333,7 +332,6 @@ export class AuthServiceController {
           message: 'Password updated',
         };
       }
-
 
       await this.generateOtp({ email: restorePasswordDto.email } as any);
       return {
@@ -410,7 +408,8 @@ export class AuthServiceController {
   @ApiResponse(ResponseB2Crypto.getResponseSwagger(500, ActionsEnum.LOGIN)) */
   @Post('registry')
   async registryUser(@Body() userDto: UserRegisterDto) {
-    userDto.name = userDto.name ?? userDto.username ?? userDto.email.split('@')[0];
+    userDto.name =
+      userDto.name ?? userDto.username ?? userDto.email.split('@')[0];
     userDto.slugEmail = CommonService.getSlug(userDto.email);
     userDto.username = userDto.username ?? userDto.name;
     userDto.slugUsername = CommonService.getSlug(userDto.username);
@@ -442,7 +441,6 @@ export class AuthServiceController {
 
     return createdUser;
   }
-
 
   @IsRefresh()
   @ApiKeyCheck()
@@ -542,7 +540,7 @@ export class AuthServiceController {
     // Checks verified email (first time sing-in)
     const statusCode =
       !isBoolean(userCodeDto.user.verifyEmail) ||
-        userCodeDto.user.verifyEmail === true
+      userCodeDto.user.verifyEmail === true
         ? 301
         : 201;
     // Get token
@@ -603,7 +601,10 @@ export class AuthServiceController {
   private async generateOtp(user: UserDocument, msOTP = 60000) {
     let otpSended = await this.getOtpGenerated(user.email);
     if (!otpSended) {
-      otpSended = CommonService.randomIntNumber(999999);
+      otpSended = CommonService.getNumberDigits(
+        CommonService.randomIntNumber(999999),
+        6,
+      );
       await this.cacheManager.set(user.email, otpSended, msOTP);
     }
     const data = {
