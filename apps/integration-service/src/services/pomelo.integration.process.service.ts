@@ -25,7 +25,7 @@ export class PomeloIntegrationProcessService {
     private readonly cache: PomeloCache,
     private readonly currencyConversion: FiatIntegrationClient,
     private readonly builder: BuildersService,
-  ) {}
+  ) { }
 
   private async process(
     process: any,
@@ -251,14 +251,12 @@ export class PomeloIntegrationProcessService {
         headers,
       );
 
-      /* setImmediate(() => {
-        this.sendAdjustmentNotificationEmail(adjustment).catch((error) => {
-          Logger.error(
-            'Error sending adjustment notification email',
-            error.stack,
-          );
-        });
-      });*/
+      this.sendAdjustmentNotificationEmail(adjustment).catch((error) => {
+        Logger.error(
+          'Error sending adjustment notification email',
+          error.stack,
+        );
+      });
 
       return processed;
     } catch (error) {
@@ -271,36 +269,19 @@ export class PomeloIntegrationProcessService {
   ): Promise<void> {
     if (adjustment.user && adjustment.user.id) {
       const data = {
-        name: `Notificacion de Ajuste de Transaccion`, // Revisar metodos ASCCII
-        body: `Se ha realizado un ajuste en una de tus transacciones`, // Revisar creacion de un ENUM como solición temporal
-        originText: 'Sistema',
-        destinyText: adjustment.user.id,
-        transport: TransportEnum.EMAIL,
-        destiny: null,
         vars: {
-          userId: adjustment.user.id,
-          transactionId: adjustment.transaction?.id,
+          cardId: adjustment.card.id,
           transactionType: adjustment.transaction?.type,
-          transactionDate: adjustment.transaction?.local_date_time,
           merchantName: adjustment.merchant?.name,
-          merchantMcc: adjustment.merchant?.mcc,
           cardLastFour: adjustment.card?.last_four,
-          cardProductType: adjustment.card?.product_type,
           amountLocal: adjustment.amount?.settlement?.total,
           currencyLocal: adjustment.amount?.settlement?.currency,
         },
       };
 
-      if (adjustment.transaction?.id) {
-        data.destiny = {
-          resourceId: adjustment.transaction.id,
-          resourceName: 'TRANSACTION',
-        };
-      }
-
       Logger.log(data, 'Purchases/Transaction Adjustments Email Prepared');
       this.builder.emitMessageEventClient(
-        EventsNamesMessageEnum.sendPurchasesTransactionAdjustments,
+        EventsNamesMessageEnum.sendAdjustments,
         data,
       );
     } else {
@@ -314,11 +295,44 @@ export class PomeloIntegrationProcessService {
     authorization: Authorization,
     headers: any,
   ): Promise<any> {
-    return await this.process(
+
+    const process = await this.process(
       authorization,
       authorization.idempotency,
       true,
       headers,
     );
+
+    const data = {
+      transport: TransportEnum.EMAIL,
+      vars: {
+        cardId: authorization.card.id,
+        transactionDate: new Date().toLocaleString('es-ES', {
+          timeZone: 'America/Bogota',
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit',
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit'
+        }),
+        customerName: "",
+        transactionStatus: process.status,
+        transactionType: authorization.transaction?.type,
+        merchantName: authorization.merchant?.name,
+        cardLastFour: authorization.card?.last_four,
+        amountLocal: authorization.amount?.local?.total,
+        currencyLocal: authorization.amount?.local?.currency,
+      },
+    };
+
+    this.builder.emitMessageEventClient(
+      EventsNamesMessageEnum.sendPurchases,
+      data,
+    );
+
+    return process;
   }
+
+
 }

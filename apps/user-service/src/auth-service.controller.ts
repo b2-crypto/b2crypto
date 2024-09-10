@@ -269,6 +269,7 @@ export class AuthServiceController {
   @ApiSecurity('b2crypto-key')
   @Post('restore-password')
   async restorePassword(@Body() restorePasswordDto: RestorePasswordDto) {
+    try{
     const users = await this.builder.getPromiseUserEventClient(
       EventsNamesUserEnum.findAll,
       {
@@ -320,22 +321,27 @@ export class AuthServiceController {
       await this.builder.getPromiseUserEventClient(
         EventsNamesUserEnum.updateOne,
         {
-          id: users.list[0]._id,
-          verifyEmail: false,
-          password: CommonService.getHash(psw),
+            id: users.list[0]._id,
+            verifyEmail: false,
+            password: CommonService.getHash(psw),
         },
       );
+
+        return {
+          statusCode: 200,
+          message: 'Password updated',
+        };
+      }
+
+      await this.generateOtp({ email: restorePasswordDto.email } as any);
       return {
-        statusCode: 200,
-        message: 'Password updated',
+        statusCode: 201,
+        message: 'OTP generated',
       };
+    } catch (error) {
+      console.log({ error });
+      throw error;
     }
-    // send otp
-    await this.generateOtp({ email: restorePasswordDto.email } as any);
-    return {
-      statusCode: 201,
-      message: 'OTP generated',
-    };
   }
 
   @ApiKeyCheck()
@@ -414,12 +420,7 @@ export class AuthServiceController {
     );
 
     const emailData = {
-      name: `Bienvenido a nuestra plataforma, ${createdUser.name}`,
-      body: `Tu cuenta ha sido creada exitosamente`,
-      originText: 'Sistema',
       destinyText: createdUser.email,
-      transport: TransportEnum.EMAIL,
-      destiny: null,
       vars: {
         name: createdUser.name,
         email: createdUser.email,
@@ -429,21 +430,14 @@ export class AuthServiceController {
       },
     };
 
-    if (createdUser._id) {
-      emailData.destiny = {
-        resourceId: createdUser._id.toString(),
-        resourceName: ResourcesEnum.USER,
-      };
-    }
-
-    Logger.log(emailData, 'New User Registration Email Prepared');
-
-    /* setImmediate(() => {
-      this.builder.emitMessageEventClient(
+    try {
+      await this.builder.emitMessageEventClient(
         EventsNamesMessageEnum.sendProfileRegistrationCreation,
         emailData,
       );
-    }); */
+    } catch (error) {
+      Logger.error('Error sending user registration email', error.stack);
+    }
 
     return createdUser;
   }
@@ -614,11 +608,7 @@ export class AuthServiceController {
       await this.cacheManager.set(user.email, otpSended, msOTP);
     }
     const data = {
-      name: `OTP to ${user.email}`,
-      body: `The OTP is ${otpSended}`,
-      originText: `System`,
       destinyText: user.email,
-      transport: TransportEnum.EMAIL,
       destiny: null,
       vars: {
         name: user.name ?? user.email,

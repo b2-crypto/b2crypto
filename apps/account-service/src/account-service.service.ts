@@ -61,12 +61,7 @@ export class AccountServiceService
 
     if (account && account.email) {
       const data = {
-        name: `Confirmación de Solicitud de Tarjeta para ${account.email}`,
-        body: `Tu solicitud de tarjeta ha sido recibida`,
-        originText: 'Sistema',
         destinyText: account.email,
-        transport: TransportEnum.EMAIL,
-        destiny: null,
         vars: {
           name: account.firstName,
           lastName: account.lastName,
@@ -76,13 +71,6 @@ export class AccountServiceService
           status: account.statusText,
         },
       };
-
-      if (account._id) {
-        data.destiny = {
-          resourceId: account._id.toString(),
-          resourceName: 'ACCOUNT',
-        };
-      }
 
       Logger.log(data, 'Card Request Confirmation Email Prepared');
       this.builder.emitMessageEventClient(

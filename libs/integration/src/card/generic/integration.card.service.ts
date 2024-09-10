@@ -182,7 +182,7 @@ export class IntegrationCardService<
     const path = `${this.routesMap.searchCard}?filter[user_id]=${query.user_id}&page[size]=${query.page_size}`;
     return await this.fetch('GET', path);
   }
-  async createCard(card: TCardDto): Promise<AxiosResponse<any[], any>> {
+  async createCard(card: any): Promise<AxiosResponse<any[], any>> {
     //return this.http.post(this.routesMap.createCard, card);
     return this.fetch('POST', this.routesMap.createCard, card);
   }

@@ -41,6 +41,7 @@ import { TransferCreateButtonDto } from 'apps/transfer-service/src/dto/transfer.
 import EventsNamesMessageEnum from 'apps/message-service/src/enum/events.names.message.enum';
 import TransportEnum from '@common/common/enums/TransportEnum';
 import { NoCache } from '@common/common/decorators/no-cache.decorator';
+import { EnvironmentEnum } from '@common/common/enums/environment.enum';
 import EventsNamesStatusEnum from 'apps/status-service/src/enum/events.names.status.enum';
 import TagEnum from '@common/common/enums/TagEnum';
 import EventsNamesCategoryEnum from 'apps/category-service/src/enum/events.names.category.enum';
@@ -53,6 +54,7 @@ import { TransferCreateDto } from '@transfer/transfer/dto/transfer.create.dto';
 @Controller('wallets')
 export class WalletServiceController extends AccountServiceController {
   constructor(
+
     readonly walletService: AccountServiceService,
     @Inject(UserServiceService)
     private readonly userService: UserServiceService,
@@ -97,35 +99,27 @@ export class WalletServiceController extends AccountServiceController {
     if (!userId) {
       throw new BadRequestException('Need the user id to continue');
     }
-    const user: User = (
-      await this.userService.getAll({
-        relations: ['personalData'],
-        where: {
-          _id: userId,
-        },
-      })
-    ).list[0];
+
+    const user: User = (await this.userService.getAll({
+      relations: ['personalData'],
+      where: { _id: userId },
+    })).list[0];
+
     if (!user.personalData) {
       throw new BadRequestException('Need the personal data to continue');
     }
+
     createDto.type = TypesAccountEnum.WALLET;
     createDto.accountId = '2177';
     createDto.accountName = 'CoxSQtiWAHVo';
     createDto.accountPassword = 'w7XDOfgfudBvRG';
-    createDto.owner = user.id;
-    createDto.pin =
-      createDto.pin ??
-      parseInt(
-        CommonService.getNumberDigits(CommonService.randomIntNumber(9999), 4),
-      );
+    createDto.owner = user.id ?? user._id;
+    createDto.pin = createDto.pin ?? parseInt(CommonService.getNumberDigits(CommonService.randomIntNumber(9999), 4));
+
     const createdWallet = await this.walletService.createOne(createDto);
+
     const emailData = {
-      name: `Actualización de tu Wallet`,
-      body: `Se ha creado un nuevo wallet en tu cuenta`,
-      originText: 'Sistema',
       destinyText: user.email,
-      transport: TransportEnum.EMAIL,
-      destiny: null,
       vars: {
         name: user.name,
         accountType: createdWallet.accountType,
@@ -136,23 +130,10 @@ export class WalletServiceController extends AccountServiceController {
       },
     };
 
-    if (createdWallet._id) {
-      emailData.destiny = {
-        resourceId: createdWallet._id.toString(),
-        resourceName: 'WALLET',
-      };
-    }
-
-    setImmediate(() => {
-      this.ewalletBuilder.emitMessageEventClient(
-        EventsNamesMessageEnum.sendCryptoWalletsManagement,
-        emailData,
-      );
-    });
     const transferBtn: TransferCreateButtonDto = {
       amount: '999',
       currency: 'USD',
-      account: createdWallet._id,
+      account: createdWallet.id ?? createdWallet._id,
       creator: createDto.owner,
       details: 'Deposit address',
       customer_name: user.name,
@@ -160,19 +141,28 @@ export class WalletServiceController extends AccountServiceController {
       public_key: null,
       identifier: createDto.owner,
     };
-    this.ewalletBuilder.emitAccountEventClient(
-      EventsNamesAccountEnum.updateOne,
-      {
-        id: createdWallet._id,
-        responseCreation:
-          await this.ewalletBuilder.getPromiseTransferEventClient(
+
+    this.ewalletBuilder.emitMessageEventClient(
+      EventsNamesMessageEnum.sendCryptoWalletsManagement,
+      emailData
+    )
+
+    if (process.env.ENVIRONMENT === EnvironmentEnum.prod) {
+      this.ewalletBuilder.emitAccountEventClient(
+        EventsNamesAccountEnum.updateOne,
+        {
+          id: createdWallet.id ?? createdWallet._id,
+          responseCreation: await this.ewalletBuilder.getPromiseTransferEventClient(
             EventsNamesTransferEnum.createOneDepositLink,
-            transferBtn,
+            transferBtn
           ),
-      },
-    );
+        }
+      );
+    }
+
     return createdWallet;
   }
+
   @Post('recharge')
   @ApiTags(SwaggerSteakeyConfigEnum.TAG_WALLET)
   @ApiSecurity('b2crypto-key')

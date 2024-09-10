@@ -26,7 +26,7 @@ enum EventsNamesAccountEnum {
   findOneByTpId = 'CARD.FIND.ONE.BY.TP.ID',
   getAffiliatesFromCards = 'CARD.FIND.AFFILIATES',
   addCardFromAffiliate = 'CARD.CREATE.FROM.AFFILIATE',
-  checkCardsCreatedInCrm = 'CARD.CHECK.CREATED.IN.CRM',
+  checkCardsCreatedInPomelo = 'CARD.CHECK.CREATED.IN.POMELO',
   checkCardsForAffiliateStats = 'CARD.CHECK.FOR.AFFILIATE.STATS',
   checkCardsForBrandStats = 'CARD.CHECK.FOR.BRAND.STATS',
   checkCardsForCrmStats = 'CARD.CHECK.FOR.CRM.STATS',

@@ -259,19 +259,16 @@ export class MessageServiceController implements GenericServiceController {
   }
 
   @AllowAnon()
-  @EventPattern(EventsNamesMessageEnum.sendPurchasesTransactionAdjustments)
-  async eventSendPurchasesTransactionAdjustments(
+  @EventPattern(EventsNamesMessageEnum.sendAdjustments)
+  async eventSendAdjustments(
     @Payload() message: MessageCreateDto,
     @Ctx() ctx: RmqContext,
   ) {
     CommonService.ack(ctx);
     try {
-      await this.messageService.sendPurchasesTransactionAdjustments(message);
+      await this.messageService.sendAdjustments(message);
     } catch (err) {
-      Logger.error(
-        err,
-        `${MessageServiceController.name}-sendPurchasesTransactionAdjustments`,
-      );
+      Logger.error(err, `${MessageServiceController.name}-sendAdjustments`);
     }
   }
 
@@ -323,6 +320,19 @@ export class MessageServiceController implements GenericServiceController {
         err,
         `${MessageServiceController.name}-sendPasswordRestoredEmail`,
       );
+    }
+  }
+  @AllowAnon()
+  @EventPattern(EventsNamesMessageEnum.sendPurchases)
+  async eventSendPurchases(
+    @Payload() message: MessageCreateDto,
+    @Ctx() ctx: RmqContext,
+  ) {
+    CommonService.ack(ctx);
+    try {
+      await this.messageService.sendPurchases(message);
+    } catch (err) {
+      Logger.error(err, `${MessageServiceController.name}-sendPurchasesEmail`);
     }
   }
 }

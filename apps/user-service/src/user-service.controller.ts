@@ -58,7 +58,7 @@ export class UserServiceController implements GenericServiceController {
     private readonly userService: UserServiceService,
     @Inject(BuildersService)
     readonly builder: BuildersService,
-  ) {}
+  ) { }
 
   @NoCache()
   @Get('all')
@@ -148,12 +148,8 @@ export class UserServiceController implements GenericServiceController {
               `MassiveEmail.${UserServiceController.name}`,
             );
             const emailData = {
-              name: `Actualizacion de clave`,
-              body: `Tu clave ha sido actualizada exitosamente ${user.name}`,
-              originText: 'Sistema',
               destinyText: user.email,
               transport: TransportEnum.EMAIL,
-              destiny: null,
               vars: {
                 name: user.name,
                 username: user.username,
