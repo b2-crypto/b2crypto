@@ -1,17 +1,12 @@
-import { Account } from '@account/account/entities/mongoose/account.schema';
-import { Affiliate } from '@affiliate/affiliate/infrastructure/mongoose/affiliate.schema';
 import CountryCodeEnum from '@common/common/enums/country.code.b2crypto.enum';
 import DocIdTypeEnum from '@common/common/enums/DocIdTypeEnum';
 import GenderEnum from '@common/common/enums/GenderEnum';
-import { Lead } from '@lead/lead/entities/mongoose/lead.schema';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { BirthSchema } from '@person/person/entities/mongoose/birth.schema';
 import { JobSchema } from '@person/person/entities/mongoose/job.schema';
 import { KyCSchema } from '@person/person/entities/mongoose/kyc.schema';
 import { LocationSchema } from '@person/person/entities/mongoose/location.schema';
 import { TelephoneSchema } from '@person/person/entities/mongoose/telephone.schema';
 import { PersonEntity } from '@person/person/entities/person.entity';
-import { Traffic } from '@traffic/traffic/entities/mongoose/traffic.schema';
 import { User } from '@user/user/entities/mongoose/user.schema';
 import { ObjectId } from 'mongodb';
 import * as mongoose from 'mongoose';
@@ -36,6 +31,9 @@ export class Person extends PersonEntity {
 
   @Prop()
   searchText: string;
+
+  @Prop({ default: false })
+  verifiedIdentity: boolean;
 
   @Prop()
   lastName: string;

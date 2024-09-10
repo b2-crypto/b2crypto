@@ -10,6 +10,7 @@ import { UserChangePasswordDto } from '@user/user/dto/user.change-password.dto';
 import { UserInterface } from '@user/user/entities/user.interface';
 import { ObjectId } from 'mongoose';
 import UserVerifyIdentityDto from '../dto/user.verify.identity.dto';
+import { UserBalanceModel } from './user.balance.model';
 
 export class UserEntity implements UserInterface {
   _id?: ObjectId;
@@ -30,6 +31,7 @@ export class UserEntity implements UserInterface {
   inMaintenance: boolean;
   maintenanceStartAt: Date;
   maintenanceEndAt: Date;
+  balance: UserBalanceModel;
   apiKey: string;
   configuration: JSON;
   twoFactorSecret: string;
