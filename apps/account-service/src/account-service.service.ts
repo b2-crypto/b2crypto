@@ -24,14 +24,15 @@ import EventsNamesStatusEnum from 'apps/status-service/src/enum/events.names.sta
 
 @Injectable()
 export class AccountServiceService
-  implements BasicMicroserviceService<AccountDocument> {
+  implements BasicMicroserviceService<AccountDocument>
+{
   constructor(
     private configService: ConfigService,
     @Inject(BuildersService)
     private readonly builder: BuildersService,
     @Inject(AccountServiceMongooseService)
     private lib: AccountServiceMongooseService,
-  ) { }
+  ) {}
   async download(
     query: QuerySearchAnyDto,
     context?: any,
