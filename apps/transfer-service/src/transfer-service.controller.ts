@@ -1,13 +1,10 @@
-import { Response } from 'express';
 import {
   BadRequestException,
   Body,
   Controller,
   Delete,
   Get,
-  HttpStatus,
   Inject,
-  InternalServerErrorException,
   Logger,
   NotFoundException,
   NotImplementedException,
@@ -16,7 +13,6 @@ import {
   Patch,
   Post,
   Query,
-  Redirect,
   Req,
   Request,
   Res,
@@ -30,17 +26,18 @@ import {
   ApiSecurity,
   ApiTags,
 } from '@nestjs/swagger';
+import { Response } from 'express';
 
 import { AllowAnon } from '@auth/auth/decorators/allow-anon.decorator';
 import { ApiKeyCheck } from '@auth/auth/decorators/api-key-check.decorator';
 import { ApiKeyAffiliateAuthGuard } from '@auth/auth/guards/api.key.affiliate.guard';
-import { CheckPoliciesAbility } from '@auth/auth/policy/policy.handler.ability';
-import { PolicyHandlerTransferCreate } from '@auth/auth/policy/transfer/policity.handler.transfer.create';
-import { PolicyHandlerTransferDelete } from '@auth/auth/policy/transfer/policity.handler.transfer.delete';
-import { PolicyHandlerTransferRead } from '@auth/auth/policy/transfer/policity.handler.transfer.read';
-import { PolicyHandlerTransferUpdate } from '@auth/auth/policy/transfer/policity.handler.transfer.update';
+import { ApiKeyAuthGuard } from '@auth/auth/guards/api.key.guard';
 import { BuildersService } from '@builder/builders';
 import { CommonService } from '@common/common';
+import { NoCache } from '@common/common/decorators/no-cache.decorator';
+import ActionsEnum from '@common/common/enums/ActionEnum';
+import ResourcesEnum from '@common/common/enums/ResourceEnum';
+import TagEnum from '@common/common/enums/TagEnum';
 import GenericServiceController from '@common/common/interfaces/controller.generic.interface';
 import { ResponsePaginator } from '@common/common/interfaces/response-pagination.interface';
 import { CreateAnyDto } from '@common/common/models/create-any.dto';
@@ -55,39 +52,33 @@ import {
 } from '@nestjs/microservices';
 import { PspAccountInterface } from '@psp-account/psp-account/entities/psp-account.interface';
 import { PspInterface } from '@psp/psp/entities/psp.interface';
+import ResponseB2Crypto from '@response-b2crypto/response-b2crypto/models/ResponseB2Crypto';
 import { StatsDatePspAccountDocument } from '@stats/stats/entities/mongoose/stats.date.psp.account.schema';
 import { TransferCreateDto } from '@transfer/transfer/dto/transfer.create.dto';
-import { TransferUpdateDepositDto } from '@transfer/transfer/dto/transfer.update.deposit.dto';
 import { TransferUpdateDto } from '@transfer/transfer/dto/transfer.update.dto';
+import { TransferUpdateFromLatamCashierDto } from '@transfer/transfer/dto/transfer.update.from.latamcashier.dto';
 import { TransferUpdateWithdrawalDto } from '@transfer/transfer/dto/transfer.update.withdrawal.dto';
 import { TransferDocument } from '@transfer/transfer/entities/mongoose/transfer.schema';
 import { TransferEntity } from '@transfer/transfer/entities/transfer.entity';
 import { OperationTransactionType } from '@transfer/transfer/enum/operation.transaction.type.enum';
+import EventsNamesAccountEnum from 'apps/account-service/src/enum/events.names.account.enum';
+import { AffiliateServiceService } from 'apps/affiliate-service/src/affiliate-service.service';
+import EventsNamesAffiliateEnum from 'apps/affiliate-service/src/enum/events.names.affiliate.enum';
+import EventsNamesCategoryEnum from 'apps/category-service/src/enum/events.names.category.enum';
+import EventsNamesCrmEnum from 'apps/crm-service/src/enum/events.names.crm.enum';
+import { PomeloProcessEnum } from 'apps/integration-service/src/enums/pomelo.process.enum';
 import EventsNamesPspAccountEnum from 'apps/psp-service/src/enum/events.names.psp.acount.enum';
 import EventsNamesStatsEnum from 'apps/stats-service/src/enum/events.names.stats.enum';
+import EventsNamesStatusEnum from 'apps/status-service/src/enum/events.names.status.enum';
+import { SwaggerSteakeyConfigEnum } from 'libs/config/enum/swagger.stakey.config.enum';
 import { ApproveOrRejectDepositDto } from '../../../libs/transfer/src/dto/approve.or.reject.deposit.dto';
+import { BoldTransferRequestDto } from './dto/bold.transfer.request.dto';
 import { TransferAffiliateResponseDto } from './dto/transfer.affiliate.response.dto';
+import { TransferCreateButtonDto } from './dto/transfer.create.button.dto';
+import { BoldStatusEnum } from './enum/bold.status.enum';
 import EventsNamesTransferEnum from './enum/events.names.transfer.enum';
 import { TransferServiceService } from './transfer-service.service';
-import { TransferUpdateFromLatamCashierDto } from '@transfer/transfer/dto/transfer.update.from.latamcashier.dto';
 import { isMongoId } from 'class-validator';
-import ActionsEnum from '@common/common/enums/ActionEnum';
-import ResourcesEnum from '@common/common/enums/ResourceEnum';
-import EventsNamesAffiliateEnum from 'apps/affiliate-service/src/enum/events.names.affiliate.enum';
-import ResponseB2Crypto from '@response-b2crypto/response-b2crypto/models/ResponseB2Crypto';
-import { NoCache } from '@common/common/decorators/no-cache.decorator';
-import { TransferCreateButtonDto } from './dto/transfer.create.button.dto';
-import { AffiliateServiceService } from 'apps/affiliate-service/src/affiliate-service.service';
-import { BoldTransferRequestDto } from './dto/bold.transfer.request.dto';
-import { BoldStatusEnum } from './enum/bold.status.enum';
-import EventsNamesCrmEnum from 'apps/crm-service/src/enum/events.names.crm.enum';
-import EventsNamesStatusEnum from 'apps/status-service/src/enum/events.names.status.enum';
-import EventsNamesAccountEnum from 'apps/account-service/src/enum/events.names.account.enum';
-import EventsNamesCategoryEnum from 'apps/category-service/src/enum/events.names.category.enum';
-import { PomeloProcessEnum } from 'apps/integration-service/src/enums/pomelo.process.enum';
-import TagEnum from '@common/common/enums/TagEnum';
-import { ApiKeyAuthGuard } from '@auth/auth/guards/api.key.guard';
-import { SwaggerSteakeyConfigEnum } from 'libs/config/enum/swagger.stakey.config.enum';
 
 @ApiTags('TRANSFERS')
 @Controller('transfers')
@@ -186,6 +177,51 @@ export class TransferServiceController implements GenericServiceController {
     //query = await this.filterFromUserPermissions(query, req);
     query = CommonService.getQueryWithUserId(query, req, 'userAccount');
     return this.transferService.getAll(query);
+  }
+
+  @Get('check-types-account/:transferID')
+  @ApiTags(SwaggerSteakeyConfigEnum.TAG_DEPOSIT)
+  @ApiSecurity('b2crypto-key')
+  @ApiBearerAuth('bearerToken')
+  @UseGuards(ApiKeyAuthGuard)
+  // @CheckPoliciesAbility(new PolicyHandlerTransferRead())
+  async checkTypesAccount(@Param('transferID') id: string, @Req() req?) {
+    if (isMongoId(id)) {
+      const txs = await this.transferService.getAll({
+        relations: ['account'],
+        where: {
+          _id: id,
+        },
+      });
+      if (!txs.list[0]) {
+        throw new NotFoundException();
+      }
+      const tx = txs.list[0];
+      Logger.debug(
+        `${tx.account.type}-${tx.account.accountType}`,
+        `Check types account - ${tx.numericId} - Transfer: ${tx._id}`,
+      );
+      return this.transferService
+        .updateTransfer({
+          id: tx._id,
+          typeAccount: tx.account.type,
+          typeAccountType: tx.account.accountType,
+        })
+        .then(() => `${tx.numericId}-${tx._id}`);
+    } else {
+      let txs = await this.transferService.getAll({});
+      const promises = [];
+      do {
+        for (const tx of txs.list) {
+          promises.push(this.checkTypesAccount(tx._id.toString()));
+        }
+        txs = await this.transferService.getAll({
+          page: txs.nextPage,
+        });
+      } while (txs.nextPage != 1);
+
+      return Promise.all(promises);
+    }
   }
 
   @Get('deposit')
