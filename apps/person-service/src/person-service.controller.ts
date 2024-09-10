@@ -58,10 +58,11 @@ export class PersonServiceController implements GenericServiceController {
   // @CheckPoliciesAbility(new PolicyHandlerPersonRead())
   async findAllMe(@Req() req, @Query() query: QuerySearchAnyDto) {
     query = CommonService.getQueryWithUserId(query, req);
+    const verifiedIdentity = req?.user?.verifyIdentity;
     const persons = await this.personService.getAll(query);
     persons.list.forEach((person) => {
       person.verifiedIdentity =
-        person.verifiedIdentity ?? person.user.verifyIdentity ?? false;
+        person.verifiedIdentity ?? verifiedIdentity ?? false;
       return person;
     });
     return persons;
