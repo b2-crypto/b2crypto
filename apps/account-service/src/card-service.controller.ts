@@ -70,10 +70,11 @@ import { UserServiceService } from 'apps/user-service/src/user-service.service';
 import { isEmpty, isString } from 'class-validator';
 import { SwaggerSteakeyConfigEnum } from 'libs/config/enum/swagger.stakey.config.enum';
 
+import { ResponsePaginator } from '../../../libs/common/src/interfaces/response-pagination.interface';
 import { AccountServiceController } from './account-service.controller';
 import { AccountServiceService } from './account-service.service';
+import { AfgNamesEnum } from './enum/afg.names.enum';
 import EventsNamesAccountEnum from './enum/events.names.account.enum';
-import { ResponsePaginator } from '../../../libs/common/src/interfaces/response-pagination.interface';
 
 @ApiTags('CARD')
 @Controller('cards')
@@ -166,11 +167,9 @@ export class CardServiceController extends AccountServiceController {
   async createOne(@Body() createDto: CardCreateDto, @Req() req?: any) {
     createDto.accountType =
       createDto.accountType ?? CardTypesAccountEnum.VIRTUAL;
-    if (
-      createDto.accountType === CardTypesAccountEnum.PHYSICAL &&
-      !createDto?.address
-    ) {
-      throw new BadRequestException('PHYSICAL card requires a valid address');
+    let cardAfg = AfgNamesEnum.CONSUMER_VIRTUAL_1K;
+    if (createDto.accountType === CardTypesAccountEnum.PHYSICAL) {
+      cardAfg = AfgNamesEnum.CONSUMER_NOMINADA_3K;
     }
     let user: User;
     if (createDto.owner) {
@@ -224,54 +223,36 @@ export class CardServiceController extends AccountServiceController {
         );
         const afg = affinityGroup.data[0]; */
         // TODO[hender - 2024/06/05]
-        const group = await this.buildAFG();
+        const group = await this.buildAFG(null, cardAfg);
         account.group = group.list[0];
       }
       // Create Card
-      let address;
-
-      if (
-        createDto?.address &&
-        createDto.accountType === CardTypesAccountEnum.PHYSICAL
-      ) {
-        address = {
-          street_name: createDto?.address?.street_name,
-          street_number: ' ',
-          apartment: createDto?.address?.apartment,
-          city: createDto?.address?.city,
-          region: createDto?.address?.region,
-          country: 'Colombia',
-          /* country: countries.filter(
-            (c) => c.alpha2 === user.personalData.nationality,
-          )[0].alpha3, */
-          neighborhood: createDto?.address.neighborhood,
-        };
-      } else {
-        address = {
-          street_name: user.personalData.location.address.street_name,
-          street_number: ' ',
-          apartment: user.personalData.location.address.apartment,
-          city: user.personalData.location.address.city,
-          region: user.personalData.location.address.region,
-          country: 'Colombia',
-          /* country: countries.filter(
-            (c) => c.alpha2 === user.personalData.nationality,
-          )[0].alpha3, */
-          neighborhood: user.personalData.location.address.neighborhood,
-        };
-      }
+      const address = {
+        street_name:
+          createDto?.address?.street_name ??
+          user.personalData?.location?.address?.street_name,
+        street_number: ' ',
+        apartment:
+          createDto?.address?.apartment ??
+          user.personalData?.location?.address?.apartment,
+        city:
+          createDto?.address?.city ?? user.personalData.location.address.city,
+        region:
+          createDto?.address?.region ??
+          user.personalData?.location?.address?.region,
+        country: 'COL',
+        /* country: countries.filter(
+          (c) => c.alpha2 === user.personalData.nationality,
+        )[0].alpha3, */
+        neighborhood:
+          createDto?.address?.neighborhood ??
+          user.personalData?.location?.address?.neighborhood,
+      };
       const card = await cardIntegration.createCard({
         user_id: account.userCardConfig.id,
-        affinity_group_id:
-          createDto.accountType === CardTypesAccountEnum.PHYSICAL
-            ? 'afg-2fdxV2deQc0qHDbTtCwOlbFZJBL'
-            : account.group.valueGroup,
+        affinity_group_id: account.group.valueGroup,
         card_type: account.accountType,
         address: address,
-        // name_on_card:
-        //   createDto.accountType === CardTypesAccountEnum.PHYSICAL
-        //     ? `${user.name}`
-        //     : undefined,
       });
       const error = card['error'];
       if (error) {
@@ -322,16 +303,16 @@ export class CardServiceController extends AccountServiceController {
     }
   }
 
-  private getAfgVirtualProd() {
-    return {
-      id: 'afg-2dK0sh37O9A2pPMxdBaaUcfApIb',
-      name: 'B2Crypto COL Mastercard credit virtual',
+  private getAfgProd(cardAfg: AfgNamesEnum) {
+    let afg = {
+      id: 'afg-2lZYP9KVezJJcvSKCkAMbNPOolq',
+      name: 'Consumer-Virtual-1k',
       card_type_supported: ['VIRTUAL'],
       innominate: false,
       months_to_expiration: 96,
       issued_account: 9,
       fee_account: 36,
-      exchange_rate_type: '100',
+      exchange_rate_type: 'none',
       exchange_rate_amount: 0,
       non_usd_exchange_rate_amount: 0,
       dcc_exchange_rate_amount: 0,
@@ -347,107 +328,594 @@ export class CardServiceController extends AccountServiceController {
       plastic_model: 1,
       kit_model: 1,
       status: 'ACTIVE',
-      embossing_company: 'THALES',
+      embossing_company: 'IDEMIA',
       courier_company: 'DOMINA',
       exchange_currency_name: 'COP',
       activation_code_enabled: false,
-      total_exchange_rate: 4021.63,
-      total_non_usd_exchange_rate: 4021.63,
-      total_dcc_exchange_rate: 4021.63,
+      total_exchange_rate: 4149.79,
+      total_non_usd_exchange_rate: 4149.79,
+      total_dcc_exchange_rate: 4149.79,
       provider: 'MASTERCARD',
       custom_name_on_card_enabled: false,
       provider_algorithm: 'MCHIP',
-      start_date: '2024-03-06',
+      start_date: '2024-09-03',
       dcvv_enabled: false,
     };
+    switch (cardAfg) {
+      // PHYSICAL
+      case AfgNamesEnum.CONSUMER_NOMINADA_3K:
+        afg = {
+          id: 'afg-2lZUsLQBqiS9izPyZfm9WW7gJUr',
+          name: 'Consumer-Nominada-3k',
+          card_type_supported: ['PHYSICAL'],
+          innominate: false,
+          months_to_expiration: 96,
+          issued_account: 9,
+          fee_account: 36,
+          exchange_rate_type: 'none',
+          exchange_rate_amount: 0,
+          non_usd_exchange_rate_amount: 0,
+          dcc_exchange_rate_amount: 0,
+          local_withdrawal_allowed: true,
+          international_withdrawal_allowed: true,
+          local_ecommerce_allowed: true,
+          international_ecommerce_allowed: true,
+          local_purchases_allowed: true,
+          international_purchases_allowed: true,
+          product_id: 'prd-2dK0YVgQ2DnpvfNcq8pmdNnwz0I',
+          local_extracash_allowed: true,
+          international_extracash_allowed: true,
+          plastic_model: 1,
+          kit_model: 1,
+          status: 'ACTIVE',
+          embossing_company: 'IDEMIA',
+          courier_company: 'DOMINA',
+          exchange_currency_name: 'COP',
+          activation_code_enabled: false,
+          total_exchange_rate: 4149.79,
+          total_non_usd_exchange_rate: 4149.79,
+          total_dcc_exchange_rate: 4149.79,
+          provider: 'MASTERCARD',
+          custom_name_on_card_enabled: false,
+          provider_algorithm: 'MCHIP',
+          start_date: '2024-09-03',
+          dcvv_enabled: false,
+        };
+        break;
+      case AfgNamesEnum.CONSUMER_NOMINADA_10K:
+        afg = {
+          id: 'afg-2lZXPZEUyjw5BtJGpPw566eYvtx',
+          name: 'Consumer-Nominada-10k',
+          card_type_supported: ['PHYSICAL'],
+          innominate: false,
+          months_to_expiration: 96,
+          issued_account: 9,
+          fee_account: 36,
+          exchange_rate_type: 'none',
+          exchange_rate_amount: 0,
+          non_usd_exchange_rate_amount: 0,
+          dcc_exchange_rate_amount: 0,
+          local_withdrawal_allowed: true,
+          international_withdrawal_allowed: true,
+          local_ecommerce_allowed: true,
+          international_ecommerce_allowed: true,
+          local_purchases_allowed: true,
+          international_purchases_allowed: true,
+          product_id: 'prd-2dK0YVgQ2DnpvfNcq8pmdNnwz0I',
+          local_extracash_allowed: true,
+          international_extracash_allowed: true,
+          plastic_model: 1,
+          kit_model: 1,
+          status: 'ACTIVE',
+          embossing_company: 'IDEMIA',
+          courier_company: 'DOMINA',
+          exchange_currency_name: 'COP',
+          activation_code_enabled: false,
+          total_exchange_rate: 4149.79,
+          total_non_usd_exchange_rate: 4149.79,
+          total_dcc_exchange_rate: 4149.79,
+          provider: 'MASTERCARD',
+          custom_name_on_card_enabled: false,
+          provider_algorithm: 'MCHIP',
+          start_date: '2024-09-03',
+          dcvv_enabled: false,
+        };
+        break;
+      case AfgNamesEnum.CONSUMER_NOMINADA_25K:
+        afg = {
+          id: 'afg-2lZXXQoTu1rZqIefYA0gMrmjksA',
+          name: 'Consumer-Nominada-25k',
+          card_type_supported: ['PHYSICAL'],
+          innominate: false,
+          months_to_expiration: 96,
+          issued_account: 9,
+          fee_account: 36,
+          exchange_rate_type: '100',
+          exchange_rate_amount: 0,
+          non_usd_exchange_rate_amount: 0,
+          dcc_exchange_rate_amount: 0,
+          local_withdrawal_allowed: true,
+          international_withdrawal_allowed: true,
+          local_ecommerce_allowed: true,
+          international_ecommerce_allowed: true,
+          local_purchases_allowed: true,
+          international_purchases_allowed: true,
+          product_id: 'prd-2dK0YVgQ2DnpvfNcq8pmdNnwz0I',
+          local_extracash_allowed: true,
+          international_extracash_allowed: true,
+          plastic_model: 1,
+          kit_model: 1,
+          status: 'BLOCKED',
+          embossing_company: 'IDEMIA',
+          courier_company: 'DOMINA',
+          exchange_currency_name: 'COP',
+          activation_code_enabled: false,
+          total_exchange_rate: 4149.79,
+          total_non_usd_exchange_rate: 4149.79,
+          total_dcc_exchange_rate: 4149.79,
+          provider: 'MASTERCARD',
+          custom_name_on_card_enabled: false,
+          provider_algorithm: 'MCHIP',
+          start_date: '2024-09-03',
+          dcvv_enabled: false,
+        };
+        break;
+      case AfgNamesEnum.CONSUMER_NOMINADA_100K:
+        afg = {
+          id: 'afg-2lZXdcYBx3twdM3QRIY4UzSDKRs',
+          name: 'Consumer-Nominada-100k',
+          card_type_supported: ['PHYSICAL'],
+          innominate: false,
+          months_to_expiration: 96,
+          issued_account: 9,
+          fee_account: 36,
+          exchange_rate_type: '100',
+          exchange_rate_amount: 0,
+          non_usd_exchange_rate_amount: 0,
+          dcc_exchange_rate_amount: 0,
+          local_withdrawal_allowed: true,
+          international_withdrawal_allowed: true,
+          local_ecommerce_allowed: true,
+          international_ecommerce_allowed: true,
+          local_purchases_allowed: true,
+          international_purchases_allowed: true,
+          product_id: 'prd-2dK0YVgQ2DnpvfNcq8pmdNnwz0I',
+          local_extracash_allowed: true,
+          international_extracash_allowed: true,
+          plastic_model: 1,
+          kit_model: 1,
+          status: 'BLOCKED',
+          embossing_company: 'IDEMIA',
+          courier_company: 'DOMINA',
+          exchange_currency_name: 'COP',
+          activation_code_enabled: false,
+          total_exchange_rate: 4149.79,
+          total_non_usd_exchange_rate: 4149.79,
+          total_dcc_exchange_rate: 4149.79,
+          provider: 'MASTERCARD',
+          custom_name_on_card_enabled: false,
+          provider_algorithm: 'MCHIP',
+          start_date: '2024-09-03',
+          dcvv_enabled: false,
+        };
+        break;
+      case AfgNamesEnum.CONSUMER_INNOMINADA_25K:
+        afg = {
+          id: 'afg-2lZYCpM3SS1Bn6mDP4VLPgOaHXo',
+          name: 'Consumer-Innominada-25k',
+          card_type_supported: ['PHYSICAL'],
+          innominate: true,
+          months_to_expiration: 96,
+          issued_account: 9,
+          fee_account: 36,
+          exchange_rate_type: 'none',
+          exchange_rate_amount: 0,
+          non_usd_exchange_rate_amount: 0,
+          dcc_exchange_rate_amount: 0,
+          local_withdrawal_allowed: true,
+          international_withdrawal_allowed: true,
+          local_ecommerce_allowed: true,
+          international_ecommerce_allowed: true,
+          local_purchases_allowed: true,
+          international_purchases_allowed: true,
+          product_id: 'prd-2dK0YVgQ2DnpvfNcq8pmdNnwz0I',
+          local_extracash_allowed: true,
+          international_extracash_allowed: true,
+          plastic_model: 1,
+          kit_model: 1,
+          status: 'ACTIVE',
+          embossing_company: 'IDEMIA',
+          courier_company: 'DOMINA',
+          exchange_currency_name: 'COP',
+          activation_code_enabled: false,
+          total_exchange_rate: 4149.79,
+          total_non_usd_exchange_rate: 4149.79,
+          total_dcc_exchange_rate: 4149.79,
+          provider: 'MASTERCARD',
+          custom_name_on_card_enabled: false,
+          provider_algorithm: 'MCHIP',
+          start_date: '2024-09-03',
+          dcvv_enabled: false,
+        };
+        break;
+      case AfgNamesEnum.CONSUMER_INNOMINADA_100K:
+        afg = {
+          id: 'afg-2lZYHlB3qAN9LnPKMV395flMUlp',
+          name: 'Consumer-Innominada-100k',
+          card_type_supported: ['PHYSICAL'],
+          innominate: true,
+          months_to_expiration: 96,
+          issued_account: 9,
+          fee_account: 36,
+          exchange_rate_type: 'none',
+          exchange_rate_amount: 0,
+          non_usd_exchange_rate_amount: 0,
+          dcc_exchange_rate_amount: 0,
+          local_withdrawal_allowed: true,
+          international_withdrawal_allowed: true,
+          local_ecommerce_allowed: true,
+          international_ecommerce_allowed: true,
+          local_purchases_allowed: true,
+          international_purchases_allowed: true,
+          product_id: 'prd-2dK0YVgQ2DnpvfNcq8pmdNnwz0I',
+          local_extracash_allowed: true,
+          international_extracash_allowed: true,
+          plastic_model: 1,
+          kit_model: 1,
+          status: 'ACTIVE',
+          embossing_company: 'IDEMIA',
+          courier_company: 'DOMINA',
+          exchange_currency_name: 'COP',
+          activation_code_enabled: false,
+          total_exchange_rate: 4149.79,
+          total_non_usd_exchange_rate: 4149.79,
+          total_dcc_exchange_rate: 4149.79,
+          provider: 'MASTERCARD',
+          custom_name_on_card_enabled: false,
+          provider_algorithm: 'MCHIP',
+          start_date: '2024-09-03',
+          dcvv_enabled: false,
+        };
+        break;
+      // VIRTUAL
+      case AfgNamesEnum.CONSUMER_VIRTUAL_1K:
+        afg = {
+          id: 'afg-2lZYP9KVezJJcvSKCkAMbNPOolq',
+          name: 'Consumer-Virtual-1k',
+          card_type_supported: ['VIRTUAL'],
+          innominate: false,
+          months_to_expiration: 96,
+          issued_account: 9,
+          fee_account: 36,
+          exchange_rate_type: 'none',
+          exchange_rate_amount: 0,
+          non_usd_exchange_rate_amount: 0,
+          dcc_exchange_rate_amount: 0,
+          local_withdrawal_allowed: true,
+          international_withdrawal_allowed: true,
+          local_ecommerce_allowed: true,
+          international_ecommerce_allowed: true,
+          local_purchases_allowed: true,
+          international_purchases_allowed: true,
+          product_id: 'prd-2dK0YVgQ2DnpvfNcq8pmdNnwz0I',
+          local_extracash_allowed: true,
+          international_extracash_allowed: true,
+          plastic_model: 1,
+          kit_model: 1,
+          status: 'ACTIVE',
+          embossing_company: 'IDEMIA',
+          courier_company: 'DOMINA',
+          exchange_currency_name: 'COP',
+          activation_code_enabled: false,
+          total_exchange_rate: 4149.79,
+          total_non_usd_exchange_rate: 4149.79,
+          total_dcc_exchange_rate: 4149.79,
+          provider: 'MASTERCARD',
+          custom_name_on_card_enabled: false,
+          provider_algorithm: 'MCHIP',
+          start_date: '2024-09-03',
+          dcvv_enabled: false,
+        };
+        break;
+      case AfgNamesEnum.CONSUMER_VIRTUAL_2K:
+        afg = {
+          id: 'afg-2lZYTHIOaWFW1uB8kg79vuhuWuS',
+          name: 'Consumer-Virtual-2k',
+          card_type_supported: ['VIRTUAL'],
+          innominate: false,
+          months_to_expiration: 96,
+          issued_account: 9,
+          fee_account: 36,
+          exchange_rate_type: 'none',
+          exchange_rate_amount: 0,
+          non_usd_exchange_rate_amount: 0,
+          dcc_exchange_rate_amount: 0,
+          local_withdrawal_allowed: true,
+          international_withdrawal_allowed: true,
+          local_ecommerce_allowed: true,
+          international_ecommerce_allowed: true,
+          local_purchases_allowed: true,
+          international_purchases_allowed: true,
+          product_id: 'prd-2dK0YVgQ2DnpvfNcq8pmdNnwz0I',
+          local_extracash_allowed: true,
+          international_extracash_allowed: true,
+          plastic_model: 1,
+          kit_model: 1,
+          status: 'ACTIVE',
+          embossing_company: 'IDEMIA',
+          courier_company: 'DOMINA',
+          exchange_currency_name: 'COP',
+          activation_code_enabled: false,
+          total_exchange_rate: 4149.79,
+          total_non_usd_exchange_rate: 4149.79,
+          total_dcc_exchange_rate: 4149.79,
+          provider: 'MASTERCARD',
+          custom_name_on_card_enabled: false,
+          provider_algorithm: 'MCHIP',
+          start_date: '2024-09-03',
+          dcvv_enabled: false,
+        };
+        break;
+      case AfgNamesEnum.CONSUMER_VIRTUAL_5K:
+        afg = {
+          id: 'afg-2lZhmFyzsHojufE42Tfn1X73mnG',
+          name: 'Consumer-Virtual-5k',
+          card_type_supported: ['VIRTUAL'],
+          innominate: false,
+          months_to_expiration: 96,
+          issued_account: 9,
+          fee_account: 36,
+          exchange_rate_type: 'none',
+          exchange_rate_amount: 0,
+          non_usd_exchange_rate_amount: 0,
+          dcc_exchange_rate_amount: 0,
+          local_withdrawal_allowed: true,
+          international_withdrawal_allowed: true,
+          local_ecommerce_allowed: true,
+          international_ecommerce_allowed: true,
+          local_purchases_allowed: true,
+          international_purchases_allowed: true,
+          product_id: 'prd-2dK0YVgQ2DnpvfNcq8pmdNnwz0I',
+          local_extracash_allowed: true,
+          international_extracash_allowed: true,
+          plastic_model: 1,
+          kit_model: 1,
+          status: 'ACTIVE',
+          embossing_company: 'THALES',
+          courier_company: 'DOMINA',
+          exchange_currency_name: 'COP',
+          activation_code_enabled: false,
+          total_exchange_rate: 4149.79,
+          total_non_usd_exchange_rate: 4149.79,
+          total_dcc_exchange_rate: 4149.79,
+          provider: 'MASTERCARD',
+          custom_name_on_card_enabled: false,
+          provider_algorithm: 'MCHIP',
+          start_date: '2024-09-03',
+          dcvv_enabled: false,
+        };
+        break;
+      case AfgNamesEnum.CONSUMER_VIRTUAL_10K:
+        afg = {
+          id: 'afg-2lZYZ7oGxBT1FhsSnBvywgVrCQq',
+          name: 'Consumer-Virtual-10k',
+          card_type_supported: ['VIRTUAL'],
+          innominate: false,
+          months_to_expiration: 96,
+          issued_account: 9,
+          fee_account: 36,
+          exchange_rate_type: 'none',
+          exchange_rate_amount: 0,
+          non_usd_exchange_rate_amount: 0,
+          dcc_exchange_rate_amount: 0,
+          local_withdrawal_allowed: true,
+          international_withdrawal_allowed: true,
+          local_ecommerce_allowed: true,
+          international_ecommerce_allowed: true,
+          local_purchases_allowed: true,
+          international_purchases_allowed: true,
+          product_id: 'prd-2dK0YVgQ2DnpvfNcq8pmdNnwz0I',
+          local_extracash_allowed: true,
+          international_extracash_allowed: true,
+          plastic_model: 1,
+          kit_model: 1,
+          status: 'ACTIVE',
+          embossing_company: 'IDEMIA',
+          courier_company: 'DOMINA',
+          exchange_currency_name: 'COP',
+          activation_code_enabled: false,
+          total_exchange_rate: 4149.79,
+          total_non_usd_exchange_rate: 4149.79,
+          total_dcc_exchange_rate: 4149.79,
+          provider: 'MASTERCARD',
+          custom_name_on_card_enabled: false,
+          provider_algorithm: 'MCHIP',
+          start_date: '2024-09-03',
+          dcvv_enabled: false,
+        };
+        break;
+      default:
+        throw new BadRequestException('Card AFG not found');
+    }
+    return afg;
   }
 
-  private getAfgVirtualCommercialProd() {
-    return {
-      id: 'afg-2i3XVNYWvg9u76TFZi4FitF3VpD',
-      name: 'B2Crypto COL Mastercard Commercial credit virtual ',
-      card_type_supported: ['VIRTUAL'],
+  private getAfgStage(cardAfg: AfgNamesEnum) {
+    let afg = {
+      id: 'afg-2VtGPHue8VIrXsJa0H7OzLLri4T',
+      name: 'Afinidad basica 2',
+      card_type_supported: ['VIRTUAL', 'PHYSICAL'],
       innominate: false,
       months_to_expiration: 96,
       issued_account: 9,
       fee_account: 36,
-      exchange_rate_type: '100',
+      exchange_rate_type: 'none',
       exchange_rate_amount: 0,
       non_usd_exchange_rate_amount: 0,
       dcc_exchange_rate_amount: 0,
-      local_withdrawal_allowed: true,
-      international_withdrawal_allowed: true,
+      local_withdrawal_allowed: false,
+      international_withdrawal_allowed: false,
       local_ecommerce_allowed: true,
       international_ecommerce_allowed: true,
       local_purchases_allowed: true,
       international_purchases_allowed: true,
-      product_id: 'prd-2hZAQouC4B4qDag9W21MozKlqzU',
+      product_id: 'prd-2VtGP4RvXv5enzWYe2jikrxucrG',
       local_extracash_allowed: true,
       international_extracash_allowed: true,
       plastic_model: 1,
       kit_model: 1,
       status: 'ACTIVE',
       embossing_company: 'THALES',
-      courier_company: 'DOMINA',
-      exchange_currency_name: 'COP',
+      courier_company: 'ESTAFETA',
+      exchange_currency_name: 'MXN',
       activation_code_enabled: false,
-      total_exchange_rate: 4021.63,
-      total_non_usd_exchange_rate: 4021.63,
-      total_dcc_exchange_rate: 4021.63,
+      total_exchange_rate: 20.6,
+      total_non_usd_exchange_rate: 20.6,
+      total_dcc_exchange_rate: 20.6,
       provider: 'MASTERCARD',
       custom_name_on_card_enabled: false,
-      provider_algorithm: 'MCHIP',
-      start_date: '2024-06-18',
+      provider_algorithm: 'EMV_CSKD',
+      start_date: '2023-09-25',
       dcvv_enabled: false,
     };
+    switch (cardAfg) {
+      case AfgNamesEnum.CONSUMER_NOMINADA_3K:
+      case AfgNamesEnum.CONSUMER_NOMINADA_10K:
+      case AfgNamesEnum.CONSUMER_NOMINADA_25K:
+      case AfgNamesEnum.CONSUMER_NOMINADA_100K:
+        afg = {
+          id: 'afg-2fdxV2deQc0qHDbTtCwOlbFZJBL',
+          name: 'B2Crypto COL physical credit nominated',
+          card_type_supported: ['PHYSICAL'],
+          innominate: false,
+          months_to_expiration: 96,
+          issued_account: 9,
+          fee_account: 36,
+          exchange_rate_type: '100',
+          exchange_rate_amount: 100,
+          non_usd_exchange_rate_amount: 100,
+          dcc_exchange_rate_amount: 0,
+          local_withdrawal_allowed: true,
+          international_withdrawal_allowed: true,
+          local_ecommerce_allowed: true,
+          international_ecommerce_allowed: true,
+          local_purchases_allowed: true,
+          international_purchases_allowed: true,
+          product_id: 'prd-2fdxUv6l6VEVxlgOxt2UGCCUZXs',
+          local_extracash_allowed: true,
+          international_extracash_allowed: true,
+          plastic_model: 1,
+          kit_model: 1,
+          status: 'ACTIVE',
+          embossing_company: 'IDEMIA',
+          courier_company: 'DOMINA',
+          exchange_currency_name: 'COP',
+          activation_code_enabled: false,
+          total_exchange_rate: 4169.8,
+          total_non_usd_exchange_rate: 4169.8,
+          total_dcc_exchange_rate: 4128.51,
+          provider: 'MASTERCARD',
+          custom_name_on_card_enabled: false,
+          provider_algorithm: 'MCHIP',
+          start_date: '2024-04-26',
+          dcvv_enabled: false,
+        };
+        break;
+      case AfgNamesEnum.CONSUMER_INNOMINADA_25K:
+      case AfgNamesEnum.CONSUMER_INNOMINADA_100K:
+        afg = {
+          id: 'afg-2jc1143Egwfm4SUOaAwBz9IfZKb',
+          name: 'B2Crypto innominated',
+          card_type_supported: ['PHYSICAL'],
+          innominate: true,
+          months_to_expiration: 96,
+          issued_account: 9,
+          fee_account: 36,
+          exchange_rate_type: 'none',
+          exchange_rate_amount: 0,
+          non_usd_exchange_rate_amount: 0,
+          dcc_exchange_rate_amount: 0,
+          local_withdrawal_allowed: true,
+          international_withdrawal_allowed: true,
+          local_ecommerce_allowed: true,
+          international_ecommerce_allowed: true,
+          local_purchases_allowed: true,
+          international_purchases_allowed: true,
+          product_id: 'prd-2arLJXW8moDb5CppLToizmmw66q',
+          local_extracash_allowed: true,
+          international_extracash_allowed: true,
+          plastic_model: 1,
+          kit_model: 1,
+          status: 'ACTIVE',
+          embossing_company: 'IDEMIA',
+          courier_company: 'DOMINA',
+          exchange_currency_name: 'COP',
+          activation_code_enabled: false,
+          total_exchange_rate: 4128.51,
+          total_non_usd_exchange_rate: 4128.51,
+          total_dcc_exchange_rate: 4128.51,
+          provider: 'MASTERCARD',
+          custom_name_on_card_enabled: false,
+          provider_algorithm: 'MCHIP',
+          start_date: '2024-07-22',
+          dcvv_enabled: false,
+        };
+        break;
+      case AfgNamesEnum.CONSUMER_VIRTUAL_1K:
+      case AfgNamesEnum.CONSUMER_VIRTUAL_2K:
+      case AfgNamesEnum.CONSUMER_VIRTUAL_5K:
+      case AfgNamesEnum.CONSUMER_VIRTUAL_10K:
+        afg = {
+          id: 'afg-2jhjNvaMmNsNHzbx54nWv12j9MQ',
+          name: 'B2Crypto Virtual',
+          card_type_supported: ['VIRTUAL'],
+          innominate: false,
+          months_to_expiration: 96,
+          issued_account: 9,
+          fee_account: 36,
+          exchange_rate_type: 'none',
+          exchange_rate_amount: 0,
+          non_usd_exchange_rate_amount: 0,
+          dcc_exchange_rate_amount: 0,
+          local_withdrawal_allowed: true,
+          international_withdrawal_allowed: true,
+          local_ecommerce_allowed: true,
+          international_ecommerce_allowed: true,
+          local_purchases_allowed: true,
+          international_purchases_allowed: true,
+          product_id: 'prd-2arLJXW8moDb5CppLToizmmw66q',
+          local_extracash_allowed: true,
+          international_extracash_allowed: true,
+          plastic_model: 1,
+          kit_model: 1,
+          status: 'ACTIVE',
+          embossing_company: 'IDEMIA',
+          courier_company: 'DOMINA',
+          exchange_currency_name: 'COP',
+          activation_code_enabled: false,
+          total_exchange_rate: 4128.51,
+          total_non_usd_exchange_rate: 4128.51,
+          total_dcc_exchange_rate: 4128.51,
+          provider: 'MASTERCARD',
+          custom_name_on_card_enabled: false,
+          provider_algorithm: 'MCHIP',
+          start_date: '2024-07-24',
+          dcvv_enabled: false,
+        };
+        break;
+    }
+    return afg;
   }
 
-  private getAfgVirtualNominatedStage() {
-    return {
-      id: 'afg-2fdxV2deQc0qHDbTtCwOlbFZJBL',
-      name: 'B2Crypto COL physical virtual credit nominated',
-      card_type_supported: ['PHYSICAL'],
-      innominate: false,
-      months_to_expiration: 84,
-      issued_account: 9,
-      fee_account: 36,
-      exchange_rate_type: 'none',
-      exchange_rate_amount: 100,
-      non_usd_exchange_rate_amount: 100,
-      dcc_exchange_rate_amount: 0,
-      local_withdrawal_allowed: true,
-      international_withdrawal_allowed: true,
-      local_ecommerce_allowed: true,
-      international_ecommerce_allowed: true,
-      local_purchases_allowed: true,
-      international_purchases_allowed: true,
-      product_id: 'prd-2arLJXW8moDb5CppLToizmmw66q',
-      local_extracash_allowed: true,
-      international_extracash_allowed: true,
-      plastic_model: 1,
-      kit_model: 1,
-      status: 'ACTIVE',
-      embossing_company: 'THALES',
-      courier_company: 'DOMINA',
-      exchange_currency_name: 'COP',
-      activation_code_enabled: false,
-      total_exchange_rate: 4169.8,
-      total_non_usd_exchange_rate: 4169.8,
-      total_dcc_exchange_rate: 4128.51,
-      provider: 'MASTERCARD',
-      custom_name_on_card_enabled: false,
-      provider_algorithm: 'MCHIP',
-      start_date: '2024-01-12',
-      dcvv_enabled: true,
-    };
-  }
-
-  private async buildAFG(afgId?: string) {
+  private async buildAFG(
+    afgId?: string,
+    cardAfg: AfgNamesEnum = AfgNamesEnum.CONSUMER_VIRTUAL_1K,
+  ) {
     let afg =
-      process.env.ENVIRONMENT === 'DEV'
-        ? this.getAfgVirtualNominatedStage()
+      process.env.ENVIRONMENT === 'DEV' || process.env.ENVIRONMENT === 'STAGE'
+        ? this.getAfgStage(cardAfg)
         : process.env.ENVIRONMENT === 'PROD'
-        ? this.getAfgVirtualProd()
+        ? this.getAfgProd(cardAfg)
         : null;
     Logger.debug(
       `AFG: ${JSON.stringify(afg)}`,
@@ -1171,7 +1639,7 @@ export class CardServiceController extends AccountServiceController {
     // TODO[hender - 2024/08/12] Check the Surname, City, Region to remove special characters
     // TODO[hender - 2024/08/12] Check the Surname, City, Region to remove numbers
     const rtaUserCard = await cardIntegration.getUser({
-      email: user.email,
+      email: user.email.toLowerCase(),
     });
     let userCardConfig: UserCard;
     if (rtaUserCard.data.length > 0) {
