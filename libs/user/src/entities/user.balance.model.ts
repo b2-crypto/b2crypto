@@ -1,4 +1,5 @@
 export interface UserBalanceGenericModelData {
+  accountType: string;
   quantity: number;
   amount: number;
   currency: string;
@@ -11,5 +12,5 @@ export interface UserBalanceModel {
   wallets: UserBalanceGenericModel;
   cards: UserBalanceGenericModel;
   banks: UserBalanceGenericModel;
-  all: UserBalanceGenericModel;
+  ALL: UserBalanceGenericModelData;
 }

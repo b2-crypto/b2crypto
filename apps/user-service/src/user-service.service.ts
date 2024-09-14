@@ -72,7 +72,7 @@ export class UserServiceService {
         wallets: {} as UserBalanceGenericModel,
         cards: {} as UserBalanceGenericModel,
         banks: {} as UserBalanceGenericModel,
-        all: {
+        ALL: {
           accountType: 'ALL',
           quantity: 0,
           amount: 0,
@@ -88,6 +88,8 @@ export class UserServiceService {
         },
       });
       for (const account of accounts.list) {
+        userBalance.ALL.quantity++;
+        userBalance.ALL.amount += account.amount;
         if (account.type === TypesAccountEnum.WALLET) {
           userBalance.wallets = this.checkAccountBalance(
             account,
@@ -128,7 +130,11 @@ export class UserServiceService {
     }
   }
 
-  checkAccountBalance(account: Account, listAccount?: UserBalanceGenericModel) {
+  checkAccountBalance(
+    account: Account,
+    listAccount?: UserBalanceGenericModel,
+    onlyAll = false,
+  ) {
     const balance = listAccount['ALL'] ?? {
       accountType: 'ALL',
       quantity: 0,
@@ -137,15 +143,17 @@ export class UserServiceService {
     };
     balance.quantity++;
     balance.amount += account.amount;
-    const balanceAccountType = listAccount[account.accountType] ?? {
-      accountType: account.accountType,
-      quantity: 0,
-      amount: 0,
-      currency: 'USDT',
-    };
-    balanceAccountType.quantity++;
-    balanceAccountType.amount += account.amount;
-    listAccount[account.accountType] = balanceAccountType;
+    if (!onlyAll) {
+      const balanceAccountType = listAccount[account.accountType] ?? {
+        accountType: account.accountType,
+        quantity: 0,
+        amount: 0,
+        currency: 'USDT',
+      };
+      balanceAccountType.quantity++;
+      balanceAccountType.amount += account.amount;
+      listAccount[account.accountType] = balanceAccountType;
+    }
     listAccount['ALL'] = balance;
     return listAccount;
   }

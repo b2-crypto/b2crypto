@@ -1,5 +1,5 @@
 import { Type } from 'class-transformer';
-import { IsDate, IsNumber, IsOptional, IsString } from 'class-validator';
+import { IsNumber, IsOptional, IsString } from 'class-validator';
 
 export class UserBalanceGenericDataDto {
   @IsNumber()
@@ -30,5 +30,5 @@ export class UserBalanceDto {
 
   @Type(() => UserBalanceGenericDto)
   @IsOptional()
-  all: UserBalanceGenericDto;
+  ALL: UserBalanceGenericDataDto;
 }
