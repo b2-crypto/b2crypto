@@ -1,7 +1,7 @@
 import { Type } from 'class-transformer';
 import { IsDate, IsNumber, IsOptional, IsString } from 'class-validator';
 
-export class UserBalanceGenericDto {
+export class UserBalanceGenericDataDto {
   @IsNumber()
   @IsOptional()
   amount = 0;
@@ -9,6 +9,10 @@ export class UserBalanceGenericDto {
   @IsString()
   @IsOptional()
   currency: string;
+}
+
+export class UserBalanceGenericDto {
+  [accountType: string]: UserBalanceGenericDataDto;
 }
 
 export class UserBalanceDto {
@@ -23,4 +27,8 @@ export class UserBalanceDto {
   @Type(() => UserBalanceGenericDto)
   @IsOptional()
   banks: UserBalanceGenericDto;
+
+  @Type(() => UserBalanceGenericDto)
+  @IsOptional()
+  all: UserBalanceGenericDto;
 }
