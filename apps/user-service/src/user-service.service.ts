@@ -10,7 +10,11 @@ import { BuildersService } from '@builder/builders';
 import { CommonService } from '@common/common';
 import { isMongoId } from 'class-validator';
 import EventsNamesAccountEnum from 'apps/account-service/src/enum/events.names.account.enum';
-import { UserBalanceModel } from '@user/user/entities/user.balance.model';
+import {
+  UserBalanceGenericModel,
+  UserBalanceGenericModelData,
+  UserBalanceModel,
+} from '@user/user/entities/user.balance.model';
 import { ResponsePaginator } from '@common/common/interfaces/response-pagination.interface';
 import { Account } from '@account/account/entities/mongoose/account.schema';
 import TypesAccountEnum from '@account/account/enum/types.account.enum';
@@ -65,19 +69,16 @@ export class UserServiceService {
         throw new NotFoundException('User not found');
       }
       const userBalance = {
-        wallets: {
+        wallets: {} as UserBalanceGenericModel,
+        cards: {} as UserBalanceGenericModel,
+        banks: {} as UserBalanceGenericModel,
+        ALL: {
+          accountType: 'ALL',
+          quantity: 0,
           amount: 0,
           currency: 'USDT',
-        },
-        cards: {
-          amount: 0,
-          currency: 'USD',
-        },
-        banks: {
-          amount: 0,
-          currency: 'USD',
-        },
-      } as UserBalanceModel;
+        } as UserBalanceGenericModelData,
+      } as unknown as UserBalanceModel;
       const accounts = await this.builder.getPromiseAccountEventClient<
         ResponsePaginator<Account>
       >(EventsNamesAccountEnum.findAll, {
@@ -87,14 +88,25 @@ export class UserServiceService {
         },
       });
       for (const account of accounts.list) {
+        userBalance.ALL.quantity++;
+        userBalance.ALL.amount += account.amount;
         if (account.type === TypesAccountEnum.WALLET) {
-          userBalance.wallets.amount += account.amount;
+          userBalance.wallets = this.checkAccountBalance(
+            account,
+            userBalance.wallets,
+          );
           // Swap if currency is different
         } else if (account.type === TypesAccountEnum.CARD) {
-          userBalance.cards.amount += account.amount;
+          userBalance.cards = this.checkAccountBalance(
+            account,
+            userBalance.cards,
+          );
           // Swap if currency is different
         } else if (account.type === TypesAccountEnum.BANK) {
-          userBalance.banks.amount += account.amount;
+          userBalance.banks = this.checkAccountBalance(
+            account,
+            userBalance.banks,
+          );
           // Swap if currency is different
         }
       }
@@ -116,6 +128,34 @@ export class UserServiceService {
       } while (users.nextPage != 1);
       return Promise.all(promises);
     }
+  }
+
+  checkAccountBalance(
+    account: Account,
+    listAccount?: UserBalanceGenericModel,
+    onlyAll = false,
+  ) {
+    const balance = listAccount['ALL'] ?? {
+      accountType: 'ALL',
+      quantity: 0,
+      amount: 0,
+      currency: 'USDT',
+    };
+    balance.quantity++;
+    balance.amount += account.amount;
+    if (!onlyAll) {
+      const balanceAccountType = listAccount[account.accountType] ?? {
+        accountType: account.accountType,
+        quantity: 0,
+        amount: 0,
+        currency: 'USDT',
+      };
+      balanceAccountType.quantity++;
+      balanceAccountType.amount += account.amount;
+      listAccount[account.accountType] = balanceAccountType;
+    }
+    listAccount['ALL'] = balance;
+    return listAccount;
   }
 
   async getOne(id: string) {
