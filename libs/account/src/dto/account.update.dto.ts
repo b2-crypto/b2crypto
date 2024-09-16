@@ -2,6 +2,7 @@ import { PartialType } from '@nestjs/swagger';
 import {
   IsArray,
   IsDate,
+  IsEmpty,
   IsMongoId,
   IsNumber,
   IsOptional,
@@ -18,7 +19,7 @@ export class AccountUpdateDto extends PartialType(AccountCreateDto) {
   affiliate?: ObjectId;
 
   @IsNumber()
-  @IsOptional()
+  @IsEmpty()
   amount?: number;
 
   @IsNumber()
