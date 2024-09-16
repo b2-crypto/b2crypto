@@ -288,6 +288,9 @@ export class ClientsIntegrationController {
         },
       );
       const account = accounts.list[0];
+      if (!account) {
+        throw new NotFoundException(`Account USDT of ${user.email} no founded`);
+      }
       transferDto.account = account?._id;
       transferDto.userAccount = account.owner;
       if (!transferDto.account) {
@@ -302,6 +305,8 @@ export class ClientsIntegrationController {
       transferDto.pspAccount = pspAccount._id;
       transferDto.currency = 'USDT';
       transferDto.isManualTx = true;
+      transferDto.amountCustodial = transferDto.amount;
+      transferDto.currencyCustodial = transferDto.currency;
       const transfer = await this.builder.getPromiseTransferEventClient(
         EventsNamesTransferEnum.createOne,
         transferDto,
