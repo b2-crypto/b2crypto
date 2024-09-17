@@ -1,4 +1,3 @@
-
 import {
   Body,
   Controller,
@@ -54,13 +53,10 @@ import { BuildersService } from '@builder/builders';
 
 @ApiTags('USER')
 @Controller('users')
-
-
 export class UserServiceController implements GenericServiceController {
   constructor(
     private readonly userService: UserServiceService,
     private readonly builder: BuildersService,
-
   ) {}
 
   @Get('all')
@@ -96,7 +92,6 @@ export class UserServiceController implements GenericServiceController {
     };
   }
 
- 
   @Get(':userID')
   // @CheckPoliciesAbility(new PolicyHandlerUserRead())
   async findOneById(@Param('userID') id: string) {

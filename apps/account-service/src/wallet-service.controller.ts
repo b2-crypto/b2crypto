@@ -157,7 +157,6 @@ export class WalletServiceController extends AccountServiceController {
     return createdWallet;
   }
 
-
   @Post('recharge')
   async rechargeOne(
     @Body() createDto: WalletDepositCreateDto,

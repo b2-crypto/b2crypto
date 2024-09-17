@@ -338,7 +338,6 @@ export class AuthServiceController {
     };
   }
 
-
   @ApiKeyCheck()
   @UseGuards(ApiKeyAuthGuard)
   @ApiSecurity('b2crypto-key')
