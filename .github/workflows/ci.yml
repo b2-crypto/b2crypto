@@ -42,7 +42,7 @@ jobs:
       - name: Build
         run: npm run build
 
-      - uses: pulumi/actions
+      - uses: pulumi/actions@v5
         with:
           command: preview
           stack-name: apoveda25/staging
