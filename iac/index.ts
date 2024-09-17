@@ -37,7 +37,7 @@ const ecrImage = new awsx.ecr.Image(
     repositoryUrl: ecrRepository.repositoryUrl,
     dockerfile: '../Dockerfile',
     context: '../',
-    imageTag: process.env.COMMIT_HASH ?? 'latest',
+    imageTag: process.env.COMMIT_SHA ?? 'latest',
     platform: 'linux/amd64',
   },
 );
