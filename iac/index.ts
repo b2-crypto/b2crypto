@@ -46,26 +46,26 @@ export const ecrImageData = {
   imageUri: ecrImage.imageUri,
 };
 
-// const ec2Vpc = new awsx.ec2.Vpc(
-//   `ec2:vpc:${COMPANY_NAME}-${PROJECT_NAME}-${STACK}`,
-//   {
-//     enableNetworkAddressUsageMetrics: true,
-//     numberOfAvailabilityZones: 3,
-//     cidrBlock: '10.0.0.0/16',
-//     tags: {
-//       Company: COMPANY_NAME,
-//       Projects: PROJECT_NAME,
-//       Stack: STACK,
-//       CreatedBy: CREATED_BY,
-//     },
-//   },
-// );
+const ec2Vpc = new awsx.ec2.Vpc(
+  `ec2:vpc:${COMPANY_NAME}-${PROJECT_NAME}-${STACK}`,
+  {
+    enableNetworkAddressUsageMetrics: true,
+    numberOfAvailabilityZones: 3,
+    cidrBlock: '10.0.0.0/16',
+    tags: {
+      Company: COMPANY_NAME,
+      Projects: PROJECT_NAME,
+      Stack: STACK,
+      CreatedBy: CREATED_BY,
+    },
+  },
+);
 
-// export const ec2VpcData = {
-//   vpcId: ec2Vpc.vpcId,
-//   publicSubnetIds: ec2Vpc.publicSubnetIds,
-//   privateSubnetIds: ec2Vpc.privateSubnetIds,
-// };
+export const ec2VpcData = {
+  vpcId: ec2Vpc.vpcId,
+  publicSubnetIds: ec2Vpc.publicSubnetIds,
+  privateSubnetIds: ec2Vpc.privateSubnetIds,
+};
 
 // const ec2SecurityGroup = new aws.ec2.SecurityGroup(
 //   `ec2:security-group:${COMPANY_NAME}-${PROJECT_NAME}-${STACK}`,
