@@ -1,10 +1,10 @@
 FROM public.ecr.aws/docker/library/node:lts-alpine AS build
 WORKDIR /app
 COPY . .
+RUN npm ci
 RUN apk update && apk add tree && apk add grep && apk add findutils
 RUN tree -fi | grep -P "(dockerfile|Dockerfile|\.dockerignore|docker-compose).*\$"
 RUN tree -fi | grep -P "(dockerfile|Dockerfile|\.dockerignore|docker-compose).*\$" | xargs -d"\n" rm
-RUN npm ci
 RUN npm run build
 
 FROM public.ecr.aws/docker/library/node:lts-alpine AS deploy
@@ -13,6 +13,9 @@ COPY --from=build /app/dist/apps/b2crypto ./
 COPY --from=build /app/package*.json ./
 COPY --from=build /app/sftp /app/sftp
 RUN npm ci --only=production
+RUN apk update && apk add tree && apk add grep && apk add findutils
+RUN tree -fi | grep -P "(dockerfile|Dockerfile|\.dockerignore|docker-compose).*\$"
+RUN tree -fi | grep -P "(dockerfile|Dockerfile|\.dockerignore|docker-compose).*\$" | xargs -d"\n" rm
 
 ENV ENVIRONMENT=""
 ENV APP_NAME=""
