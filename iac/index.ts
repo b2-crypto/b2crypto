@@ -112,31 +112,31 @@ export const ecsClusterData = {
   name: ecsCluster.name,
 };
 
-// const lbApplicationLoadBalancer = new awsx.lb.ApplicationLoadBalancer(
-//   `lb:application-load-balancer:${COMPANY_NAME}-${PROJECT_NAME}-${STACK}`,
-//   {
-//     name: `${COMPANY_NAME}-${PROJECT_NAME}-${STACK}`,
-//     enableHttp2: true,
-//     defaultTargetGroup: {
-//       name: `${COMPANY_NAME}-${PROJECT_NAME}-${STACK}`,
-//       port: 3000,
-//     },
-//     tags: {
-//       Company: COMPANY_NAME,
-//       Projects: PROJECT_NAME,
-//       Stack: STACK,
-//       CreatedBy: CREATED_BY,
-//     },
-//   },
-// );
+const lbApplicationLoadBalancer = new awsx.lb.ApplicationLoadBalancer(
+  `lb:application-load-balancer:${COMPANY_NAME}-${PROJECT_NAME}-${STACK}`,
+  {
+    name: `${COMPANY_NAME}-${PROJECT_NAME}-${STACK}`,
+    enableHttp2: true,
+    defaultTargetGroup: {
+      name: `${COMPANY_NAME}-${PROJECT_NAME}-${STACK}`,
+      port: 3000,
+    },
+    tags: {
+      Company: COMPANY_NAME,
+      Projects: PROJECT_NAME,
+      Stack: STACK,
+      CreatedBy: CREATED_BY,
+    },
+  },
+);
 
-// export const lbApplicationLoadBalancerData = {
-//   vpcId: lbApplicationLoadBalancer.vpcId,
-//   defaultSecurityGroup: lbApplicationLoadBalancer.defaultSecurityGroup,
-//   defaultTargetGroup: lbApplicationLoadBalancer.defaultTargetGroup,
-//   loadBalancer: lbApplicationLoadBalancer.loadBalancer,
-//   listeners: lbApplicationLoadBalancer.listeners,
-// };
+export const lbApplicationLoadBalancerData = {
+  vpcId: lbApplicationLoadBalancer.vpcId,
+  defaultSecurityGroup: lbApplicationLoadBalancer.defaultSecurityGroup,
+  defaultTargetGroup: lbApplicationLoadBalancer.defaultTargetGroup,
+  loadBalancer: lbApplicationLoadBalancer.loadBalancer,
+  listeners: lbApplicationLoadBalancer.listeners,
+};
 
 // const ecsTaskDefinition = new aws.ecs.TaskDefinition(
 //   `ecs:task-definition:${COMPANY_NAME}/${PROJECT_NAME}`,
@@ -153,7 +153,10 @@ export const ecsClusterData = {
 //         cpu: 1024,
 //         memory: 2048,
 //         essential: true,
-//         environment: [{ name: 'ENVIRONMENT', value: ENVIRONMENT }],
+//         environment: [
+//           { name: 'ENVIRONMENT', value: ENVIRONMENT },
+//           { name: 'APP_NAME', value: '' },
+//         ],
 //         portMappings: [
 //           {
 //             containerPort: 3000,
