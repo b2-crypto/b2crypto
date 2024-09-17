@@ -63,7 +63,7 @@ jobs:
       - uses: pulumi/actions@v5
         with:
           command: preview
-          stack-name: staging
+          stack-name: up
           work-dir: ./iac
           # comment-on-pr: true
           # diff: true
