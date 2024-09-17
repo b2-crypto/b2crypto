@@ -1,4 +1,4 @@
-name: CI/CD Pipeline for B2crypto Monolith
+name: CI Pipeline for B2crypto Monolith
 
 on:
   pull_request:

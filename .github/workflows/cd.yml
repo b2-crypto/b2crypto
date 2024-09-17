@@ -1,4 +1,4 @@
-name: CI/CD Pipeline for B2crypto Monolith
+name: CD Pipeline for B2crypto Monolith
 
 on:
   merge_group:
