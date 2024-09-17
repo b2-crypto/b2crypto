@@ -1,7 +1,9 @@
-name: CI Pipeline for B2crypto Monolith
+name: CD Pipeline for B2crypto Monolith
 
 on:
   pull_request:
+    types:
+      - closed
     branches: [stage, test, main]
 
 concurrency:
@@ -9,7 +11,8 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build:
+  deploy:
+    if: github.event.pull_request.merged == true
     runs-on: ubuntu-22.04
     strategy:
       matrix:
@@ -18,38 +21,8 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          cache: 'npm'
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Format code
-        run: npm run format
-
-      # - name: Lint code
-      #   run: npm run lint
-
-      # - name: Run unit tests
-      #   run: npm test
-
-      # - name: Run integration tests
-      #   run: npm run test:e2e
-
-      - name: Build
-        run: npm run build
-
-  preview_deploy:
-    runs-on: ubuntu-22.04
-    strategy:
-      matrix:
-        node-version: [20.x]
-    needs: build
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
+      - name: Get Commit SHA
+        uses: prompt/actions-commit-hash@v3
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -61,7 +34,7 @@ jobs:
 
       - uses: pulumi/actions@v5
         with:
-          command: preview
+          command: up
           stack-name: ${{ github.event.pull_request.base.ref == 'main' && 'production' || github.event.pull_request.base.ref == 'test' && 'testing' || 'staging' }}
           work-dir: ./iac
           # comment-on-pr: true
