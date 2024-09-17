@@ -1,19 +1,26 @@
 {
-  "files.eol": "\n",
-  "sonarlint.connectedMode.project": {
-    "connectionId": "Local sonar",
-    "projectKey": "b2crypto"
+  "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": {
+    "source.removeUnusedImports": "explicit"
   },
-  "sonar-token": {
-    "Analyze \"b2crypto\"": "sqp_b9c1a9f895f9c14ffd1f22b95a455472f62d9302"
+  "[javascript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
-  "cSpell.words": [
-    "Chargeback",
-    "Invester",
-    "latamgroup",
-    "Psps",
-    "Solutraders",
-    "superadmin"
-  ],
-  "dataCashier": {}
+  "[typescript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[json]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[yml]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[markdown]": {
+    "editor.quickSuggestions": {
+      "strings": "on",
+      "other": "on",
+      "comments": "on"
+    }
+  },
+  "terminal.explorerKind": "external"
 }
