@@ -45,7 +45,7 @@ jobs:
       - uses: pulumi/actions@v5
         with:
           command: preview
-          stack-name: apoveda25/staging
+          stack-name: staging
           work-dir: ./iac
           comment-on-pr: true
           diff: true
