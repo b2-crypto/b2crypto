@@ -92,7 +92,7 @@ jobs:
       - uses: pulumi/actions@v5
         with:
           command: up
-          stack-name: ${{ github.event.pull_request.base.ref == 'main' ? 'production' : github.event.pull_request.base.ref == 'test' ? 'testing' : 'staging' }}
+          stack-name: ${{ github.event.pull_request.base.ref == 'main' && 'production' || github.event.pull_request.base.ref == 'test' && 'testing' || 'staging' }}
           work-dir: ./iac
           # comment-on-pr: true
           # diff: true
