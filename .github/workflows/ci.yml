@@ -1,4 +1,4 @@
-name: CI Pipeline for B2crypto Monolith
+name: CI/CD Pipeline for B2crypto Monolith
 
 on:
   pull_request:
@@ -63,6 +63,35 @@ jobs:
       - uses: pulumi/actions@v5
         with:
           command: preview
+          stack-name: ${{ github.event.pull_request.base.ref == 'main' ? 'production' : github.event.pull_request.base.ref == 'test' ? 'testing' : 'staging' }}
+          work-dir: ./iac
+          # comment-on-pr: true
+          # diff: true
+        env:
+          PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
+
+  deploy:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-22.04
+    strategy:
+      matrix:
+        node-version: [20.x]
+    needs: build
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - uses: pulumi/actions@v5
+        with:
+          command: up
           stack-name: ${{ github.event.pull_request.base.ref == 'main' ? 'production' : github.event.pull_request.base.ref == 'test' ? 'testing' : 'staging' }}
           work-dir: ./iac
           # comment-on-pr: true
