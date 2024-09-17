@@ -1,4 +1,5 @@
 import * as aws from '@pulumi/aws';
+import * as awsx from '@pulumi/awsx';
 import * as pulumi from '@pulumi/pulumi';
 
 const config = new pulumi.Config();
@@ -30,20 +31,20 @@ export const ecrRepositoryData = {
   repositoryUrl: ecrRepository.repositoryUrl,
 };
 
-// const ecrImage = new awsx.ecr.Image(
-//   `ecr:image:${COMPANY_NAME}/${PROJECT_NAME}-${STACK}`,
-//   {
-//     repositoryUrl: ecrRepository.repositoryUrl,
-//     dockerfile: '../Dockerfile',
-//     context: '../',
-//     imageTag: 'latest',
-//     platform: 'linux/amd64',
-//   },
-// );
+const ecrImage = new awsx.ecr.Image(
+  `ecr:image:${COMPANY_NAME}/${PROJECT_NAME}-${STACK}`,
+  {
+    repositoryUrl: ecrRepository.repositoryUrl,
+    dockerfile: '../Dockerfile',
+    context: '../',
+    imageTag: 'latest',
+    platform: 'linux/amd64',
+  },
+);
 
-// export const ecrImageData = {
-//   imageUri: ecrImage.imageUri,
-// };
+export const ecrImageData = {
+  imageUri: ecrImage.imageUri,
+};
 
 // const ec2Vpc = new awsx.ec2.Vpc(
 //   `ec2:vpc:${COMPANY_NAME}-${PROJECT_NAME}-${STACK}`,
