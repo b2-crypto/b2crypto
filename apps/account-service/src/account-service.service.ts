@@ -1,4 +1,3 @@
-
 import { AccountServiceMongooseService } from '@account/account/account-service-mongoose.service';
 import { AccountCreateDto } from '@account/account/dto/account.create.dto';
 import { AccountUpdateDto } from '@account/account/dto/account.update.dto';
@@ -97,7 +96,6 @@ export class AccountServiceService
 
     return account;
   }
-
 
   async createMany(
     createDto: AccountCreateDto[],

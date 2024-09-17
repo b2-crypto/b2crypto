@@ -1,2 +1,1 @@
-
-export interface SyncUserNoteDto{}
+export interface SyncUserNoteDto {}
