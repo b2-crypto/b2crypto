@@ -67,50 +67,50 @@ export const ec2VpcData = {
   privateSubnetIds: ec2Vpc.privateSubnetIds,
 };
 
-// const ec2SecurityGroup = new aws.ec2.SecurityGroup(
-//   `ec2:security-group:${COMPANY_NAME}-${PROJECT_NAME}-${STACK}`,
-//   {
-//     name: `${COMPANY_NAME}-${PROJECT_NAME}-${STACK}`,
-//     vpcId: ec2Vpc.vpcId,
-//     egress: [
-//       {
-//         fromPort: 0,
-//         toPort: 0,
-//         protocol: '-1',
-//         cidrBlocks: ['0.0.0.0/0'],
-//         ipv6CidrBlocks: ['::/0'],
-//       },
-//     ],
-//     tags: {
-//       Company: COMPANY_NAME,
-//       Projects: PROJECT_NAME,
-//       Stack: STACK,
-//       CreatedBy: CREATED_BY,
-//     },
-//   },
-// );
+const ec2SecurityGroup = new aws.ec2.SecurityGroup(
+  `ec2:security-group:${COMPANY_NAME}-${PROJECT_NAME}-${STACK}`,
+  {
+    name: `${COMPANY_NAME}-${PROJECT_NAME}-${STACK}`,
+    vpcId: ec2Vpc.vpcId,
+    egress: [
+      {
+        fromPort: 0,
+        toPort: 0,
+        protocol: '-1',
+        cidrBlocks: ['0.0.0.0/0'],
+        ipv6CidrBlocks: ['::/0'],
+      },
+    ],
+    tags: {
+      Company: COMPANY_NAME,
+      Projects: PROJECT_NAME,
+      Stack: STACK,
+      CreatedBy: CREATED_BY,
+    },
+  },
+);
 
-// export const ec2SecurityGroupData = {
-//   id: ec2SecurityGroup.id,
-//   name: ec2SecurityGroup.name,
-//   egress: ec2SecurityGroup.egress,
-//   ingress: ec2SecurityGroup.ingress,
-// };
+export const ec2SecurityGroupData = {
+  id: ec2SecurityGroup.id,
+  name: ec2SecurityGroup.name,
+  egress: ec2SecurityGroup.egress,
+  ingress: ec2SecurityGroup.ingress,
+};
 
-// const ecsCluster = new aws.ecs.Cluster(`ecs:cluster:${COMPANY_NAME}`, {
-//   name: `${COMPANY_NAME}-${STACK}`,
-//   tags: {
-//     Company: COMPANY_NAME,
-//     Projects: PROJECT_NAME,
-//     Stack: STACK,
-//     CreatedBy: CREATED_BY,
-//   },
-// });
+const ecsCluster = new aws.ecs.Cluster(`ecs:cluster:${COMPANY_NAME}`, {
+  name: `${COMPANY_NAME}-${STACK}`,
+  tags: {
+    Company: COMPANY_NAME,
+    Projects: PROJECT_NAME,
+    Stack: STACK,
+    CreatedBy: CREATED_BY,
+  },
+});
 
-// export const ecsClusterData = {
-//   id: ecsCluster.id,
-//   name: ecsCluster.name,
-// };
+export const ecsClusterData = {
+  id: ecsCluster.id,
+  name: ecsCluster.name,
+};
 
 // const lbApplicationLoadBalancer = new awsx.lb.ApplicationLoadBalancer(
 //   `lb:application-load-balancer:${COMPANY_NAME}-${PROJECT_NAME}-${STACK}`,
