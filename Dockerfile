@@ -3,7 +3,7 @@ WORKDIR /app
 COPY . .
 RUN npm ci
 RUN apk update && apk add tree && apk add grep && apk add findutils
-RUN tree -fi | grep -P "(.env).*\$" | xargs -d"\n" rm
+RUN tree -fi | grep -P "(\.env)([.].*)*\$" | xargs -d"\n" rm
 RUN tree -fi | grep -P "(dockerfile|Dockerfile|\.dockerignore|docker-compose).*\$" | xargs -d"\n" rm
 RUN npm run build
 
