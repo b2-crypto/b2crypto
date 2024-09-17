@@ -60,14 +60,6 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: AWS CLI setup
-        uses: aws-actions/configure-aws-credentials@v1
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-2
-          profile: b2crypto-staging
-
       - uses: pulumi/actions@v5
         with:
           command: preview

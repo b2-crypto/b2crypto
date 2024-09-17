@@ -1,6 +1,10 @@
 config:
+  aws:accessKey:
+    secure: AAABAJiMReglrFemAcUbihQ5iFNFLgNw7FwiDafGIBim97BIw1IT5y18MPi55bhYRrhobA==
   aws:profile: b2crypto-staging
   aws:region: us-east-2
+  aws:secretKey:
+    secure: AAABAP5kqdryxzkJ0G0YCsmv/kcFyF8YAFlx/8Nqnl4iI6mPdlK7qr/bBgobk10urX1rCdEEpWOn+iAGpCoszDXHm/Y2Pj0F
   b2crypto-iac:ENVIRONMENT: STAGE
   b2crypto-iac:REGION: us-east-2
   b2crypto-iac:STACK: staging
