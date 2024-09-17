@@ -81,6 +81,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
+      - name: Get Commit SHA
+        uses: prompt/actions-commit-hash@v3
+
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
@@ -98,4 +101,4 @@ jobs:
           # diff: true
         env:
           PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
-          COMMIT_SHA: ${{ git rev-parse --short github.sha }}
+          COMMIT_SHA: ${{ steps.commit.outputs.short }}
