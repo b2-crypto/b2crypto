@@ -69,6 +69,7 @@ jobs:
           # diff: true
         env:
           PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
+          COMMIT_SHA: ${{ steps.commit.outputs.short }}
 
   deploy:
     if: github.event.pull_request.merged == true
