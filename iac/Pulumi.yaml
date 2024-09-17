@@ -2,7 +2,7 @@ name: b2crypto-iac
 runtime:
   name: nodejs
   options:
-    packagemanager: pnpm
+    packagemanager: npm
 description: b2crypto iac
 config:
   pulumi:tags:
