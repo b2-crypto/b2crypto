@@ -1,13 +1,12 @@
-FROM public.ecr.aws/docker/library/node:lts-alpine AS build
+FROM public.ecr.aws/docker/library/node:20.17.0-alpine3.20 AS build
 WORKDIR /app
 COPY . .
 RUN npm ci
 RUN apk update && apk add tree && apk add grep && apk add findutils
-RUN tree -fi | grep -P "(\.env)([.].*)*\$" | xargs -d"\n" rm
 RUN tree -fi | grep -P "(dockerfile|Dockerfile|\.dockerignore|docker-compose).*\$" | xargs -d"\n" rm
 RUN npm run build
 
-FROM public.ecr.aws/docker/library/node:lts-alpine AS deploy
+FROM public.ecr.aws/docker/library/node:20.17.0-alpine3.20 AS deploy
 WORKDIR /app
 COPY --from=build /app/dist/apps/b2crypto ./
 COPY --from=build /app/package*.json ./
@@ -39,7 +38,6 @@ ENV CACHE_TTL=10
 ENV CACHE_MAX_ITEMS=5
 
 ENV AUTH_MAX_SECONDS_TO_REFRESH=60
-ENV OTP_VALIDATION_TIME_SECONDS=90
 ENV AUTH_SECRET=""
 ENV AUTH_EXPIRE_IN=8h
 ENV API_KEY_EMAIL_APP=""
