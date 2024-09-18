@@ -150,7 +150,7 @@ const ecsTaskDefinition = new aws.ecs.TaskDefinition(
     containerDefinitions: JSON.stringify([
       {
         name: `${COMPANY_NAME}-${PROJECT_NAME}`,
-        image: `${COMPANY_NAME}/${PROJECT_NAME}-${STACK}:latest`,
+        image: ecrImage.imageUri,
         cpu: 1024,
         memory: 2048,
         essential: true,
