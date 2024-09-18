@@ -49,17 +49,19 @@ import EventsNamesPspAccountEnum from 'apps/psp-service/src/enum/events.names.ps
 import { OperationTransactionType } from '@transfer/transfer/enum/operation.transaction.type.enum';
 import { StatusCashierEnum } from '@common/common/enums/StatusCashierEnum';
 import { TransferCreateDto } from '@transfer/transfer/dto/transfer.create.dto';
+import { WalletServiceService } from './wallet-service.service';
 
 @ApiTags('E-WALLET')
 @Controller('wallets')
 export class WalletServiceController extends AccountServiceController {
   constructor(
-
     readonly walletService: AccountServiceService,
     @Inject(UserServiceService)
     private readonly userService: UserServiceService,
     @Inject(BuildersService)
     readonly ewalletBuilder: BuildersService,
+    @Inject(WalletServiceService)
+    private readonly walletServiceService: WalletServiceService,
   ) {
     super(walletService, ewalletBuilder);
   }
@@ -95,72 +97,7 @@ export class WalletServiceController extends AccountServiceController {
   @ApiSecurity('b2crypto-key')
   @Post('create')
   async createOne(@Body() createDto: WalletCreateDto, @Req() req?: any) {
-    const userId = req?.user.id ?? createDto.owner;
-    if (!userId) {
-      throw new BadRequestException('Need the user id to continue');
-    }
-
-    const user: User = (await this.userService.getAll({
-      relations: ['personalData'],
-      where: { _id: userId },
-    })).list[0];
-
-    if (!user.personalData) {
-      throw new BadRequestException('Need the personal data to continue');
-    }
-
-    createDto.type = TypesAccountEnum.WALLET;
-    createDto.accountId = '2177';
-    createDto.accountName = 'CoxSQtiWAHVo';
-    createDto.accountPassword = 'w7XDOfgfudBvRG';
-    createDto.owner = user.id ?? user._id;
-    createDto.pin = createDto.pin ?? parseInt(CommonService.getNumberDigits(CommonService.randomIntNumber(9999), 4));
-
-    const createdWallet = await this.walletService.createOne(createDto);
-
-    const emailData = {
-      destinyText: user.email,
-      vars: {
-        name: user.name,
-        accountType: createdWallet.accountType,
-        accountName: createdWallet.accountName,
-        balance: createdWallet.amount,
-        currency: createdWallet.currency,
-        accountId: createdWallet.accountId,
-      },
-    };
-
-    const transferBtn: TransferCreateButtonDto = {
-      amount: '999',
-      currency: 'USD',
-      account: createdWallet.id ?? createdWallet._id,
-      creator: createDto.owner,
-      details: 'Deposit address',
-      customer_name: user.name,
-      customer_email: user.email,
-      public_key: null,
-      identifier: createDto.owner,
-    };
-
-    this.ewalletBuilder.emitMessageEventClient(
-      EventsNamesMessageEnum.sendCryptoWalletsManagement,
-      emailData
-    )
-
-    if (process.env.ENVIRONMENT === EnvironmentEnum.prod) {
-      this.ewalletBuilder.emitAccountEventClient(
-        EventsNamesAccountEnum.updateOne,
-        {
-          id: createdWallet.id ?? createdWallet._id,
-          responseCreation: await this.ewalletBuilder.getPromiseTransferEventClient(
-            EventsNamesTransferEnum.createOneDepositLink,
-            transferBtn
-          ),
-        }
-      );
-    }
-
-    return createdWallet;
+    return this.walletServiceService.createWallet(createDto, req?.user?.id);
   }
 
   @Post('recharge')
