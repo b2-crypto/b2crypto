@@ -55,7 +55,6 @@ async function bootstrap() {
     allowedHeaders: 'b2crypto-affiliate-key b2crypto-key Content-Type Accept',
   });
   app.getHttpAdapter().getInstance().disable('x-powered-by');
-  app.listen(configService.get('PORT') ?? 3000);
   app.connectMicroservice(
     await QueueAdminModule.getClientProvider(
       configService,
@@ -66,6 +65,9 @@ async function bootstrap() {
   if (typeof process.send === 'function') {
     process.send('ready');
   }
+
+  await app.listen(configService.get('PORT') ?? 3000);
+  Logger.log('Listening on port ' + configService.get('PORT'));
 }
 
 function addSwaggerStakeyCard(app: INestApplication) {

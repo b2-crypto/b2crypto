@@ -1,7 +1,14 @@
-import { Controller } from '@nestjs/common';
+import { AllowAnon } from '@auth/auth/decorators/allow-anon.decorator';
+import { Controller, Get } from '@nestjs/common';
 import { AppService } from './app.service';
 
-@Controller()
+@Controller('api')
 export class AppController {
   constructor(private readonly appService: AppService) {}
+
+  @AllowAnon()
+  @Get('health')
+  getHealth() {
+    return { status: 'OK' };
+  }
 }

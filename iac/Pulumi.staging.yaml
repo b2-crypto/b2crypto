@@ -59,7 +59,7 @@ config:
   b2crypto-iac:POMELO_WHITELISTED_IPS:
     secure: AAABACLW1zEY1r3XmDGDEXKmfhPkxU+BSeP/KcN2i31qk2v+DCmKdy81xGBRl5FGhY55hJVVudV4Zzfk3pY8ghpVVb1nacZKHr0QuQw3LQ/3SEfVrkvwHfok
   b2crypto-iac:POMELO_WHITELISTED_IPS_CHECK: "ON"
-  b2crypto-iac:PORT: "8080"
+  b2crypto-iac:PORT: "3000"
   b2crypto-iac:RABBIT_MQ_HOST:
     secure: AAABABVjhazNabyhlgR20mCiBGV9guIHe1Ms1nUqnmuTOhIGSm6m/S7KQ05OWmpetVM3aieHMUZ1BJG3J4bb9PNB/RGdgW66NEq5zeZ+68cyBSONw1bkSYDG4MX/lLVD+A==
   b2crypto-iac:RABBIT_MQ_PASSWORD:
