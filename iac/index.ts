@@ -1,14 +1,37 @@
 import * as aws from '@pulumi/aws';
 import * as awsx from '@pulumi/awsx';
 import * as pulumi from '@pulumi/pulumi';
+import { randomBytes } from 'crypto';
+import { SECRETS, VARS_ENV } from './secrets';
 
-const config = new pulumi.Config();
-const COMPANY_NAME = 'b2crypto';
-const PROJECT_NAME = 'monolith';
-const STACK = config.require('STACK');
-const CREATED_BY = 'Pulumi IaC';
-const ENVIRONMENT = config.require('ENVIRONMENT');
-const PORT = config.require('PORT');
+const {
+  COMPANY_NAME,
+  PROJECT_NAME,
+  STACK,
+  CREATED_BY,
+  ENVIRONMENT,
+  PORT,
+  APP_NAME,
+  GOOGLE_2FA,
+  DATABASE_NAME,
+  RABBIT_MQ_PORT,
+  RABBIT_MQ_QUEUE,
+  REDIS_PORT,
+  CACHE_TTL,
+  CACHE_MAX_ITEMS,
+  AUTH_MAX_SECONDS_TO_REFRESH,
+  AUTH_EXPIRE_IN,
+  API_KEY_EMAIL_APP,
+  URL_API_EMAIL_APP,
+  TESTING,
+  TZ,
+  AWS_SES_PORT,
+  DEFAULT_CURRENCY_CONVERSION_COIN,
+  AUTHORIZATIONS_BLOCK_BALANCE_PERCENTAGE,
+  POMELO_WHITELISTED_IPS_CHECK,
+} = VARS_ENV;
+VARS_ENV;
+const TAG = process.env.COMMIT_SHA ?? randomBytes(5).toString('hex');
 
 const ecrRepository = new aws.ecr.Repository(
   `erc:repository:${COMPANY_NAME}/${PROJECT_NAME}`,
@@ -29,22 +52,9 @@ const ecrRepository = new aws.ecr.Repository(
 
 export const ecrRepositoryData = {
   id: ecrRepository.id,
-  repositoryUrl: ecrRepository.repositoryUrl,
-};
-
-const ecrImage = new awsx.ecr.Image(
-  `ecr:image:${COMPANY_NAME}/${PROJECT_NAME}-${STACK}`,
-  {
-    repositoryUrl: ecrRepository.repositoryUrl,
-    dockerfile: '../Dockerfile',
-    context: '../',
-    imageTag: process.env.COMMIT_SHA ?? 'latest',
-    platform: 'linux/amd64',
-  },
-);
-
-export const ecrImageData = {
-  imageUri: ecrImage.imageUri,
+  repositoryUrl: ecrRepository.repositoryUrl.apply(
+    (value) => `${value.split('@').at(0)}:${TAG}`,
+  ),
 };
 
 const ec2Vpc = new awsx.ec2.Vpc(
@@ -73,13 +83,44 @@ const ec2SecurityGroup = new aws.ec2.SecurityGroup(
   {
     name: `${COMPANY_NAME}-${PROJECT_NAME}-${STACK}`,
     vpcId: ec2Vpc.vpcId,
+    ingress: [
+      {
+        fromPort: 443,
+        toPort: 443,
+        protocol: 'TCP',
+        cidrBlocks: ['0.0.0.0/0'],
+      },
+      {
+        fromPort: 80,
+        toPort: 80,
+        protocol: 'TCP',
+        cidrBlocks: ['0.0.0.0/0'],
+      },
+      {
+        fromPort: parseInt(PORT),
+        toPort: parseInt(PORT),
+        protocol: 'TCP',
+        cidrBlocks: ['0.0.0.0/0'],
+      },
+    ],
     egress: [
       {
-        fromPort: 0,
-        toPort: 0,
-        protocol: '-1',
+        fromPort: 443,
+        toPort: 443,
+        protocol: 'TCP',
         cidrBlocks: ['0.0.0.0/0'],
-        ipv6CidrBlocks: ['::/0'],
+      },
+      {
+        fromPort: 80,
+        toPort: 80,
+        protocol: 'TCP',
+        cidrBlocks: ['0.0.0.0/0'],
+      },
+      {
+        fromPort: parseInt(PORT),
+        toPort: parseInt(PORT),
+        protocol: 'TCP',
+        cidrBlocks: ['0.0.0.0/0'],
       },
     ],
     tags: {
@@ -120,8 +161,42 @@ const lbApplicationLoadBalancer = new awsx.lb.ApplicationLoadBalancer(
     enableHttp2: true,
     defaultTargetGroup: {
       name: `${COMPANY_NAME}-${PROJECT_NAME}-${STACK}`,
-      port: 3000,
+      protocol: 'HTTP',
+      port: parseInt(PORT),
+      vpcId: ec2Vpc.vpcId,
+      tags: {
+        Company: COMPANY_NAME,
+        Projects: PROJECT_NAME,
+        Stack: STACK,
+        CreatedBy: CREATED_BY,
+      },
     },
+    securityGroups: [ec2SecurityGroup.id],
+    subnetIds: ec2Vpc.publicSubnetIds,
+    listeners: [
+      {
+        port: 80,
+        protocol: 'HTTP',
+        tags: {
+          Company: COMPANY_NAME,
+          Projects: PROJECT_NAME,
+          Stack: STACK,
+          CreatedBy: CREATED_BY,
+        },
+      },
+      // {
+      //   port: 443,
+      //   // sslPolicy: 'HTTPS',
+      //   protocol: 'HTTPS',
+      //   certificateArn: lbApplicationLoadBalancerCertificate.arn,
+      //   tags: {
+      //     Company: COMPANY_NAME,
+      //     Projects: PROJECT_NAME,
+      //     Stack: STACK,
+      //     CreatedBy: CREATED_BY,
+      //   },
+      // },
+    ],
     tags: {
       Company: COMPANY_NAME,
       Projects: PROJECT_NAME,
@@ -139,159 +214,11 @@ export const lbApplicationLoadBalancerData = {
   listeners: lbApplicationLoadBalancer.listeners,
 };
 
-const ecsTaskDefinition = new aws.ecs.TaskDefinition(
-  `ecs:task-definition:${COMPANY_NAME}/${PROJECT_NAME}`,
+const cloudwatchLogGroup = new aws.cloudwatch.LogGroup(
+  `cloudwatch:log-group:${COMPANY_NAME}-${PROJECT_NAME}-${STACK}`,
   {
-    family: `${COMPANY_NAME}-${PROJECT_NAME}-${STACK}`,
-    requiresCompatibilities: ['FARGATE'],
-    networkMode: 'awsvpc',
-    cpu: '1024',
-    memory: '2048',
-    containerDefinitions: JSON.stringify([
-      {
-        name: `${COMPANY_NAME}-${PROJECT_NAME}`,
-        image: ecrImage.imageUri,
-        cpu: 1024,
-        memory: 2048,
-        essential: true,
-        environment: [
-          { name: 'ENVIRONMENT', value: ENVIRONMENT },
-          { name: 'APP_NAME', value: config.require('APP_NAME') },
-          { name: 'GOOGLE_2FA', value: config.require('GOOGLE_2FA') },
-          { name: 'PORT', value: PORT },
-          { name: 'DATABASE_NAME', value: config.require('DATABASE_NAME') },
-          { name: 'DATABASE_URL', value: config.requireSecret('DATABASE_URL') },
-          {
-            name: 'RABBIT_MQ_HOST',
-            value: config.requireSecret('RABBIT_MQ_HOST'),
-          },
-          { name: 'RABBIT_MQ_PORT', value: config.require('RABBIT_MQ_PORT') },
-          { name: 'RABBIT_MQ_QUEUE', value: config.require('RABBIT_MQ_QUEUE') },
-          {
-            name: 'RABBIT_MQ_USERNAME',
-            value: config.requireSecret('RABBIT_MQ_USERNAME'),
-          },
-          {
-            name: 'RABBIT_MQ_PASSWORD',
-            value: config.requireSecret('RABBIT_MQ_PASSWORD'),
-          },
-          { name: 'REDIS_HOST', value: config.requireSecret('REDIS_HOST') },
-          {
-            name: 'REDIS_USERNAME',
-            value: config.requireSecret('REDIS_USERNAME'),
-          },
-          {
-            name: 'REDIS_PASSWORD',
-            value: config.requireSecret('REDIS_PASSWORD'),
-          },
-          { name: 'REDIS_PORT', value: config.require('REDIS_PORT') },
-          { name: 'CACHE_TTL', value: config.require('CACHE_TTL') },
-          { name: 'CACHE_MAX_ITEMS', value: config.require('CACHE_MAX_ITEMS') },
-          {
-            name: 'AUTH_MAX_SECONDS_TO_REFRESH',
-            value: config.require('AUTH_MAX_SECONDS_TO_REFRESH'),
-          },
-          { name: 'AUTH_SECRET', value: config.requireSecret('AUTH_SECRET') },
-          { name: 'AUTH_EXPIRE_IN', value: config.require('AUTH_EXPIRE_IN') },
-          {
-            name: 'API_KEY_EMAIL_APP',
-            value: config.require('API_KEY_EMAIL_APP'),
-          },
-          {
-            name: 'URL_API_EMAIL_APP',
-            value: config.require('URL_API_EMAIL_APP'),
-          },
-          { name: 'TESTING', value: config.require('TESTING') },
-          { name: 'TZ', value: config.require('TZ') },
-          {
-            name: 'AWS_SES_FROM_DEFAULT',
-            value: config.requireSecret('AWS_SES_FROM_DEFAULT'),
-          },
-          { name: 'AWS_SES_HOST', value: config.requireSecret('AWS_SES_HOST') },
-          { name: 'AWS_SES_PORT', value: config.require('AWS_SES_PORT') },
-          {
-            name: 'AWS_SES_USERNAME',
-            value: config.requireSecret('AWS_SES_USERNAME'),
-          },
-          {
-            name: 'AWS_SES_PASSWORD',
-            value: config.requireSecret('AWS_SES_PASSWORD'),
-          },
-          {
-            name: 'DEFAULT_CURRENCY_CONVERSION_COIN',
-            value: config.require('DEFAULT_CURRENCY_CONVERSION_COIN'),
-          },
-          {
-            name: 'AUTHORIZATIONS_BLOCK_BALANCE_PERCENTAGE',
-            value: config.require('AUTHORIZATIONS_BLOCK_BALANCE_PERCENTAGE'),
-          },
-          {
-            name: 'POMELO_SIGNATURE_SECRET_KEY_DIC',
-            value: config.requireSecret('POMELO_SIGNATURE_SECRET_KEY_DIC'),
-          },
-          {
-            name: 'POMELO_WHITELISTED_IPS_CHECK',
-            value: config.require('POMELO_WHITELISTED_IPS_CHECK'),
-          },
-          {
-            name: 'POMELO_WHITELISTED_IPS',
-            value: config.requireSecret('POMELO_WHITELISTED_IPS'),
-          },
-          {
-            name: 'POMELO_CLIENT_ID',
-            value: config.requireSecret('POMELO_CLIENT_ID'),
-          },
-          {
-            name: 'POMELO_SECRET_ID',
-            value: config.requireSecret('POMELO_SECRET_ID'),
-          },
-          {
-            name: 'POMELO_AUDIENCE',
-            value: config.requireSecret('POMELO_AUDIENCE'),
-          },
-          {
-            name: 'POMELO_AUTH_GRANT_TYPE',
-            value: config.requireSecret('POMELO_AUTH_GRANT_TYPE'),
-          },
-          {
-            name: 'POMELO_API_URL',
-            value: config.requireSecret('POMELO_API_URL'),
-          },
-          {
-            name: 'CURRENCY_CONVERSION_API_KEY',
-            value: config.requireSecret('CURRENCY_CONVERSION_API_KEY'),
-          },
-          {
-            name: 'CURRENCY_CONVERSION_API_URL',
-            value: config.requireSecret('CURRENCY_CONVERSION_API_URL'),
-          },
-          {
-            name: 'POMELO_SFTP_HOST',
-            value: config.requireSecret('POMELO_SFTP_HOST'),
-          },
-          {
-            name: 'POMELO_SFTP_PORT',
-            value: config.requireSecret('POMELO_SFTP_PORT'),
-          },
-          {
-            name: 'POMELO_SFTP_USR',
-            value: config.requireSecret('POMELO_SFTP_USR'),
-          },
-          {
-            name: 'POMELO_SFTP_PASSPHRASE',
-            value: config.requireSecret('POMELO_SFTP_PASSPHRASE'),
-          },
-        ],
-        portMappings: [
-          {
-            containerPort: parseInt(PORT),
-            hostPort: parseInt(PORT),
-            targetGroup: lbApplicationLoadBalancer.defaultTargetGroup,
-          },
-        ],
-        readonlyRootFilesystem: true,
-      },
-    ]),
+    name: `${COMPANY_NAME}/ecs/task/${PROJECT_NAME}-${STACK}`,
+    retentionInDays: 30,
     tags: {
       Company: COMPANY_NAME,
       Projects: PROJECT_NAME,
@@ -301,14 +228,26 @@ const ecsTaskDefinition = new aws.ecs.TaskDefinition(
   },
 );
 
-export const ecsTaskDefinitionData = {
-  family: ecsTaskDefinition.family,
-  revision: ecsTaskDefinition.revision,
-  cpu: ecsTaskDefinition.cpu,
-  memory: ecsTaskDefinition.memory,
-  containerDefinitions: ecsTaskDefinition.containerDefinitions,
-  requiresCompatibilities: ecsTaskDefinition.requiresCompatibilities,
-  networkMode: ecsTaskDefinition.networkMode,
+export const cloudwatchLogGroupData = {
+  id: cloudwatchLogGroup.id,
+  name: cloudwatchLogGroup.name,
+};
+
+const ecrImage = new awsx.ecr.Image(
+  `ecr:image:${COMPANY_NAME}/${PROJECT_NAME}-${STACK}`,
+  {
+    repositoryUrl: ecrRepository.repositoryUrl,
+    dockerfile: '../Dockerfile',
+    context: '../',
+    imageTag: TAG,
+    platform: 'linux/amd64',
+  },
+);
+
+export const ecrImageData = {
+  imageUri: ecrImage.imageUri.apply(
+    (imageUri) => `${imageUri.split('@').at(0)}:${TAG}`,
+  ),
 };
 
 const ecsFargateService = new awsx.ecs.FargateService(
@@ -318,10 +257,186 @@ const ecsFargateService = new awsx.ecs.FargateService(
     // assignPublicIp: true,
     cluster: ecsCluster.arn,
     networkConfiguration: {
-      subnets: ec2Vpc.privateSubnetIds,
+      subnets: ec2Vpc.publicSubnetIds,
       securityGroups: [ec2SecurityGroup.id],
+      assignPublicIp: true,
     },
-    taskDefinition: ecsTaskDefinition.arn,
+    taskDefinitionArgs: {
+      family: `${COMPANY_NAME}-${PROJECT_NAME}-${STACK}`,
+      cpu: '1024',
+      memory: '2048',
+      container: SECRETS.apply((secrets) => ({
+        name: `${COMPANY_NAME}-${PROJECT_NAME}`,
+        image: ecrImage.imageUri.apply(
+          (imageUri) => `${imageUri.split('@').at(0)}:${TAG}`,
+        ),
+        // image: 'crccheck/hello-world:latest',
+        cpu: 1024,
+        memory: 2048,
+        essential: true,
+        environment: [
+          { name: 'ENVIRONMENT', value: ENVIRONMENT },
+          { name: 'APP_NAME', value: APP_NAME },
+          { name: 'GOOGLE_2FA', value: GOOGLE_2FA },
+          { name: 'PORT', value: PORT },
+          { name: 'DATABASE_NAME', value: DATABASE_NAME },
+          {
+            name: 'DATABASE_URL',
+            value: secrets.DATABASE_URL,
+          },
+          {
+            name: 'RABBIT_MQ_HOST',
+            value: secrets.RABBIT_MQ_HOST,
+          },
+          { name: 'RABBIT_MQ_PORT', value: RABBIT_MQ_PORT },
+          { name: 'RABBIT_MQ_QUEUE', value: RABBIT_MQ_QUEUE },
+          {
+            name: 'RABBIT_MQ_USERNAME',
+            value: secrets.RABBIT_MQ_USERNAME,
+          },
+          {
+            name: 'RABBIT_MQ_PASSWORD',
+            value: secrets.RABBIT_MQ_PASSWORD,
+          },
+          {
+            name: 'REDIS_HOST',
+            value: secrets.REDIS_HOST,
+          },
+          {
+            name: 'REDIS_USERNAME',
+            value: secrets.REDIS_USERNAME,
+          },
+          {
+            name: 'REDIS_PASSWORD',
+            value: secrets.REDIS_PASSWORD,
+          },
+          { name: 'REDIS_PORT', value: REDIS_PORT },
+          { name: 'CACHE_TTL', value: CACHE_TTL },
+          { name: 'CACHE_MAX_ITEMS', value: CACHE_MAX_ITEMS },
+          {
+            name: 'AUTH_MAX_SECONDS_TO_REFRESH',
+            value: AUTH_MAX_SECONDS_TO_REFRESH,
+          },
+          {
+            name: 'AUTH_SECRET',
+            value: secrets.AUTH_SECRET,
+          },
+          { name: 'AUTH_EXPIRE_IN', value: AUTH_EXPIRE_IN },
+          {
+            name: 'API_KEY_EMAIL_APP',
+            value: API_KEY_EMAIL_APP,
+          },
+          {
+            name: 'URL_API_EMAIL_APP',
+            value: URL_API_EMAIL_APP,
+          },
+          { name: 'TESTING', value: TESTING },
+          { name: 'TZ', value: TZ },
+          {
+            name: 'AWS_SES_FROM_DEFAULT',
+            value: secrets.AWS_SES_FROM_DEFAULT,
+          },
+          {
+            name: 'AWS_SES_HOST',
+            value: secrets.AWS_SES_HOST,
+          },
+          { name: 'AWS_SES_PORT', value: AWS_SES_PORT },
+          {
+            name: 'AWS_SES_USERNAME',
+            value: secrets.AWS_SES_USERNAME,
+          },
+          {
+            name: 'AWS_SES_PASSWORD',
+            value: secrets.AWS_SES_PASSWORD,
+          },
+          {
+            name: 'DEFAULT_CURRENCY_CONVERSION_COIN',
+            value: DEFAULT_CURRENCY_CONVERSION_COIN,
+          },
+          {
+            name: 'AUTHORIZATIONS_BLOCK_BALANCE_PERCENTAGE',
+            value: AUTHORIZATIONS_BLOCK_BALANCE_PERCENTAGE,
+          },
+          {
+            name: 'POMELO_SIGNATURE_SECRET_KEY_DIC',
+            value: secrets.POMELO_SIGNATURE_SECRET_KEY_DIC,
+          },
+          {
+            name: 'POMELO_WHITELISTED_IPS_CHECK',
+            value: POMELO_WHITELISTED_IPS_CHECK,
+          },
+          {
+            name: 'POMELO_WHITELISTED_IPS',
+            value: secrets.POMELO_WHITELISTED_IPS,
+          },
+          {
+            name: 'POMELO_CLIENT_ID',
+            value: secrets.POMELO_CLIENT_ID,
+          },
+          {
+            name: 'POMELO_SECRET_ID',
+            value: secrets.POMELO_SECRET_ID,
+          },
+          {
+            name: 'POMELO_AUDIENCE',
+            value: secrets.POMELO_AUDIENCE,
+          },
+          {
+            name: 'POMELO_AUTH_GRANT_TYPE',
+            value: secrets.POMELO_AUTH_GRANT_TYPE,
+          },
+          {
+            name: 'POMELO_API_URL',
+            value: secrets.POMELO_API_URL,
+          },
+          {
+            name: 'CURRENCY_CONVERSION_API_KEY',
+            value: secrets.CURRENCY_CONVERSION_API_KEY,
+          },
+          {
+            name: 'CURRENCY_CONVERSION_API_URL',
+            value: secrets.CURRENCY_CONVERSION_API_URL,
+          },
+          {
+            name: 'POMELO_SFTP_HOST',
+            value: secrets.POMELO_SFTP_HOST,
+          },
+          {
+            name: 'POMELO_SFTP_PORT',
+            value: secrets.POMELO_SFTP_PORT,
+          },
+          {
+            name: 'POMELO_SFTP_USR',
+            value: secrets.POMELO_SFTP_USR,
+          },
+          {
+            name: 'POMELO_SFTP_PASSPHRASE',
+            value: secrets.POMELO_SFTP_PASSPHRASE,
+          },
+        ],
+        portMappings: [
+          {
+            name: `${COMPANY_NAME}-${PROJECT_NAME}-${STACK}`,
+            containerPort: parseInt(PORT),
+            hostPort: parseInt(PORT),
+            protocol: 'tcp',
+            targetGroup: lbApplicationLoadBalancer.defaultTargetGroup,
+          },
+        ],
+        readonlyRootFilesystem: true,
+        // healthCheck: {
+        //   command: ['CMD-SHELL', `curl -f http://localhost:${PORT} || exit 1`],
+        // },
+        logConfiguration: {
+          logDriver: 'awslogs',
+          options: {
+            'awslogs-group': cloudwatchLogGroup.name,
+            'awslogs-region': aws.config.region,
+            'awslogs-stream-prefix': 'ecs-task',
+          },
+        },
+      })),
+    },
     desiredCount: 1,
     tags: {
       Company: COMPANY_NAME,
