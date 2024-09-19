@@ -1,80 +1,80 @@
 config:
   aws:accessKey:
-    secure: AAABAJiMReglrFemAcUbihQ5iFNFLgNw7FwiDafGIBim97BIw1IT5y18MPi55bhYRrhobA==
+    secure: AAABAIypp264GyOvhy+kyYyCi0uFIYPdv0W04w/LAmXoJH+0Edm6GpoJbIHeoHdt/h2JXg==
   aws:region: us-east-2
   aws:secretKey:
-    secure: AAABAP5kqdryxzkJ0G0YCsmv/kcFyF8YAFlx/8Nqnl4iI6mPdlK7qr/bBgobk10urX1rCdEEpWOn+iAGpCoszDXHm/Y2Pj0F
+    secure: AAABAFYQPkvzV/XJVxiAcdqQ7TkWs2xrYlB4T6K4cvK3PjHtAxprCwf7Rz/A2GJRekkTI7yV4fNxoPstJ1XG6/sVAMHuqZfC
   b2crypto-iac:API_KEY_EMAIL_APP: ""
   b2crypto-iac:APP_NAME: B2Crypto
   b2crypto-iac:AUTH_EXPIRE_IN: 8h
   b2crypto-iac:AUTH_MAX_SECONDS_TO_REFRESH: "60"
   b2crypto-iac:AUTH_SECRET:
-    secure: AAABAAdcmFjPyKPoDxs8hCL34ETyXor5ykmNxV6BxH3C6sQ4YUnTqQ==
+    secure: AAABAByxeSXYj20jwiQ6qFldVohT5gakYFtOK/HmqKgszTuQzJvMTg==
   b2crypto-iac:AUTHORIZATIONS_BLOCK_BALANCE_PERCENTAGE: "0.1"
   b2crypto-iac:AWS_SES_FROM_DEFAULT:
-    secure: AAABAJNBihdlXUKN1jLk3mYTSPVB+4sKLN81ZPZrg9bs5kECOLTeVPIE5p21GP/5er97cGk=
+    secure: AAABAHkMDSRTeIQ/Ndr2WM95Sna3BV6Bld2EYlcyjq3WzBAXurw8JI435c+BgEVwdBQB1tM=
   b2crypto-iac:AWS_SES_HOST:
-    secure: AAABAEViEXg2xQStA+dmX2Plvz5LXpFuLa1fdmy7KQgvsm2r3Ykm9xaHrJMMmwIbGBSGC89hlJ5omShxciw2eZoN
+    secure: AAABAG2ysLg5H1QQE918f28ZJwfbQaJm5+8FjsbuAechWVUWcoaJj44NfiPvuZT1r8KrruoL5/4aa1ZB4wgn5fyS
   b2crypto-iac:AWS_SES_PASSWORD:
-    secure: AAABALYnz5A/5AU5INFFcO1TJBzvAHRdpVmpSxsatM1T4nDdSJj4mgp0/V6vnHelrAC06nZrgA3rUce5D9EBwJORUVE2k/B4EMP+8w==
+    secure: AAABAITm0oSgPcjiKrJMvHoPslN7OqIkgChObc2nqLY7oWqElcYqBEMvC975ilSqlHBDgxQ/hiUfyCNpG/R4pl7LnfNVFPSj98UDYg==
   b2crypto-iac:AWS_SES_PORT: "587"
   b2crypto-iac:AWS_SES_SMTP_PASSWORD:
-    secure: AAABAH2ltdNR8PrstwnUkug9n9sRZQVhuXjIDTnyEZCmku208NooDbYIyq2OcDef/3hVsMBxCrRbj7xa7WXJ6pCUQ74CiIH4NPrm2Q==
+    secure: AAABAKjqzRVCjG2Vi7AsxPpOwplP9xdlO2iQpIku5OGyTKAS2ZfS5rn4GPcDJhHic3baUd7tfIeR+fNmcEWS/W48tmDfcKGd2Dtx3g==
   b2crypto-iac:AWS_SES_SMTP_USERNAME:
-    secure: AAABAGKK+Fwtni26DPbgQPoI/evsMERvLNMpZkmhvUnTlcG9DbvbbiBJqCBK/wwaz3mjcQ==
+    secure: AAABAJy6dqYVw+9MVIRgrZRN/6NrEALC6vVNBoQ0Zn5Iozx+3C1RQnBXJOMqJwlouni51A==
   b2crypto-iac:AWS_SES_USERNAME:
-    secure: AAABALST3paqIOFIy8Mx+fNfCgi8sKeCEV5oMf5+5YQvLr/kuJxoda94r6b7WdRWx4q2Kw==
+    secure: AAABALBYN3Z7TTwgiyXkI3kCmUrx8cP2mBx25WJwdtyxkVU6VsytM3FCSf0izs7Wuv1zlw==
   b2crypto-iac:CACHE_MAX_ITEMS: "50"
   b2crypto-iac:CACHE_TTL: "20"
   b2crypto-iac:CURRENCY_CONVERSION_API_KEY:
-    secure: AAABAC5flxPYCiaFfCpV3gxBjKBUjpz2uXRukhIFkKEvR9ZwbmnANRlONJCNIug2R+WPitu9Mwy9Y+qrBal/gQ==
+    secure: AAABAPwDCPmM8U99JCnN1245itAAzO39+oOC8XVWYKyXg47uSt2BkuUQ4UV6R+07XAriFXq0lisFYZo7lAmRMw==
   b2crypto-iac:CURRENCY_CONVERSION_API_URL:
-    secure: AAABAIWXKgqUmSu33lpUQcWjzBtuCXHXTZjSaOQ42xeUkWUXY9R46/Bn8rFcLAP/D0JrTTKEtsUk0nF/QjDaqBqjbXPupYb7MWg=
+    secure: AAABAKtiIttN+lQwkzElWorCVLpD0DCA5Ei43MF1T1ON2SILPHaBISaYMLTKtbU2/NWjFGhVDnZEihsWQKD0J6BGtIXboktXmvM=
   b2crypto-iac:DATABASE_NAME: b2crypto
   b2crypto-iac:DATABASE_URL:
-    secure: AAABAFfWvvqv8zP/aMmrRZtAcVe5qygWBriiPdBUDmfDWVpuTEVR0+T9OBsqmDEvySDajb7VankyOHF6G/1MCQbH9NHMXaQX3Vk5XHLEhMt2v8UghsKzc/GlqdORc/1JKZ8zLDcejfiP4tnuvAlbAPrU1RaUUyG4xzipqz2oGxGzd+9UIihM2j4QEw6plFlgO5vfV2V25eUutiLzbVI=
+    secure: AAABAFqhGgHOOgomgbDQZ7KR77RZbpaN17j2W1VWh15kmKW2h+HlTXS4i3dUHZzudh77r359dd/d4ufwh4cr+ThVz6gbJPByuYH/Og89Ts+2SVF+fWTf3TmGLyzI9vghTYr3kYSbxDub4W8SELWH8c5NBMKYY0jQPQK6AT9h40Hp1CtyhvpQAzmop0KysIEmB5fvJIMLx027G003S6A=
   b2crypto-iac:DEFAULT_CURRENCY_CONVERSION_COIN: USD
   b2crypto-iac:ENVIRONMENT: STAGE
   b2crypto-iac:GOOGLE_2FA: "false"
   b2crypto-iac:POMELO_API_URL:
-    secure: AAABAIPCBiwur8rzf3HJsMVn/c2gzi3Ev94mZ8vg1ousOw9AHg6WSHrY/tPVHAaZHJn42Aw757ms91QROQ==
+    secure: AAABALuVw2IUPoXmeT7DuSiO/jbKdMtKIcr/V764vknSnjCIL/4vz3+8QhlxZRg4Df5rGY8DrpFXru9Oww==
   b2crypto-iac:POMELO_AUDIENCE:
-    secure: AAABAAUniYe0svRaln5FzBbnk9queVIrzFCLU0+uc3R93qBd7kTruMktzH2yNr/8xU9+XQuSRBEy2QSzWZ0=
+    secure: AAABAAWl4S6SoxV9p2VI6UNRlAa+UvrMPhS6ChN7wr6eOi39vVtTNf0O/31ovrVW5KfJCVWONo/lSBrF+2A=
   b2crypto-iac:POMELO_AUTH_GRANT_TYPE:
-    secure: AAABAOFPT7bDqFj9kZeEK1Qt6qny0PjrT2jLgknauMtOrRiDtE6tbBWfDRJpCos59nk=
+    secure: AAABAHwQaTiPVD5aT3zdIDmy7t2zUgUcXrrUGtUJtCbGcVFAM4x9MqH9l4E3M5ijwR4=
   b2crypto-iac:POMELO_CLIENT_ID:
-    secure: AAABABTILZBM+ZqHOKCrvC8rCFsC7n/tfqBCkXm8mlM5e/igZ6LWGWs77ha76DAQKZxrgUq1XVCiBouQcHJNqw==
+    secure: AAABAHHGJo2D2jVy/kZbLwmVAQI1y0n8xT6xo3ueP/XeKUJIKZlC81ZhmUibJuUukQC9Y33PxAyf60pZTdC0gA==
   b2crypto-iac:POMELO_SECRET_ID:
-    secure: AAABAN/31mJHMAQ9TRmNV49HHfA2oy1xqywg3qM6zNi67r7f9K60pdIIFU8ERfZbu7P6LGWFWSo9UN/gbscy9aUVLforrs8/+1+fpT+K+pnTykM8Cho0belPwT5bhXbR
+    secure: AAABAKC7+4VrYTovhDS0mIsSOTWCbhZPynKMlpsLCq7ZZ12f/IotCfsUqwW0W2kFQ3naavPX2CUBWl9hGu5YZW9O6pDUaoyYFeMJlAo6BPX8ZBzQB6ZZRpSV5W4cN32B
   b2crypto-iac:POMELO_SFTP_HOST:
-    secure: AAABAPeiQpDsjBiOeLxmFihcI1q0tLAyI3AxgD9wnRxeAMiHjegr03ltzKwfZoqXRoo=
+    secure: AAABAEOsgF5IFtSa79U7ZN8XRauDBOL4vFRjjGdT1+o/Q7oA8+6VzNJLOW0n1p6MuBg=
   b2crypto-iac:POMELO_SFTP_PASSPHRASE:
-    secure: AAABANz9voWcd4q9k74tE+zIErttQFoIPX5LX6tSkeySvMYWoqqZ0w==
+    secure: AAABAPtzA6IaaKOLET48ZAA14YYOGaQ+zZm8KmjSl2w949hmU/Xhjw==
   b2crypto-iac:POMELO_SFTP_PORT:
-    secure: AAABANeSmIYXata0l8g0mbe6vRocuDImrv6srW9pB44dUw==
+    secure: AAABAGCVEndP3D4HuOItr7iQfU8UrcOvEx7vb88U0he1wA==
   b2crypto-iac:POMELO_SFTP_USR:
-    secure: AAABABjvIqKkW7+I7+4gpcXZttI+8zLhoBmIeIHbWfokvJ1oXVWJ
+    secure: AAABAHYr1eD9BDa97Y11e0UIbo+8XHoUKviOGE81He5h4dykysvv
   b2crypto-iac:POMELO_SIGNATURE_SECRET_KEY_DIC:
-    secure: AAABAHRd+R9f72U6148ocDr2c50Qwj3Ja+l/N7bAbhtOHv1Og0mnSgjSoDTDbb3ypanbHSwZcC4fOYQ8xpXt4Ip8tHrgnsPChIp1QSsWoiwgYjWD6fdh1jDBglTZPc23XmW02U09gDLCqQGdItpekiO+/g3gHx69NY+YWEPk4A==
+    secure: AAABAP9v8yewgQayDzGEdBvw7v2wkUYWeMKUTKmG3e5PZvO5S/qT5YZGo5K/CNcwVYg1kaq2lplitAKNv/k0vzpfvpRwbx5eBgjugoTVsNug1nGuw9UEPNsEYTG1ABrvU9G6c9rz27D/VUeMDP2QhBgJrkGbO+MsFmwnHXObiw==
   b2crypto-iac:POMELO_WHITELISTED_IPS:
-    secure: AAABACLW1zEY1r3XmDGDEXKmfhPkxU+BSeP/KcN2i31qk2v+DCmKdy81xGBRl5FGhY55hJVVudV4Zzfk3pY8ghpVVb1nacZKHr0QuQw3LQ/3SEfVrkvwHfok
+    secure: AAABAK2m/RjUmsXDFrOeNkmdxLrlsW3X2uMXSfC5y8YIH7jjeZQSgrl/gzY+85nuQ1IkE8v7NSgkmMAJjXAXBMSvLxPP7XSUV24iWcAgHfhffPZG+wntwVr1
   b2crypto-iac:POMELO_WHITELISTED_IPS_CHECK: "ON"
-  b2crypto-iac:PORT: "3000"
+  b2crypto-iac:PORT: "8000"
   b2crypto-iac:RABBIT_MQ_HOST:
-    secure: AAABABVjhazNabyhlgR20mCiBGV9guIHe1Ms1nUqnmuTOhIGSm6m/S7KQ05OWmpetVM3aieHMUZ1BJG3J4bb9PNB/RGdgW66NEq5zeZ+68cyBSONw1bkSYDG4MX/lLVD+A==
+    secure: AAABAITW1amHdtXr8p9b8gGGyy4BChz2EN3TX6yGmgOwcDu5dA8r71s7rb0GkioZXl+reUa4nNKYBEdRbjyXCYhyI0ntTGoHUTc+oKxAJiviXz2xHzAnj/JBnyS6ux2qEg==
   b2crypto-iac:RABBIT_MQ_PASSWORD:
-    secure: AAABAHjEJTMa07lQ+ZsvxqJnSLzjRemKwyZpQfuKqJPLwc+Gxnhw8FGNSpai7GahNbNK3uty0Tq1EZi6HvVyvA==
+    secure: AAABAHwnjSUpJFZtlwzLuLM+qelRyQJfC8xU3TtBpVHk8Sn0fle8uHYmjKehlrv1exQCa6OyKSKyBCB4FFp+Pg==
   b2crypto-iac:RABBIT_MQ_PORT: "5671"
   b2crypto-iac:RABBIT_MQ_QUEUE: STAGE
   b2crypto-iac:RABBIT_MQ_USERNAME:
-    secure: AAABAIQCr61SXnbAD9nQzMXiloBiuEZRu+K3ew7saQBNxV39mc04mQ==
+    secure: AAABAHI6k/ELUAz3H0TOaM58PGv62KFtrSDn8qrJe3Sf5lTzSEAknw==
   b2crypto-iac:REDIS_HOST:
-    secure: AAABAIykt4415Y3zQAcQbDSEn5zBj7ZHNzgRz00AEL3qm6g4OLfGvap2JoPri0W4qfEZxQ1PPpO8Sf35a7SqOedY5GucV17mX9w0o+aTq8G+JO/duh4=
+    secure: AAABAG+rw3vxGxyFryefFHU4Z33rpZEZl52c89P3MJ9HaJwEyCoKzh1Vu4CMvXR+muwT635my8hgiwlu3HjxzYYMdd6P4mZYmP5nWkqrSn4hcuW/yLc=
   b2crypto-iac:REDIS_PASSWORD:
-    secure: AAABAOzXNdanfALn0EHABUJwRdzVWTehdTZwOdDZso/mHY9yRODIRHvYNSmBWejOw9wB2mxqOPy03IeIzeNqHg==
+    secure: AAABAKMukeGiR+ujwCVzDErp0IXA1f8IPN5cYDWvOmJWJ4KViLriuR06hn4zI+Ga4AEOgkoqsgj/BKsWBEA2lw==
   b2crypto-iac:REDIS_PORT: "14419"
   b2crypto-iac:REDIS_USERNAME:
-    secure: AAABAKLgxgxo+nGQNz+BZifCCBez8Kv9d3m5LI8H2l8292AmKYOQ
+    secure: AAABAJD9O6MnfvxgpJaTxkOpyqcMTp9np3lGS7gYy48vmm0l6Ss2
   b2crypto-iac:REGION: us-east-2
   b2crypto-iac:STACK: staging
   b2crypto-iac:TESTING: "false"

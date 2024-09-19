@@ -85,6 +85,18 @@ const ec2SecurityGroup = new aws.ec2.SecurityGroup(
     vpcId: ec2Vpc.vpcId,
     ingress: [
       {
+        fromPort: 443,
+        toPort: 443,
+        protocol: 'TCP',
+        cidrBlocks: ['0.0.0.0/0'],
+      },
+      {
+        fromPort: 80,
+        toPort: 80,
+        protocol: 'TCP',
+        cidrBlocks: ['0.0.0.0/0'],
+      },
+      {
         fromPort: parseInt(PORT),
         toPort: parseInt(PORT),
         protocol: 'TCP',
@@ -92,6 +104,18 @@ const ec2SecurityGroup = new aws.ec2.SecurityGroup(
       },
     ],
     egress: [
+      {
+        fromPort: 443,
+        toPort: 443,
+        protocol: 'TCP',
+        cidrBlocks: ['0.0.0.0/0'],
+      },
+      {
+        fromPort: 80,
+        toPort: 80,
+        protocol: 'TCP',
+        cidrBlocks: ['0.0.0.0/0'],
+      },
       {
         fromPort: parseInt(PORT),
         toPort: parseInt(PORT),
@@ -151,7 +175,7 @@ const lbApplicationLoadBalancer = new awsx.lb.ApplicationLoadBalancer(
     subnetIds: ec2Vpc.publicSubnetIds,
     listeners: [
       {
-        port: parseInt(PORT),
+        port: 80,
         protocol: 'HTTP',
         tags: {
           Company: COMPANY_NAME,
@@ -188,6 +212,25 @@ export const lbApplicationLoadBalancerData = {
   defaultTargetGroup: lbApplicationLoadBalancer.defaultTargetGroup,
   loadBalancer: lbApplicationLoadBalancer.loadBalancer,
   listeners: lbApplicationLoadBalancer.listeners,
+};
+
+const cloudwatchLogGroup = new aws.cloudwatch.LogGroup(
+  `cloudwatch:log-group:${COMPANY_NAME}-${PROJECT_NAME}-${STACK}`,
+  {
+    name: `${COMPANY_NAME}/ecs/task/${PROJECT_NAME}-${STACK}`,
+    retentionInDays: 30,
+    tags: {
+      Company: COMPANY_NAME,
+      Projects: PROJECT_NAME,
+      Stack: STACK,
+      CreatedBy: CREATED_BY,
+    },
+  },
+);
+
+export const cloudwatchLogGroupData = {
+  id: cloudwatchLogGroup.id,
+  name: cloudwatchLogGroup.name,
 };
 
 const ecrImage = new awsx.ecr.Image(
@@ -227,6 +270,7 @@ const ecsFargateService = new awsx.ecs.FargateService(
         image: ecrImage.imageUri.apply(
           (imageUri) => `${imageUri.split('@').at(0)}:${TAG}`,
         ),
+        // image: 'crccheck/hello-world:latest',
         cpu: 1024,
         memory: 2048,
         essential: true,
@@ -381,11 +425,16 @@ const ecsFargateService = new awsx.ecs.FargateService(
         ],
         readonlyRootFilesystem: true,
         // healthCheck: {
-        //   command: [
-        //     'CMD-SHELL',
-        //     'curl -f http://localhost:3000/api/health || exit 1',
-        //   ],
+        //   command: ['CMD-SHELL', `curl -f http://localhost:${PORT} || exit 1`],
         // },
+        logConfiguration: {
+          logDriver: 'awslogs',
+          options: {
+            'awslogs-group': cloudwatchLogGroup.name,
+            'awslogs-region': aws.config.region,
+            'awslogs-stream-prefix': 'ecs-task',
+          },
+        },
       })),
     },
     desiredCount: 1,
@@ -430,7 +479,7 @@ const scalingPolicy = new aws.appautoscaling.Policy(
       predefinedMetricSpecification: {
         predefinedMetricType: 'ECSServiceAverageCPUUtilization',
       },
-      targetValue: 75.0,
+      targetValue: 50.0,
     },
   },
 );

@@ -62,12 +62,11 @@ async function bootstrap() {
     ),
   );
   await app.startAllMicroservices();
+  await app.listen(configService.get('PORT') ?? 3000);
+  Logger.log('Listening on port ' + configService.get('PORT'));
   if (typeof process.send === 'function') {
     process.send('ready');
   }
-
-  await app.listen(configService.get('PORT') ?? 3000);
-  Logger.log('Listening on port ' + configService.get('PORT'));
 }
 
 function addSwaggerStakeyCard(app: INestApplication) {
