@@ -61,11 +61,6 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - uses: pulumi/auth-actions@v1
-        with:
-          organization: b2fintech
-          requested-token-type: urn:pulumi:token-type:access_token:organization
-
       - uses: pulumi/actions@v5
         with:
           command: preview
