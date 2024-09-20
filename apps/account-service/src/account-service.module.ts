@@ -59,6 +59,7 @@ import { WalletServiceService } from './wallet-service.service';
     WalletServiceController,
   ],
   providers: [
+    WalletServiceService,
     StatusServiceService,
     CategoryServiceService,
     GroupServiceService,
