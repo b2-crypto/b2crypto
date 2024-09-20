@@ -97,9 +97,12 @@ export class PersonServiceController implements GenericServiceController {
         throw new BadRequestError('User already has personal data');
       }
       createPersonDto.user = user._id;
-    } else if (createPersonDto.user !== req.user.id) {
+    } else if (
+      !createPersonDto.preRegistry &&
+      createPersonDto.user !== req?.user?.id
+    ) {
       throw new BadRequestError(
-        `Only have create to User user ${req.user.email}`,
+        `Only have create personal data to User ${createPersonDto.user}`,
       );
     }
     const personalData = await this.personService.newPerson(createPersonDto);

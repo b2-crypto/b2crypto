@@ -63,6 +63,9 @@ import { BadRequestError } from 'passport-headerapikey';
 import { IntegrationIdentityEnum } from './../../../libs/integration/src/identity/generic/domain/integration.identity.enum';
 import EventsNamesUserEnum from './enum/events.names.user.enum';
 import { UserRefreshTokenDto } from '@user/user/dto/user.refresh.token.dto';
+import { UserPreRegisterDto } from '@user/user/dto/user.pre.register.dto';
+import { PersonCreateDto } from '@person/person/dto/person.create.dto';
+import EventsNamesPersonEnum from 'apps/person-service/src/enum/events.names.person.enum';
 
 @ApiTags('AUTHENTICATION')
 @Controller('auth')
@@ -392,6 +395,62 @@ export class AuthServiceController {
       EventsNamesUserEnum.createOne,
       userDto,
     );
+  }
+
+  @AllowAnon()
+  @ApiKeyCheck()
+  @UseGuards(ApiKeyAuthGuard)
+  @ApiSecurity('b2crypto-key')
+  @ApiTags(SwaggerSteakeyConfigEnum.TAG_SECURITY)
+  /* @ApiResponse({
+    status: 201,
+    description: 'was searched successfully',
+    type: LeadResponseDto,
+  })
+  @ApiResponse(ResponseB2Crypto.getResponseSwagger(401, ActionsEnum.LOGIN))
+  @ApiResponse(ResponseB2Crypto.getResponseSwagger(403, ActionsEnum.LOGIN))
+  @ApiResponse(ResponseB2Crypto.getResponseSwagger(404, ActionsEnum.LOGIN))
+  @ApiResponse(ResponseB2Crypto.getResponseSwagger(500, ActionsEnum.LOGIN)) */
+  @Post('pre-registry')
+  async preRegistryUser(@Body() userDto: UserPreRegisterDto) {
+    userDto.name =
+      userDto.name ?? userDto.username ?? userDto.email.split('@')[0];
+    userDto.slugEmail = CommonService.getSlug(userDto.email);
+    userDto.username = userDto.username ?? userDto.name;
+    userDto.slugUsername = CommonService.getSlug(userDto.username);
+    const user = await this.builder.getPromiseUserEventClient(
+      EventsNamesUserEnum.createOne,
+      userDto,
+    );
+    try {
+      user.personalData = await this.builder.getPromisePersonEventClient(
+        EventsNamesPersonEnum.createOne,
+        {
+          taxIdentificationValue: 0,
+          // Create person without same user request
+          preRegistry: true,
+          name: userDto.name,
+          firstName: userDto.name,
+          slugName: CommonService.getSlug(userDto.name),
+          email: userDto.email,
+          emails: [userDto.email],
+          phoneNumber: userDto.phone,
+          user: user._id.toString(),
+        } as unknown as PersonCreateDto,
+      );
+      // TODO[hender-20/09/2024] Check why the active data is not saved in creation
+      this.builder.emitUserEventClient(EventsNamesUserEnum.updateOne, {
+        id: user._id.toString(),
+        active: !!userDto.active,
+      });
+      return user;
+    } catch (error) {
+      await this.builder.getPromiseUserEventClient(
+        EventsNamesUserEnum.deleteOneById,
+        user._id.toString(),
+      );
+      throw error;
+    }
   }
 
   @IsRefresh()
