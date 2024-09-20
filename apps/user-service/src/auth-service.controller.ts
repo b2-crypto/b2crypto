@@ -412,12 +412,14 @@ export class AuthServiceController {
   @ApiResponse(ResponseB2Crypto.getResponseSwagger(404, ActionsEnum.LOGIN))
   @ApiResponse(ResponseB2Crypto.getResponseSwagger(500, ActionsEnum.LOGIN)) */
   @Post('pre-registry')
-  async preRegistryUser(@Body() userDto: UserPreRegisterDto) {
+  async preRegistryUser(@Body() userDto: UserPreRegisterDto, @Req() req) {
     userDto.name =
       userDto.name ?? userDto.username ?? userDto.email.split('@')[0];
     userDto.slugEmail = CommonService.getSlug(userDto.email);
     userDto.username = userDto.username ?? userDto.name;
     userDto.slugUsername = CommonService.getSlug(userDto.username);
+    const client = await this.getClientFromPublicKey(req.clientApi, false);
+    userDto.description = userDto.campaign ?? client.name;
     const user = await this.builder.getPromiseUserEventClient(
       EventsNamesUserEnum.createOne,
       userDto,

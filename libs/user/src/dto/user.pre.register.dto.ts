@@ -30,6 +30,16 @@ export class UserPreRegisterDto {
   individual = true;
 
   @ApiProperty({
+    description: 'Campaign of User register',
+  })
+  @IsOptional()
+  @IsString()
+  campaign: string;
+
+  @IsEmpty()
+  description: string;
+
+  @ApiProperty({
     description: 'Email User',
   })
   @IsNotEmpty()
