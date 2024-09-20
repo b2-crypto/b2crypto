@@ -31,7 +31,7 @@ const {
   POMELO_WHITELISTED_IPS_CHECK,
 } = VARS_ENV;
 VARS_ENV;
-const TAG = process.env.COMMIT_SHA ?? randomBytes(5).toString('hex');
+const TAG = process.env.COMMIT_SHA ?? randomBytes(4).toString('hex');
 
 const ecrRepository = new aws.ecr.Repository(
   `erc:repository:${COMPANY_NAME}/${PROJECT_NAME}`,
