@@ -1,0 +1,8 @@
+config:
+  B2cryptoMonolithDeploy:CREATED_BY: Pulumi IaC
+  B2cryptoMonolithDeploy:STACK: staging
+  aws:accessKey:
+    secure: AAABACBsL9/4p2ggyurf7/6oNqSVJRmRESXmE+mwbqsCHgBvw2N1HEbHC9XGRPWAN010zA==
+  aws:region: us-east-2
+  aws:secretKey:
+    secure: AAABAMl8tUp6O5hDgJ9mCPvUT9c9O5fsTSPK2cU35rxL3aGL0oQsqu7jSozm7FfzmtwnCMR4LN/foikqmNMp92o/iOz7xfAw

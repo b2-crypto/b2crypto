@@ -1,4 +1,5 @@
 import * as aws from '@pulumi/aws';
+import { Listener } from '@pulumi/aws/alb';
 import * as awsx from '@pulumi/awsx';
 import * as pulumi from '@pulumi/pulumi';
 import { randomBytes } from 'crypto';
@@ -30,32 +31,7 @@ const {
   AUTHORIZATIONS_BLOCK_BALANCE_PERCENTAGE,
   POMELO_WHITELISTED_IPS_CHECK,
 } = VARS_ENV;
-VARS_ENV;
 const TAG = process.env.COMMIT_SHA ?? randomBytes(4).toString('hex');
-
-const ecrRepository = new aws.ecr.Repository(
-  `erc:repository:${COMPANY_NAME}/${PROJECT_NAME}`,
-  {
-    name: `${COMPANY_NAME}/${PROJECT_NAME}-${STACK}`,
-    imageTagMutability: 'IMMUTABLE',
-    imageScanningConfiguration: {
-      scanOnPush: true,
-    },
-    tags: {
-      Company: COMPANY_NAME,
-      Projects: PROJECT_NAME,
-      Stack: STACK,
-      CreatedBy: CREATED_BY,
-    },
-  },
-);
-
-export const ecrRepositoryData = {
-  id: ecrRepository.id,
-  repositoryUrl: ecrRepository.repositoryUrl.apply(
-    (value) => `${value.split('@').at(0)}:${TAG}`,
-  ),
-};
 
 const ec2Vpc = new awsx.ec2.Vpc(
   `ec2:vpc:${COMPANY_NAME}-${PROJECT_NAME}-${STACK}`,
@@ -233,21 +209,13 @@ export const cloudwatchLogGroupData = {
   name: cloudwatchLogGroup.name,
 };
 
-const ecrImage = new awsx.ecr.Image(
-  `ecr:image:${COMPANY_NAME}/${PROJECT_NAME}-${STACK}`,
-  {
-    repositoryUrl: ecrRepository.repositoryUrl,
-    dockerfile: '../Dockerfile',
-    context: '../',
-    imageTag: TAG,
-    platform: 'linux/amd64',
-  },
-);
+const ecrRepository = aws.ecr.getRepositoryOutput({
+  name: `${COMPANY_NAME}/${PROJECT_NAME}-${STACK}`,
+});
 
-export const ecrImageData = {
-  imageUri: ecrImage.imageUri.apply(
-    (imageUri) => `${imageUri.split('@').at(0)}:${TAG}`,
-  ),
+export const ecrRepositoryData = {
+  id: ecrRepository.id,
+  repositoryUrl: ecrRepository.repositoryUrl,
 };
 
 const ecsFargateService = new awsx.ecs.FargateService(
@@ -256,6 +224,10 @@ const ecsFargateService = new awsx.ecs.FargateService(
     name: `${COMPANY_NAME}-${PROJECT_NAME}-${STACK}`,
     // assignPublicIp: true,
     cluster: ecsCluster.arn,
+    deploymentController: {
+      type: 'CODE_DEPLOY',
+    },
+    schedulingStrategy: 'REPLICA',
     networkConfiguration: {
       subnets: ec2Vpc.publicSubnetIds,
       securityGroups: [ec2SecurityGroup.id],
@@ -267,9 +239,7 @@ const ecsFargateService = new awsx.ecs.FargateService(
       memory: '2048',
       container: SECRETS.apply((secrets) => ({
         name: `${COMPANY_NAME}-${PROJECT_NAME}`,
-        image: ecrImage.imageUri.apply(
-          (imageUri) => `${imageUri.split('@').at(0)}:${TAG}`,
-        ),
+        image: `${ecrRepository.repositoryUrl}:${TAG}`,
         // image: 'crccheck/hello-world:latest',
         cpu: 1024,
         memory: 2048,
@@ -492,4 +462,108 @@ export const scalingPolicyData = {
   serviceNamespace: scalingPolicy.serviceNamespace,
   targetTrackingScalingPolicyConfiguration:
     scalingPolicy.targetTrackingScalingPolicyConfiguration,
+};
+
+const codedeployApplication = new aws.codedeploy.Application(
+  `codedeploy:application:${COMPANY_NAME}-${PROJECT_NAME}-${STACK}`,
+  {
+    name: `${COMPANY_NAME}-${PROJECT_NAME}-${STACK}`,
+    computePlatform: 'ECS',
+    tags: {
+      Company: COMPANY_NAME,
+      Projects: PROJECT_NAME,
+      Stack: STACK,
+      CreatedBy: CREATED_BY,
+    },
+  },
+);
+
+export const codedeployApplicationData = {
+  id: codedeployApplication.id,
+  name: codedeployApplication.name,
+};
+
+const iamRoleEcsCodeDeploy = new aws.iam.Role(
+  `iam:role:ecs-codedeploy:${COMPANY_NAME}-${PROJECT_NAME}-${STACK}`,
+  {
+    name: `ecsCodedeployRole-${COMPANY_NAME}-${PROJECT_NAME}-${STACK}`,
+    assumeRolePolicy: JSON.stringify({
+      Version: '2012-10-17',
+      Statement: [
+        {
+          Sid: '',
+          Effect: 'Allow',
+          Principal: {
+            Service: ['codedeploy.amazonaws.com'],
+          },
+          Action: 'sts:AssumeRole',
+        },
+      ],
+    }),
+    managedPolicyArns: [
+      'arn:aws:iam::aws:policy/AWSCodeDeployRoleForECS',
+      'arn:aws:iam::aws:policy/AWSCodeDeployRoleForECSLimited',
+    ],
+  },
+);
+
+export const iamRoleEcsCodeDeployData = {
+  arn: iamRoleEcsCodeDeploy.arn,
+};
+
+const codedeployDeploymentGroup = new aws.codedeploy.DeploymentGroup(
+  `codedeploy:deployment-group:${COMPANY_NAME}-${PROJECT_NAME}-${STACK}`,
+  {
+    appName: codedeployApplication.name,
+    deploymentGroupName: `${COMPANY_NAME}-${PROJECT_NAME}-${STACK}`,
+    deploymentConfigName: 'CodeDeployDefault.ECSAllAtOnce',
+    autoRollbackConfiguration: {
+      enabled: true,
+      events: [
+        'DEPLOYMENT_FAILURE',
+        'DEPLOYMENT_STOP_ON_ALARM',
+        'DEPLOYMENT_STOP_ON_REQUEST',
+      ],
+    },
+    serviceRoleArn: iamRoleEcsCodeDeploy.arn,
+    deploymentStyle: {
+      deploymentType: 'BLUE_GREEN',
+      deploymentOption: 'WITH_TRAFFIC_CONTROL',
+    },
+    ecsService: {
+      clusterName: ecsCluster.name,
+      serviceName: ecsFargateService.service.name,
+    },
+    loadBalancerInfo: {
+      targetGroupPairInfo: {
+        targetGroups: [
+          {
+            name: lbApplicationLoadBalancer.defaultTargetGroup.name,
+          },
+        ],
+        prodTrafficRoute: {
+          listenerArns: (
+            lbApplicationLoadBalancer.listeners as pulumi.Output<Listener[]>
+          ).apply((value) => value.map((listener) => listener.arn)),
+        },
+      },
+    },
+    blueGreenDeploymentConfig: {
+      terminateBlueInstancesOnDeploymentSuccess: {
+        action: 'TERMINATE',
+        terminationWaitTimeInMinutes: 5,
+      },
+    },
+    tags: {
+      Company: COMPANY_NAME,
+      Projects: PROJECT_NAME,
+      Stack: STACK,
+      CreatedBy: CREATED_BY,
+    },
+  },
+);
+
+export const codedeployDeploymentGroupData = {
+  id: codedeployDeploymentGroup.id,
+  name: codedeployDeploymentGroup.appName,
 };
