@@ -1,7 +1,7 @@
 import ResourcesEnum from '@common/common/enums/ResourceEnum';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { ScopeEntity } from '@permission/permission/entities/scope.entity';
-import { Document, ObjectId } from 'mongoose';
+import { Document, Schema as MongooseSchema } from 'mongoose';
 
 export type ScopeDocument = Scope & Document;
 
@@ -9,10 +9,10 @@ export type ScopeDocument = Scope & Document;
   timestamps: true,
 })
 export class Scope extends ScopeEntity {
-  id: ObjectId;
+  id: MongooseSchema.Types.ObjectId;
 
-  @Prop()
-  resourceId: ObjectId;
+  @Prop({ type: MongooseSchema.Types.ObjectId })
+  resourceId: MongooseSchema.Types.ObjectId;
 
   @Prop({ type: String, enum: ResourcesEnum })
   resourceName: ResourcesEnum;
