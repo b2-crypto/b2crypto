@@ -251,7 +251,17 @@
       "^@auth/auth(|/.*)$": "<rootDir>/libs/auth/src/$1",
       "^@integration/integration(|/.*)$": "<rootDir>/libs/integration/src/$1",
       "^@transfer/transfer(|/.*)$": "<rootDir>/libs/transfer/src/$1",
-      "^@account/account(|/.*)$": "<rootDir>/libs/account/src/$1"
+      "^@account/account(|/.*)$": "<rootDir>/libs/account/src/$1",
+      "^apps/account-service/src/(.*)$": "<rootDir>/apps/account-service/src/$1",
+      "^apps/user-service/src/(.*)$": "<rootDir>/apps/user-service/src/$1",
+      "^apps/crm-service/src/(.*)$": "<rootDir>/apps/crm-service/src/$1",
+      "^apps/lead-service/src/(.*)$": "<rootDir>/apps/lead-service/src/$1",
+       "^libs/(.*)$": "<rootDir>/libs/$1",
+       "^apps/message-service/src/(.*)$": "<rootDir>/apps/message-service/src/$1",
+       "^apps/status-service/src/(.*)$": "<rootDir>/apps/status-service/src/$1",
+       "^apps/transfer-service/src/(.*)$": "<rootDir>/apps/transfer-service/src/$1",
+       "^apps/category-service/src/(.*)$": "<rootDir>/apps/category-service/src/$1",
+       "^apps/psp-service/src/(.*)$": "<rootDir>/apps/psp-service/src/$1"
     }
   }
 }
