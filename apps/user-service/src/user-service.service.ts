@@ -110,22 +110,29 @@ export class UserServiceService {
           // Swap if currency is different
         }
       }
-      Logger.debug(userBalance, `balance ${usr.email}`);
+      Logger.debug('userBalance', `balance ${usr.email}`);
       return this.updateUser({
         id: usr._id,
         balance: userBalance,
       });
     } else {
-      let users = await this.getAll({});
       const promises = [];
+      let currentPage = 1;
       do {
-        for (const usr of users.list) {
-          promises.push(this.updateBalance(usr._id.toString()));
-        }
-        users = await this.getAll({
-          page: users.nextPage,
+        const users = await this.getAll({
+          page: currentPage,
         });
-      } while (users.nextPage != 1);
+        Logger.debug(
+          `${users.nextPage}`,
+          `page ${currentPage}/${users.lastPage}`,
+        );
+        currentPage = users.nextPage;
+        for (const usr of users.list) {
+          promises.push(
+            this.updateBalance(usr._id.toString()).then(() => usr.email),
+          );
+        }
+      } while (currentPage != 1);
       return Promise.all(promises);
     }
   }
