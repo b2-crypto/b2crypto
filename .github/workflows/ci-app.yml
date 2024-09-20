@@ -1,8 +1,10 @@
-name: CI Pipeline for B2crypto Monolith
+name: CI Pipeline for B2crypto Monolith App
 
 on:
   pull_request:
     branches: [stage, test, main]
+    paths-ignore:
+      - 'iac/cloud-services/**'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -42,7 +44,7 @@ jobs:
       - name: Build
         run: npm run build
 
-  preview_deploy:
+  preview_deploy_app:
     runs-on: ubuntu-22.04
     strategy:
       matrix:
@@ -65,7 +67,7 @@ jobs:
         with:
           command: preview
           stack-name: ${{ github.event.pull_request.base.ref == 'main' && 'b2fintech/production' || github.event.pull_request.base.ref == 'test' && 'b2fintech/testing' || 'b2fintech/staging' }}
-          work-dir: ./iac
+          work-dir: ./iac/app
           # comment-on-pr: true
           # diff: true
         env:
