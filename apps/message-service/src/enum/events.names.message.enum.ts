@@ -13,6 +13,7 @@ enum EventsNamesMessageEnum {
   deleteMany = 'MESSAGE.DELETE.MANY',
   deleteOneById = 'MESSAGE.DELETE.ONE.BY.ID',
 
+  sendEmailBalanceReport = 'MESSAGE.SEND.EMAIL.REPORT',
   sendEmailOtpNotification = 'MESSAGE.SEND.EMAIL.OTP.NOTIFICATION',
   sendEmailDisclaimer = 'MESSAGE.SEND.EMAIL.DISCLAIMER',
 }

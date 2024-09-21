@@ -5,6 +5,7 @@ import { Inject, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { ClientProxy } from '@nestjs/microservices';
 import { Cron, CronExpression } from '@nestjs/schedule';
+import EventsNamesAccountEnum from 'apps/account-service/src/enum/events.names.account.enum';
 import EventsNamesAffiliateEnum from 'apps/affiliate-service/src/enum/events.names.affiliate.enum';
 import EventsNamesBrandEnum from 'apps/brand-service/src/enum/events.names.brand.enum';
 import EventsNamesFileEnum from 'apps/file-service/src/enum/events.names.file.enum';
@@ -17,6 +18,7 @@ export class JobService {
   static periodicTime = {
     checkLeadCreated: CronExpression.EVERY_10_MINUTES,
     checkLeadStatus: CronExpression.EVERY_5_MINUTES,
+    sendBalanceCardReports: CronExpression.EVERY_DAY_AT_8AM,
     //checkLeadStatus: time,
     //checkAffiliateLeadsStats: time,
     /*
@@ -50,6 +52,23 @@ export class JobService {
     private readonly builder: BuildersService,
   ) {
     this.env = configService.get('ENVIRONMENT');
+  }
+
+  @Cron(JobService.periodicTime.sendBalanceCardReports, {
+    timeZone: process.env.TZ,
+  })
+  sendBalanceCardReportsCron() {
+    if (this.env == EnvironmentEnum.prod) {
+      this.builder.emitAccountEventClient(
+        EventsNamesAccountEnum.sendBalanceReport,
+        {
+          where: {
+            type: 'CARD',
+          },
+        },
+      );
+    }
+    Logger.log('Sended reports', JobService.name);
   }
 
   @Cron(JobService.periodicTime.checkFilesDownloads, {

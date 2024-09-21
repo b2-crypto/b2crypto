@@ -77,6 +77,10 @@ export class MessageServiceService {
     return this.sendEmail(message, TemplatesMessageEnum.otpNotification);
   }
 
+  async sendEmailBalanceReport(message: MessageCreateDto) {
+    return this.sendEmail(message, TemplatesMessageEnum.report);
+  }
+
   async sendEmail(message: MessageCreateDto, template: TemplatesMessageEnum) {
     let from = message.originText;
     if (!isEmail(from)) {
@@ -93,6 +97,7 @@ export class MessageServiceService {
       from,
       subject: msg.name,
       html: this.compileHtml(message.vars ?? message, template),
+      attachments: message.attachments,
     });
     return msg;
   }

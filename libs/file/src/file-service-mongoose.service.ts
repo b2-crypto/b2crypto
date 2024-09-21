@@ -82,6 +82,9 @@ export class FileServiceMongooseService extends BasicServiceModel<
   }
 
   getPathFile(fileName: string, absolute = false): string {
+    if (!fs.existsSync(this.folderPath)) {
+      throw new NotFoundException(`Folder ${this.folderPath} not found.`);
+    }
     if (absolute) {
       return path.join(__dirname, '/../../../', this.folderPath, fileName);
     }

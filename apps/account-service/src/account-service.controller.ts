@@ -1,9 +1,23 @@
+import { AccountCreateDto } from '@account/account/dto/account.create.dto';
+import { AccountUpdateDto } from '@account/account/dto/account.update.dto';
+import StatusAccountEnum from '@account/account/enum/status.account.enum';
+import { ActivityCreateDto } from '@activity/activity/dto/activity.create.dto';
+import { BuildersService } from '@builder/builders';
+import { CommonService } from '@common/common';
+import TransportEnum from '@common/common/enums/TransportEnum';
+import GenericServiceController from '@common/common/interfaces/controller.generic.interface';
+import { CreateAnyDto } from '@common/common/models/create-any.dto';
+import { QuerySearchAnyDto } from '@common/common/models/query_search-any.dto';
+import { UpdateAnyDto } from '@common/common/models/update-any.dto';
+import { FileUpdateDto } from '@file/file/dto/file.update.dto';
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
   Get,
   Inject,
+  Logger,
   Param,
   ParseArrayPipe,
   Patch,
@@ -11,15 +25,6 @@ import {
   Query,
   Req,
 } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
-
-import { AccountCreateDto } from '@account/account/dto/account.create.dto';
-import { AccountUpdateDto } from '@account/account/dto/account.update.dto';
-import { BuildersService } from '@builder/builders';
-import GenericServiceController from '@common/common/interfaces/controller.generic.interface';
-import { CreateAnyDto } from '@common/common/models/create-any.dto';
-import { QuerySearchAnyDto } from '@common/common/models/query_search-any.dto';
-import { UpdateAnyDto } from '@common/common/models/update-any.dto';
 import {
   Ctx,
   EventPattern,
@@ -27,13 +32,17 @@ import {
   Payload,
   RmqContext,
 } from '@nestjs/microservices';
+import { ApiTags } from '@nestjs/swagger';
+import EventsNamesFileEnum from 'apps/file-service/src/enum/events.names.file.enum';
+import EventsNamesMessageEnum from 'apps/message-service/src/enum/events.names.message.enum';
+import EventsNamesStatusEnum from 'apps/status-service/src/enum/events.names.status.enum';
+import EventsNamesUserEnum from 'apps/user-service/src/enum/events.names.user.enum';
+import * as fs from 'fs';
 import { AccountServiceService } from './account-service.service';
 import EventsNamesAccountEnum from './enum/events.names.account.enum';
-import { ActivityCreateDto } from '@activity/activity/dto/activity.create.dto';
-import { CommonService } from '@common/common';
-import EventsNamesUserEnum from 'apps/user-service/src/enum/events.names.user.enum';
-import EventsNamesStatusEnum from 'apps/status-service/src/enum/events.names.status.enum';
-import StatusAccountEnum from '@account/account/enum/status.account.enum';
+import { AttachmentsEmailConfig } from '@message/message/dto/message.create.dto';
+import { ResponsePaginator } from '@common/common/interfaces/response-pagination.interface';
+import { FileDocument } from '@file/file/entities/mongoose/file.schema';
 
 @ApiTags('ACCOUNT')
 @Controller('accounts')
@@ -51,6 +60,28 @@ export class AccountServiceController implements GenericServiceController {
   @Get('all')
   findAll(@Query() query: QuerySearchAnyDto, req?: any) {
     return this.accountService.findAll(query);
+  }
+
+  @Get('send-balance-card-reports')
+  sendBalanceCardReports(@Req() req?: any) {
+    const user = req?.user;
+    if (!user) {
+      throw new BadRequestException('User not found');
+    }
+    // Superadmin?
+    this.getBalanceReport(
+      {
+        where: {
+          owner: user.id,
+          type: 'CARD',
+        },
+      },
+      null,
+    );
+    return {
+      statusCode: 200,
+      message: 'Sended reports',
+    };
   }
 
   @Get('me')
@@ -197,6 +228,144 @@ export class AccountServiceController implements GenericServiceController {
   deleteOneByIdEvent(@Payload() id: string, @Ctx() ctx: RmqContext) {
     CommonService.ack(ctx);
     return this.accountService.deleteOneByIdEvent(id, ctx);
+  }
+
+  @EventPattern(EventsNamesAccountEnum.sendBalanceReport)
+  getBalanceReport(
+    @Payload() query: QuerySearchAnyDto,
+    @Ctx() ctx: RmqContext,
+  ) {
+    CommonService.ack(ctx);
+    Promise.all([
+      this.accountService.getBalanceByAccountType(query),
+      this.accountService.getBalanceByOwnerByCard(query),
+      //this.accountService.getBalanceByOwnerByWallet(query),
+      this.accountService.getBalanceByAccountByCard(query),
+      //this.accountService.getBalanceByAccountByWallet(query),
+    ]).then(async (results) => {
+      const [
+        totalAccumulated,
+        cardByOwner,
+        //walletByOwner,
+        cards,
+        //wallets
+      ] = results;
+      const promises = [
+        this.getContentFileBalanceReport(
+          totalAccumulated,
+          'total-accumulated',
+          ['type', 'quantity', 'sum_available', 'sum_blocked'],
+        ),
+        this.getContentFileBalanceReport(cardByOwner, 'cards-by-user', [
+          'userId',
+          'email',
+          'count',
+          'amount',
+        ]),
+        this.getContentFileBalanceReport(cards, 'all-cards', [
+          'email',
+          'userId',
+          'cardId',
+          'description',
+          'amount',
+        ]),
+      ];
+      const data = {
+        name: `Reporte de saldo de ${query.where?.type ?? 'todos los tipos'}`,
+        body: ``,
+        originText: `System`,
+        destinyText: 'hender.orlando@b2crypto.com',
+        transport: TransportEnum.EMAIL,
+        destiny: null,
+        vars: {
+          name: 'Hender',
+          lastname: 'Orlando',
+        },
+        attachments: await Promise.all(promises),
+      };
+
+      this.builder.emitMessageEventClient(
+        EventsNamesMessageEnum.sendEmailBalanceReport,
+        data,
+      );
+      Logger.debug(data.name, 'Balance Report sended');
+    });
+  }
+
+  private async getContentFileBalanceReport(
+    list: any[],
+    listName: string,
+    headers: Array<string>,
+  ): Promise<AttachmentsEmailConfig> {
+    const filename = this.getFullname(listName);
+    const fileUri = `storage/${filename}`;
+    if (fs.existsSync(fileUri)) {
+      fs.unlinkSync(fileUri);
+    }
+    const objBase = this.getCustomObj(headers);
+    this.addDataToFile(objBase, filename, true, true);
+    return new Promise((res) => {
+      setTimeout(() => {
+        list.forEach((item) => {
+          const customItem = this.getCustomObj(headers, item);
+          this.addDataToFile(customItem, filename, false);
+        });
+        setTimeout(async () => {
+          if (fs.existsSync(fileUri)) {
+            const content = fs.readFileSync(fileUri, {
+              encoding: 'base64',
+            });
+            const fileList = await this.builder.getPromiseFileEventClient<
+              ResponsePaginator<FileDocument>
+            >(EventsNamesFileEnum.findAll, {
+              where: {
+                name: filename,
+              },
+            });
+            if (fileList.totalElements > 0) {
+              this.builder.emitFileEventClient(EventsNamesFileEnum.updateOne, {
+                id: fileList.list[0]._id,
+                encodeBase64: content,
+              });
+            }
+            res({
+              // encoded string as an attachment
+              filename: filename,
+              content: content,
+              encoding: 'base64',
+            });
+            fs.unlinkSync(fileUri);
+          }
+        }, 10000);
+      }, 1000);
+    });
+  }
+
+  private getCustomObj(keys: Array<string>, item?: any) {
+    const objBase = {};
+    keys.forEach((key) => {
+      objBase[key] = item ? item[key] ?? '' : null;
+    });
+    return objBase;
+  }
+
+  protected getFullname(baseName: string) {
+    const today = new Date();
+    const dateStr = `${today.getUTCFullYear()}-${CommonService.getNumberDigits(
+      today.getUTCMonth(),
+    )}-${today.getUTCDate()}`;
+    return `${dateStr}_${baseName.toLowerCase()}.csv`;
+  }
+
+  private addDataToFile(item, filename, isFirst, onlyHeaders = false) {
+    this.builder.emitFileEventClient<File>(EventsNamesFileEnum.addDataToFile, {
+      isFirst,
+      onlyHeaders,
+      name: filename,
+      description: `Send email ${filename}`,
+      mimetype: 'text/csv',
+      data: JSON.stringify(item),
+    } as FileUpdateDto);
   }
 
   async toggleVisibleToOwner(id: string, visible?: boolean) {
