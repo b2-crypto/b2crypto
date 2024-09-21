@@ -43,6 +43,8 @@ import EventsNamesAccountEnum from './enum/events.names.account.enum';
 import { AttachmentsEmailConfig } from '@message/message/dto/message.create.dto';
 import { ResponsePaginator } from '@common/common/interfaces/response-pagination.interface';
 import { FileDocument } from '@file/file/entities/mongoose/file.schema';
+import { env } from 'process';
+import { EnvironmentEnum } from '@common/common/enums/environment.enum';
 
 @ApiTags('ACCOUNT')
 @Controller('accounts')
@@ -270,8 +272,17 @@ export class AccountServiceController implements GenericServiceController {
           'amount',
         ]),
       ];
+      const name = `${
+        process.env.ENVIRONMENT !== EnvironmentEnum.prod
+          ? process.env.ENVIRONMENT
+          : ''
+      } Balance Report ${
+        query.where?.type ?? 'todos los tipos'
+      } - Time server ${new Date().toLocaleString('es-CO', {
+        dateStyle: 'full',
+      })}`;
       const data = {
-        name: `Reporte de saldo de ${query.where?.type ?? 'todos los tipos'}`,
+        name: name,
         body: ``,
         originText: `System`,
         destinyText: 'hender.orlando@b2crypto.com',
