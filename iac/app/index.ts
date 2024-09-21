@@ -3,31 +3,16 @@ import * as awsx from '@pulumi/awsx';
 import { randomBytes } from 'crypto';
 import { VARS_ENV } from './secrets';
 
-const { COMPANY_NAME, PROJECT_NAME, STACK, CREATED_BY } = VARS_ENV;
+const { COMPANY_NAME, PROJECT_NAME, STACK } = VARS_ENV;
 const TAG = process.env.COMMIT_SHA ?? randomBytes(4).toString('hex');
 
-const ecrRepository = new aws.ecr.Repository(
-  `erc:repository:${COMPANY_NAME}/${PROJECT_NAME}`,
-  {
-    name: `${COMPANY_NAME}/${PROJECT_NAME}-${STACK}`,
-    imageTagMutability: 'IMMUTABLE',
-    imageScanningConfiguration: {
-      scanOnPush: true,
-    },
-    tags: {
-      Company: COMPANY_NAME,
-      Projects: PROJECT_NAME,
-      Stack: STACK,
-      CreatedBy: CREATED_BY,
-    },
-  },
-);
+const ecrRepository = aws.ecr.getRepositoryOutput({
+  name: `${COMPANY_NAME}/${PROJECT_NAME}-${STACK}`,
+});
 
 export const ecrRepositoryData = {
   id: ecrRepository.id,
-  repositoryUrl: ecrRepository.repositoryUrl.apply(
-    (value) => `${value.split('@').at(0)}:${TAG}`,
-  ),
+  repositoryUrl: ecrRepository.repositoryUrl,
 };
 
 const ecrImage = new awsx.ecr.Image(
