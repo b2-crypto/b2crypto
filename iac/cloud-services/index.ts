@@ -1,5 +1,5 @@
 import * as aws from '@pulumi/aws';
-import { Listener } from '@pulumi/aws/alb';
+// import { Listener } from '@pulumi/aws/alb';
 import * as awsx from '@pulumi/awsx';
 import * as pulumi from '@pulumi/pulumi';
 import { randomBytes } from 'crypto';
@@ -31,22 +31,40 @@ const {
   AUTHORIZATIONS_BLOCK_BALANCE_PERCENTAGE,
   POMELO_WHITELISTED_IPS_CHECK,
 } = VARS_ENV;
+const TAGS = {
+  Company: COMPANY_NAME,
+  Projects: PROJECT_NAME,
+  Stack: STACK,
+  CreatedBy: CREATED_BY,
+};
 const TAG = process.env.COMMIT_SHA ?? randomBytes(4).toString('hex');
 
-const ec2Vpc = new awsx.ec2.Vpc(
-  `ec2:vpc:${COMPANY_NAME}-${PROJECT_NAME}-${STACK}`,
+const ecrRepository = new aws.ecr.Repository(
+  `${COMPANY_NAME}/${PROJECT_NAME}-${STACK}`,
   {
-    enableNetworkAddressUsageMetrics: true,
-    numberOfAvailabilityZones: 3,
-    cidrBlock: '10.0.0.0/16',
-    tags: {
-      Company: COMPANY_NAME,
-      Projects: PROJECT_NAME,
-      Stack: STACK,
-      CreatedBy: CREATED_BY,
+    name: `${COMPANY_NAME}/${PROJECT_NAME}-${STACK}`,
+    imageTagMutability: 'IMMUTABLE',
+    imageScanningConfiguration: {
+      scanOnPush: true,
     },
+    forceDelete: true,
+    tags: TAGS,
   },
 );
+
+export const ecrRepositoryData = {
+  id: ecrRepository.id,
+  repositoryUrl: ecrRepository.repositoryUrl.apply((value) =>
+    value.split('@').at(0),
+  ),
+};
+
+const ec2Vpc = new awsx.ec2.Vpc(`${COMPANY_NAME}-${PROJECT_NAME}-${STACK}`, {
+  enableNetworkAddressUsageMetrics: true,
+  numberOfAvailabilityZones: 3,
+  cidrBlock: '10.0.0.0/16',
+  tags: TAGS,
+});
 
 export const ec2VpcData = {
   vpcId: ec2Vpc.vpcId,
@@ -55,7 +73,7 @@ export const ec2VpcData = {
 };
 
 const ec2SecurityGroup = new aws.ec2.SecurityGroup(
-  `ec2:security-group:${COMPANY_NAME}-${PROJECT_NAME}-${STACK}`,
+  `${COMPANY_NAME}-${PROJECT_NAME}-${STACK}`,
   {
     name: `${COMPANY_NAME}-${PROJECT_NAME}-${STACK}`,
     vpcId: ec2Vpc.vpcId,
@@ -99,12 +117,7 @@ const ec2SecurityGroup = new aws.ec2.SecurityGroup(
         cidrBlocks: ['0.0.0.0/0'],
       },
     ],
-    tags: {
-      Company: COMPANY_NAME,
-      Projects: PROJECT_NAME,
-      Stack: STACK,
-      CreatedBy: CREATED_BY,
-    },
+    tags: TAGS,
   },
 );
 
@@ -115,14 +128,9 @@ export const ec2SecurityGroupData = {
   ingress: ec2SecurityGroup.ingress,
 };
 
-const ecsCluster = new aws.ecs.Cluster(`ecs:cluster:${COMPANY_NAME}`, {
-  name: `${COMPANY_NAME}-${STACK}`,
-  tags: {
-    Company: COMPANY_NAME,
-    Projects: PROJECT_NAME,
-    Stack: STACK,
-    CreatedBy: CREATED_BY,
-  },
+const ecsCluster = new aws.ecs.Cluster(`${COMPANY_NAME}`, {
+  name: `${STACK}`,
+  tags: TAGS,
 });
 
 export const ecsClusterData = {
@@ -130,8 +138,58 @@ export const ecsClusterData = {
   name: ecsCluster.name,
 };
 
+// const lbTargetGroup1Suffix = randomBytes(4).toString('hex');
+// const lbTargetGroup1 = new aws.lb.TargetGroup(
+//   `${PROJECT_NAME}-${STACK}-${lbTargetGroup1Suffix}`,
+//   {
+//     name: `${PROJECT_NAME}-${STACK}-${lbTargetGroup1Suffix}`,
+//     port: parseInt(PORT),
+//     protocol: 'HTTP',
+//     // protocolVersion: 'HTTP2',
+//     vpcId: ec2Vpc.vpcId,
+//     targetType: 'ip',
+//     // healthCheck: {
+//     //   interval: 30,
+//     //   protocol: 'HTTP',
+//     //   matcher: '200',
+//     //   timeout: 3,
+//     //   path: '/',
+//     // },
+//     tags: TAGS,
+//   },
+// );
+
+// export const lbTargetGroup1Data = {
+//   name: lbTargetGroup1.name,
+// };
+
+// const lbTargetGroup2Suffix = randomBytes(4).toString('hex');
+// const lbTargetGroup2 = new aws.lb.TargetGroup(
+//   `${PROJECT_NAME}-${STACK}-${lbTargetGroup2Suffix}`,
+//   {
+//     name: `${PROJECT_NAME}-${STACK}-${lbTargetGroup2Suffix}`,
+//     port: parseInt(PORT),
+//     protocol: 'HTTP',
+//     // protocolVersion: 'HTTP2',
+//     vpcId: ec2Vpc.vpcId,
+//     targetType: 'ip',
+//     // healthCheck: {
+//     //   interval: 30,
+//     //   protocol: 'HTTP',
+//     //   matcher: '200',
+//     //   timeout: 3,
+//     //   path: '/',
+//     // },
+//     tags: TAGS,
+//   },
+// );
+
+// export const lbTargetGroup2Data = {
+//   name: lbTargetGroup2.name,
+// };
+
 const lbApplicationLoadBalancer = new awsx.lb.ApplicationLoadBalancer(
-  `lb:application-load-balancer:${COMPANY_NAME}-${PROJECT_NAME}-${STACK}`,
+  `${COMPANY_NAME}-${PROJECT_NAME}-${STACK}`,
   {
     name: `${COMPANY_NAME}-${PROJECT_NAME}-${STACK}`,
     enableHttp2: true,
@@ -140,12 +198,7 @@ const lbApplicationLoadBalancer = new awsx.lb.ApplicationLoadBalancer(
       protocol: 'HTTP',
       port: parseInt(PORT),
       vpcId: ec2Vpc.vpcId,
-      tags: {
-        Company: COMPANY_NAME,
-        Projects: PROJECT_NAME,
-        Stack: STACK,
-        CreatedBy: CREATED_BY,
-      },
+      tags: TAGS,
     },
     securityGroups: [ec2SecurityGroup.id],
     subnetIds: ec2Vpc.publicSubnetIds,
@@ -153,12 +206,18 @@ const lbApplicationLoadBalancer = new awsx.lb.ApplicationLoadBalancer(
       {
         port: 80,
         protocol: 'HTTP',
-        tags: {
-          Company: COMPANY_NAME,
-          Projects: PROJECT_NAME,
-          Stack: STACK,
-          CreatedBy: CREATED_BY,
-        },
+        // defaultActions: [
+        //   {
+        //     type: 'forward',
+        //     forward: {
+        //       targetGroups: [
+        //         { arn: lbTargetGroup1.arn },
+        //         { arn: lbTargetGroup2.arn },
+        //       ],
+        //     },
+        //   },
+        // ],
+        tags: TAGS,
       },
       // {
       //   port: 443,
@@ -173,12 +232,7 @@ const lbApplicationLoadBalancer = new awsx.lb.ApplicationLoadBalancer(
       //   },
       // },
     ],
-    tags: {
-      Company: COMPANY_NAME,
-      Projects: PROJECT_NAME,
-      Stack: STACK,
-      CreatedBy: CREATED_BY,
-    },
+    tags: TAGS,
   },
 );
 
@@ -191,16 +245,11 @@ export const lbApplicationLoadBalancerData = {
 };
 
 const cloudwatchLogGroup = new aws.cloudwatch.LogGroup(
-  `cloudwatch:log-group:${COMPANY_NAME}-${PROJECT_NAME}-${STACK}`,
+  `${COMPANY_NAME}-${PROJECT_NAME}-${STACK}`,
   {
     name: `${COMPANY_NAME}/ecs/task/${PROJECT_NAME}-${STACK}`,
     retentionInDays: 30,
-    tags: {
-      Company: COMPANY_NAME,
-      Projects: PROJECT_NAME,
-      Stack: STACK,
-      CreatedBy: CREATED_BY,
-    },
+    tags: TAGS,
   },
 );
 
@@ -209,37 +258,41 @@ export const cloudwatchLogGroupData = {
   name: cloudwatchLogGroup.name,
 };
 
-const ecrRepository = aws.ecr.getRepositoryOutput({
-  name: `${COMPANY_NAME}/${PROJECT_NAME}-${STACK}`,
-});
-
-export const ecrRepositoryData = {
-  id: ecrRepository.id,
-  repositoryUrl: ecrRepository.repositoryUrl,
-};
-
 const ecsFargateService = new awsx.ecs.FargateService(
-  `ecs-fargate-service-${COMPANY_NAME}-${PROJECT_NAME}-${STACK}`,
+  `${COMPANY_NAME}-${PROJECT_NAME}-${STACK}`,
   {
     name: `${COMPANY_NAME}-${PROJECT_NAME}-${STACK}`,
     // assignPublicIp: true,
     cluster: ecsCluster.arn,
-    deploymentController: {
-      type: 'CODE_DEPLOY',
-    },
+    propagateTags: 'SERVICE',
+    // deploymentController: {
+    //   type: 'CODE_DEPLOY',
+    // },
     schedulingStrategy: 'REPLICA',
     networkConfiguration: {
       subnets: ec2Vpc.publicSubnetIds,
       securityGroups: [ec2SecurityGroup.id],
       assignPublicIp: true,
     },
+    // loadBalancers: [
+    //   {
+    //     containerName: `${COMPANY_NAME}-${PROJECT_NAME}-${STACK}`,
+    //     containerPort: parseInt(PORT),
+    //     targetGroupArn: lbTargetGroup1.arn,
+    //   },
+    //   {
+    //     containerName: `${COMPANY_NAME}-${PROJECT_NAME}-${STACK}`,
+    //     containerPort: parseInt(PORT),
+    //     targetGroupArn: lbTargetGroup2.arn,
+    //   },
+    // ],
     taskDefinitionArgs: {
       family: `${COMPANY_NAME}-${PROJECT_NAME}-${STACK}`,
       cpu: '1024',
       memory: '2048',
       container: SECRETS.apply((secrets) => ({
-        name: `${COMPANY_NAME}-${PROJECT_NAME}`,
-        image: `${ecrRepository.repositoryUrl}:${TAG}`,
+        name: `${PROJECT_NAME}`,
+        image: `${APP_NAME}/${PROJECT_NAME}-${STACK}:${TAG}`,
         // image: 'crccheck/hello-world:latest',
         cpu: 1024,
         memory: 2048,
@@ -408,12 +461,7 @@ const ecsFargateService = new awsx.ecs.FargateService(
       })),
     },
     desiredCount: 1,
-    tags: {
-      Company: COMPANY_NAME,
-      Projects: PROJECT_NAME,
-      Stack: STACK,
-      CreatedBy: CREATED_BY,
-    },
+    tags: TAGS,
   },
 );
 
@@ -422,7 +470,7 @@ export const ecsFargateServiceData = {
 };
 
 const appautoscalingTarget = new aws.appautoscaling.Target(
-  `appautoscaling:target:${COMPANY_NAME}-${PROJECT_NAME}-${STACK}`,
+  `${COMPANY_NAME}-${PROJECT_NAME}-${STACK}`,
   {
     maxCapacity: 10,
     minCapacity: 1,
@@ -439,7 +487,7 @@ export const appautoscalingTargetData = {
 };
 
 const scalingPolicy = new aws.appautoscaling.Policy(
-  `appautoscaling:policy:${COMPANY_NAME}-${PROJECT_NAME}-${STACK}`,
+  `${COMPANY_NAME}-${PROJECT_NAME}-${STACK}`,
   {
     policyType: 'TargetTrackingScaling',
     resourceId: appautoscalingTarget.resourceId,
@@ -464,106 +512,112 @@ export const scalingPolicyData = {
     scalingPolicy.targetTrackingScalingPolicyConfiguration,
 };
 
-const codedeployApplication = new aws.codedeploy.Application(
-  `codedeploy:application:${COMPANY_NAME}-${PROJECT_NAME}-${STACK}`,
-  {
-    name: `${COMPANY_NAME}-${PROJECT_NAME}-${STACK}`,
-    computePlatform: 'ECS',
-    tags: {
-      Company: COMPANY_NAME,
-      Projects: PROJECT_NAME,
-      Stack: STACK,
-      CreatedBy: CREATED_BY,
-    },
-  },
-);
+// const codedeployApplication = new aws.codedeploy.Application(
+//   `${COMPANY_NAME}-${PROJECT_NAME}-${STACK}`,
+//   {
+//     name: `${COMPANY_NAME}-${PROJECT_NAME}-${STACK}`,
+//     computePlatform: 'ECS',
+//     tags: {
+//       Company: COMPANY_NAME,
+//       Projects: PROJECT_NAME,
+//       Stack: STACK,
+//       CreatedBy: CREATED_BY,
+//     },
+//   },
+// );
 
-export const codedeployApplicationData = {
-  id: codedeployApplication.id,
-  name: codedeployApplication.name,
-};
+// export const codedeployApplicationData = {
+//   id: codedeployApplication.id,
+//   name: codedeployApplication.name,
+// };
 
-const iamRoleEcsCodeDeploy = new aws.iam.Role(
-  `iam:role:ecs-codedeploy:${COMPANY_NAME}-${PROJECT_NAME}-${STACK}`,
-  {
-    name: `ecsCodedeployRole-${COMPANY_NAME}-${PROJECT_NAME}-${STACK}`,
-    assumeRolePolicy: JSON.stringify({
-      Version: '2012-10-17',
-      Statement: [
-        {
-          Sid: '',
-          Effect: 'Allow',
-          Principal: {
-            Service: ['codedeploy.amazonaws.com'],
-          },
-          Action: 'sts:AssumeRole',
-        },
-      ],
-    }),
-    managedPolicyArns: [
-      'arn:aws:iam::aws:policy/AWSCodeDeployRoleForECS',
-      'arn:aws:iam::aws:policy/AWSCodeDeployRoleForECSLimited',
-    ],
-  },
-);
+// const iamRoleEcsCodeDeploy = new aws.iam.Role(
+//   `${COMPANY_NAME}-${PROJECT_NAME}-${STACK}`,
+//   {
+//     name: `ecsCodedeployRole-${PROJECT_NAME}-${STACK}`,
+//     assumeRolePolicy: JSON.stringify({
+//       Version: '2012-10-17',
+//       Statement: [
+//         {
+//           Sid: '',
+//           Effect: 'Allow',
+//           Principal: {
+//             Service: ['codedeploy.amazonaws.com'],
+//           },
+//           Action: 'sts:AssumeRole',
+//         },
+//       ],
+//     }),
+//     managedPolicyArns: [
+//       'arn:aws:iam::aws:policy/AWSCodeDeployRoleForECS',
+//       'arn:aws:iam::aws:policy/AWSCodeDeployRoleForECSLimited',
+//     ],
+//   },
+// );
 
-export const iamRoleEcsCodeDeployData = {
-  arn: iamRoleEcsCodeDeploy.arn,
-};
+// export const iamRoleEcsCodeDeployData = {
+//   arn: iamRoleEcsCodeDeploy.arn,
+// };
 
-const codedeployDeploymentGroup = new aws.codedeploy.DeploymentGroup(
-  `codedeploy:deployment-group:${COMPANY_NAME}-${PROJECT_NAME}-${STACK}`,
-  {
-    appName: codedeployApplication.name,
-    deploymentGroupName: `${COMPANY_NAME}-${PROJECT_NAME}-${STACK}`,
-    deploymentConfigName: 'CodeDeployDefault.ECSAllAtOnce',
-    autoRollbackConfiguration: {
-      enabled: true,
-      events: [
-        'DEPLOYMENT_FAILURE',
-        'DEPLOYMENT_STOP_ON_ALARM',
-        'DEPLOYMENT_STOP_ON_REQUEST',
-      ],
-    },
-    serviceRoleArn: iamRoleEcsCodeDeploy.arn,
-    deploymentStyle: {
-      deploymentType: 'BLUE_GREEN',
-      deploymentOption: 'WITH_TRAFFIC_CONTROL',
-    },
-    ecsService: {
-      clusterName: ecsCluster.name,
-      serviceName: ecsFargateService.service.name,
-    },
-    loadBalancerInfo: {
-      targetGroupPairInfo: {
-        targetGroups: [
-          {
-            name: lbApplicationLoadBalancer.defaultTargetGroup.name,
-          },
-        ],
-        prodTrafficRoute: {
-          listenerArns: (
-            lbApplicationLoadBalancer.listeners as pulumi.Output<Listener[]>
-          ).apply((value) => value.map((listener) => listener.arn)),
-        },
-      },
-    },
-    blueGreenDeploymentConfig: {
-      terminateBlueInstancesOnDeploymentSuccess: {
-        action: 'TERMINATE',
-        terminationWaitTimeInMinutes: 5,
-      },
-    },
-    tags: {
-      Company: COMPANY_NAME,
-      Projects: PROJECT_NAME,
-      Stack: STACK,
-      CreatedBy: CREATED_BY,
-    },
-  },
-);
+// const codedeployDeploymentGroup = new aws.codedeploy.DeploymentGroup(
+//   `${COMPANY_NAME}-${PROJECT_NAME}-${STACK}`,
+//   {
+//     appName: codedeployApplication.name,
+//     deploymentGroupName: `${COMPANY_NAME}-${PROJECT_NAME}-${STACK}`,
+//     deploymentConfigName: 'CodeDeployDefault.ECSAllAtOnce',
+//     autoRollbackConfiguration: {
+//       enabled: true,
+//       events: [
+//         'DEPLOYMENT_FAILURE',
+//         'DEPLOYMENT_STOP_ON_ALARM',
+//         'DEPLOYMENT_STOP_ON_REQUEST',
+//       ],
+//     },
+//     serviceRoleArn: iamRoleEcsCodeDeploy.arn,
+//     deploymentStyle: {
+//       deploymentType: 'BLUE_GREEN',
+//       deploymentOption: 'WITH_TRAFFIC_CONTROL',
+//     },
+//     ecsService: {
+//       clusterName: ecsCluster.name,
+//       serviceName: ecsFargateService.service.name,
+//     },
+//     loadBalancerInfo: {
+//       targetGroupPairInfo: {
+//         targetGroups: [
+//           {
+//             name: lbApplicationLoadBalancer.defaultTargetGroup.name,
+//           },
+//         ],
+//         prodTrafficRoute: {
+//           listenerArns: (
+//             lbApplicationLoadBalancer.listeners as pulumi.Output<Listener[]>
+//           ).apply((value) => value.map((listener) => listener.arn)),
+//         },
+//       },
+//     },
+//     blueGreenDeploymentConfig: {
+//       deploymentReadyOption: {
+//         actionOnTimeout: 'CONTINUE_DEPLOYMENT',
+//       },
+//       terminateBlueInstancesOnDeploymentSuccess: {
+//         action: 'TERMINATE',
+//         terminationWaitTimeInMinutes: 5,
+//       },
+//       greenFleetProvisioningOption: {
+//         action: 'DISCOVER_EXISTING',
+//       },
+//     },
+//     tags: {
+//       Company: COMPANY_NAME,
+//       Projects: PROJECT_NAME,
+//       Stack: STACK,
+//       CreatedBy: CREATED_BY,
+//     },
+//   },
+// );
 
-export const codedeployDeploymentGroupData = {
-  id: codedeployDeploymentGroup.id,
-  name: codedeployDeploymentGroup.appName,
-};
+// export const codedeployDeploymentGroupData = {
+//   id: codedeployDeploymentGroup.id,
+//   name: codedeployDeploymentGroup.appName,
+// };
