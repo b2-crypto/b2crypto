@@ -1,5 +1,4 @@
 import * as aws from '@pulumi/aws';
-// import { Listener } from '@pulumi/aws/alb';
 import * as awsx from '@pulumi/awsx';
 import * as pulumi from '@pulumi/pulumi';
 import { randomBytes } from 'crypto';
@@ -138,56 +137,6 @@ export const ecsClusterData = {
   name: ecsCluster.name,
 };
 
-// const lbTargetGroup1Suffix = randomBytes(4).toString('hex');
-// const lbTargetGroup1 = new aws.lb.TargetGroup(
-//   `${PROJECT_NAME}-${STACK}-${lbTargetGroup1Suffix}`,
-//   {
-//     name: `${PROJECT_NAME}-${STACK}-${lbTargetGroup1Suffix}`,
-//     port: parseInt(PORT),
-//     protocol: 'HTTP',
-//     // protocolVersion: 'HTTP2',
-//     vpcId: ec2Vpc.vpcId,
-//     targetType: 'ip',
-//     // healthCheck: {
-//     //   interval: 30,
-//     //   protocol: 'HTTP',
-//     //   matcher: '200',
-//     //   timeout: 3,
-//     //   path: '/',
-//     // },
-//     tags: TAGS,
-//   },
-// );
-
-// export const lbTargetGroup1Data = {
-//   name: lbTargetGroup1.name,
-// };
-
-// const lbTargetGroup2Suffix = randomBytes(4).toString('hex');
-// const lbTargetGroup2 = new aws.lb.TargetGroup(
-//   `${PROJECT_NAME}-${STACK}-${lbTargetGroup2Suffix}`,
-//   {
-//     name: `${PROJECT_NAME}-${STACK}-${lbTargetGroup2Suffix}`,
-//     port: parseInt(PORT),
-//     protocol: 'HTTP',
-//     // protocolVersion: 'HTTP2',
-//     vpcId: ec2Vpc.vpcId,
-//     targetType: 'ip',
-//     // healthCheck: {
-//     //   interval: 30,
-//     //   protocol: 'HTTP',
-//     //   matcher: '200',
-//     //   timeout: 3,
-//     //   path: '/',
-//     // },
-//     tags: TAGS,
-//   },
-// );
-
-// export const lbTargetGroup2Data = {
-//   name: lbTargetGroup2.name,
-// };
-
 const lbApplicationLoadBalancer = new awsx.lb.ApplicationLoadBalancer(
   `${COMPANY_NAME}-${PROJECT_NAME}-${STACK}`,
   {
@@ -206,17 +155,6 @@ const lbApplicationLoadBalancer = new awsx.lb.ApplicationLoadBalancer(
       {
         port: 80,
         protocol: 'HTTP',
-        // defaultActions: [
-        //   {
-        //     type: 'forward',
-        //     forward: {
-        //       targetGroups: [
-        //         { arn: lbTargetGroup1.arn },
-        //         { arn: lbTargetGroup2.arn },
-        //       ],
-        //     },
-        //   },
-        // ],
         tags: TAGS,
       },
       // {
@@ -265,27 +203,12 @@ const ecsFargateService = new awsx.ecs.FargateService(
     // assignPublicIp: true,
     cluster: ecsCluster.arn,
     propagateTags: 'SERVICE',
-    // deploymentController: {
-    //   type: 'CODE_DEPLOY',
-    // },
     schedulingStrategy: 'REPLICA',
     networkConfiguration: {
       subnets: ec2Vpc.publicSubnetIds,
       securityGroups: [ec2SecurityGroup.id],
       assignPublicIp: true,
     },
-    // loadBalancers: [
-    //   {
-    //     containerName: `${COMPANY_NAME}-${PROJECT_NAME}-${STACK}`,
-    //     containerPort: parseInt(PORT),
-    //     targetGroupArn: lbTargetGroup1.arn,
-    //   },
-    //   {
-    //     containerName: `${COMPANY_NAME}-${PROJECT_NAME}-${STACK}`,
-    //     containerPort: parseInt(PORT),
-    //     targetGroupArn: lbTargetGroup2.arn,
-    //   },
-    // ],
     taskDefinitionArgs: {
       family: `${COMPANY_NAME}-${PROJECT_NAME}-${STACK}`,
       cpu: '1024',
@@ -511,113 +434,3 @@ export const scalingPolicyData = {
   targetTrackingScalingPolicyConfiguration:
     scalingPolicy.targetTrackingScalingPolicyConfiguration,
 };
-
-// const codedeployApplication = new aws.codedeploy.Application(
-//   `${COMPANY_NAME}-${PROJECT_NAME}-${STACK}`,
-//   {
-//     name: `${COMPANY_NAME}-${PROJECT_NAME}-${STACK}`,
-//     computePlatform: 'ECS',
-//     tags: {
-//       Company: COMPANY_NAME,
-//       Projects: PROJECT_NAME,
-//       Stack: STACK,
-//       CreatedBy: CREATED_BY,
-//     },
-//   },
-// );
-
-// export const codedeployApplicationData = {
-//   id: codedeployApplication.id,
-//   name: codedeployApplication.name,
-// };
-
-// const iamRoleEcsCodeDeploy = new aws.iam.Role(
-//   `${COMPANY_NAME}-${PROJECT_NAME}-${STACK}`,
-//   {
-//     name: `ecsCodedeployRole-${PROJECT_NAME}-${STACK}`,
-//     assumeRolePolicy: JSON.stringify({
-//       Version: '2012-10-17',
-//       Statement: [
-//         {
-//           Sid: '',
-//           Effect: 'Allow',
-//           Principal: {
-//             Service: ['codedeploy.amazonaws.com'],
-//           },
-//           Action: 'sts:AssumeRole',
-//         },
-//       ],
-//     }),
-//     managedPolicyArns: [
-//       'arn:aws:iam::aws:policy/AWSCodeDeployRoleForECS',
-//       'arn:aws:iam::aws:policy/AWSCodeDeployRoleForECSLimited',
-//     ],
-//   },
-// );
-
-// export const iamRoleEcsCodeDeployData = {
-//   arn: iamRoleEcsCodeDeploy.arn,
-// };
-
-// const codedeployDeploymentGroup = new aws.codedeploy.DeploymentGroup(
-//   `${COMPANY_NAME}-${PROJECT_NAME}-${STACK}`,
-//   {
-//     appName: codedeployApplication.name,
-//     deploymentGroupName: `${COMPANY_NAME}-${PROJECT_NAME}-${STACK}`,
-//     deploymentConfigName: 'CodeDeployDefault.ECSAllAtOnce',
-//     autoRollbackConfiguration: {
-//       enabled: true,
-//       events: [
-//         'DEPLOYMENT_FAILURE',
-//         'DEPLOYMENT_STOP_ON_ALARM',
-//         'DEPLOYMENT_STOP_ON_REQUEST',
-//       ],
-//     },
-//     serviceRoleArn: iamRoleEcsCodeDeploy.arn,
-//     deploymentStyle: {
-//       deploymentType: 'BLUE_GREEN',
-//       deploymentOption: 'WITH_TRAFFIC_CONTROL',
-//     },
-//     ecsService: {
-//       clusterName: ecsCluster.name,
-//       serviceName: ecsFargateService.service.name,
-//     },
-//     loadBalancerInfo: {
-//       targetGroupPairInfo: {
-//         targetGroups: [
-//           {
-//             name: lbApplicationLoadBalancer.defaultTargetGroup.name,
-//           },
-//         ],
-//         prodTrafficRoute: {
-//           listenerArns: (
-//             lbApplicationLoadBalancer.listeners as pulumi.Output<Listener[]>
-//           ).apply((value) => value.map((listener) => listener.arn)),
-//         },
-//       },
-//     },
-//     blueGreenDeploymentConfig: {
-//       deploymentReadyOption: {
-//         actionOnTimeout: 'CONTINUE_DEPLOYMENT',
-//       },
-//       terminateBlueInstancesOnDeploymentSuccess: {
-//         action: 'TERMINATE',
-//         terminationWaitTimeInMinutes: 5,
-//       },
-//       greenFleetProvisioningOption: {
-//         action: 'DISCOVER_EXISTING',
-//       },
-//     },
-//     tags: {
-//       Company: COMPANY_NAME,
-//       Projects: PROJECT_NAME,
-//       Stack: STACK,
-//       CreatedBy: CREATED_BY,
-//     },
-//   },
-// );
-
-// export const codedeployDeploymentGroupData = {
-//   id: codedeployDeploymentGroup.id,
-//   name: codedeployDeploymentGroup.appName,
-// };
