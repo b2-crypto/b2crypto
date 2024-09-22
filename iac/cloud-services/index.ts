@@ -42,7 +42,7 @@ const ecrRepository = new aws.ecr.Repository(
   `${COMPANY_NAME}/${PROJECT_NAME}-${STACK}`,
   {
     name: `${COMPANY_NAME}/${PROJECT_NAME}-${STACK}`,
-    imageTagMutability: 'IMMUTABLE',
+    imageTagMutability: 'MUTABLE',
     imageScanningConfiguration: {
       scanOnPush: true,
     },
