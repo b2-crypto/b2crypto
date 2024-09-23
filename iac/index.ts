@@ -231,8 +231,8 @@ const ecsFargateService = new awsx.ecs.FargateService(
       memory: '2048',
       container: SECRETS.apply((secrets) => ({
         name: `${PROJECT_NAME}`,
-        // image: ecrImage.imageUri,
-        image: 'crccheck/hello-world:latest',
+        image: ecrImage.imageUri,
+        // image: 'crccheck/hello-world:latest',
         cpu: 1024,
         memory: 2048,
         essential: true,
@@ -386,9 +386,12 @@ const ecsFargateService = new awsx.ecs.FargateService(
           },
         ],
         readonlyRootFilesystem: true,
-        // healthCheck: {
-        //   command: ['CMD-SHELL', `curl -f http://localhost:${PORT} || exit 1`],
-        // },
+        healthCheck: {
+          command: [
+            'CMD-SHELL',
+            `curl -f http://localhost:${PORT}/api/health || exit 1`,
+          ],
+        },
         logConfiguration: {
           logDriver: 'awslogs',
           options: {
@@ -402,13 +405,6 @@ const ecsFargateService = new awsx.ecs.FargateService(
     desiredCount: 1,
     tags: TAGS,
   },
-  // {
-  //   customTimeouts: {
-  //     create: '45m',
-  //     update: '45m',
-  //     delete: '45m',
-  //   },
-  // },
 );
 
 export const ecsFargateServiceData = {
