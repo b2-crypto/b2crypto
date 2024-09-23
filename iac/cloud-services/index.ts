@@ -38,6 +38,15 @@ const TAGS = {
 };
 const TAG = process.env.COMMIT_SHA ?? randomBytes(4).toString('hex');
 
+const acmCertificate = aws.acm.getCertificateOutput({
+  domain: 'b2crypto.com',
+});
+
+export const acmCertificateData = {
+  arn: acmCertificate.arn,
+  domain: acmCertificate.domain,
+};
+
 const ecrRepository = new aws.ecr.Repository(
   `${COMPANY_NAME}/${PROJECT_NAME}-${STACK}`,
   {
@@ -174,18 +183,13 @@ const lbApplicationLoadBalancer = new awsx.lb.ApplicationLoadBalancer(
         protocol: 'HTTP',
         tags: TAGS,
       },
-      // {
-      //   port: 443,
-      //   // sslPolicy: 'HTTPS',
-      //   protocol: 'HTTPS',
-      //   certificateArn: lbApplicationLoadBalancerCertificate.arn,
-      //   tags: {
-      //     Company: COMPANY_NAME,
-      //     Projects: PROJECT_NAME,
-      //     Stack: STACK,
-      //     CreatedBy: CREATED_BY,
-      //   },
-      // },
+      {
+        port: 443,
+        // sslPolicy: 'HTTPS',
+        protocol: 'HTTPS',
+        certificateArn: acmCertificate.arn,
+        tags: TAGS,
+      },
     ],
     tags: TAGS,
   },

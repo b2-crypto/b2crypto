@@ -67,7 +67,8 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - uses: pulumi/actions@v5
+      - name: Pulumi Up
+        uses: pulumi/actions@v5
         with:
           command: up
           stack-name: ${{ github.event.pull_request.base.ref == 'main' && 'b2fintech/production' || github.event.pull_request.base.ref == 'test' && 'b2fintech/testing' || 'b2fintech/staging' }}
