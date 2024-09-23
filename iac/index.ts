@@ -110,12 +110,6 @@ const ec2SecurityGroup = new aws.ec2.SecurityGroup(
         cidrBlocks: ['0.0.0.0/0'],
       },
       {
-        fromPort: 80,
-        toPort: 80,
-        protocol: 'TCP',
-        cidrBlocks: ['0.0.0.0/0'],
-      },
-      {
         fromPort: parseInt(PORT),
         toPort: parseInt(PORT),
         protocol: 'TCP',
@@ -126,12 +120,6 @@ const ec2SecurityGroup = new aws.ec2.SecurityGroup(
       {
         fromPort: 443,
         toPort: 443,
-        protocol: 'TCP',
-        cidrBlocks: ['0.0.0.0/0'],
-      },
-      {
-        fromPort: 80,
-        toPort: 80,
         protocol: 'TCP',
         cidrBlocks: ['0.0.0.0/0'],
       },
@@ -175,7 +163,8 @@ const lbApplicationLoadBalancer = new awsx.lb.ApplicationLoadBalancer(
       vpcId: ec2Vpc.vpcId,
       tags: TAGS,
       healthCheck: {
-        path: '/api/health',
+        // path: '/api/health',
+        enabled: false,
       },
     },
     securityGroups: [ec2SecurityGroup.id],
@@ -412,6 +401,55 @@ const ecsFargateService = new awsx.ecs.FargateService(
 
 export const ecsFargateServiceData = {
   serviceName: ecsFargateService.service.name,
+};
+
+const cloudwatchDashboard = new aws.cloudwatch.Dashboard(
+  `${COMPANY_NAME}-${PROJECT_NAME}-${STACK}`,
+  {
+    dashboardName: `${COMPANY_NAME}-${PROJECT_NAME}-${STACK}`,
+    dashboardBody: pulumi.output(ecsFargateService.taskDefinition).apply((td) =>
+      JSON.stringify({
+        widgets: [
+          {
+            type: 'metric',
+            x: 0,
+            y: 0,
+            width: 24,
+            height: 6,
+            properties: {
+              metrics: [
+                ['AWS/ECS', 'CPUUtilization', 'AWS/ECS', 'MemoryUtilization'],
+                ['.', 'MemoryReservation', '.', 'MemoryLimit'],
+              ],
+              view: 'timeSeries',
+              stacked: false,
+              region: aws.config.region,
+              title: 'ECS Task CPU and Memory Utilization',
+            },
+          },
+          {
+            type: 'log',
+            x: 0,
+            y: 6,
+            width: 24,
+            height: 6,
+            properties: {
+              query: `fields @timestamp, @message
+                          | sort @timestamp desc
+                          | limit 20`,
+              logGroupNames: [cloudwatchLogGroup.name],
+              region: aws.config.region,
+              title: 'ECS Task Logs',
+            },
+          },
+        ],
+      }),
+    ),
+  },
+);
+
+export const cloudwatchDashboardData = {
+  dashboardName: cloudwatchDashboard.dashboardName,
 };
 
 const appautoscalingTarget = new aws.appautoscaling.Target(
