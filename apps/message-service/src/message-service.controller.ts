@@ -200,4 +200,18 @@ export class MessageServiceController implements GenericServiceController {
       Logger.error(err, MessageServiceController.name);
     }
   }
+
+  @AllowAnon()
+  @EventPattern(EventsNamesMessageEnum.sendEmailBalanceReport)
+  async eventSendEmailReport(
+    @Payload() message: MessageCreateDto,
+    @Ctx() ctx: RmqContext,
+  ) {
+    CommonService.ack(ctx);
+    try {
+      await this.messageService.sendEmailBalanceReport(message);
+    } catch (err) {
+      Logger.error(err, MessageServiceController.name);
+    }
+  }
 }

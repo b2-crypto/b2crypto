@@ -110,7 +110,7 @@ export class IntegrationService {
     switch (identityCategoryName.toUpperCase()) {
       case IntegrationIdentityEnum.SUMSUB:
         identityType = new IntegrationIdentityService({
-          urlApi: 'https://api.sumsub.com/',
+          urlApi: 'https://api.sumsub.com',
           token:
             'prd:4GTDd9lXlksugzFcLwvUPrer.06DQ3vvaaTDReWC6YhKSJqsCBlFeWRfU',
           privateKey: 'DQZbSZExLTNC7xX1FP2pcffonu4cDrzc',

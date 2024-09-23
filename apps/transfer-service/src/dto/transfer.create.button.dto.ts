@@ -1,3 +1,4 @@
+import TypesAccountEnum from '@account/account/enum/types.account.enum';
 import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 export class TransferCreateButtonDto {
@@ -46,6 +47,14 @@ export class TransferCreateButtonDto {
   @IsString()
   @IsOptional()
   account?: string;
+
+  @IsString()
+  @IsOptional()
+  typeAccount?: TypesAccountEnum;
+
+  @IsString()
+  @IsOptional()
+  typeAccountType?: string;
 
   @IsString()
   @IsOptional()

@@ -150,6 +150,8 @@ export class B2BinPayNotificationsController {
         requestHeadersJson: headers,
         requestBodyJson: body,
         account: account._id,
+        typeAccount: account.type,
+        typeAccountType: account.accountType,
         userCreator: req?.user?.id,
         userAccount: account.owner,
         typeTransaction: depositWalletCategory._id,

@@ -146,7 +146,7 @@ export class AffiliateServiceService {
             EventsNamesUserEnum.findAll,
             {
               where: {
-                email: affiliate.email,
+                slugEmail: CommonService.getSlug(affiliate.email),
               },
             },
           );

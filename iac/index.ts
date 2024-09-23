@@ -185,7 +185,7 @@ const lbApplicationLoadBalancer = new awsx.lb.ApplicationLoadBalancer(
       },
       {
         port: 443,
-        sslPolicy: 'HTTPS',
+        // sslPolicy: 'SSLNegotiationPolicyType2',
         protocol: 'HTTPS',
         certificateArn: acmCertificate.arn,
         tags: TAGS,

@@ -1,15 +1,12 @@
-import { SumsubApplicantOnHold } from './../../../integration/src/identity/generic/domain/process/sumsub.applicant.onhold.dto';
-import { AffiliateInterface } from '@affiliate/affiliate/domain/entities/affiliate.interface';
 import { CategoryInterface } from '@category/category/entities/category.interface';
 import CurrencyCodeB2cryptoEnum from '@common/common/enums/currency-code-b2crypto.enum';
 import { FileInterface } from '@file/file/entities/file.interface';
-import { SumsubApplicantPending } from '@integration/integration/identity/generic/domain/process/sumsub.applicant.pending.dto';
-import { SumsubApplicantReviewed } from '@integration/integration/identity/generic/domain/process/sumsub.applicant.reviewed.dto';
 import { PermissionInterface } from '@permission/permission/entities/permission.interface';
 import { PersonInterface } from '@person/person/entities/PersonInterface';
 import { RoleInterface } from '@role/role/entities/role.interface';
 import { ObjectId } from 'mongoose';
 import UserVerifyIdentityDto from '../dto/user.verify.identity.dto';
+import { UserBalanceModel } from './user.balance.model';
 
 export interface UserInterface {
   _id?: ObjectId;
@@ -30,6 +27,7 @@ export interface UserInterface {
   inMaintenance: boolean;
   maintenanceStartAt: Date;
   maintenanceEndAt: Date;
+  balance: UserBalanceModel;
   apiKey: string;
   configuration: JSON;
   twoFactorSecret: string;

@@ -5,6 +5,8 @@
 .build
 .serverless
 
+# Migration
+migration/*
 # Logs
 logs
 *.log

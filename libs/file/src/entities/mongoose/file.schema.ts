@@ -26,6 +26,9 @@ export class File extends FileEntity {
   searchText: string;
 
   @Prop()
+  encodeBase64?: string;
+
+  @Prop()
   uri: string;
 
   @Prop()

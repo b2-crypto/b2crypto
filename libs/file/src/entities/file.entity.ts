@@ -9,6 +9,7 @@ export class FileEntity implements FileInterface {
   slug: string;
   description: string;
   searchText: string;
+  encodeBase64?: string;
   uri: string;
   path: string;
   mimetype: string;

@@ -19,6 +19,8 @@ enum EventsNamesAccountEnum {
   deleteMany = 'ACCOUNT.DELETE.MANY',
   deleteOneById = 'ACCOUNT.DELETE.ONE.BY.ID',
 
+  sendBalanceReport = 'ACCOUNT.SEND.BALANCE.REPORT',
+
   pomeloTransaction = 'CARD.POMELO.TRANSACTION',
 }
 
