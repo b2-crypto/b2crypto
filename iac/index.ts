@@ -163,7 +163,8 @@ const lbApplicationLoadBalancer = new awsx.lb.ApplicationLoadBalancer(
       vpcId: ec2Vpc.vpcId,
       tags: TAGS,
       healthCheck: {
-        path: '/api/health',
+        // path: '/api/health',
+        enabled: false,
       },
     },
     securityGroups: [ec2SecurityGroup.id],
