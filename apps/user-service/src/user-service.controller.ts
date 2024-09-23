@@ -186,6 +186,14 @@ export class UserServiceController implements GenericServiceController {
   }
 
   @AllowAnon()
+  @EventPattern(EventsNamesUserEnum.checkBalanceUser)
+  async checkBalanceEvent(@Payload() id: string, @Ctx() ctx: RmqContext) {
+    CommonService.ack(ctx);
+    id = id ?? '0';
+    await this.userService.updateBalance(id);
+  }
+
+  @AllowAnon()
   @EventPattern(EventsNamesUserEnum.verifyEmail)
   async verifyEmail(@Payload() email: string, @Ctx() ctx: RmqContext) {
     CommonService.ack(ctx);

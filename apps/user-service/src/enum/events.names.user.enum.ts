@@ -19,6 +19,7 @@ enum EventsNamesUserEnum {
   refreshToken = 'USER.TOKEN.REFRESH',
 
   verifyEmail = 'USER.VERIFY.EMAIL',
+  checkBalanceUser = 'USER.CHECK.BALANCE',
 }
 
 export default EventsNamesUserEnum;
