@@ -386,6 +386,13 @@ const ecsFargateService = new awsx.ecs.FargateService(
     desiredCount: 1,
     tags: TAGS,
   },
+  {
+    customTimeouts: {
+      create: '45m',
+      update: '45m',
+      delete: '45m',
+    },
+  },
 );
 
 export const ecsFargateServiceData = {
