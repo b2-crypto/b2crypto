@@ -58,6 +58,23 @@ export const ecrRepositoryData = {
   ),
 };
 
+const ecrImage = new awsx.ecr.Image(
+  `${COMPANY_NAME}/${PROJECT_NAME}-${STACK}`,
+  {
+    repositoryUrl: ecrRepository.repositoryUrl,
+    dockerfile: '../../Dockerfile',
+    context: '../../',
+    imageTag: TAG,
+    platform: 'linux/amd64',
+  },
+);
+
+export const ecrImageData = {
+  imageUri: ecrImage.imageUri.apply(
+    (imageUri) => `${imageUri.split('@').at(0)}:${TAG}`,
+  ),
+};
+
 const ec2Vpc = new awsx.ec2.Vpc(`${COMPANY_NAME}-${PROJECT_NAME}-${STACK}`, {
   enableNetworkAddressUsageMetrics: true,
   numberOfAvailabilityZones: 3,
@@ -203,7 +220,7 @@ const ecsFargateService = new awsx.ecs.FargateService(
     // assignPublicIp: true,
     cluster: ecsCluster.arn,
     propagateTags: 'SERVICE',
-    schedulingStrategy: 'REPLICA',
+    // schedulingStrategy: 'REPLICA',
     networkConfiguration: {
       subnets: ec2Vpc.publicSubnetIds,
       securityGroups: [ec2SecurityGroup.id],
@@ -215,7 +232,7 @@ const ecsFargateService = new awsx.ecs.FargateService(
       memory: '2048',
       container: SECRETS.apply((secrets) => ({
         name: `${PROJECT_NAME}`,
-        image: `${APP_NAME}/${PROJECT_NAME}-${STACK}:${TAG}`,
+        image: ecrImageData.imageUri,
         // image: 'crccheck/hello-world:latest',
         cpu: 1024,
         memory: 2048,
