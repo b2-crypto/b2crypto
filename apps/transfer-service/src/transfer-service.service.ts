@@ -68,6 +68,8 @@ import { AccountUpdateDto } from '@account/account/dto/account.update.dto';
 import { CategoryServiceService } from 'apps/category-service/src/category-service.service';
 import { PspAccountServiceService } from 'apps/psp-service/src/psp.account.service.service';
 import { StatusServiceService } from 'apps/status-service/src/status-service.service';
+import { BoldStatusEnum } from './enum/bold.status.enum';
+import { BoldTransferRequestDto } from './dto/bold.transfer.request.dto';
 
 @Injectable()
 export class TransferServiceService
@@ -162,6 +164,53 @@ export class TransferServiceService
 
   async getOne(id: string) {
     return this.lib.findOne(id);
+  }
+
+  async handleBoldWebhook(transferBold: BoldTransferRequestDto) {//migrado desde controller
+    if (
+      !transferBold.link_id ||
+      !transferBold.payment_status ||
+      !transferBold.reference_id
+    ) {
+      throw new BadRequestException();
+    }
+    const txs = await this.getAll({
+      where: {
+        _id: transferBold.reference_id,
+      },
+    });
+    const tx = txs.list[0];
+    if (
+      tx.statusPayment === BoldStatusEnum.APPROVED ||
+      tx.statusPayment === BoldStatusEnum.NO_TRANSACTION_FOUND ||
+      tx.statusPayment === BoldStatusEnum.REJECTED
+    ) {
+      Logger.debug(
+        JSON.stringify(transferBold),
+        'Transaction has finish before',
+      );
+      throw new BadRequestException('transfer has finish before');
+    }
+    tx.statusPayment = transferBold.payment_status;
+    tx.responsePayment = {
+      success: true,
+      message: transferBold.description,
+      payload: {
+        url: transferBold.link_id,
+        message: transferBold.payer_email ?? 'N/A',
+        type: transferBold.payment_status,
+        data: transferBold,
+      },
+    };
+    this.builder.emitTransferEventClient(EventsNamesTransferEnum.updateOne, {
+      id: tx._id,
+      statusPayment: tx.statusPayment,
+      responsePayment: tx.responsePayment,
+    });
+    return {
+      statusCode: 200,
+      message: 'Transaction updated',
+    };
   }
 
   async getByLead(
@@ -1439,4 +1488,5 @@ export class TransferServiceService
     const statDate = new StatsDateCreateDto();
     Logger.debug('checkStatsPspAccount', `${TransferServiceService.name}:902`);
   }
+  
 }

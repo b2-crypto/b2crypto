@@ -101,68 +101,11 @@ export class TransferServiceController implements GenericServiceController {
   ) {}
 
   @AllowAnon()
-  @Post('bold/webhook')
-  // @CheckPoliciesAbility(new PolicyHandlerTransferRead())
+  @Post('bold/webhook')//se migro logica a transfer service
   async boldWebhook(@Body() transferBold: BoldTransferRequestDto) {
-    if (
-      !transferBold.link_id ||
-      !transferBold.payment_status ||
-      !transferBold.reference_id
-    ) {
-      throw new BadRequestException();
-    }
-    const txs = await this.transferService.getAll({
-      where: {
-        _id: transferBold.reference_id,
-      },
-    });
-    const tx = txs.list[0];
-    if (
-      tx.statusPayment === BoldStatusEnum.APPROVED ||
-      tx.statusPayment === BoldStatusEnum.NO_TRANSACTION_FOUND ||
-      tx.statusPayment === BoldStatusEnum.REJECTED
-    ) {
-      Logger.debug(
-        JSON.stringify(transferBold),
-        'Transaction has finish before',
-      );
-      throw new BadRequestException('transfer has finish before');
-    }
-    tx.statusPayment = transferBold.payment_status;
-    tx.responsePayment = {
-      success: true,
-      message: transferBold.description,
-      payload: {
-        url: transferBold.link_id,
-        message: transferBold.payer_email ?? 'N/A',
-        type: transferBold.payment_status,
-        data: transferBold,
-      },
-    };
-    /* switch (tx.statusPayment) {
-      case BoldStatusEnum.APPROVED:
-        break;
-      case BoldStatusEnum.FAILED:
-        break;
-      case BoldStatusEnum.REJECTED:
-        break;
-      case BoldStatusEnum.PENDING:
-        break;
-      case BoldStatusEnum.PROCESSING:
-        break;
-      case BoldStatusEnum.NO_TRANSACTION_FOUND:
-        break;
-    } */
-    this.builder.emitTransferEventClient(EventsNamesTransferEnum.updateOne, {
-      id: tx._id,
-      statusPayment: tx.statusPayment,
-      responsePayment: tx.responsePayment,
-    });
-    return {
-      statusCode: 200,
-      message: 'Transaction updated',
-    };
+    return this.transferService.handleBoldWebhook(transferBold);
   }
+  
   @NoCache()
   @Get('searchText')
   // @CheckPoliciesAbility(new PolicyHandlerTransferRead())
@@ -622,6 +565,7 @@ export class TransferServiceController implements GenericServiceController {
     const transfer = await this.transferService.newTransfer(createTransferDto);
     return transfer;
   }
+
   @AllowAnon()
   @MessagePattern(EventsNamesTransferEnum.createMany)
   createManyEvent(createsDto: CreateAnyDto[], ctx: RmqContext) {
