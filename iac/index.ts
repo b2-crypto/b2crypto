@@ -71,8 +71,8 @@ const ecrImage = new awsx.ecr.Image(
   `${COMPANY_NAME}/${PROJECT_NAME}-${STACK}`,
   {
     repositoryUrl: ecrRepository.repositoryUrl,
-    dockerfile: '../../Dockerfile',
-    context: '../../',
+    dockerfile: '../Dockerfile',
+    context: '../',
     imageTag: TAG,
     platform: 'linux/amd64',
   },
@@ -185,7 +185,7 @@ const lbApplicationLoadBalancer = new awsx.lb.ApplicationLoadBalancer(
       },
       {
         port: 443,
-        // sslPolicy: 'HTTPS',
+        sslPolicy: 'HTTPS',
         protocol: 'HTTPS',
         certificateArn: acmCertificate.arn,
         tags: TAGS,
