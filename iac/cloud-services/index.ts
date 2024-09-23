@@ -219,7 +219,7 @@ const ecsFargateService = new awsx.ecs.FargateService(
     name: `${COMPANY_NAME}-${PROJECT_NAME}-${STACK}`,
     // assignPublicIp: true,
     cluster: ecsCluster.arn,
-    propagateTags: 'SERVICE',
+    propagateTags: 'SERVICE | TASK_DEFINITION',
     // schedulingStrategy: 'REPLICA',
     networkConfiguration: {
       subnets: ec2Vpc.publicSubnetIds,
@@ -232,7 +232,7 @@ const ecsFargateService = new awsx.ecs.FargateService(
       memory: '2048',
       container: SECRETS.apply((secrets) => ({
         name: `${PROJECT_NAME}`,
-        image: ecrImageData.imageUri,
+        image: ecrImage.imageUri,
         // image: 'crccheck/hello-world:latest',
         cpu: 1024,
         memory: 2048,
@@ -403,13 +403,13 @@ const ecsFargateService = new awsx.ecs.FargateService(
     desiredCount: 1,
     tags: TAGS,
   },
-  {
-    customTimeouts: {
-      create: '45m',
-      update: '45m',
-      delete: '45m',
-    },
-  },
+  // {
+  //   customTimeouts: {
+  //     create: '45m',
+  //     update: '45m',
+  //     delete: '45m',
+  //   },
+  // },
 );
 
 export const ecsFargateServiceData = {
