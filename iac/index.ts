@@ -389,7 +389,7 @@ const ecsFargateService = new awsx.ecs.FargateService(
         healthCheck: {
           command: [
             'CMD-SHELL',
-            `curl -f http://localhost:${PORT}/api/health || exit 1`,
+            `curl -f http://127.0.0.1:${PORT}/api/health || exit 1`,
           ],
         },
         logConfiguration: {
