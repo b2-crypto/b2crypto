@@ -15,6 +15,7 @@ import {
   IsString,
 } from 'class-validator';
 import { UserCardDto } from '@integration/integration/card/generic/dto/user.card.dto';
+import { UserBalanceDto } from './user.balance.dto';
 
 export class UserCreateDto extends UserChangePasswordDto {
   @IsString()
@@ -28,7 +29,7 @@ export class UserCreateDto extends UserChangePasswordDto {
   @IsEmail()
   email: string;
 
-  @IsEmail()
+  @IsString()
   slugEmail: string;
 
   @IsBoolean()
@@ -75,6 +76,11 @@ export class UserCreateDto extends UserChangePasswordDto {
   @Type(() => UserCardDto)
   @IsOptional()
   userCard?: UserCardDto;
+
+  @IsObject()
+  @Type(() => UserBalanceDto)
+  @IsOptional()
+  balance?: UserBalanceDto;
 
   @IsBoolean()
   @IsOptional()

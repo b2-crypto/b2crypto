@@ -58,7 +58,13 @@ export class PersonServiceController implements GenericServiceController {
   // @CheckPoliciesAbility(new PolicyHandlerPersonRead())
   async findAllMe(@Req() req, @Query() query: QuerySearchAnyDto) {
     query = CommonService.getQueryWithUserId(query, req);
-    return this.personService.getAll(query);
+    const verifiedIdentity = req?.user?.verifyIdentity;
+    const persons = await this.personService.getAll(query);
+    persons.list.forEach((person) => {
+      person.verifiedIdentity = person.verifiedIdentity ?? !!verifiedIdentity;
+      return person;
+    });
+    return persons;
   }
 
   @Get(':personID')
@@ -91,9 +97,12 @@ export class PersonServiceController implements GenericServiceController {
         throw new BadRequestError('User already has personal data');
       }
       createPersonDto.user = user._id;
-    } else if (createPersonDto.user !== req.user.id) {
+    } else if (
+      !createPersonDto.preRegistry &&
+      createPersonDto.user !== req?.user?.id
+    ) {
       throw new BadRequestError(
-        `Only have create to User user ${req.user.email}`,
+        `Only have create personal data to User ${createPersonDto.user}`,
       );
     }
     const personalData = await this.personService.newPerson(createPersonDto);

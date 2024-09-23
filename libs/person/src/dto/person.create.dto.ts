@@ -6,6 +6,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Transform, Type } from 'class-transformer';
 import {
   IsArray,
+  IsBoolean,
   IsDate,
   IsEmpty,
   IsEnum,
@@ -22,6 +23,9 @@ import LocationDto from './location.dto';
 import TelephoneDto from './telephone.dto';
 
 export class PersonCreateDto extends CreateAnyDto {
+  @IsBoolean()
+  preRegistry = false;
+
   @ApiProperty({
     required: true,
     description: 'Person number of document id',

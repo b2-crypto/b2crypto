@@ -157,6 +157,10 @@ export class WalletServiceController extends AccountServiceController {
   }
 
   @Post('recharge')
+  @ApiTags(SwaggerSteakeyConfigEnum.TAG_WALLET)
+  @ApiSecurity('b2crypto-key')
+  @ApiBearerAuth('bearerToken')
+  @UseGuards(ApiKeyAuthGuard)
   async rechargeOne(
     @Body() createDto: WalletDepositCreateDto,
     @Req() req?: any,
@@ -211,11 +215,14 @@ export class WalletServiceController extends AccountServiceController {
       const host = req.get('Host');
       //const url = `${req.protocol}://${host}/transfers/deposit/page/${transfer?._id}`;
       const url = `https://${host}/transfers/deposit/page/${depositAddress?._id}`;
+      const data = depositAddress.responseAccount.data;
       return {
         statusCode: 200,
         data: {
           txId: depositAddress?._id,
-          url,
+          url: `https://tronscan.org/#/address/${data?.attributes?.address}`,
+          address: data?.attributes?.address,
+          chain: 'TRON BLOCKCHAIN',
         },
       };
     } catch (error) {

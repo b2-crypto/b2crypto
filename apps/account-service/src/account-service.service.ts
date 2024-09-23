@@ -39,6 +39,41 @@ export class AccountServiceService
   ): Promise<AccountDocument[]> {
     throw new NotImplementedException('Method not implemented.');
   }
+  async getBalanceByAccountTypeCard(
+    query: QuerySearchAnyDto,
+    context?: any,
+  ): Promise<any[]> {
+    return this.lib.getBalanceByAccountTypeCard(query);
+  }
+
+  async getBalanceByOwnerByCard(
+    query: QuerySearchAnyDto,
+    context?: any,
+  ): Promise<any[]> {
+    return this.lib.getBalanceByOwnerByCard(query);
+  }
+
+  async getBalanceByOwnerByWallet(
+    query: QuerySearchAnyDto,
+    context?: any,
+  ): Promise<any[]> {
+    return this.lib.getBalanceByOwnerByWallet(query);
+  }
+
+  async getBalanceByAccountByCard(
+    query: QuerySearchAnyDto,
+    context?: any,
+  ): Promise<any[]> {
+    return this.lib.getBalanceByAccountByCard(query);
+  }
+
+  async getBalanceByAccountByWallet(
+    query: QuerySearchAnyDto,
+    context?: any,
+  ): Promise<any[]> {
+    return this.lib.getBalanceByAccountByWallet(query);
+  }
+
   async findAll(
     query: QuerySearchAnyDto,
     context?: any,

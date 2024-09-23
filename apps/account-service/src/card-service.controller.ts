@@ -482,6 +482,10 @@ export class CardServiceController extends AccountServiceController {
   }
 
   @Post('recharge')
+  @ApiTags(SwaggerSteakeyConfigEnum.TAG_CARD)
+  @ApiSecurity('b2crypto-key')
+  @ApiBearerAuth('bearerToken')
+  @UseGuards(ApiKeyAuthGuard)
   async rechargeOne(@Body() createDto: CardDepositCreateDto, @Req() req?: any) {
     const user: User = await this.getUser(req?.user?.id);
     if (!user.personalData) {
@@ -587,6 +591,8 @@ export class CardServiceController extends AccountServiceController {
         currencyCustodial: from.currencyCustodial,
         amountCustodial: createDto.amount,
         account: from._id,
+        typeAccount: from.type,
+        typeAccountType: from.accountType,
         userCreator: req?.user?.id,
         userAccount: from.owner,
         typeTransaction: withDrawalWalletCategory._id,

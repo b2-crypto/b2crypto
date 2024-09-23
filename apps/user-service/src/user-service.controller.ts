@@ -3,7 +3,6 @@ import {
   Controller,
   Delete,
   Get,
-  Logger,
   NotFoundException,
   Param,
   ParseArrayPipe,
@@ -15,7 +14,6 @@ import {
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
-  ApiHeader,
   ApiResponse,
   ApiSecurity,
   ApiTags,
@@ -23,6 +21,8 @@ import {
 
 import { AllowAnon } from '@auth/auth/decorators/allow-anon.decorator';
 import { ApiKeyCheck } from '@auth/auth/decorators/api-key-check.decorator';
+import { ApiKeyAuthGuard } from '@auth/auth/guards/api.key.guard';
+import { BuildersService } from '@builder/builders';
 import { CommonService } from '@common/common';
 import ActionsEnum from '@common/common/enums/ActionEnum';
 import GenericServiceController from '@common/common/interfaces/controller.generic.interface';
@@ -40,16 +40,11 @@ import { UserChangePasswordDto } from '@user/user/dto/user.change-password.dto';
 import { UserRegisterDto } from '@user/user/dto/user.register.dto';
 import { UserUpdateDto } from '@user/user/dto/user.update.dto';
 import { UserEntity } from '@user/user/entities/user.entity';
+import { isBoolean } from 'class-validator';
+import { SwaggerSteakeyConfigEnum } from 'libs/config/enum/swagger.stakey.config.enum';
 import { ObjectId } from 'mongodb';
 import EventsNamesUserEnum from './enum/events.names.user.enum';
 import { UserServiceService } from './user-service.service';
-import { SwaggerSteakeyConfigEnum } from 'libs/config/enum/swagger.stakey.config.enum';
-import { ApiKeyAuthGuard } from '@auth/auth/guards/api.key.guard';
-import { isBoolean } from 'class-validator';
-import { NoCache } from '@common/common/decorators/no-cache.decorator';
-import TransportEnum from '@common/common/enums/TransportEnum';
-import EventsNamesMessageEnum from 'apps/message-service/src/enum/events.names.message.enum';
-import { BuildersService } from '@builder/builders';
 
 @ApiTags('USER')
 @Controller('users')
@@ -96,6 +91,18 @@ export class UserServiceController implements GenericServiceController {
   // @CheckPoliciesAbility(new PolicyHandlerUserRead())
   async findOneById(@Param('userID') id: string) {
     return this.userService.getOne(id);
+  }
+
+  @Get('check-balance/:userID')
+  // @CheckPoliciesAbility(new PolicyHandlerUserRead())
+  async checkBalance(@Param('userID') id?: string) {
+    return this.userService.updateBalance(id);
+  }
+
+  @Get('check-slug-email/:userID')
+  // @CheckPoliciesAbility(new PolicyHandlerUserRead())
+  async checkSlugEmail(@Param('userID') id?: string) {
+    return this.userService.updateSlugEmail(id);
   }
 
   @Post()
@@ -178,6 +185,14 @@ export class UserServiceController implements GenericServiceController {
   ) {
     CommonService.ack(ctx);
     return this.findOneByApiKey(publicKey);
+  }
+
+  @AllowAnon()
+  @EventPattern(EventsNamesUserEnum.checkBalanceUser)
+  async checkBalanceEvent(@Payload() id: string, @Ctx() ctx: RmqContext) {
+    CommonService.ack(ctx);
+    id = id ?? '0';
+    await this.userService.updateBalance(id);
   }
 
   @AllowAnon()

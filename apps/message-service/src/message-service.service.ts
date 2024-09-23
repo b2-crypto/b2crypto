@@ -13,9 +13,9 @@ import { ConfigService } from '@nestjs/config';
 import EventsNamesCrmEnum from 'apps/crm-service/src/enum/events.names.crm.enum';
 import EventsNamesLeadEnum from 'apps/lead-service/src/enum/events.names.lead.enum';
 import axios from 'axios';
+import { isEmail } from 'class-validator';
 import * as pug from 'pug';
 import TemplatesMessageEnum from './enum/templates.message.enum';
-import { isEmail } from 'class-validator';
 
 @Injectable()
 export class MessageServiceService {
@@ -78,47 +78,8 @@ export class MessageServiceService {
     return this.sendEmail(message, TemplatesMessageEnum.otpNotification);
   }
 
-  async sendCardRequestConfirmationEmail(message: MessageCreateDto) {
-    return this.sendEmail(
-      message,
-      TemplatesMessageEnum.cardRequestConfirmation,
-    );
-  }
-
-  async sendProfileRegistrationCreation(message: MessageCreateDto) {
-    return this.sendEmail(
-      message,
-      TemplatesMessageEnum.profileRegistrationCreation,
-    );
-  }
-
-  async sendVirtualPhysicalCards(message: MessageCreateDto) {
-    return this.sendEmail(message, TemplatesMessageEnum.virtualPhysicalCards);
-  }
-
-  async sendPurchasesTransactionAdjustments(message: MessageCreateDto) {
-    return this.sendEmail(
-      message,
-      TemplatesMessageEnum.purchasesTransactionAdjustments,
-    );
-  }
-
-  async sendCryptoWalletsManagement(message: MessageCreateDto) {
-    return this.sendEmail(
-      message,
-      TemplatesMessageEnum.cryptoWalletsManagement,
-    );
-  }
-
-  async sendSecurityNotifications(message: MessageCreateDto) {
-    return this.sendEmail(message, TemplatesMessageEnum.securityNotifications);
-  }
-
-  async sendPasswordRestoredEmail(message: MessageCreateDto) {
-    return this.sendEmail(
-      message,
-      TemplatesMessageEnum.passwordRestoredConfirmation,
-    );
+  async sendEmailBalanceReport(message: MessageCreateDto) {
+    return this.sendEmail(message, TemplatesMessageEnum.report);
   }
 
   async sendEmail(message: MessageCreateDto, template: TemplatesMessageEnum) {
@@ -137,31 +98,12 @@ export class MessageServiceService {
       from,
       subject: msg.name,
       html: this.compileHtml(message.vars ?? message, template),
+      attachments: message.attachments,
     });
     return msg;
   }
-  private compileHtml(vars: any, template: TemplatesMessageEnum) {
-    const templateVars = {
-      pageTitle: vars.name,
-      headerColor: this.getHeaderColorForTemplate(template),
-      headerTitle: vars.name,
-      logoUrl:
-        'https://message-templates-resource.s3.eu-west-3.amazonaws.com/logo.svg',
-      vars: vars,
-    };
-
-    const rta = pug.renderFile(template, templateVars);
-    return rta;
-  }
-
-  private getHeaderColorForTemplate(template: TemplatesMessageEnum): string {
-    const colors = {
-      [TemplatesMessageEnum.profileRegistrationCreation]: '#0056b3',
-      [TemplatesMessageEnum.virtualPhysicalCards]: '#28a745',
-      [TemplatesMessageEnum.purchasesTransactionAdjustments]: '#17a2b8',
-      [TemplatesMessageEnum.cryptoWalletsManagement]: '#6f42c1',
-    };
-    return colors[template] || '#007bff';
+  private compileHtml(vars: any, path: TemplatesMessageEnum) {
+    return pug.renderFile(path, vars);
   }
 
   async sendEmailDisclaimer(lead: LeadDocument) {
@@ -202,4 +144,3 @@ export class MessageServiceService {
     return crm?.clientZone;
   }
 }
-

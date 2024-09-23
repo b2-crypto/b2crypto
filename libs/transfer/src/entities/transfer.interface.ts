@@ -14,6 +14,7 @@ import { AffiliateInterface } from '@affiliate/affiliate/domain/entities/affilia
 import { PspResponse } from '../dto/transfer.latamcashier.response.dto';
 import { UserInterface } from '@user/user/entities/user.interface';
 import { AccountEntity } from '@account/account/entities/account.entity';
+import TypesAccountEnum from '@account/account/enum/types.account.enum';
 
 export interface TransferInterface {
   _id: string;
@@ -45,6 +46,8 @@ export interface TransferInterface {
   responseAccount: any;
   lead: LeadEntity;
   account: AccountEntity;
+  typeAccount: TypesAccountEnum;
+  typeAccountType: string;
   affiliate: AffiliateInterface;
   status: StatusEntity;
   bank: CategoryEntity;

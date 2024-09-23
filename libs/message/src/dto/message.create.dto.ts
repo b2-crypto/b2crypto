@@ -12,6 +12,17 @@ import {
 } from 'class-validator';
 import { VarsMessageTemplate } from '@message/message/entities/mongoose/message.schema';
 
+export class AttachmentsEmailConfig {
+  @IsString()
+  filename: string;
+
+  @IsString()
+  content: string;
+
+  @IsString()
+  encoding = 'base64';
+}
+
 export class MessageCreateDto extends CreateAnyDto {
   @IsString()
   @IsNotEmpty()
@@ -28,6 +39,10 @@ export class MessageCreateDto extends CreateAnyDto {
   @IsOptional()
   @IsMongoId()
   category: ObjectId;
+
+  @IsOptional()
+  @Type(() => Array<AttachmentsEmailConfig>)
+  attachments: Array<AttachmentsEmailConfig>;
 
   @IsOptional()
   @Type(() => ScopeDto)

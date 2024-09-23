@@ -2,7 +2,7 @@ export class RequestMetadataDto {
   ts: string;
   method: string;
   url: string;
-  data: any;
+  data?: any;
 
   public toString(): any {
     return (
@@ -10,7 +10,7 @@ export class RequestMetadataDto {
       '' + this.method?.toUpperCase() ??
       '' + this.url?.toString() ??
       '' + this.data ??
-      null
+      ''
     );
   }
 }

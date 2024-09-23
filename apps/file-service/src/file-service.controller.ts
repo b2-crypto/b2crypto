@@ -182,6 +182,7 @@ export class FileServiceController implements GenericServiceController {
 
   @AllowAnon()
   @MessagePattern(EventsNamesFileEnum.updateOne)
+  @EventPattern(EventsNamesFileEnum.updateOne)
   updateOneEvent(@Payload() updateDto: FileUpdateDto, @Ctx() ctx: RmqContext) {
     const file = this.updateOne(updateDto);
     CommonService.ack(ctx);

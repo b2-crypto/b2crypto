@@ -39,7 +39,7 @@ export class CardCreateDto extends AccountCreateDto {
   @IsOptional()
   @ApiProperty({
     required: false,
-    description: 'Account pin',
+    description: 'Card pin',
   })
   pin: number;
 }
