@@ -179,11 +179,6 @@ const lbApplicationLoadBalancer = new awsx.lb.ApplicationLoadBalancer(
     subnetIds: ec2Vpc.publicSubnetIds,
     listeners: [
       {
-        port: 80,
-        protocol: 'HTTP',
-        tags: TAGS,
-      },
-      {
         port: 443,
         // sslPolicy: 'SSLNegotiationPolicyType2',
         protocol: 'HTTPS',
