@@ -219,7 +219,7 @@ const ecsFargateService = new awsx.ecs.FargateService(
     name: `${COMPANY_NAME}-${PROJECT_NAME}-${STACK}`,
     // assignPublicIp: true,
     cluster: ecsCluster.arn,
-    propagateTags: 'SERVICE | TASK_DEFINITION',
+    propagateTags: 'SERVICE',
     // schedulingStrategy: 'REPLICA',
     networkConfiguration: {
       subnets: ec2Vpc.publicSubnetIds,
