@@ -179,11 +179,6 @@ const lbApplicationLoadBalancer = new awsx.lb.ApplicationLoadBalancer(
     subnetIds: ec2Vpc.publicSubnetIds,
     listeners: [
       {
-        port: 80,
-        protocol: 'HTTP',
-        tags: TAGS,
-      },
-      {
         port: 443,
         // sslPolicy: 'SSLNegotiationPolicyType2',
         protocol: 'HTTPS',
@@ -236,8 +231,8 @@ const ecsFargateService = new awsx.ecs.FargateService(
       memory: '2048',
       container: SECRETS.apply((secrets) => ({
         name: `${PROJECT_NAME}`,
-        image: ecrImage.imageUri,
-        // image: 'crccheck/hello-world:latest',
+        // image: ecrImage.imageUri,
+        image: 'crccheck/hello-world:latest',
         cpu: 1024,
         memory: 2048,
         essential: true,
