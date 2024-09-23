@@ -79,6 +79,18 @@ export class AccountServiceMongooseService extends BasicServiceModel<
     );
   }
 
+  async getBalanceByAccountTypeCard(query?: QuerySearchAnyDto) {
+    query = query ?? {};
+    query.where = query.where ?? {};
+    query.where['type'] = 'CARD';
+    return this.getBalanceByAccountType(query);
+  }
+  async getBalanceByAccountTypeWallet(query?: QuerySearchAnyDto) {
+    query = query ?? {};
+    query.where = query.where ?? {};
+    query.where['type'] = 'WALLET';
+    return this.getBalanceByAccountType(query);
+  }
   async getBalanceByAccountType(query?: QuerySearchAnyDto) {
     query = query ?? {};
     const aggregate = this.accountModel.aggregate();

@@ -36,11 +36,11 @@ export class AccountServiceService
   ): Promise<AccountDocument[]> {
     throw new NotImplementedException('Method not implemented.');
   }
-  async getBalanceByAccountType(
+  async getBalanceByAccountTypeCard(
     query: QuerySearchAnyDto,
     context?: any,
   ): Promise<any[]> {
-    return this.lib.getBalanceByAccountType(query);
+    return this.lib.getBalanceByAccountTypeCard(query);
   }
 
   async getBalanceByOwnerByCard(

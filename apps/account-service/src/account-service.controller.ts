@@ -239,14 +239,16 @@ export class AccountServiceController implements GenericServiceController {
   ) {
     CommonService.ack(ctx);
     Promise.all([
-      this.accountService.getBalanceByAccountType(query),
+      this.accountService.getBalanceByAccountTypeCard(query),
+      //this.accountService.getBalanceByAccountTypeWallet(query),
       this.accountService.getBalanceByOwnerByCard(query),
       //this.accountService.getBalanceByOwnerByWallet(query),
       this.accountService.getBalanceByAccountByCard(query),
       //this.accountService.getBalanceByAccountByWallet(query),
     ]).then(async (results) => {
       const [
-        totalAccumulated,
+        cardTotalAccumulated,
+        //walletTotalAccumulated,
         cardByOwner,
         //walletByOwner,
         cards,
@@ -254,7 +256,7 @@ export class AccountServiceController implements GenericServiceController {
       ] = results;
       const promises = [
         this.getContentFileBalanceReport(
-          totalAccumulated,
+          cardTotalAccumulated,
           'total-accumulated',
           ['type', 'quantity', 'sum_available', 'sum_blocked'],
         ),
