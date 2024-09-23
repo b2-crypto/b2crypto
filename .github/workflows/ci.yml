@@ -97,7 +97,7 @@ jobs:
         with:
           command: preview
           stack-name: ${{ github.event.pull_request.base.ref == 'main' && 'b2fintech/production' || github.event.pull_request.base.ref == 'test' && 'b2fintech/testing' || 'b2fintech/staging' }}
-          work-dir: ./iac/cloud-services
+          work-dir: ./iac
           # comment-on-pr: true
           # diff: true
         env:
