@@ -377,9 +377,12 @@ const ecsFargateService = new awsx.ecs.FargateService(
           },
         ],
         readonlyRootFilesystem: true,
-        // healthCheck: {
-        //   command: ['CMD-SHELL', `curl -f http://127.0.0.1 || exit 0`],
-        // },
+        healthCheck: {
+          command: [
+            'CMD-SHELL',
+            `curl -f http://localhost/ >> /proc/1/fd/1 2>&1  || exit 1`,
+          ],
+        },
         logConfiguration: {
           logDriver: 'awslogs',
           options: {
