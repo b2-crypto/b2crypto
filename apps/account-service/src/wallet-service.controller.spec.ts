@@ -115,14 +115,31 @@ describe('WalletServiceController', () => {
       createDto.amount = 10;
       createDto.from = new mongoose.Types.ObjectId() as unknown as mongoose.Schema.Types.ObjectId;
       createDto.to = new mongoose.Types.ObjectId() as unknown as mongoose.Schema.Types.ObjectId;
-
+  
+      const mockUserId = new mongoose.Types.ObjectId();
+      const mockReq = { 
+        user: { id: mockUserId.toString() }, 
+        get: jest.fn().mockReturnValue('test.com') 
+      };
+  
+      await expect(controller.rechargeOne(createDto, mockReq as any)).rejects.toThrow(BadRequestException);
+      
+      expect(userServiceMock.getAll).not.toHaveBeenCalled();
+    });
+  
+    it('should call walletServiceService.rechargeWallet if amount is greater than 10', async () => {
+      const createDto = new WalletDepositCreateDto();
+      createDto.amount = 11;
+      createDto.from = new mongoose.Types.ObjectId() as unknown as mongoose.Schema.Types.ObjectId;
+      createDto.to = new mongoose.Types.ObjectId() as unknown as mongoose.Schema.Types.ObjectId;
+  
       const mockUserId = new mongoose.Types.ObjectId();
       const mockUser: UserDocument = {
-          _id: mockUserId,
-          personalData: { firstName: 'John', lastName: 'Doe' },
-          email: 'test@example.com'
+        _id: mockUserId,
+        personalData: { firstName: 'John', lastName: 'Doe' },
+        email: 'test@example.com'
       } as unknown as UserDocument;
-
+  
       const mockUserResponse: ResponsePaginator<UserDocument> = {
         list: [mockUser],
         totalElements: 1,
@@ -134,22 +151,24 @@ describe('WalletServiceController', () => {
         elementsPerPage: 10,
         order: []
       };
-
+  
       userServiceMock.getAll.mockResolvedValue(mockUserResponse);
-
+  
       const mockReq = { 
         user: { id: mockUserId.toString() }, 
         get: jest.fn().mockReturnValue('test.com') 
       };
-
-      await expect(controller.rechargeOne(createDto, mockReq as any)).rejects.toThrow(BadRequestException);
-      
-      expect(userServiceMock.getAll).toHaveBeenCalledWith({
-        where: { _id: mockUserId.toString() },
-        relations: ['personalData']
-      });
+  
+      // Mock the rechargeWallet method
+      const mockRechargeWallet = jest.fn().mockResolvedValue({ success: true });
+      (controller as any).walletServiceService = {
+        rechargeWallet: mockRechargeWallet
+      };
+  
+      await controller.rechargeOne(createDto, mockReq as any);
+  
+      expect(mockRechargeWallet).toHaveBeenCalledWith(createDto, mockUserId.toString(), 'test.com');
     });
-
   });
 
   describe('blockedOneById', () => {
