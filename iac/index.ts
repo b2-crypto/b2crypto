@@ -222,8 +222,8 @@ const ecsFargateService = new awsx.ecs.FargateService(
       memory: '2048',
       container: SECRETS.apply((secrets) => ({
         name: `${PROJECT_NAME}`,
-        image: ecrImage.imageUri,
-        // image: 'crccheck/hello-world:latest',
+        // image: ecrImage.imageUri,
+        image: 'crccheck/hello-world:latest',
         cpu: 1024,
         memory: 2048,
         essential: true,
@@ -380,8 +380,11 @@ const ecsFargateService = new awsx.ecs.FargateService(
         healthCheck: {
           command: [
             'CMD-SHELL',
-            `curl -f http://localhost/ >> /proc/1/fd/1 2>&1  || exit 1`,
+            `curl -f http://127.0.0.1/ >> /proc/1/fd/1 2>&1  || exit 1`,
           ],
+          interval: 30,
+          timeout: 5,
+          retries: 3,
         },
         logConfiguration: {
           logDriver: 'awslogs',
