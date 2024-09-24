@@ -162,9 +162,9 @@ const lbApplicationLoadBalancer = new awsx.lb.ApplicationLoadBalancer(
       port: parseInt(PORT),
       vpcId: ec2Vpc.vpcId,
       tags: TAGS,
-      healthCheck: {
-        path: '/',
-      },
+      // healthCheck: {
+      //   path: '/',
+      // },
     },
     securityGroups: [ec2SecurityGroup.id],
     subnetIds: ec2Vpc.publicSubnetIds,
