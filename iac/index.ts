@@ -421,7 +421,6 @@ const cloudwatchDashboard = new aws.cloudwatch.Dashboard(
             properties: {
               metrics: [
                 ['AWS/ECS', 'CPUUtilization', 'AWS/ECS', 'MemoryUtilization'],
-                ['.', 'MemoryReservation', '.', 'MemoryLimit'],
               ],
               view: 'timeSeries',
               stacked: false,
@@ -429,21 +428,21 @@ const cloudwatchDashboard = new aws.cloudwatch.Dashboard(
               title: 'ECS Task CPU and Memory Utilization',
             },
           },
-          {
-            type: 'log',
-            x: 0,
-            y: 6,
-            width: 24,
-            height: 6,
-            properties: {
-              query: `fields @timestamp, @message
-                          | sort @timestamp desc
-                          | limit 20`,
-              logGroupNames: [cloudwatchLogGroup.name],
-              region: aws.config.region,
-              title: 'ECS Task Logs',
-            },
-          },
+          // {
+          //   type: 'log',
+          //   x: 0,
+          //   y: 6,
+          //   width: 24,
+          //   height: 6,
+          //   properties: {
+          //     // query: `fields @timestamp, @message
+          //     //             | sort @timestamp desc
+          //     //             | limit 20`,
+          //     logGroupNames: [cloudwatchLogGroup.name],
+          //     region: aws.config.region,
+          //     title: 'ECS Task Logs',
+          //   },
+          // },
         ],
       }),
     ),
