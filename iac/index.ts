@@ -163,7 +163,7 @@ const lbApplicationLoadBalancer = new awsx.lb.ApplicationLoadBalancer(
       vpcId: ec2Vpc.vpcId,
       tags: TAGS,
       healthCheck: {
-        path: '/api/health',
+        path: '/',
       },
     },
     securityGroups: [ec2SecurityGroup.id],
@@ -378,10 +378,7 @@ const ecsFargateService = new awsx.ecs.FargateService(
         ],
         readonlyRootFilesystem: true,
         healthCheck: {
-          command: [
-            'CMD-SHELL',
-            `curl -f http://127.0.0.1/api/health || exit 0`,
-          ],
+          command: ['CMD-SHELL', `curl -f http://127.0.0.1 || exit 0`],
         },
         logConfiguration: {
           logDriver: 'awslogs',
