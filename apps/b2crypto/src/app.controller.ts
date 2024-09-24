@@ -7,7 +7,7 @@ export class AppController {
   constructor(private readonly appService: AppService) {}
 
   @AllowAnon()
-  @Get('/')
+  @Get('')
   getHealth() {
     return { statusCode: 200, message: 'OK' };
   }
