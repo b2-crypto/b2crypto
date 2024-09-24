@@ -2,12 +2,12 @@ import { AllowAnon } from '@auth/auth/decorators/allow-anon.decorator';
 import { Controller, Get } from '@nestjs/common';
 import { AppService } from './app.service';
 
-@Controller('api')
+@Controller('/')
 export class AppController {
   constructor(private readonly appService: AppService) {}
 
   @AllowAnon()
-  @Get('health')
+  @Get('/')
   getHealth() {
     return { statusCode: 200, message: 'OK' };
   }
