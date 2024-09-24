@@ -3,6 +3,7 @@ import * as awsx from '@pulumi/awsx';
 import * as pulumi from '@pulumi/pulumi';
 import { randomBytes } from 'crypto';
 import { SECRETS, VARS_ENV } from './secrets';
+import e = require('express');
 
 const {
   COMPANY_NAME,
@@ -377,15 +378,16 @@ const ecsFargateService = new awsx.ecs.FargateService(
           },
         ],
         readonlyRootFilesystem: true,
-        // healthCheck: {
-        //   command: [
-        //     'CMD-SHELL',
-        //     `curl -f http://127.0.0.1/ >> /proc/1/fd/1 2>&1  || exit 1`,
-        //   ],
-        //   interval: 30,
-        //   timeout: 5,
-        //   retries: 3,
-        // },
+        healthCheck: {
+          command: [
+            'CMD-SHELL',
+            `curl -f http://127.0.0.1/api/health >> /proc/1/fd/1 2>&1  || exit 1`,
+          ],
+          startPeriod: 30,
+          interval: 30,
+          timeout: 5,
+          retries: 3,
+        },
         logConfiguration: {
           logDriver: 'awslogs',
           options: {
@@ -409,44 +411,49 @@ const cloudwatchDashboard = new aws.cloudwatch.Dashboard(
   `${COMPANY_NAME}-${PROJECT_NAME}-${STACK}`,
   {
     dashboardName: `${COMPANY_NAME}-${PROJECT_NAME}-${STACK}`,
-    dashboardBody: pulumi.output(ecsFargateService.taskDefinition).apply((td) =>
-      JSON.stringify({
-        widgets: [
-          {
-            type: 'metric',
-            x: 0,
-            y: 0,
-            width: 24,
-            height: 6,
-            properties: {
-              metrics: [
-                ['AWS/ECS', 'CPUUtilization', 'AWS/ECS', 'MemoryUtilization'],
-                ['.', 'MemoryReservation', '.', 'MemoryLimit'],
-              ],
-              view: 'timeSeries',
-              stacked: false,
-              region: aws.config.region,
-              title: 'ECS Task CPU and Memory Utilization',
+    dashboardBody: pulumi
+      .all([ecsCluster.name, ecsFargateService.service.name])
+      .apply(([clusterName, serviceName]) =>
+        JSON.stringify({
+          widgets: [
+            {
+              type: 'metric',
+              x: 0,
+              y: 0,
+              width: 24,
+              height: 6,
+              properties: {
+                metrics: [
+                  // ['AWS/ECS', 'CPUUtilization', 'AWS/ECS', 'MemoryUtilization'],
+                  ['AWS/ECS', 'CPUUtilization', 'ClusterName', clusterName],
+                  ['AWS/ECS', 'MemoryUtilization', 'ClusterName', clusterName],
+                  ['AWS/ECS', 'CPUUtilization', 'ServiceName', serviceName],
+                  ['AWS/ECS', 'MemoryUtilization', 'ServiceName', serviceName],
+                ],
+                view: 'timeSeries',
+                stacked: false,
+                region: aws.config.region,
+                title: 'ECS Task CPU and Memory Utilization',
+              },
             },
-          },
-          {
-            type: 'log',
-            x: 0,
-            y: 6,
-            width: 24,
-            height: 6,
-            properties: {
-              query: `fields @timestamp, @message
-                          | sort @timestamp desc
-                          | limit 20`,
-              logGroupNames: [cloudwatchLogGroup.name],
-              region: aws.config.region,
-              title: 'ECS Task Logs',
-            },
-          },
-        ],
-      }),
-    ),
+            // {
+            //   type: 'log',
+            //   x: 0,
+            //   y: 6,
+            //   width: 24,
+            //   height: 6,
+            //   properties: {
+            //     // query: `fields @timestamp, @message
+            //     //             | sort @timestamp desc
+            //     //             | limit 20`,
+            //     logGroupNames: [cloudwatchLogGroup.name],
+            //     region: aws.config.region,
+            //     title: 'ECS Task Logs',
+            //   },
+            // },
+          ],
+        }),
+      ),
   },
 );
 

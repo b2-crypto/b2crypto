@@ -8,9 +8,9 @@ RUN npm run build
 
 FROM public.ecr.aws/docker/library/node:20.17.0-alpine3.20 AS deploy
 WORKDIR /app
-COPY --from=build /app/dist/apps/b2crypto ./
+COPY --from=build /app/dist/apps/b2crypto ./dist/apps/b2crypto
 COPY --from=build /app/package*.json ./
-COPY --from=build /app/sftp /app/sftp
+COPY --from=build /app/sftp ./sftp
 RUN npm ci --only=production
 RUN apk add --update curl
 RUN apk add tree && apk add grep && apk add findutils
@@ -74,6 +74,5 @@ ENV POMELO_SFTP_PORT=""
 ENV POMELO_SFTP_USR=""
 ENV POMELO_SFTP_PASSPHRASE=""
 
-EXPOSE 3000
-ENTRYPOINT [ "node", "main.js" ]
+ENTRYPOINT [ "node", "./dist/apps/b2crypto/main.js" ]
 CMD [""]
