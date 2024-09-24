@@ -222,7 +222,7 @@ const ecsFargateService = new awsx.ecs.FargateService(
       memory: '2048',
       container: SECRETS.apply((secrets) => ({
         name: `${PROJECT_NAME}`,
-        // image: ecrImage.imageUri,
+        // // image: ecrImage.imageUri,
         image: 'crccheck/hello-world:latest',
         cpu: 1024,
         memory: 2048,
