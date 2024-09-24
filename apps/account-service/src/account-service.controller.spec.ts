@@ -99,16 +99,22 @@ describe('AccountServiceController', () => {
   });
 
   describe('deleteManyById', () => {
-    it('should throw UnauthorizedException', async () => {
-      const mockIds = [{}] as UpdateAnyDto[];
-      await expect(controller.deleteManyById(mockIds)).rejects.toThrow(UnauthorizedException);
+    it('should throw UnauthorizedException and not call the service', () => {
+      const mockIds = [{ id: 'testId' }] as UpdateAnyDto[];
+      
+      expect(() => controller.deleteManyById(mockIds)).toThrow(UnauthorizedException);
+      
+      expect(accountServiceMock.deleteManyById).not.toHaveBeenCalled();
     });
   });
 
   describe('deleteOneById', () => {
-    it('should throw UnauthorizedException', async () => {
+    it('should throw UnauthorizedException and not call the service', () => {
       const mockId = 'testId';
-      await expect(controller.deleteOneById(mockId)).rejects.toThrow(UnauthorizedException);
+      
+      expect(() => controller.deleteOneById(mockId)).toThrow(UnauthorizedException);
+      
+      expect(accountServiceMock.deleteOneById).not.toHaveBeenCalled();
     });
   });
 
