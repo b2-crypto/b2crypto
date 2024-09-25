@@ -47,11 +47,16 @@ jobs:
     strategy:
       matrix:
         node-version: [20.x]
-    # needs: preview_push_image
     needs: build
     steps:
       - name: Checkout
         uses: actions/checkout@v2
+
+      - name: Get Commit SHA
+        uses: benjlevesque/short-sha@v3.0
+        id: short-sha
+        with:
+          length: 6
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -72,4 +77,4 @@ jobs:
           # diff: true
         env:
           PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
-          COMMIT_SHA: ${{ steps.commit.outputs.short }}
+          COMMIT_SHA: ${{ steps.short-sha.outputs.sha }}
