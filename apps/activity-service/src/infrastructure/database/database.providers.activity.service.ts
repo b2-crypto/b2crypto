@@ -1,11 +1,13 @@
-import * as mongoose from 'mongoose';
-import { ConfigModule, ConfigService } from '@nestjs/config';
 import DatabaseConnectionEnum from '@common/common/enums/DatabaseConnectionEnum';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import * as mongoose from 'mongoose';
 
 export const databaseProviders = [
   {
     provide: `MONGOOSE_CONNECTION${DatabaseConnectionEnum.Activity}`,
-    useFactory: (configService: ConfigService): Promise<typeof mongoose> => {
+    useFactory: async (
+      configService: ConfigService,
+    ): Promise<typeof mongoose> => {
       const dbName = configService.get('DATABASE_NAME');
       const dbUrl = configService.get('DATABASE_URL');
       return mongoose
