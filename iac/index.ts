@@ -52,7 +52,7 @@ const ecrRepository = new aws.ecr.Repository(
   `${COMPANY_NAME}/${PROJECT_NAME}-${STACK}`,
   {
     name: `${COMPANY_NAME}/${PROJECT_NAME}-${STACK}`,
-    imageTagMutability: 'MUTABLE',
+    imageTagMutability: 'IMMUTABLE',
     imageScanningConfiguration: {
       scanOnPush: true,
     },
@@ -163,11 +163,11 @@ const lbApplicationLoadBalancer = new awsx.lb.ApplicationLoadBalancer(
       port: parseInt(PORT),
       vpcId: ec2Vpc.vpcId,
       tags: TAGS,
-      // healthCheck: {
-      //   path: '/api/health',
-      //   interval: 60,
-      //   timeout: 30,
-      // },
+      healthCheck: {
+        path: '/',
+        interval: 30,
+        timeout: 3,
+      },
     },
     securityGroups: [ec2SecurityGroup.id],
     subnetIds: ec2Vpc.publicSubnetIds,
@@ -225,9 +225,9 @@ const ecsFargateService = new awsx.ecs.FargateService(
       memory: '2048',
       container: SECRETS.apply((secrets) => ({
         name: `${PROJECT_NAME}`,
-        // image: ecrImageData.imageUri,
+        image: ecrImageData.imageUri,
         // image: ecrImage.imageUri,
-        image: 'crccheck/hello-world:latest',
+        // image: 'crccheck/hello-world:latest',
         cpu: 1024,
         memory: 2048,
         essential: true,
@@ -381,17 +381,13 @@ const ecsFargateService = new awsx.ecs.FargateService(
           },
         ],
         readonlyRootFilesystem: true,
-        healthCheck: {
-          command: [
-            'CMD-SHELL',
-            `curl -f http://127.0.0.1 >> /proc/1/fd/1 2>&1 || exit 1`,
-            // `curl -f http://localhost/health || exit 1`,
-          ],
-          startPeriod: 30,
-          interval: 10,
-          timeout: 5,
-          retries: 10,
-        },
+        // healthCheck: {
+        //   command: ['CMD-SHELL', `curl -f http://localhost || exit 1`],
+        //   startPeriod: 10,
+        //   interval: 5,
+        //   timeout: 3,
+        //   retries: 3,
+        // },
         logConfiguration: {
           logDriver: 'awslogs',
           options: {
