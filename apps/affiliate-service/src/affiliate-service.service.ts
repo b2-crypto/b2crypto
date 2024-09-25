@@ -14,7 +14,7 @@ import {
   NotImplementedException,
 } from '@nestjs/common';
 import { ConfigCheckStatsDto } from '@stats/stats/dto/config.check.stats.dto';
-import CheckStatsType from '@stats/stats/enum/check.stats.type';
+import CheckStatsType from '../../../libs/stats/src/enum/check.stats.type';
 import { TrafficCreateDto } from '@traffic/traffic/dto/traffic.create.dto';
 import { TransferInterface } from '@transfer/transfer/entities/transfer.interface';
 import EventsNamesBrandEnum from 'apps/brand-service/src/enum/events.names.brand.enum';

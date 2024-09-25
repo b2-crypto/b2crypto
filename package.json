@@ -264,7 +264,13 @@
        "^apps/psp-service/src/(.*)$": "<rootDir>/apps/psp-service/src/$1",
        "^apps/permission-service/src/(.*)$": "<rootDir>/apps/permission-service/src/$1",
        "^apps/group-service/src/(.*)$": "<rootDir>/apps/group-service/src/$1",
-       "^apps/integration-service/src/(.*)$": "<rootDir>/apps/integration-service/src/$1"
+       "^apps/integration-service/src/(.*)$": "<rootDir>/apps/integration-service/src/$1",
+       "^apps/affiliate-service/src/(.*)$": "<rootDir>/apps/affiliate-service/src/$1",
+       "^apps/stats-service/src/(.*)$": "<rootDir>/apps/stats-service/src/$1",
+       "^apps/brand-service/src/(.*)$": "<rootDir>/apps/brand-service/src/$1",
+       "^apps/traffic-service/src/(.*)$": "<rootDir>/apps/traffic-service/src/$1",
+       "^apps/person-service/src/(.*)$": "<rootDir>/apps/person-service/src/$1",
+    "^libs/stats/src/(.*)$": "<rootDir>/libs/stats/src/$1"
     }
   }
 }

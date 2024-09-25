@@ -33,7 +33,7 @@ import {
 } from '@psp-account/psp-account/entities/mongoose/psp-account.schema';
 import { PspAccountInterface } from '@psp-account/psp-account/entities/psp-account.interface';
 import { PspInterface } from '@psp/psp/entities/psp.interface';
-import { StatsDateCreateDto } from '@stats/stats/dto/stats.date.create.dto';
+import { StatsDateCreateDto } from '../../../libs/stats/src/dto/stats.date.create.dto';
 import { StatusDocument } from '@status/status/entities/mongoose/status.schema';
 import { StatusInterface } from '@status/status/entities/status.interface';
 import { TransferServiceMongooseService } from '@transfer/transfer';
