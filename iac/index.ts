@@ -164,7 +164,9 @@ const lbApplicationLoadBalancer = new awsx.lb.ApplicationLoadBalancer(
       vpcId: ec2Vpc.vpcId,
       tags: TAGS,
       // healthCheck: {
-      //   path: '/',
+      //   path: '/api/health',
+      //   interval: 60,
+      //   timeout: 30,
       // },
     },
     securityGroups: [ec2SecurityGroup.id],
@@ -223,8 +225,9 @@ const ecsFargateService = new awsx.ecs.FargateService(
       memory: '2048',
       container: SECRETS.apply((secrets) => ({
         name: `${PROJECT_NAME}`,
-        image: ecrImage.imageUri,
-        // image: 'crccheck/hello-world:latest',
+        // image: ecrImageData.imageUri,
+        // image: ecrImage.imageUri,
+        image: 'crccheck/hello-world:latest',
         cpu: 1024,
         memory: 2048,
         essential: true,
@@ -381,12 +384,13 @@ const ecsFargateService = new awsx.ecs.FargateService(
         healthCheck: {
           command: [
             'CMD-SHELL',
-            `curl -f http://127.0.0.1/api/health >> /proc/1/fd/1 2>&1  || exit 1`,
+            `curl -f http://127.0.0.1 >> /proc/1/fd/1 2>&1 || exit 1`,
+            // `curl -f http://localhost/health || exit 1`,
           ],
           startPeriod: 30,
-          interval: 30,
+          interval: 10,
           timeout: 5,
-          retries: 3,
+          retries: 10,
         },
         logConfiguration: {
           logDriver: 'awslogs',
