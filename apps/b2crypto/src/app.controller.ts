@@ -1,14 +1,24 @@
 import { AllowAnon } from '@auth/auth/decorators/allow-anon.decorator';
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, HttpCode, HttpStatus, Logger } from '@nestjs/common';
 import { AppService } from './app.service';
 
-@Controller('/api')
+@Controller('/')
 export class AppController {
+  private readonly logger = new Logger(AppController.name);
+
   constructor(private readonly appService: AppService) {}
 
   @AllowAnon()
+  @HttpCode(HttpStatus.OK)
   @Get('/health')
   getHealth() {
     return { statusCode: 200, message: 'OK' };
+  }
+
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @AllowAnon()
+  @Get('')
+  redirectToHealth() {
+    this.logger.log('No content');
   }
 }
