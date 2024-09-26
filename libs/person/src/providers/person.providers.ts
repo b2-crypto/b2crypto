@@ -6,7 +6,7 @@ export const personProviders = [
   {
     provide: 'PERSON_MODEL_MONGOOSE',
     useFactory: (connection: Connection) => {
-      connection?.plugin(mongooseSlugUpdater);
+      connection.plugin(mongooseSlugUpdater);
       return connection.model('persons', PersonSchema);
     },
     inject: ['MONGOOSE_CONNECTION'],

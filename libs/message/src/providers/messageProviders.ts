@@ -6,7 +6,7 @@ export const MessageProviders = [
   {
     provide: 'MESSAGE_MODEL_MONGOOSE',
     useFactory: (connection: Connection) => {
-      connection?.plugin(mongooseSlugUpdater);
+      connection.plugin(mongooseSlugUpdater);
       return connection.model('messages', MessageSchema);
     },
     inject: ['MONGOOSE_CONNECTION'],

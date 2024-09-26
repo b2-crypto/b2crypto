@@ -3,7 +3,6 @@ import * as awsx from '@pulumi/awsx';
 import * as pulumi from '@pulumi/pulumi';
 import { randomBytes } from 'crypto';
 import { SECRETS, VARS_ENV } from './secrets';
-import e = require('express');
 
 const {
   COMPANY_NAME,
@@ -116,6 +115,30 @@ const ec2SecurityGroup = new aws.ec2.SecurityGroup(
         protocol: 'TCP',
         cidrBlocks: ['0.0.0.0/0'],
       },
+      {
+        fromPort: parseInt(RABBIT_MQ_PORT),
+        toPort: parseInt(RABBIT_MQ_PORT),
+        protocol: 'TCP',
+        cidrBlocks: ['0.0.0.0/0'],
+      },
+      {
+        fromPort: parseInt(REDIS_PORT),
+        toPort: parseInt(REDIS_PORT),
+        protocol: 'TCP',
+        cidrBlocks: ['0.0.0.0/0'],
+      },
+      {
+        fromPort: SECRETS.POMELO_SFTP_PORT.apply((value) => parseInt(value)),
+        toPort: SECRETS.POMELO_SFTP_PORT.apply((value) => parseInt(value)),
+        protocol: 'TCP',
+        cidrBlocks: ['0.0.0.0/0'],
+      },
+      {
+        fromPort: parseInt(AWS_SES_PORT),
+        toPort: parseInt(AWS_SES_PORT),
+        protocol: 'TCP',
+        cidrBlocks: ['0.0.0.0/0'],
+      },
     ],
     egress: [
       {
@@ -127,6 +150,30 @@ const ec2SecurityGroup = new aws.ec2.SecurityGroup(
       {
         fromPort: parseInt(PORT),
         toPort: parseInt(PORT),
+        protocol: 'TCP',
+        cidrBlocks: ['0.0.0.0/0'],
+      },
+      {
+        fromPort: parseInt(RABBIT_MQ_PORT),
+        toPort: parseInt(RABBIT_MQ_PORT),
+        protocol: 'TCP',
+        cidrBlocks: ['0.0.0.0/0'],
+      },
+      {
+        fromPort: parseInt(REDIS_PORT),
+        toPort: parseInt(REDIS_PORT),
+        protocol: 'TCP',
+        cidrBlocks: ['0.0.0.0/0'],
+      },
+      {
+        fromPort: SECRETS.POMELO_SFTP_PORT.apply((value) => parseInt(value)),
+        toPort: SECRETS.POMELO_SFTP_PORT.apply((value) => parseInt(value)),
+        protocol: 'TCP',
+        cidrBlocks: ['0.0.0.0/0'],
+      },
+      {
+        fromPort: parseInt(AWS_SES_PORT),
+        toPort: parseInt(AWS_SES_PORT),
         protocol: 'TCP',
         cidrBlocks: ['0.0.0.0/0'],
       },

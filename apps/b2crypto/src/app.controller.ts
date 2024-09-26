@@ -15,10 +15,10 @@ export class AppController {
     return { statusCode: 200, message: 'OK' };
   }
 
-  @HttpCode(HttpStatus.NO_CONTENT)
+  @HttpCode(HttpStatus.OK)
   @AllowAnon()
   @Get('')
-  redirectToHealth() {
-    this.logger.log('No content');
+  home() {
+    return { statusCode: 200, message: 'Home' };
   }
 }
