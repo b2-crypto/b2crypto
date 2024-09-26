@@ -1,5 +1,8 @@
 import TransportEnum from '@common/common/enums/TransportEnum';
-import { MessageCreateDto } from '@message/message/dto/message.create.dto';
+import {
+  AttachmentsEmailConfig,
+  MessageCreateDto,
+} from '@message/message/dto/message.create.dto';
 import { ScopeDto } from '@permission/permission/dto/scope.dto';
 
 export class EmailMessageBuilder {
@@ -76,6 +79,11 @@ export class EmailMessageBuilder {
 
   setStatus(status: string): EmailMessageBuilder {
     this.message.status = status;
+    return this;
+  }
+
+  setAttachments(attachments: AttachmentsEmailConfig[]): EmailMessageBuilder {
+    this.message.attachments = attachments;
     return this;
   }
 

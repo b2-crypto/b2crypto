@@ -104,6 +104,7 @@ export class MessageServiceService {
       .setOriginText(this.getOriginEmail())
       .setDestinyText(message.destinyText)
       .setVars(message.vars)
+      .setAttachments(message.attachments)
       .build();
     return this.sendEmail(emailMessage, TemplatesMessageEnum.report);
   }
@@ -272,6 +273,7 @@ export class MessageServiceService {
         text: message.body,
         template: template,
         context: message.vars,
+        attachments: message.attachments,
         html,
       });
 
