@@ -24,12 +24,23 @@ export class PomeloSignatureGuard implements CanActivate {
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
+    Logger.debug('Checking Pomelo signature', 'PomeloSignatureGuard');
     this.headersToLowercase(context);
     const headers = this.utils.extractRequestHeaders(context);
     const path =
       this.reflector
         .get<string[]>(PATH_METADATA, context.getHandler())
         ?.toString() || '';
+    Logger.log(`Path: ${path}`, 'SignatureGuard');
+    Logger.log(
+      `Headers endpoint: ${JSON.stringify(headers.endpoint)}`,
+      'SignatureGuard',
+    );
+    Logger.debug(
+      CommonService.checkWhitelistedIps(context),
+      'checkWhitelistedIps',
+    );
+    Logger.debug(this.checkValidEndpoint(path, headers), 'checkValidEndpoint');
     if (
       CommonService.checkWhitelistedIps(context) &&
       this.checkValidEndpoint(path, headers)
@@ -62,6 +73,7 @@ export class PomeloSignatureGuard implements CanActivate {
   }
 
   private checkValidEndpoint(path: string, headers: ProcessHeaderDto): boolean {
+    Logger.debug('Check valid endpoint', 'checkValidEndpoint');
     if (path !== PomeloEnum.POMELO_ADJUSTMENT_PATH)
       return path === headers.endpoint;
 

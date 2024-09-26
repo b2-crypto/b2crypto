@@ -275,7 +275,8 @@ export class BasicServiceModel<
       if (!rta) rta = null;
       return rta;
     } catch (err) {
-      Logger.error(err, BasicServiceModel.name);
+      Logger.error(`${id}`, `${BasicServiceModel.name}-findOne.id`);
+      Logger.error(err, `${BasicServiceModel.name}-findOne`);
       return null;
     }
   }
@@ -352,7 +353,7 @@ export class BasicServiceModel<
       await this.model.deleteMany(query);
       return true;
     } catch (err) {
-      Logger.error(err, BasicServiceModel.name);
+      Logger.error(err, `${BasicServiceModel.name}-removeAllData`);
       throw new BadRequestException(
         `Can't remove all data of query ${JSON.stringify(query)}`,
       );

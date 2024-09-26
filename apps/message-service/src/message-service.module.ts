@@ -16,8 +16,8 @@ import { MessageServiceService } from './message-service.service';
         ignoreTLS: false,
         secure: false,
         auth: {
-          user: process.env.AWS_SES_SMTP_USERNAME,
-          pass: process.env.AWS_SES_SMTP_PASSWORD,
+          user: process.env.AWS_SES_USERNAME,
+          pass: process.env.AWS_SES_PASSWORD,
         },
       },
       preview: false,

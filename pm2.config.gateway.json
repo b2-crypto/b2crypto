@@ -35,8 +35,8 @@
     "AWS_SES_FROM_DEFAULT": "no-reply@b2crypto.com",
     "AWS_SES_HOST": "email-smtp.eu-west-3.amazonaws.com",
     "AWS_SES_PORT": "587",
-    "AWS_SES_SMTP_USERNAME": "AKIA2YTTBOKD2OUQQSM3",
-    "AWS_SES_SMTP_PASSWORD": "BDRqFuz7sRh4uO+HG+P4WqgyS1J0Muac6tdICZuTRpJ/",
+    "AWS_SES_USERNAME": "AKIA2YTTBOKD2OUQQSM3",
+    "AWS_SES_PASSWORD": "BDRqFuz7sRh4uO+HG+P4WqgyS1J0Muac6tdICZuTRpJ/",
     "API_SECRET_KEY_DIC": {
       "sKQq91g4ctRkLElI86vMeRNIPbhUc2qyEWxgbt6CGP8=": "hByKl5U+zzpMibm7MiEnjEsnBHC4ntATnEhjzKRw2fw="
     },
@@ -67,7 +67,7 @@
     "REDIS_USERNAME": "default",
     "REDIS_PASSWORD": "TPhqYUUS44CQlRkhhmkZFxDb3YH0Pdam",
     "REDIS_PORT": 10790,
-    "CACHE_TTL": 20,
+    "CACHE_TTL": 5,
     "CACHE_MAX_ITEMS": 50,
     "AUTH_MAX_SECONDS_TO_REFRESH": 60,
     "OTP_VALIDATION_TIME_SECONDS":90,
@@ -126,8 +126,8 @@
     "AWS_SES_FROM_DEFAULT": "no-reply@b2crypto.com",
     "AWS_SES_HOST": "email-smtp.eu-west-3.amazonaws.com",
     "AWS_SES_PORT": "587",
-    "AWS_SES_SMTP_USERNAME": "AKIA2YTTBOKD2OUQQSM3",
-    "AWS_SES_SMTP_PASSWORD": "BDRqFuz7sRh4uO+HG+P4WqgyS1J0Muac6tdICZuTRpJ/",
+    "AWS_SES_USERNAME": "AKIA2YTTBOKD2OUQQSM3",
+    "AWS_SES_PASSWORD": "BDRqFuz7sRh4uO+HG+P4WqgyS1J0Muac6tdICZuTRpJ/",
     "API_SECRET_KEY_DIC": {
       "sKQq91g4ctRkLElI86vMeRNIPbhUc2qyEWxgbt6CGP8=": "hByKl5U+zzpMibm7MiEnjEsnBHC4ntATnEhjzKRw2fw="
     },

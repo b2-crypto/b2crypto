@@ -22,7 +22,7 @@ export async function bootstrapGateway(
   }
   Logger.log(port, 'Deploy port');
   const app = await NestFactory.create(module, {
-    logger: false,
+    //logger: false,
     cors: true,
   });
 

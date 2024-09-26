@@ -16,6 +16,8 @@ import { PomeloProcessEnum } from '../enums/pomelo.process.enum';
 import { CardsEnum } from '@common/common/enums/messages.enum';
 import EventsNamesTransferEnum from 'apps/transfer-service/src/enum/events.names.transfer.enum';
 import { OperationTransactionType } from '@transfer/transfer/enum/operation.transaction.type.enum';
+import EventsNamesMessageEnum from 'apps/message-service/src/enum/events.names.message.enum';
+import TransportEnum from '@common/common/enums/TransportEnum';
 
 @Injectable()
 export class PomeloIntegrationProcessService {
@@ -23,7 +25,7 @@ export class PomeloIntegrationProcessService {
     private readonly cache: PomeloCache,
     private readonly currencyConversion: FiatIntegrationClient,
     private readonly builder: BuildersService,
-  ) {}
+  ) { }
 
   private async process(
     process: any,
@@ -49,36 +51,48 @@ export class PomeloIntegrationProcessService {
     response: any,
     amount: any,
   ) {
-    this.builder.emitTransferEventClient(
-      EventsNamesTransferEnum.createOneWebhook,
-      {
-        integration: 'Pomelo',
-        requestBodyJson: process,
-        requestHeadersJson: headers,
-        operationType:
-          OperationTransactionType[process?.transaction?.type?.toLowerCase()],
-        status: response?.status ?? CardsEnum.CARD_PROCESS_OK,
-        descriptionStatusPayment:
-          response?.status_detail ?? CardsEnum.CARD_PROCESS_OK,
-        description: response?.message ?? '',
-        amount: amount.amount,
-        amountCustodial: amount.usd,
-        currency: amount.from,
-        currencyCustodial: amount.to,
-      },
-    );
+    try {
+      this.builder.emitTransferEventClient(
+        EventsNamesTransferEnum.createOneWebhook,
+        {
+          integration: 'Pomelo',
+          requestBodyJson: process,
+          requestHeadersJson: headers,
+          operationType:
+            OperationTransactionType[process?.transaction?.type?.toLowerCase()],
+          status: response?.status ?? CardsEnum.CARD_PROCESS_OK,
+          descriptionStatusPayment:
+            response?.status_detail ?? CardsEnum.CARD_PROCESS_OK,
+          description: response?.message ?? '',
+          amount: amount.amount,
+          amountCustodial: amount.usd,
+          currency: amount.from,
+          currencyCustodial: amount.to,
+        },
+      );
+    } catch (error) {
+      Logger.log(
+        `Error creatin transfer: ${error}`,
+        PomeloIntegrationProcessService.name,
+      );
+    }
   }
 
   private async getAmount(txn: any): Promise<any> {
+    let conversion: string;
     try {
       const to = process.env.DEFAULT_CURRENCY_CONVERSION_COIN;
       const from = txn.amount.local.currency;
       const amount = txn.amount.local.total;
-      const usd = await this.currencyConversion.getCurrencyConversion(
-        to,
-        from,
-        amount,
-      );
+      conversion = `to: ${to} | from: ${from} | amount: ${amount}`;
+      let usd = 0;
+      if (parseInt(amount) > 0) {
+        usd = await this.currencyConversion.getCurrencyConversion(
+          to,
+          from,
+          amount,
+        );
+      }
       return {
         to,
         from,
@@ -86,7 +100,10 @@ export class PomeloIntegrationProcessService {
         usd,
       };
     } catch (error) {
-      Logger.error(error, 'PomeloProcess');
+      Logger.error(
+        `Error: ${error} | Request: ${conversion}`,
+        'PomeloProcess getAmount',
+      );
       throw new InternalServerErrorException(error);
     }
   }
@@ -97,9 +114,24 @@ export class PomeloIntegrationProcessService {
     usdAmount: number,
   ): Promise<any> {
     try {
+      Logger.log('JSON.stringify(process)', 'ExecuteProcess start');
+      /* if (
+        process?.installments &&
+        parseInt(process?.installments?.quantity) > 1
+      ) {
+        Logger.log(
+          'Invalid Installments: ' + process?.installments?.quantity,
+          'ExecuteProcess',
+        );
+        return this.buildErrorResponse(
+          CardsEnum.CARD_PROCESS_INVALID_INSTALLMENTS,
+          authorize,
+        );
+      } */
       const cardId = process?.card?.id || '';
       const movement = PomeloProcessEnum[process?.transaction?.type];
-      if (usdAmount <= 0) {
+      if (usdAmount < 0) {
+        Logger.log('Invalid Amount: ' + usdAmount, 'ExecuteProcess');
         return this.buildErrorResponse(
           CardsEnum.CARD_PROCESS_INVALID_AMOUNT,
           authorize,
@@ -116,7 +148,7 @@ export class PomeloIntegrationProcessService {
       );
       return this.buildProcessResponse(processResult, authorize);
     } catch (error) {
-      Logger.error(error, 'PomeloProcess');
+      Logger.error(error, 'PomeloProcess executeProcess');
       throw new InternalServerErrorException(error);
     }
   }
@@ -165,6 +197,12 @@ export class PomeloIntegrationProcessService {
         message: `Transaction rejected.`,
         status_detail: CardsEnum.CARD_PROCESS_INSUFFICIENT_FUNDS,
       };
+    } else if (result === CardsEnum.CARD_PROCESS_INVALID_INSTALLMENTS) {
+      response = {
+        status: CardsEnum.CARD_PROCESS_REJECTED,
+        message: `Transaction rejected.`,
+        status_detail: CardsEnum.CARD_PROCESS_OTHER,
+      };
     }
     if (!authorize) {
       // If it is processing an adjustment it must respond with a different status code.
@@ -204,25 +242,97 @@ export class PomeloIntegrationProcessService {
     }
     return cachedResult;
   }
-
   async processAdjustment(adjustment: Adjustment, headers: any): Promise<any> {
-    return await this.process(
-      adjustment,
-      adjustment.idempotency,
-      false,
-      headers,
-    );
+    try {
+      const processed = await this.process(
+        adjustment,
+        adjustment.idempotency,
+        false,
+        headers,
+      );
+
+      this.sendAdjustmentNotificationEmail(adjustment).catch((error) => {
+        Logger.error(
+          'Error sending adjustment notification email',
+          error.stack,
+        );
+      });
+
+      return processed;
+    } catch (error) {
+      Logger.error('Error processing adjustment', error.stack);
+    }
+  }
+
+  private async sendAdjustmentNotificationEmail(
+    adjustment: Adjustment,
+  ): Promise<void> {
+    if (adjustment.user && adjustment.user.id) {
+      const data = {
+        vars: {
+          cardId: adjustment.card.id,
+          transactionType: adjustment.transaction?.type,
+          merchantName: adjustment.merchant?.name,
+          cardLastFour: adjustment.card?.last_four,
+          amountLocal: adjustment.amount?.settlement?.total,
+          currencyLocal: adjustment.amount?.settlement?.currency,
+        },
+      };
+
+      Logger.log(data, 'Purchases/Transaction Adjustments Email Prepared');
+      this.builder.emitMessageEventClient(
+        EventsNamesMessageEnum.sendAdjustments,
+        data,
+      );
+    } else {
+      Logger.warn(
+        'Adjustment processed without valid user ID. Skipping notification email.',
+      );
+    }
   }
 
   async processAuthorization(
     authorization: Authorization,
     headers: any,
   ): Promise<any> {
-    return await this.process(
+
+    const process = await this.process(
       authorization,
       authorization.idempotency,
       true,
       headers,
     );
+
+    const data = {
+      transport: TransportEnum.EMAIL,
+      vars: {
+        cardId: authorization.card.id,
+        transactionDate: new Date().toLocaleString('es-ES', {
+          timeZone: 'America/Bogota',
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit',
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit'
+        }),
+        customerName: "",
+        transactionStatus: process.status,
+        transactionType: authorization.transaction?.type,
+        merchantName: authorization.merchant?.name,
+        cardLastFour: authorization.card?.last_four,
+        amountLocal: authorization.amount?.local?.total,
+        currencyLocal: authorization.amount?.local?.currency,
+      },
+    };
+
+    this.builder.emitMessageEventClient(
+      EventsNamesMessageEnum.sendPurchases,
+      data,
+    );
+
+    return process;
   }
+
+
 }

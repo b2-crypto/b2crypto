@@ -16,6 +16,14 @@ enum EventsNamesMessageEnum {
   sendEmailBalanceReport = 'MESSAGE.SEND.EMAIL.REPORT',
   sendEmailOtpNotification = 'MESSAGE.SEND.EMAIL.OTP.NOTIFICATION',
   sendEmailDisclaimer = 'MESSAGE.SEND.EMAIL.DISCLAIMER',
+  sendCardRequestConfirmationEmail = 'MESSAGE.SEND.CARD.REQUEST.CONFIRMATION.EMAIL',
+  sendProfileRegistrationCreation = 'MESSAGE.SEND.PROFILE.REGISTRATION.CREATION',
+  sendVirtualPhysicalCards = 'MESSAGE.SEND.VIRTUAL.PHYSICAL.CARDS',
+  sendAdjustments = 'MESSAGE.SEND.PURCHASES.TRANSACTION.ADJUSTMENTS',
+  sendPurchases = 'MESSAGE.SEND.PURCHASES.TRANSACTION.PURCHASES',
+  sendCryptoWalletsManagement = 'MESSAGE.SEND.CRYPTO.WALLETS.MANAGEMENT',
+  sendSecurityNotifications = 'MESSAGE.SEND.SECURITY.NOTIFICATIONS',
+  sendPasswordRestoredEmail = 'MESSAGE.SEND.PASSWORD.RESTORED.EMAIL',
 }
 
 export default EventsNamesMessageEnum;

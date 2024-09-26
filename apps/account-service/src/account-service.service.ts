@@ -97,8 +97,35 @@ export class AccountServiceService
     createDto: AccountCreateDto,
     context?: any,
   ): Promise<AccountDocument> {
-    return this.lib.create(createDto);
+    const account = await this.lib.create(createDto);
+
+    if (account && account.email) {
+      const data = {
+        destinyText: account.email,
+        vars: {
+          name: account.firstName,
+          lastName: account.lastName,
+          accountType: account.accountType,
+          cardType: account.type,
+          accountId: account.accountId,
+          status: account.statusText,
+        },
+      };
+
+      Logger.log(data, 'Card Request Confirmation Email Prepared');
+      this.builder.emitMessageEventClient(
+        EventsNamesMessageEnum.sendCardRequestConfirmationEmail,
+        data,
+      );
+    } else {
+      Logger.warn(
+        'Account created without email. Skipping confirmation email.',
+      );
+    }
+
+    return account;
   }
+
   async createMany(
     createDto: AccountCreateDto[],
     context?: any,

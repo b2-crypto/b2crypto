@@ -1,0 +1,32 @@
+doctype html
+html(lang="es")
+  include ./partials/head.pug
+  body
+    .container
+      include ./partials/header.pug
+      .content
+        h2 Confirmación de Solicitud de Tarjeta
+        p Estimado/a #{vars.name} #{vars.lastName},
+        p Tu solicitud de tarjeta ha sido recibida exitosamente. A continuación, te proporcionamos los detalles de tu solicitud:
+        
+        ul
+          li
+            strong Tipo de Cuenta: 
+            | #{vars.accountType}
+          li
+            strong Tipo de Tarjeta: 
+            | #{vars.cardType}
+          li
+            strong ID de Cuenta: 
+            | #{vars.accountId}
+          li
+            strong Estado de la Solicitud: 
+            | #{vars.status}
+
+        p Procesaremos tu solicitud lo antes posible. Te mantendremos informado sobre cualquier actualización o si necesitamos información adicional.
+
+        p Si tienes alguna pregunta sobre tu solicitud, no dudes en contactarnos.
+
+        p Gracias por elegir nuestros servicios.
+
+      include ./partials/footer.pug

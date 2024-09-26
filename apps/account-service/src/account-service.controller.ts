@@ -22,6 +22,7 @@ import {
   Post,
   Query,
   Req,
+  UnauthorizedException,
 } from '@nestjs/common';
 import {
   Ctx,
@@ -35,6 +36,7 @@ import EventsNamesStatusEnum from 'apps/status-service/src/enum/events.names.sta
 import EventsNamesUserEnum from 'apps/user-service/src/enum/events.names.user.enum';
 import { AccountServiceService } from './account-service.service';
 import EventsNamesAccountEnum from './enum/events.names.account.enum';
+import { NoCache } from '@common/common/decorators/no-cache.decorator';
 
 @ApiTags('ACCOUNT')
 @Controller('accounts')
@@ -50,6 +52,7 @@ export class AccountServiceController implements GenericServiceController {
   }
 
   @Get('all')
+  @NoCache()
   findAll(@Query() query: QuerySearchAnyDto, req?: any) {
     return this.accountService.findAll(query);
   }
@@ -77,6 +80,7 @@ export class AccountServiceController implements GenericServiceController {
   }
 
   @Get('me')
+  @NoCache()
   findAllMe(@Query() query: QuerySearchAnyDto, @Req() req?: any) {
     query = CommonService.getQueryWithUserId(query, req, 'owner');
     return this.accountService.findAll(query);
@@ -108,6 +112,7 @@ export class AccountServiceController implements GenericServiceController {
   }
 
   @Get(':accountId')
+  @NoCache()
   findOneById(@Param('accountId') id: string) {
     return this.accountService.findOneById(id);
   }
@@ -145,12 +150,14 @@ export class AccountServiceController implements GenericServiceController {
     @Body(new ParseArrayPipe({ items: UpdateAnyDto })) ids: AccountUpdateDto[],
     req?: any,
   ) {
-    return this.accountService.deleteManyById(ids);
+    //return this.accountService.deleteManyById(ids);
+    throw new UnauthorizedException();
   }
 
   @Delete(':accountID')
   deleteOneById(@Param('accountID') id: string, req?: any) {
-    return this.accountService.deleteOneById(id);
+    //return this.accountService.deleteOneById(id);
+    throw new UnauthorizedException();
   }
 
   @MessagePattern(EventsNamesAccountEnum.count)
@@ -188,13 +195,16 @@ export class AccountServiceController implements GenericServiceController {
 
   @MessagePattern(EventsNamesAccountEnum.updateOne)
   @EventPattern(EventsNamesAccountEnum.updateOne)
-  updateOneEvent(@Payload() updateDto: UpdateAnyDto, @Ctx() ctx: RmqContext) {
+  updateOneEvent(
+    @Payload() updateDto: AccountUpdateDto,
+    @Ctx() ctx: RmqContext,
+  ) {
     CommonService.ack(ctx);
     return this.accountService.updateOneEvent(updateDto, ctx);
   }
   @MessagePattern(EventsNamesAccountEnum.customUpdateOne)
   customUpdateOneEvent(
-    @Payload() updateDto: UpdateAnyDto,
+    @Payload() updateDto: AccountUpdateDto,
     @Ctx() ctx: RmqContext,
   ) {
     CommonService.ack(ctx);
@@ -203,7 +213,7 @@ export class AccountServiceController implements GenericServiceController {
 
   @MessagePattern(EventsNamesAccountEnum.updateMany)
   updateManyEvent(
-    @Payload() updatesDto: UpdateAnyDto[],
+    @Payload() updatesDto: AccountUpdateDto[],
     @Ctx() ctx: RmqContext,
   ) {
     CommonService.ack(ctx);

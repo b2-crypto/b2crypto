@@ -1,0 +1,53 @@
+doctype html
+html(lang="es")
+  include ./partials/head.pug
+  body
+    .container
+      include ./partials/header.pug
+      .content
+        h2= vars.title 
+
+        p Estimad@ #{vars.customerName}, 
+
+        p= vars.introMessage
+
+        h3 Detalles de la Transacci&oacute;n:
+        ul
+          li
+            strong Fecha y hora: 
+            | #{vars.transactionDate}
+          li
+            strong Establecimiento: 
+            | #{vars.merchantName}
+          li
+            strong Monto: 
+            | #{vars.amountLocal} #{vars.currencyLocal}
+          li
+            strong M&eacute;todo de pago: 
+            | **** **** **** #{vars.cardLastFour}
+
+        if vars.transactionStatus == 'REJECTED'
+          h3 Motivo del Rechazo:
+          p #{vars.reason}
+
+          p Lamentamos informarte que tu intento de compra realizado el #{vars.transactionDate} en #{vars.merchantName} no pudo ser procesado. A continuaci&oacute;n, te proporcionamos m&aacute;s detalles sobre esta situaci&oacute;n:
+
+          h3 Pr&oacute;ximos Pasos:
+          ul
+            li Verificar el saldo de tu cuenta: Aseg&uacute;rate de que cuentas con los fondos suficientes antes de realizar una compra.
+            li Actualizar la informaci&oacute;n de tu tarjeta: Si has cambiado de tarjeta o tu informaci&oacute;n ha caducado, actualiza los datos en tus m&eacute;todos de pago.
+            li Revisar la informaci&oacute;n de la transacci&oacute;n: Aseg&uacute;rate de que los detalles de la compra y el establecimiento sean correctos.
+
+          p Si deseas m&aacute;s informaci&oacute;n o tienes alguna pregunta, no dudes en contactarnos a trav&eacute;s de asistencia@b2fintech.com.
+          p Ofrecemos disculpas por cualquier inconveniente causado por esta situaci&oacute;n y estamos aqu&iacute; para asistirte en lo que necesites. Tu satisfacci&oacute;n es nuestra prioridad.
+
+        if vars.transactionStatus == 'APPROVED'
+          h3 &iexcl;Compra aprobada exitosamente! 📦
+          p #{vars.customerName}, &iexcl;tu compra ha sido aprobada exitosamente! 
+          p Nos complace informarte que tu compra realizada el #{vars.transactionDate} en #{vars.merchantName} ha sido aprobada con &eacute;xito.
+
+          p Gracias por utilizar nuestros servicios para realizar tu compra.
+          p Si tienes alguna pregunta o necesitas asistencia, no dudes en contactarnos a trav&eacute;s de asistencia@b2fintech.com.
+          p Gracias por unirte a nosotros. &iexcl;Esperamos que disfrutes de tu experiencia con B2fintech!
+
+      include ./partials/footer.pug

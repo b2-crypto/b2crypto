@@ -12,13 +12,14 @@ import ActionsEnum from '@common/common/enums/ActionEnum';
 import ResourcesEnum from '@common/common/enums/ResourceEnum';
 import TransportEnum from '@common/common/enums/TransportEnum';
 import { IntegrationService } from '@integration/integration';
+import { IntegrationIdentityEnum } from '@integration/integration/identity/generic/domain/integration.identity.enum';
 import { SumsubApplicantLevels } from '@integration/integration/identity/generic/domain/sumsub.enum';
 import { SumsubIssueTokenDto } from '@integration/integration/identity/generic/domain/sumsub.issue.token.dto';
+import { CACHE_MANAGER, Cache } from '@nestjs/cache-manager';
 import {
   BadGatewayException,
   BadRequestException,
   Body,
-  CACHE_MANAGER,
   Controller,
   Get,
   HttpStatus,
@@ -49,23 +50,21 @@ import {
   ApiSecurity,
   ApiTags,
 } from '@nestjs/swagger';
+import { PersonCreateDto } from '@person/person/dto/person.create.dto';
 import ResponseB2Crypto from '@response-b2crypto/response-b2crypto/models/ResponseB2Crypto';
+import { UserPreRegisterDto } from '@user/user/dto/user.pre.register.dto';
+import { UserRefreshTokenDto } from '@user/user/dto/user.refresh.token.dto';
 import { UserRegisterDto } from '@user/user/dto/user.register.dto';
 import { UserSignInDto } from '@user/user/dto/user.signin.dto';
 import { UserDocument } from '@user/user/entities/mongoose/user.schema';
 import { UserEntity } from '@user/user/entities/user.entity';
 import EventsNamesActivityEnum from 'apps/activity-service/src/enum/events.names.activity.enum';
 import EventsNamesMessageEnum from 'apps/message-service/src/enum/events.names.message.enum';
-import { Cache } from 'cache-manager';
+import EventsNamesPersonEnum from 'apps/person-service/src/enum/events.names.person.enum';
 import { isBoolean } from 'class-validator';
 import { SwaggerSteakeyConfigEnum } from 'libs/config/enum/swagger.stakey.config.enum';
 import { BadRequestError } from 'passport-headerapikey';
-import { IntegrationIdentityEnum } from './../../../libs/integration/src/identity/generic/domain/integration.identity.enum';
 import EventsNamesUserEnum from './enum/events.names.user.enum';
-import { UserRefreshTokenDto } from '@user/user/dto/user.refresh.token.dto';
-import { UserPreRegisterDto } from '@user/user/dto/user.pre.register.dto';
-import { PersonCreateDto } from '@person/person/dto/person.create.dto';
-import EventsNamesPersonEnum from 'apps/person-service/src/enum/events.names.person.enum';
 
 @ApiTags('AUTHENTICATION')
 @Controller('auth')
@@ -240,7 +239,7 @@ export class AuthServiceController {
       });
       return code;
     } catch (err) {
-      Logger.error(err, 'Bad request Identity');
+      Logger.error(err, 'Bad request Identity code');
       throw new BadGatewayException();
     }
   }
@@ -258,7 +257,7 @@ export class AuthServiceController {
       }
       return rta;
     } catch (err) {
-      Logger.error(err, 'Bad request Identity');
+      Logger.error(err, 'Bad request Identity token');
       throw new BadGatewayException();
     }
   }
@@ -268,63 +267,91 @@ export class AuthServiceController {
   }
 
   @ApiKeyCheck()
+  @NoCache()
   @ApiTags(SwaggerSteakeyConfigEnum.TAG_SECURITY)
   @ApiSecurity('b2crypto-key')
   @Post('restore-password')
   async restorePassword(@Body() restorePasswordDto: RestorePasswordDto) {
-    const users = await this.builder.getPromiseUserEventClient(
-      EventsNamesUserEnum.findAll,
-      {
-        where: {
-          email: `/${restorePasswordDto.email}/gi`,
-        },
-      },
-    );
-    // Validate user
-    if (!users.list[0]) {
-      throw new BadRequestException('User not found');
-    }
-    if (
-      restorePasswordDto.otp &&
-      restorePasswordDto.password &&
-      restorePasswordDto.password2
-    ) {
-      // Validate password
-      if (restorePasswordDto.password !== restorePasswordDto.password2) {
-        throw new BadRequestException('Bad password');
-      }
-      const otpSended = await this.getOtpGenerated(restorePasswordDto.email);
-      // Validate OTP
-      if (!otpSended) {
-        throw new BadRequestException('Expired OTP');
-      } else if (restorePasswordDto.otp !== otpSended) {
-        throw new BadRequestException('Bad OTP');
-      }
-      await this.deleteOtpGenerated(restorePasswordDto.email);
-      await this.builder.getPromiseUserEventClient(
-        EventsNamesUserEnum.updateOne,
+    try {
+      const users = await this.builder.getPromiseUserEventClient(
+        EventsNamesUserEnum.findAll,
         {
-          id: users.list[0]._id,
-          password: CommonService.getHash(restorePasswordDto.password),
+          where: {
+            email: `/${restorePasswordDto.email}/gi`,
+          },
         },
       );
+      // Validate user
+      if (!users.list[0]) {
+        throw new BadRequestException('User not found');
+      }
+      if (
+        restorePasswordDto.otp &&
+        restorePasswordDto.password &&
+        restorePasswordDto.password2
+      ) {
+        // Validate password
+        if (restorePasswordDto.password !== restorePasswordDto.password2) {
+          throw new BadRequestException('Bad password');
+        }
+        const otpSended = await this.getOtpGenerated(restorePasswordDto.email);
+        // Validate OTP
+        if (!otpSended) {
+          throw new BadRequestException('Expired OTP');
+        } else if (restorePasswordDto.otp != otpSended) {
+          throw new BadRequestException('Bad OTP');
+        }
+        await this.deleteOtpGenerated(restorePasswordDto.email);
+        const psw = restorePasswordDto.password;
+        const user = users.list[0];
+        const emailData = {
+          name: `Actualizacion de clave`,
+          body: `Tu clave ha sido actualizada exitosamente ${user.name}`,
+          originText: 'Sistema',
+          destinyText: user.email,
+          transport: TransportEnum.EMAIL,
+          destiny: null,
+          vars: {
+            name: user.name,
+            username: user.email,
+            password: psw,
+          },
+        };
+        this.builder.emitMessageEventClient(
+          EventsNamesMessageEnum.sendPasswordRestoredEmail,
+          emailData,
+        );
+        await this.builder.getPromiseUserEventClient(
+          EventsNamesUserEnum.updateOne,
+          {
+            id: users.list[0]._id,
+            verifyEmail: false,
+            password: CommonService.getHash(psw),
+          },
+        );
+
+        return {
+          statusCode: 200,
+          message: 'Password updated',
+        };
+      }
+
+      await this.generateOtp({ email: restorePasswordDto.email } as any);
       return {
-        statusCode: 200,
-        message: 'Password updated',
+        statusCode: 201,
+        message: 'OTP generated',
       };
+    } catch (error) {
+      Logger.error({ error }, 'Error restoring password');
+      throw error;
     }
-    // send otp
-    await this.generateOtp({ email: restorePasswordDto.email } as any);
-    return {
-      statusCode: 201,
-      message: 'OTP generated',
-    };
   }
 
   @ApiKeyCheck()
   @UseGuards(ApiKeyAuthGuard)
   @ApiSecurity('b2crypto-key')
   @ApiTags(SwaggerSteakeyConfigEnum.TAG_SECURITY)
+  @NoCache()
   @Get('otp/:email')
   async getOtp(@Param('email') email: string) {
     await this.generateOtp({ email } as any);
@@ -342,6 +369,7 @@ export class AuthServiceController {
   @UseGuards(ApiKeyAuthGuard)
   @ApiSecurity('b2crypto-key')
   @ApiTags(SwaggerSteakeyConfigEnum.TAG_SECURITY)
+  @NoCache()
   @Get('otp/:email/:otp')
   async validateOtp(@Param('email') email: string, @Param('otp') otp: string) {
     const otpSended = await this.getOtpGenerated(email);
@@ -391,10 +419,31 @@ export class AuthServiceController {
     userDto.slugEmail = CommonService.getSlug(userDto.email);
     userDto.username = userDto.username ?? userDto.name;
     userDto.slugUsername = CommonService.getSlug(userDto.username);
-    return this.builder.getPromiseUserEventClient(
+    const createdUser = await this.builder.getPromiseUserEventClient(
       EventsNamesUserEnum.createOne,
       userDto,
     );
+    const emailData = {
+      destinyText: createdUser.email,
+      vars: {
+        name: createdUser.name,
+        email: createdUser.email,
+        username: createdUser.username,
+        isIndividual: createdUser.individual,
+        isActive: createdUser.active,
+      },
+    };
+
+    try {
+      this.builder.emitMessageEventClient(
+        EventsNamesMessageEnum.sendProfileRegistrationCreation,
+        emailData,
+      );
+    } catch (error) {
+      Logger.error('Error sending user registration email', error.stack);
+    }
+
+    return createdUser;
   }
 
   @AllowAnon()
@@ -621,11 +670,7 @@ export class AuthServiceController {
       await this.cacheManager.set(user.email, otpSended, msOTP);
     }
     const data = {
-      name: `OTP to ${user.email}`,
-      body: `The OTP is ${otpSended}`,
-      originText: `System`,
       destinyText: user.email,
-      transport: TransportEnum.EMAIL,
       destiny: null,
       vars: {
         name: user.name ?? user.email,

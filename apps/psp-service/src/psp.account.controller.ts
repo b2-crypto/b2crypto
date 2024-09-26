@@ -36,30 +36,35 @@ import { PspAccountDocument } from '@psp-account/psp-account/entities/mongoose/p
 import { ConfigCheckStatsDto } from '@stats/stats/dto/config.check.stats.dto';
 import EventsNamesPspAccountEnum from './enum/events.names.psp.acount.enum';
 import { PspAccountServiceService } from './psp.account.service.service';
+import { NoCache } from '@common/common/decorators/no-cache.decorator';
 
 @ApiTags('PSP')
 @Controller('psp-account')
 export class PspAccountController implements GenericServiceController {
   constructor(private readonly pspAccountService: PspAccountServiceService) {}
 
+  @NoCache()
   @Get('all')
   // @CheckPoliciesAbility(new PolicyHandlerPspAccountRead())
   async findAll(@Query() query: QuerySearchAnyDto) {
     return this.pspAccountService.getAll(query);
   }
 
+  @NoCache()
   @Get('manual')
   // @CheckPoliciesAbility(new PolicyHandlerPspAccountRead())
   async getPspManual() {
     return this.pspAccountService.getPspManual();
   }
 
+  @NoCache()
   @Get('check-stats')
   // @CheckPoliciesAbility(new PolicyHandlerPspAccountRead())
   async checkStatsForAllPspAccount() {
     return this.pspAccountService.checkStatsForAllPspAccount();
   }
 
+  @NoCache()
   @Get('check-stats/:pspAccountId')
   // @CheckPoliciesAbility(new PolicyHandlerPspAccountRead())
   async checkStatsForOneAffiliate(
@@ -68,6 +73,7 @@ export class PspAccountController implements GenericServiceController {
     return this.pspAccountService.checkStatsForOnePspAccount(pspAccountId);
   }
 
+  @NoCache()
   @Get(':pspAccountID')
   // @CheckPoliciesAbility(new PolicyHandlerPspAccountRead())
   async findOneById(@Param('pspAccountID') id: string) {

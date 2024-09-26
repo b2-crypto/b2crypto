@@ -393,6 +393,7 @@ export class CommonService {
     return query;
   }
   static checkWhitelistedIps(context: ExecutionContext): boolean {
+    Logger.debug('Check whitelisted ips', 'checkWhitelistedIps');
     if (
       process.env.POMELO_WHITELISTED_IPS_CHECK ===
       PomeloEnum.POMELO_WHITELISTED_IPS_CHECK_OFF.toString()

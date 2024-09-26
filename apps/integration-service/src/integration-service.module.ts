@@ -62,6 +62,7 @@ import { B2BinPayNotificationsController } from './b2binpay.notifications.contro
     PomeloIntegrationProcessService,
     PomeloIntegrationShippingService,
     SumsubNotificationIntegrationService,
+    ResponseB2CryptoService,
   ],
 })
 export class IntegrationServiceModule {}

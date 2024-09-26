@@ -302,10 +302,10 @@ export class TransferServiceService
                 target_amount_requested: transferSaved.amount.toString(),
                 label: transferSaved.name,
                 tracking_id: transferSaved._id,
-                confirmations_needed: 1,
+                confirmations_needed: 2,
                 // TODO[hender-2024/05/30] Change callback_url to environment params
                 callback_url:
-                  process.env.env === 'PROD'
+                  process.env.ENVIRONMENT === 'PROD'
                     ? 'https://api.b2fintech.com/b2binpay/status'
                     : 'https://stage.b2fintech.com/b2binpay/status',
               },
@@ -333,6 +333,7 @@ export class TransferServiceService
           throw new BadRequestException(err);
         }
       }
+      await this.updateAccount(data.account, transferSaved);
       return transferSaved;
     }
     throw new BadRequestException(this.getMessageError(data));
@@ -502,7 +503,22 @@ export class TransferServiceService
 
     if (transferSaved.isApprove) {
       let amount = transferSaved.amount;
-      if (transferSaved.operationType === OperationTransactionType.withdrawal) {
+      if (
+        transferSaved.operationType ===
+          OperationTransactionType.reversal_deposit ||
+        transferSaved.operationType ===
+          OperationTransactionType.reversal_credit ||
+        transferSaved.operationType ===
+          OperationTransactionType.reversal_refund ||
+        transferSaved.operationType ===
+          OperationTransactionType.reversal_payment ||
+        transferSaved.operationType ===
+          OperationTransactionType.reversal_extra_cash ||
+        transferSaved.operationType === OperationTransactionType.chargeback ||
+        transferSaved.operationType === OperationTransactionType.debit ||
+        transferSaved.operationType === OperationTransactionType.withdrawal ||
+        transferSaved.operationType === OperationTransactionType.purchase
+      ) {
         amount *= -1;
       }
       accountToUpdate.amount += amount;

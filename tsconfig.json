@@ -171,6 +171,9 @@
       "@stats/stats/*": [
         "libs/stats/src/*"
       ],
+      "@account/account": [
+        "libs/account/src"
+      ],
       "@account/account/*": [
         "libs/account/src/*"
       ]
