@@ -4,12 +4,10 @@ import StatusAccountEnum from '@account/account/enum/status.account.enum';
 import { ActivityCreateDto } from '@activity/activity/dto/activity.create.dto';
 import { BuildersService } from '@builder/builders';
 import { CommonService } from '@common/common';
-import TransportEnum from '@common/common/enums/TransportEnum';
 import GenericServiceController from '@common/common/interfaces/controller.generic.interface';
 import { CreateAnyDto } from '@common/common/models/create-any.dto';
 import { QuerySearchAnyDto } from '@common/common/models/query_search-any.dto';
 import { UpdateAnyDto } from '@common/common/models/update-any.dto';
-import { FileUpdateDto } from '@file/file/dto/file.update.dto';
 import {
   BadRequestException,
   Body,
@@ -33,18 +31,10 @@ import {
   RmqContext,
 } from '@nestjs/microservices';
 import { ApiTags } from '@nestjs/swagger';
-import EventsNamesFileEnum from 'apps/file-service/src/enum/events.names.file.enum';
-import EventsNamesMessageEnum from 'apps/message-service/src/enum/events.names.message.enum';
 import EventsNamesStatusEnum from 'apps/status-service/src/enum/events.names.status.enum';
 import EventsNamesUserEnum from 'apps/user-service/src/enum/events.names.user.enum';
-import * as fs from 'fs';
 import { AccountServiceService } from './account-service.service';
 import EventsNamesAccountEnum from './enum/events.names.account.enum';
-import { AttachmentsEmailConfig } from '@message/message/dto/message.create.dto';
-import { ResponsePaginator } from '@common/common/interfaces/response-pagination.interface';
-import { FileDocument } from '@file/file/entities/mongoose/file.schema';
-import { env } from 'process';
-import { EnvironmentEnum } from '@common/common/enums/environment.enum';
 
 @ApiTags('ACCOUNT')
 @Controller('accounts')
