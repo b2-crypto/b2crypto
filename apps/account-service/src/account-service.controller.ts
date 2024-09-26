@@ -65,20 +65,20 @@ export class AccountServiceController implements GenericServiceController {
   }
 
   @Get('send-balance-card-reports')
-  sendBalanceCardReports(@Req() req?: any) {
+  async sendBalanceCardReports(@Req() req?: any) {
     const user = req?.user;
     if (!user) {
       throw new BadRequestException('User not found');
     }
     // Superadmin?
-    this.getBalanceReport(
+    await this.builder.getPromiseAccountEventClient(
+      EventsNamesAccountEnum.sendBalanceReport,
       {
         where: {
-          owner: user.id,
+          //owner: user.id,
           type: 'CARD',
         },
       },
-      null,
     );
     return {
       statusCode: 200,
@@ -232,153 +232,15 @@ export class AccountServiceController implements GenericServiceController {
     return this.accountService.deleteOneByIdEvent(id, ctx);
   }
 
-  @EventPattern(EventsNamesAccountEnum.sendBalanceReport)
-  getBalanceReport(
+  @MessagePattern(EventsNamesAccountEnum.sendBalanceReport)
+  async getBalanceReport(
     @Payload() query: QuerySearchAnyDto,
     @Ctx() ctx: RmqContext,
   ) {
     CommonService.ack(ctx);
-    Promise.all([
-      this.accountService.getBalanceByAccountTypeCard(query),
-      //this.accountService.getBalanceByAccountTypeWallet(query),
-      this.accountService.getBalanceByOwnerByCard(query),
-      //this.accountService.getBalanceByOwnerByWallet(query),
-      this.accountService.getBalanceByAccountByCard(query),
-      //this.accountService.getBalanceByAccountByWallet(query),
-    ]).then(async (results) => {
-      const [
-        cardTotalAccumulated,
-        //walletTotalAccumulated,
-        cardByOwner,
-        //walletByOwner,
-        cards,
-        //wallets
-      ] = results;
-      const promises = [
-        this.getContentFileBalanceReport(
-          cardTotalAccumulated,
-          'total-accumulated',
-          ['type', 'quantity', 'sum_available', 'sum_blocked'],
-        ),
-        this.getContentFileBalanceReport(cardByOwner, 'cards-by-user', [
-          'userId',
-          'email',
-          'count',
-          'amount',
-        ]),
-        this.getContentFileBalanceReport(cards, 'all-cards', [
-          'email',
-          'userId',
-          'cardId',
-          'description',
-          'amount',
-        ]),
-      ];
-      const name = `${
-        process.env.ENVIRONMENT !== EnvironmentEnum.prod
-          ? process.env.ENVIRONMENT
-          : ''
-      } Balance Report ${
-        query.where?.type ?? 'todos los tipos'
-      } - Time server ${new Date().toLocaleString('es-CO', {
-        dateStyle: 'full',
-      })}`;
-      const data = {
-        name: name,
-        body: ``,
-        originText: `System`,
-        destinyText: 'hender.orlando@b2crypto.com',
-        transport: TransportEnum.EMAIL,
-        destiny: null,
-        vars: {
-          name: 'Hender',
-          lastname: 'Orlando',
-        },
-        attachments: await Promise.all(promises),
-      };
-
-      this.builder.emitMessageEventClient(
-        EventsNamesMessageEnum.sendEmailBalanceReport,
-        data,
-      );
-      Logger.debug(data.name, 'Balance Report sended');
-    });
-  }
-
-  private async getContentFileBalanceReport(
-    list: any[],
-    listName: string,
-    headers: Array<string>,
-  ): Promise<AttachmentsEmailConfig> {
-    const filename = this.getFullname(listName);
-    const fileUri = `storage/${filename}`;
-    if (fs.existsSync(fileUri)) {
-      fs.unlinkSync(fileUri);
-    }
-    const objBase = this.getCustomObj(headers);
-    this.addDataToFile(objBase, filename, true, true);
-    return new Promise((res) => {
-      setTimeout(() => {
-        list.forEach((item) => {
-          const customItem = this.getCustomObj(headers, item);
-          this.addDataToFile(customItem, filename, false);
-        });
-        setTimeout(async () => {
-          if (fs.existsSync(fileUri)) {
-            const content = fs.readFileSync(fileUri, {
-              encoding: 'base64',
-            });
-            const fileList = await this.builder.getPromiseFileEventClient<
-              ResponsePaginator<FileDocument>
-            >(EventsNamesFileEnum.findAll, {
-              where: {
-                name: filename,
-              },
-            });
-            if (fileList.totalElements > 0) {
-              this.builder.emitFileEventClient(EventsNamesFileEnum.updateOne, {
-                id: fileList.list[0]._id,
-                encodeBase64: content,
-              });
-            }
-            res({
-              // encoded string as an attachment
-              filename: filename,
-              content: content,
-              encoding: 'base64',
-            });
-            fs.unlinkSync(fileUri);
-          }
-        }, 10000);
-      }, 1000);
-    });
-  }
-
-  private getCustomObj(keys: Array<string>, item?: any) {
-    const objBase = {};
-    keys.forEach((key) => {
-      objBase[key] = item ? item[key] ?? '' : null;
-    });
-    return objBase;
-  }
-
-  protected getFullname(baseName: string) {
-    const today = new Date();
-    const dateStr = `${today.getUTCFullYear()}-${CommonService.getNumberDigits(
-      today.getUTCMonth(),
-    )}-${today.getUTCDate()}`;
-    return `${dateStr}_${baseName.toLowerCase()}.csv`;
-  }
-
-  private addDataToFile(item, filename, isFirst, onlyHeaders = false) {
-    this.builder.emitFileEventClient<File>(EventsNamesFileEnum.addDataToFile, {
-      isFirst,
-      onlyHeaders,
-      name: filename,
-      description: `Send email ${filename}`,
-      mimetype: 'text/csv',
-      data: JSON.stringify(item),
-    } as FileUpdateDto);
+    Logger.log('Get balance report', AccountServiceController.name);
+    this.accountService.getBalanceReport(query);
+    return true;
   }
 
   async toggleVisibleToOwner(id: string, visible?: boolean) {

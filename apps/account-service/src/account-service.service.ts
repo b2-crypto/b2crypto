@@ -3,21 +3,30 @@ import { AccountCreateDto } from '@account/account/dto/account.create.dto';
 import { AccountUpdateDto } from '@account/account/dto/account.update.dto';
 import { AccountDocument } from '@account/account/entities/mongoose/account.schema';
 import { BuildersService } from '@builder/builders';
+import { CommonService } from '@common/common';
+import { EnvironmentEnum } from '@common/common/enums/environment.enum';
+import TransportEnum from '@common/common/enums/TransportEnum';
 import { ResponsePaginator } from '@common/common/interfaces/response-pagination.interface';
 import { BasicMicroserviceService } from '@common/common/models/basic.microservices.service';
 import { CreateAnyDto } from '@common/common/models/create-any.dto';
 import { QuerySearchAnyDto } from '@common/common/models/query_search-any.dto';
 import { UpdateAnyDto } from '@common/common/models/update-any.dto';
+import { FileUpdateDto } from '@file/file/dto/file.update.dto';
+import { FileDocument } from '@file/file/entities/mongoose/file.schema';
+import { AttachmentsEmailConfig } from '@message/message/dto/message.create.dto';
 import {
   BadRequestException,
   Inject,
   Injectable,
+  Logger,
   NotImplementedException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { ClientProxy, Ctx, RmqContext } from '@nestjs/microservices';
-import { StatusDocument } from '@status/status/entities/mongoose/status.schema';
+import { Ctx, RmqContext } from '@nestjs/microservices';
+import EventsNamesFileEnum from 'apps/file-service/src/enum/events.names.file.enum';
+import EventsNamesMessageEnum from 'apps/message-service/src/enum/events.names.message.enum';
 import EventsNamesStatusEnum from 'apps/status-service/src/enum/events.names.status.enum';
+import * as fs from 'fs';
 
 @Injectable()
 export class AccountServiceService
@@ -167,5 +176,220 @@ export class AccountServiceService
   }
   deleteOneByIdEvent(id: string, @Ctx() ctx: RmqContext) {
     throw new NotImplementedException('Method not implemented.');
+  }
+  getBalanceReport(query: QuerySearchAnyDto) {
+    // TODO[hender - 2024/09/26] Receive 3 events but trigger only 1 from job
+    Logger.log('Start balance report', AccountServiceService.name);
+    Promise.all([
+      this.getBalanceByAccountTypeCard(query),
+      //this.getBalanceByAccountTypeWallet(query),
+      this.getBalanceByOwnerByCard(query),
+      //this.getBalanceByOwnerByWallet(query),
+      this.getBalanceByAccountByCard(query),
+      //this.getBalanceByAccountByWallet(query),
+    ]).then(async (results) => {
+      Logger.log('Report filter finish', AccountServiceService.name);
+      const [
+        cardTotalAccumulated,
+        //walletTotalAccumulated,
+        cardByOwner,
+        //walletByOwner,
+        cards,
+        //wallets
+      ] = results;
+      const date = new Date();
+      const promises = [
+        this.getContentFileBalanceReport(
+          cardTotalAccumulated,
+          'total-accumulated',
+          ['type', 'quantity', 'sum_available', 'sum_blocked'],
+          date,
+        ),
+        this.getContentFileBalanceReport(
+          cardByOwner,
+          'cards-by-user',
+          ['userId', 'email', 'count', 'amount'],
+          date,
+        ),
+        this.getContentFileBalanceReport(
+          cards,
+          'all-cards',
+          ['email', 'userId', 'cardId', 'description', 'amount'],
+          date,
+        ),
+      ];
+      const name = `${
+        process.env.ENVIRONMENT !== EnvironmentEnum.prod
+          ? process.env.ENVIRONMENT
+          : ''
+      } Balance Report ${
+        query.where?.type ?? 'all types'
+      } - ${this.printShortDate(date)} UTC`;
+      this.sendEmailToList(promises, name);
+      Logger.debug(name, 'Balance Report sended');
+    });
+  }
+
+  private printShortDate(date?: Date): string {
+    date = date ?? new Date();
+    return date.toLocaleString('es-CO', {
+      dateStyle: 'short',
+      timeStyle: 'short',
+      hourCycle: 'h24',
+    });
+  }
+
+  private async sendEmailToList(promisesAttachments, subject) {
+    const destiny = [
+      {
+        name: 'Luisa',
+        lastName: 'Fernanda',
+        email: 'luisa.fernanda@b2crypto.com',
+      },
+      {
+        name: 'Mateo',
+        lastName: 'Quintana',
+        email: 'mateo.quintana@b2fintech.com',
+      },
+      {
+        name: 'Hamilton',
+        lastName: 'Smith',
+        email: 'devops@b2fintech.com',
+      },
+      {
+        name: 'Hender',
+        lastName: 'Orlando',
+        email: 'hender.orlando@b2crypto.com',
+      },
+    ];
+    const attachments = await Promise.all(promisesAttachments);
+    Logger.log('Report finish', AccountServiceService.name);
+    destiny.forEach((destiny) => {
+      this.sendEmail({
+        destinyText: destiny.email,
+        subject,
+        name: destiny.name,
+        lastname: destiny.lastName,
+        attachments,
+      });
+    });
+  }
+
+  private sendEmail({ destinyText, subject, name, lastname, attachments }) {
+    const data = {
+      name: subject,
+      body: ``,
+      originText: `System`,
+      destinyText,
+      transport: TransportEnum.EMAIL,
+      destiny: null,
+      vars: {
+        name,
+        lastname,
+      },
+      attachments: attachments,
+    };
+
+    this.builder.emitMessageEventClient(
+      EventsNamesMessageEnum.sendEmailBalanceReport,
+      data,
+    );
+  }
+
+  private async getContentFileBalanceReport(
+    list: any[],
+    listName: string,
+    headers: Array<string>,
+    date?: Date,
+  ): Promise<AttachmentsEmailConfig> {
+    const filename = this.getFullname(listName, date);
+    const fileUri = `storage/${filename}`;
+    if (fs.existsSync(fileUri)) {
+      fs.unlinkSync(fileUri);
+    }
+    const objBase = this.getCustomObj(headers);
+    // File created
+    this.addDataToFile(objBase, filename, true, true);
+    Logger.log('File created', AccountServiceService.name);
+    return new Promise((res) => {
+      // Wait file creation
+      setTimeout(async () => {
+        list.forEach((item) => {
+          const customItem = this.getCustomObj(headers, item);
+          // Added rows
+          this.addDataToFile(customItem, filename, false);
+        });
+        // Wait file sending
+        this.responseFileContent({
+          filename,
+          fileUri,
+          listName,
+          res,
+        });
+      }, 1000);
+    });
+  }
+
+  private responseFileContent({ filename, fileUri, listName, res }) {
+    setTimeout(async () => {
+      if (fs.existsSync(fileUri)) {
+        const content = fs.readFileSync(fileUri, {
+          encoding: 'base64',
+        });
+        const fileList = await this.builder.getPromiseFileEventClient<
+          ResponsePaginator<FileDocument>
+        >(EventsNamesFileEnum.findAll, {
+          where: {
+            name: filename,
+          },
+        });
+        if (fileList.totalElements > 0) {
+          this.builder.emitFileEventClient(EventsNamesFileEnum.updateOne, {
+            id: fileList.list[0]._id,
+            encodeBase64: content,
+          });
+        }
+        Logger.debug(`File "${filename}" sent`, listName);
+        res({
+          // encoded string as an attachment
+          filename: filename,
+          content: content,
+          encoding: 'base64',
+        });
+        if (fs.existsSync(fileUri)) {
+          fs.unlinkSync(fileUri);
+        }
+      } else {
+        Logger.debug(`File "${filename}" not found`, listName);
+        this.responseFileContent({ filename, fileUri, listName, res });
+      }
+    }, 20000);
+  }
+
+  private getCustomObj(keys: Array<string>, item?: any) {
+    const objBase = {};
+    keys.forEach((key) => {
+      objBase[key] = item ? item[key] ?? '' : null;
+    });
+    return objBase;
+  }
+
+  protected getFullname(baseName: string, today?: Date) {
+    today = today ?? new Date();
+    const dateStr = `${today.getUTCFullYear()}-${CommonService.getNumberDigits(
+      today.getUTCMonth() + 1,
+    )}-${today.getUTCDate()} UTC`;
+    return `${dateStr}_${baseName.toLowerCase()}.csv`;
+  }
+
+  private addDataToFile(item, filename, isFirst, onlyHeaders = false) {
+    this.builder.emitFileEventClient<File>(EventsNamesFileEnum.addDataToFile, {
+      isFirst,
+      onlyHeaders,
+      name: filename,
+      description: `Send email ${filename}`,
+      mimetype: 'text/csv',
+      data: JSON.stringify(item),
+    } as FileUpdateDto);
   }
 }
