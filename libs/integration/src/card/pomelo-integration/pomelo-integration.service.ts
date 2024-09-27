@@ -1,7 +1,7 @@
 import { AccountDocument } from '@account/account/entities/mongoose/account.schema';
 import { ConfigService } from '@nestjs/config';
 import { AxiosInstance, AxiosResponse } from 'axios';
-import { CardDto } from '../generic/dto/card.dto';
+import { CardDto, CardSearchDto } from '../generic/dto/card.dto';
 import { UserCardDto } from '../generic/dto/user.card.dto';
 import { UserResponseDto } from '../generic/dto/user.response.dto';
 import { IntegrationCardService } from '../generic/integration.card.service';
@@ -10,6 +10,7 @@ import { ShippingDto } from '../generic/dto/shipping.dto';
 export class PomeloIntegrationService extends IntegrationCardService<
   UserCardDto,
   CardDto,
+  CardSearchDto,
   ShippingDto,
   UserResponseDto
 > {

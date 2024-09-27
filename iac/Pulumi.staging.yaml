@@ -75,8 +75,11 @@ config:
   b2crypto-iac:REDIS_PORT: "14419"
   b2crypto-iac:REDIS_USERNAME:
     secure: AAABAJD9O6MnfvxgpJaTxkOpyqcMTp9np3lGS7gYy48vmm0l6Ss2
-  b2crypto-iac:REGION: us-east-2
   b2crypto-iac:STACK: staging
   b2crypto-iac:TESTING: "false"
   b2crypto-iac:TZ: UTC
   b2crypto-iac:URL_API_EMAIL_APP: ""
+  mongodbatlas:privateKey:
+    secure: AAABABxe6kP4YoDTfdceRhQ40D1zgodMLKSN8l3+yr/WnopAI1991UxS3isxr0IowP9wwlHMllhxKk8d6wDdK6aPAvs=
+  mongodbatlas:publicKey:
+    secure: AAABADdHBxQZloxXS5GGJ5N6Pb6VKKrMU8nQFygdgttkajEjobRCnA==

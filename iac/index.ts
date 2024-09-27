@@ -3,7 +3,6 @@ import * as awsx from '@pulumi/awsx';
 import * as pulumi from '@pulumi/pulumi';
 import { randomBytes } from 'crypto';
 import { SECRETS, VARS_ENV } from './secrets';
-import e = require('express');
 
 const {
   COMPANY_NAME,
@@ -89,6 +88,8 @@ const ec2Vpc = new awsx.ec2.Vpc(`${COMPANY_NAME}-${PROJECT_NAME}-${STACK}`, {
   enableNetworkAddressUsageMetrics: true,
   numberOfAvailabilityZones: 3,
   cidrBlock: '10.0.0.0/16',
+  enableDnsHostnames: true,
+  enableDnsSupport: true,
   tags: TAGS,
 });
 
@@ -116,6 +117,36 @@ const ec2SecurityGroup = new aws.ec2.SecurityGroup(
         protocol: 'TCP',
         cidrBlocks: ['0.0.0.0/0'],
       },
+      {
+        fromPort: parseInt(RABBIT_MQ_PORT),
+        toPort: parseInt(RABBIT_MQ_PORT),
+        protocol: 'TCP',
+        cidrBlocks: ['0.0.0.0/0'],
+      },
+      {
+        fromPort: parseInt(REDIS_PORT),
+        toPort: parseInt(REDIS_PORT),
+        protocol: 'TCP',
+        cidrBlocks: ['0.0.0.0/0'],
+      },
+      {
+        fromPort: SECRETS.POMELO_SFTP_PORT.apply((value) => parseInt(value)),
+        toPort: SECRETS.POMELO_SFTP_PORT.apply((value) => parseInt(value)),
+        protocol: 'TCP',
+        cidrBlocks: ['0.0.0.0/0'],
+      },
+      {
+        fromPort: parseInt(AWS_SES_PORT),
+        toPort: parseInt(AWS_SES_PORT),
+        protocol: 'TCP',
+        cidrBlocks: ['0.0.0.0/0'],
+      },
+      {
+        fromPort: 27015,
+        toPort: 27017,
+        protocol: 'TCP',
+        cidrBlocks: ['0.0.0.0/0'],
+      },
     ],
     egress: [
       {
@@ -127,6 +158,36 @@ const ec2SecurityGroup = new aws.ec2.SecurityGroup(
       {
         fromPort: parseInt(PORT),
         toPort: parseInt(PORT),
+        protocol: 'TCP',
+        cidrBlocks: ['0.0.0.0/0'],
+      },
+      {
+        fromPort: parseInt(RABBIT_MQ_PORT),
+        toPort: parseInt(RABBIT_MQ_PORT),
+        protocol: 'TCP',
+        cidrBlocks: ['0.0.0.0/0'],
+      },
+      {
+        fromPort: parseInt(REDIS_PORT),
+        toPort: parseInt(REDIS_PORT),
+        protocol: 'TCP',
+        cidrBlocks: ['0.0.0.0/0'],
+      },
+      {
+        fromPort: SECRETS.POMELO_SFTP_PORT.apply((value) => parseInt(value)),
+        toPort: SECRETS.POMELO_SFTP_PORT.apply((value) => parseInt(value)),
+        protocol: 'TCP',
+        cidrBlocks: ['0.0.0.0/0'],
+      },
+      {
+        fromPort: parseInt(AWS_SES_PORT),
+        toPort: parseInt(AWS_SES_PORT),
+        protocol: 'TCP',
+        cidrBlocks: ['0.0.0.0/0'],
+      },
+      {
+        fromPort: 27015,
+        toPort: 27017,
         protocol: 'TCP',
         cidrBlocks: ['0.0.0.0/0'],
       },
@@ -164,8 +225,8 @@ const lbApplicationLoadBalancer = new awsx.lb.ApplicationLoadBalancer(
       vpcId: ec2Vpc.vpcId,
       tags: TAGS,
       healthCheck: {
-        path: '/',
-        interval: 30,
+        path: '/health',
+        interval: 5,
         timeout: 3,
       },
     },
@@ -174,7 +235,6 @@ const lbApplicationLoadBalancer = new awsx.lb.ApplicationLoadBalancer(
     listeners: [
       {
         port: 443,
-        // sslPolicy: 'SSLNegotiationPolicyType2',
         protocol: 'HTTPS',
         certificateArn: acmCertificate.arn,
         tags: TAGS,
@@ -213,7 +273,6 @@ const ecsFargateService = new awsx.ecs.FargateService(
     // assignPublicIp: true,
     cluster: ecsCluster.arn,
     propagateTags: 'SERVICE',
-    // schedulingStrategy: 'REPLICA',
     networkConfiguration: {
       subnets: ec2Vpc.publicSubnetIds,
       securityGroups: [ec2SecurityGroup.id],
@@ -226,8 +285,6 @@ const ecsFargateService = new awsx.ecs.FargateService(
       container: SECRETS.apply((secrets) => ({
         name: `${PROJECT_NAME}`,
         image: ecrImageData.imageUri,
-        // image: ecrImage.imageUri,
-        // image: 'crccheck/hello-world:latest',
         cpu: 1024,
         memory: 2048,
         essential: true,
@@ -381,13 +438,13 @@ const ecsFargateService = new awsx.ecs.FargateService(
           },
         ],
         readonlyRootFilesystem: true,
-        // healthCheck: {
-        //   command: ['CMD-SHELL', `curl -f http://localhost || exit 1`],
-        //   startPeriod: 10,
-        //   interval: 5,
-        //   timeout: 3,
-        //   retries: 3,
-        // },
+        healthCheck: {
+          command: ['CMD-SHELL', `curl -f http://localhost/health || exit 1`],
+          startPeriod: 15,
+          interval: 5,
+          timeout: 3,
+          retries: 3,
+        },
         logConfiguration: {
           logDriver: 'awslogs',
           options: {
@@ -399,6 +456,9 @@ const ecsFargateService = new awsx.ecs.FargateService(
       })),
     },
     desiredCount: 1,
+    deploymentMinimumHealthyPercent: 100,
+    deploymentMaximumPercent: 200,
+    enableEcsManagedTags: true,
     tags: TAGS,
   },
 );
@@ -424,33 +484,31 @@ const cloudwatchDashboard = new aws.cloudwatch.Dashboard(
               height: 6,
               properties: {
                 metrics: [
-                  // ['AWS/ECS', 'CPUUtilization', 'AWS/ECS', 'MemoryUtilization'],
-                  ['AWS/ECS', 'CPUUtilization', 'ClusterName', clusterName],
-                  ['AWS/ECS', 'MemoryUtilization', 'ClusterName', clusterName],
-                  ['AWS/ECS', 'CPUUtilization', 'ServiceName', serviceName],
-                  ['AWS/ECS', 'MemoryUtilization', 'ServiceName', serviceName],
+                  [
+                    'AWS/ECS',
+                    'CPUUtilization',
+                    'ServiceName',
+                    serviceName,
+                    'ClusterName',
+                    clusterName,
+                  ],
+                  [
+                    'AWS/ECS',
+                    'MemoryUtilization',
+                    'ServiceName',
+                    serviceName,
+                    'ClusterName',
+                    clusterName,
+                  ],
                 ],
+                period: 60,
+                stat: 'Average',
                 view: 'timeSeries',
                 stacked: false,
                 region: aws.config.region,
                 title: 'ECS Task CPU and Memory Utilization',
               },
             },
-            // {
-            //   type: 'log',
-            //   x: 0,
-            //   y: 6,
-            //   width: 24,
-            //   height: 6,
-            //   properties: {
-            //     // query: `fields @timestamp, @message
-            //     //             | sort @timestamp desc
-            //     //             | limit 20`,
-            //     logGroupNames: [cloudwatchLogGroup.name],
-            //     region: aws.config.region,
-            //     title: 'ECS Task Logs',
-            //   },
-            // },
           ],
         }),
       ),

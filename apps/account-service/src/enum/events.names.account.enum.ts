@@ -22,6 +22,23 @@ enum EventsNamesAccountEnum {
   sendBalanceReport = 'ACCOUNT.SEND.BALANCE.REPORT',
 
   pomeloTransaction = 'CARD.POMELO.TRANSACTION',
+
+  setBalanceByCard = 'SET.BALANCE.BY.CARD',
+  mingrateOne = 'CARD.MIGRATE.ONE',
+  findAllCardsToMigrate = 'FIND.CARD.ALL',
+
+  findOneByTpId = 'CARD.FIND.ONE.BY.TP.ID',
+  getAffiliatesFromCards = 'CARD.FIND.AFFILIATES',
+  addCardFromAffiliate = 'CARD.CREATE.FROM.AFFILIATE',
+  checkCardsCreatedInPomelo = 'CARD.CHECK.CREATED.IN.POMELO',
+  checkCardsForAffiliateStats = 'CARD.CHECK.FOR.AFFILIATE.STATS',
+  checkCardsForBrandStats = 'CARD.CHECK.FOR.BRAND.STATS',
+  checkCardsForCrmStats = 'CARD.CHECK.FOR.CRM.STATS',
+  checkCardsStatusInCrm = 'CARD.CHECK.STATUS.IN.CRM',
+  //
+  checkStatsDateAll = 'CARD.CHECK.STATS.DATE.ALL',
+
+  athorizationTx = 'CARD.AUTHORIZATION.TX',
 }
 
 export default EventsNamesAccountEnum;

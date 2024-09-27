@@ -23,7 +23,7 @@ export class FiatIntegrationClient {
     const apiKey = process.env.CURRENCY_CONVERSION_API_KEY;
 
     const url = `${apiURL}?access_key=${apiKey}&from=${from}&to=${to}&amount=${amount}`;
-
+    Logger.log(url, 'FiatIntegrationClient.getCurrencyConversion');
     const obsResponse = this.httpService.get(url);
     const data = await (await lastValueFrom(obsResponse)).data;
     return data.result;

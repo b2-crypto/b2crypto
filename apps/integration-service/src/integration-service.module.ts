@@ -27,6 +27,7 @@ import { SumsubNotificationIntegrationService } from './services/sumsub.notifica
 import { SumsubNotificationIntegrationController } from './sumsub.notification.controller';
 import { PomeloIntegrationSFTPService } from './services/pomelo.integration.sftp.service';
 import { B2BinPayNotificationsController } from './b2binpay.notifications.controller';
+import { ResponseB2CryptoService } from '@response-b2crypto/response-b2crypto';
 
 @Module({
   imports: [
@@ -62,6 +63,7 @@ import { B2BinPayNotificationsController } from './b2binpay.notifications.contro
     PomeloIntegrationProcessService,
     PomeloIntegrationShippingService,
     SumsubNotificationIntegrationService,
+    ResponseB2CryptoService,
   ],
 })
 export class IntegrationServiceModule {}

@@ -10,10 +10,18 @@ html(lang="es")
         p Tu solicitud de tarjeta ha sido recibida exitosamente. A continuación, te proporcionamos los detalles de tu solicitud:
         
         ul
-          li Tipo de Cuenta: #{vars.accountType}
-          li Tipo de Tarjeta: #{vars.cardType}
-          li ID de Cuenta: #{vars.accountId}
-          li Estado de la Solicitud: #{vars.status}
+          li
+            strong Tipo de Cuenta: 
+            | #{vars.accountType}
+          li
+            strong Tipo de Tarjeta: 
+            | #{vars.cardType}
+          li
+            strong ID de Cuenta: 
+            | #{vars.accountId}
+          li
+            strong Estado de la Solicitud: 
+            | #{vars.status}
 
         p Procesaremos tu solicitud lo antes posible. Te mantendremos informado sobre cualquier actualización o si necesitamos información adicional.
 

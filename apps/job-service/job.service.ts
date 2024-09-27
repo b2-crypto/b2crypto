@@ -1,24 +1,20 @@
 import { BuildersService } from '@builder/builders';
-import EventClientEnum from '@common/common/enums/EventsNameEnum';
 import { EnvironmentEnum } from '@common/common/enums/environment.enum';
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { ClientProxy } from '@nestjs/microservices';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import EventsNamesAccountEnum from 'apps/account-service/src/enum/events.names.account.enum';
-import EventsNamesAffiliateEnum from 'apps/affiliate-service/src/enum/events.names.affiliate.enum';
-import EventsNamesBrandEnum from 'apps/brand-service/src/enum/events.names.brand.enum';
-import EventsNamesFileEnum from 'apps/file-service/src/enum/events.names.file.enum';
-import EventsNamesLeadEnum from 'apps/lead-service/src/enum/events.names.lead.enum';
-import EventsNamesPspEnum from 'apps/psp-service/src/enum/events.names.psp.enum';
 import EventsNamesTransferEnum from 'apps/transfer-service/src/enum/events.names.transfer.enum';
 import EventsNamesUserEnum from 'apps/user-service/src/enum/events.names.user.enum';
-const time = '0 */20 * * * *';
+
 @Injectable()
 export class JobService {
-  static periodicTime = {
-    sendBalanceCardReports: CronExpression.EVERY_DAY_AT_11AM,
-    checkBalanceUser: CronExpression.EVERY_DAY_AT_5AM,
+  static readonly periodicTime = {
+    //sendBalanceCardReports: CronExpression.EVERY_DAY_AT_1PM,
+    sendBalanceCardReports: '30 10 * * *',
+    checkBalanceUser: CronExpression.EVERY_DAY_AT_11AM,
+    checkCardsInPomelo: '0 */6 * * * *',
+    checkB2BinPayTransfers: '0 */5 * * * *',
   };
   private env = 'DEV';
 
@@ -33,10 +29,10 @@ export class JobService {
   @Cron(JobService.periodicTime.sendBalanceCardReports, {
     timeZone: process.env.TZ,
   })
-  sendBalanceCardReportsCron() {
+  async sendBalanceCardReportsCron() {
     Logger.log('Sended reports', JobService.name);
     if (this.env == EnvironmentEnum.prod) {
-      this.builder.emitAccountEventClient(
+      await this.builder.getPromiseAccountEventClient(
         EventsNamesAccountEnum.sendBalanceReport,
         {
           where: {
@@ -57,6 +53,34 @@ export class JobService {
         EventsNamesUserEnum.checkBalanceUser,
         '0',
       );
+    }
+  }
+
+  @Cron(JobService.periodicTime.checkCardsInPomelo, {
+    timeZone: process.env.TZ,
+  })
+  checkCardsInPomelo() {
+    if (this.env === EnvironmentEnum.prod) {
+      this.builder.emitAccountEventClient(
+        EventsNamesAccountEnum.checkCardsCreatedInPomelo,
+        'pomelo',
+      );
+    } else {
+      Logger.log('Checking Cards in pomelo', JobService.name);
+    }
+  }
+
+  @Cron(JobService.periodicTime.checkB2BinPayTransfers, {
+    timeZone: process.env.TZ,
+  })
+  checkB2BinPayTransfers() {
+    if (this.env === EnvironmentEnum.prod) {
+      this.builder.emitTransferEventClient(
+        EventsNamesTransferEnum.checkTransferInB2BinPay,
+        'b2binpay',
+      );
+    } else {
+      Logger.log('Checking B2BinPay transfers', JobService.name);
     }
   }
 }

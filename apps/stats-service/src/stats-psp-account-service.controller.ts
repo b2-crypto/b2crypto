@@ -19,6 +19,7 @@ import { StatsDateCreateDto } from '@stats/stats/dto/stats.date.create.dto';
 import { TransferDocument } from '@transfer/transfer/entities/mongoose/transfer.schema';
 import EventsNamesStatsEnum from './enum/events.names.stats.enum';
 import { StatsPspAccountServiceService } from './stats-psp-account-service.service';
+import { NoCache } from '@common/common/decorators/no-cache.decorator';
 
 @Controller('stats')
 export class StatsPspAccountServiceController {
@@ -26,11 +27,13 @@ export class StatsPspAccountServiceController {
     private readonly statsPspAccountServiceService: StatsPspAccountServiceService,
   ) {}
 
+  @NoCache()
   @Get('transfer')
   async getStatsTransfer(/* @Query() query: QuerySearchAnyDto */) {
     return this.statsPspAccountServiceService.getStatsTransfer(/* query */);
   }
 
+  @NoCache()
   @Get('psp-accounts/global')
   async getStatsPspAccount(@Query() query: QuerySearchAnyDto) {
     return this.statsPspAccountServiceService.getGlobalStatDailyDBPspAccount(

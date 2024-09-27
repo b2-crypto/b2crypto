@@ -1,17 +1,28 @@
-import { LegalAddress } from './../../../libs/integration/src/card/generic/dto/user.card.dto';
+import { AccountCreateDto } from '@account/account/dto/account.create.dto';
 import { CardDepositCreateDto } from '@account/account/dto/card-deposit.create.dto';
 import { CardCreateDto } from '@account/account/dto/card.create.dto';
+import { AccountEntity } from '@account/account/entities/account.entity';
+import { AccountDocument } from '@account/account/entities/mongoose/account.schema';
 import { Card } from '@account/account/entities/mongoose/card.schema';
 import { UserCard } from '@account/account/entities/mongoose/user-card.schema';
+import CardTypesAccountEnum from '@account/account/enum/card.types.account.enum';
+import StatusAccountEnum from '@account/account/enum/status.account.enum';
 import TypesAccountEnum from '@account/account/enum/types.account.enum';
+import { ApiKeyAuthGuard } from '@auth/auth/guards/api.key.guard';
 import { BuildersService } from '@builder/builders';
 import { CommonService } from '@common/common';
+import { NoCache } from '@common/common/decorators/no-cache.decorator';
+import CountryCodeEnum from '@common/common/enums/country.code.b2crypto.enum';
+import CurrencyCodeB2cryptoEnum from '@common/common/enums/currency-code-b2crypto.enum';
+import { CardsEnum } from '@common/common/enums/messages.enum';
 import ResourcesEnum from '@common/common/enums/ResourceEnum';
+import { StatusCashierEnum } from '@common/common/enums/StatusCashierEnum';
 import TagEnum from '@common/common/enums/TagEnum';
 import { QuerySearchAnyDto } from '@common/common/models/query_search-any.dto';
 import { IntegrationService } from '@integration/integration';
 import IntegrationCardEnum from '@integration/integration/card/enums/IntegrationCardEnum';
 import { UserCardDto } from '@integration/integration/card/generic/dto/user.card.dto';
+import { IntegrationCardService } from '@integration/integration/card/generic/integration.card.service';
 import {
   BadRequestException,
   Body,
@@ -21,60 +32,50 @@ import {
   Inject,
   Logger,
   NotFoundException,
+  NotImplementedException,
   Param,
   Patch,
   Post,
   Query,
   Req,
+  UnauthorizedException,
   UseGuards,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import {
+  Ctx,
+  MessagePattern,
+  Payload,
+  RmqContext,
+} from '@nestjs/microservices';
 import {
   ApiBearerAuth,
   ApiHeader,
   ApiSecurity,
   ApiTags,
 } from '@nestjs/swagger';
+import { AddressSchema } from '@person/person/entities/mongoose/address.schema';
+import { TransferCreateDto } from '@transfer/transfer/dto/transfer.create.dto';
+import { OperationTransactionType } from '@transfer/transfer/enum/operation.transaction.type.enum';
 import { User } from '@user/user/entities/mongoose/user.schema';
 import { CategoryServiceService } from 'apps/category-service/src/category-service.service';
+import EventsNamesCategoryEnum from 'apps/category-service/src/enum/events.names.category.enum';
 import { GroupServiceService } from 'apps/group-service/src/group-service.service';
+import { FiatIntegrationClient } from 'apps/integration-service/src/clients/fiat.integration.client';
+import EventsNamesPspAccountEnum from 'apps/psp-service/src/enum/events.names.psp.acount.enum';
+import EventsNamesStatusEnum from 'apps/status-service/src/enum/events.names.status.enum';
 import { StatusServiceService } from 'apps/status-service/src/status-service.service';
+import EventsNamesTransferEnum from 'apps/transfer-service/src/enum/events.names.transfer.enum';
+import EventsNamesUserEnum from 'apps/user-service/src/enum/events.names.user.enum';
 import { UserServiceService } from 'apps/user-service/src/user-service.service';
+import { isEmpty, isString } from 'class-validator';
+import { SwaggerSteakeyConfigEnum } from 'libs/config/enum/swagger.stakey.config.enum';
+
+import { ResponsePaginator } from '../../../libs/common/src/interfaces/response-pagination.interface';
 import { AccountServiceController } from './account-service.controller';
 import { AccountServiceService } from './account-service.service';
+import { AfgNamesEnum } from './enum/afg.names.enum';
 import EventsNamesAccountEnum from './enum/events.names.account.enum';
-import {
-  Ctx,
-  EventPattern,
-  MessagePattern,
-  Payload,
-  RmqContext,
-} from '@nestjs/microservices';
-import { TransferUpdateDto } from '@transfer/transfer/dto/transfer.update.dto';
-import CardTypesAccountEnum from '@account/account/enum/card.types.account.enum';
-import { ConfigService } from '@nestjs/config';
-import { AccountCreateDto } from '@account/account/dto/account.create.dto';
-import { IntegrationCardService } from '@integration/integration/card/generic/integration.card.service';
-import { AccountDocument } from '@account/account/entities/mongoose/account.schema';
-import { CardsEnum } from '@common/common/enums/messages.enum';
-import EventsNamesUserEnum from 'apps/user-service/src/enum/events.names.user.enum';
-import StatusAccountEnum from '@account/account/enum/status.account.enum';
-import { ApiKeyAuthGuard } from '@auth/auth/guards/api.key.guard';
-import { AddressSchema } from '@person/person/entities/mongoose/address.schema';
-import CountryCodeEnum from '@common/common/enums/country.code.b2crypto.enum';
-import { FiatIntegrationClient } from 'apps/integration-service/src/clients/fiat.integration.client';
-import { AccountEntity } from '@account/account/entities/account.entity';
-import CurrencyCodeB2cryptoEnum from '@common/common/enums/currency-code-b2crypto.enum';
-import { SwaggerSteakeyConfigEnum } from 'libs/config/enum/swagger.stakey.config.enum';
-import { countries } from 'apps/seed-service/const/countries.const';
-import { isEmpty, isString } from 'class-validator';
-import EventsNamesTransferEnum from 'apps/transfer-service/src/enum/events.names.transfer.enum';
-import { TransferCreateDto } from '@transfer/transfer/dto/transfer.create.dto';
-import EventsNamesCategoryEnum from 'apps/category-service/src/enum/events.names.category.enum';
-import { OperationTransactionType } from '@transfer/transfer/enum/operation.transaction.type.enum';
-import { StatusCashierEnum } from '@common/common/enums/StatusCashierEnum';
-import EventsNamesStatusEnum from 'apps/status-service/src/enum/events.names.status.enum';
-import EventsNamesPspAccountEnum from 'apps/psp-service/src/enum/events.names.psp.acount.enum';
-import { PspAccount } from '@psp-account/psp-account/entities/mongoose/psp-account.schema';
 
 @ApiTags('CARD')
 @Controller('cards')
@@ -102,6 +103,7 @@ export class CardServiceController extends AccountServiceController {
     this.configService.get<number>('AUTHORIZATIONS_BLOCK_BALANCE_PERCENTAGE');
 
   @Get('all')
+  @NoCache()
   @ApiTags(SwaggerSteakeyConfigEnum.TAG_CARD)
   @ApiBearerAuth('bearerToken')
   @ApiHeader({
@@ -121,7 +123,7 @@ export class CardServiceController extends AccountServiceController {
       (account.amount === 0 && account.amountCustodial === 0) ||
       req.user.currency === account.currencyCustodial
     ) {
-      return account.amountCustodial || account.amount;
+      return account.amount || account.amountCustodial;
     }
     try {
       const amount = await this.currencyConversion.getCurrencyConversion(
@@ -142,6 +144,7 @@ export class CardServiceController extends AccountServiceController {
   }
 
   @Get('me')
+  @NoCache()
   @ApiTags(SwaggerSteakeyConfigEnum.TAG_CARD)
   @ApiBearerAuth('bearerToken')
   async findAllMe(@Query() query: QuerySearchAnyDto, @Req() req?: any) {
@@ -165,12 +168,16 @@ export class CardServiceController extends AccountServiceController {
   async createOne(@Body() createDto: CardCreateDto, @Req() req?: any) {
     createDto.accountType =
       createDto.accountType ?? CardTypesAccountEnum.VIRTUAL;
+    let cardAfg = AfgNamesEnum.CONSUMER_VIRTUAL_1K;
     if (createDto.accountType === CardTypesAccountEnum.PHYSICAL) {
-      throw new BadRequestException(
-        'You must be use "/cards/shipping" to get a PHYSICAL card',
-      );
+      cardAfg = AfgNamesEnum.CONSUMER_NOMINADA_3K;
     }
-    const user: User = await this.getUser(req?.user?.id);
+    let user: User;
+    if (createDto.owner) {
+      user = await this.getUser(createDto.owner);
+    } else {
+      user = await this.getUser(req?.user?.id);
+    }
     if (!user.personalData) {
       throw new BadRequestException('Need the personal data to continue');
     }
@@ -182,7 +189,7 @@ export class CardServiceController extends AccountServiceController {
     });
     // TODO[hender - 2024/08/12] Limit virtual card
     if (virtualCardPending.totalElements === 10) {
-      throw new BadRequestException('Already have 10 virtual cards');
+      throw new BadRequestException('Already have 10 cards');
     }
     createDto.owner = user._id;
     createDto.pin =
@@ -217,111 +224,36 @@ export class CardServiceController extends AccountServiceController {
         );
         const afg = affinityGroup.data[0]; */
         // TODO[hender - 2024/06/05]
-        const afg = {
-          id: 'afg-2arMn990ZksFKAHS5PngRPHqRmS',
-          name: 'B2Crypto COL physical virtual credit nominated',
-          card_type_supported: ['VIRTUAL'],
-          innominate: false,
-          months_to_expiration: 84,
-          issued_account: 9,
-          fee_account: 36,
-          exchange_rate_type: 'none',
-          exchange_rate_amount: 100,
-          non_usd_exchange_rate_amount: 100,
-          dcc_exchange_rate_amount: 0,
-          local_withdrawal_allowed: true,
-          international_withdrawal_allowed: true,
-          local_ecommerce_allowed: true,
-          international_ecommerce_allowed: true,
-          local_purchases_allowed: true,
-          international_purchases_allowed: true,
-          product_id: 'prd-2arLJXW8moDb5CppLToizmmw66q',
-          local_extracash_allowed: true,
-          international_extracash_allowed: true,
-          plastic_model: 1,
-          kit_model: 1,
-          status: 'ACTIVE',
-          embossing_company: 'THALES',
-          courier_company: 'DOMINA',
-          exchange_currency_name: 'COP',
-          activation_code_enabled: false,
-          total_exchange_rate: 4169.8,
-          total_non_usd_exchange_rate: 4169.8,
-          total_dcc_exchange_rate: 4128.51,
-          provider: 'MASTERCARD',
-          custom_name_on_card_enabled: false,
-          provider_algorithm: 'MCHIP',
-          start_date: '2024-01-12',
-          dcvv_enabled: true,
-        };
-        if (!afg) {
-          throw new BadRequestException('Affinity group list is empty');
-        }
-        const group = await this.groupService.getAll({
-          where: {
-            slug: CommonService.getSlug(afg.name),
-          },
-        });
-        if (group.totalElements < 1) {
-          const categoryAffinityGroupList = await this.categoryService.getAll({
-            where: {
-              slug: 'affinity-group',
-            },
-          });
-          if (categoryAffinityGroupList.totalElements < 1) {
-            categoryAffinityGroupList.list.push(
-              await this.categoryService.newCategory({
-                name: 'Affinity Group',
-                description: 'Affinity Group to Cards',
-                type: TagEnum.CATEGORY,
-                resources: [ResourcesEnum.GROUP],
-              }),
-            );
-          }
-          const categoryAffinityGroup = categoryAffinityGroupList.list[0];
-          const statusActive = await this.statusService.getAll({
-            where: {
-              slug: 'active',
-            },
-          });
-          if (!statusActive.totalElements) {
-            throw new BadRequestException('Status active not found');
-          }
-          // Create Affinity Group
-          group.list.push(
-            await this.groupService.newGroup({
-              name: afg.name,
-              valueGroup: afg.id,
-              status: statusActive.list[0]?._id,
-              category: categoryAffinityGroup._id,
-            }),
-          );
-        }
+        const group = await this.buildAFG(null, cardAfg);
         account.group = group.list[0];
       }
       // Create Card
       const address = {
-        street_name: user.personalData.location.address.street_name,
-        street_number: user.personalData.location.address.street_number ?? ' ',
-        floor: user.personalData.location.address.floor,
-        apartment: user.personalData.location.address.apartment,
-        city: user.personalData.location.address.city,
-        region: user.personalData.location.address.region,
+        street_name:
+          createDto?.address?.street_name ??
+          user.personalData?.location?.address?.street_name,
+        street_number: ' ',
+        apartment:
+          createDto?.address?.apartment ??
+          user.personalData?.location?.address?.apartment,
+        city:
+          createDto?.address?.city ?? user.personalData.location.address.city,
+        region:
+          createDto?.address?.region ??
+          user.personalData?.location?.address?.region,
         country: 'COL',
         /* country: countries.filter(
           (c) => c.alpha2 === user.personalData.nationality,
         )[0].alpha3, */
-        zip_code: user.personalData.location.address.zip_code ?? '110231',
-        neighborhood: user.personalData.location.address.neighborhood,
+        neighborhood:
+          createDto?.address?.neighborhood ??
+          user.personalData?.location?.address?.neighborhood,
       };
       const card = await cardIntegration.createCard({
         user_id: account.userCardConfig.id,
         affinity_group_id: account.group.valueGroup,
         card_type: account.accountType,
-        email: account.email,
         address: address,
-        previous_card_id: account.prevAccount?.cardConfig?.id ?? null,
-        //name_on_card: account.name,
       });
       const error = card['error'];
       if (error) {
@@ -340,7 +272,7 @@ export class CardServiceController extends AccountServiceController {
             },
           },
         );
-      if (countWalletsUser < 1)
+      if (countWalletsUser < 1) {
         this.cardBuilder.emitAccountEventClient(
           EventsNamesAccountEnum.createOneWallet,
           {
@@ -353,6 +285,7 @@ export class CardServiceController extends AccountServiceController {
             accountType: 'STABLECOIN',
           },
         );
+      }
       return account;
     } catch (err) {
       await this.getAccountService().deleteOneById(account._id);
@@ -371,11 +304,715 @@ export class CardServiceController extends AccountServiceController {
     }
   }
 
+  private getAfgProd(cardAfg: AfgNamesEnum) {
+    let afg = {
+      id: 'afg-2lZYP9KVezJJcvSKCkAMbNPOolq',
+      name: 'Consumer-Virtual-1k',
+      card_type_supported: ['VIRTUAL'],
+      innominate: false,
+      months_to_expiration: 96,
+      issued_account: 9,
+      fee_account: 36,
+      exchange_rate_type: 'none',
+      exchange_rate_amount: 0,
+      non_usd_exchange_rate_amount: 0,
+      dcc_exchange_rate_amount: 0,
+      local_withdrawal_allowed: true,
+      international_withdrawal_allowed: true,
+      local_ecommerce_allowed: true,
+      international_ecommerce_allowed: true,
+      local_purchases_allowed: true,
+      international_purchases_allowed: true,
+      product_id: 'prd-2dK0YVgQ2DnpvfNcq8pmdNnwz0I',
+      local_extracash_allowed: true,
+      international_extracash_allowed: true,
+      plastic_model: 1,
+      kit_model: 1,
+      status: 'ACTIVE',
+      embossing_company: 'IDEMIA',
+      courier_company: 'DOMINA',
+      exchange_currency_name: 'COP',
+      activation_code_enabled: false,
+      total_exchange_rate: 4149.79,
+      total_non_usd_exchange_rate: 4149.79,
+      total_dcc_exchange_rate: 4149.79,
+      provider: 'MASTERCARD',
+      custom_name_on_card_enabled: false,
+      provider_algorithm: 'MCHIP',
+      start_date: '2024-09-03',
+      dcvv_enabled: false,
+    };
+    switch (cardAfg) {
+      // PHYSICAL
+      case AfgNamesEnum.CONSUMER_NOMINADA_3K:
+        afg = {
+          id: 'afg-2lZUsLQBqiS9izPyZfm9WW7gJUr',
+          name: 'Consumer-Nominada-3k',
+          card_type_supported: ['PHYSICAL'],
+          innominate: false,
+          months_to_expiration: 96,
+          issued_account: 9,
+          fee_account: 36,
+          exchange_rate_type: 'none',
+          exchange_rate_amount: 0,
+          non_usd_exchange_rate_amount: 0,
+          dcc_exchange_rate_amount: 0,
+          local_withdrawal_allowed: true,
+          international_withdrawal_allowed: true,
+          local_ecommerce_allowed: true,
+          international_ecommerce_allowed: true,
+          local_purchases_allowed: true,
+          international_purchases_allowed: true,
+          product_id: 'prd-2dK0YVgQ2DnpvfNcq8pmdNnwz0I',
+          local_extracash_allowed: true,
+          international_extracash_allowed: true,
+          plastic_model: 1,
+          kit_model: 1,
+          status: 'ACTIVE',
+          embossing_company: 'IDEMIA',
+          courier_company: 'DOMINA',
+          exchange_currency_name: 'COP',
+          activation_code_enabled: false,
+          total_exchange_rate: 4149.79,
+          total_non_usd_exchange_rate: 4149.79,
+          total_dcc_exchange_rate: 4149.79,
+          provider: 'MASTERCARD',
+          custom_name_on_card_enabled: false,
+          provider_algorithm: 'MCHIP',
+          start_date: '2024-09-03',
+          dcvv_enabled: false,
+        };
+        break;
+      case AfgNamesEnum.CONSUMER_NOMINADA_10K:
+        afg = {
+          id: 'afg-2lZXPZEUyjw5BtJGpPw566eYvtx',
+          name: 'Consumer-Nominada-10k',
+          card_type_supported: ['PHYSICAL'],
+          innominate: false,
+          months_to_expiration: 96,
+          issued_account: 9,
+          fee_account: 36,
+          exchange_rate_type: 'none',
+          exchange_rate_amount: 0,
+          non_usd_exchange_rate_amount: 0,
+          dcc_exchange_rate_amount: 0,
+          local_withdrawal_allowed: true,
+          international_withdrawal_allowed: true,
+          local_ecommerce_allowed: true,
+          international_ecommerce_allowed: true,
+          local_purchases_allowed: true,
+          international_purchases_allowed: true,
+          product_id: 'prd-2dK0YVgQ2DnpvfNcq8pmdNnwz0I',
+          local_extracash_allowed: true,
+          international_extracash_allowed: true,
+          plastic_model: 1,
+          kit_model: 1,
+          status: 'ACTIVE',
+          embossing_company: 'IDEMIA',
+          courier_company: 'DOMINA',
+          exchange_currency_name: 'COP',
+          activation_code_enabled: false,
+          total_exchange_rate: 4149.79,
+          total_non_usd_exchange_rate: 4149.79,
+          total_dcc_exchange_rate: 4149.79,
+          provider: 'MASTERCARD',
+          custom_name_on_card_enabled: false,
+          provider_algorithm: 'MCHIP',
+          start_date: '2024-09-03',
+          dcvv_enabled: false,
+        };
+        break;
+      case AfgNamesEnum.CONSUMER_NOMINADA_25K:
+        afg = {
+          id: 'afg-2lZXXQoTu1rZqIefYA0gMrmjksA',
+          name: 'Consumer-Nominada-25k',
+          card_type_supported: ['PHYSICAL'],
+          innominate: false,
+          months_to_expiration: 96,
+          issued_account: 9,
+          fee_account: 36,
+          exchange_rate_type: '100',
+          exchange_rate_amount: 0,
+          non_usd_exchange_rate_amount: 0,
+          dcc_exchange_rate_amount: 0,
+          local_withdrawal_allowed: true,
+          international_withdrawal_allowed: true,
+          local_ecommerce_allowed: true,
+          international_ecommerce_allowed: true,
+          local_purchases_allowed: true,
+          international_purchases_allowed: true,
+          product_id: 'prd-2dK0YVgQ2DnpvfNcq8pmdNnwz0I',
+          local_extracash_allowed: true,
+          international_extracash_allowed: true,
+          plastic_model: 1,
+          kit_model: 1,
+          status: 'BLOCKED',
+          embossing_company: 'IDEMIA',
+          courier_company: 'DOMINA',
+          exchange_currency_name: 'COP',
+          activation_code_enabled: false,
+          total_exchange_rate: 4149.79,
+          total_non_usd_exchange_rate: 4149.79,
+          total_dcc_exchange_rate: 4149.79,
+          provider: 'MASTERCARD',
+          custom_name_on_card_enabled: false,
+          provider_algorithm: 'MCHIP',
+          start_date: '2024-09-03',
+          dcvv_enabled: false,
+        };
+        break;
+      case AfgNamesEnum.CONSUMER_NOMINADA_100K:
+        afg = {
+          id: 'afg-2lZXdcYBx3twdM3QRIY4UzSDKRs',
+          name: 'Consumer-Nominada-100k',
+          card_type_supported: ['PHYSICAL'],
+          innominate: false,
+          months_to_expiration: 96,
+          issued_account: 9,
+          fee_account: 36,
+          exchange_rate_type: '100',
+          exchange_rate_amount: 0,
+          non_usd_exchange_rate_amount: 0,
+          dcc_exchange_rate_amount: 0,
+          local_withdrawal_allowed: true,
+          international_withdrawal_allowed: true,
+          local_ecommerce_allowed: true,
+          international_ecommerce_allowed: true,
+          local_purchases_allowed: true,
+          international_purchases_allowed: true,
+          product_id: 'prd-2dK0YVgQ2DnpvfNcq8pmdNnwz0I',
+          local_extracash_allowed: true,
+          international_extracash_allowed: true,
+          plastic_model: 1,
+          kit_model: 1,
+          status: 'BLOCKED',
+          embossing_company: 'IDEMIA',
+          courier_company: 'DOMINA',
+          exchange_currency_name: 'COP',
+          activation_code_enabled: false,
+          total_exchange_rate: 4149.79,
+          total_non_usd_exchange_rate: 4149.79,
+          total_dcc_exchange_rate: 4149.79,
+          provider: 'MASTERCARD',
+          custom_name_on_card_enabled: false,
+          provider_algorithm: 'MCHIP',
+          start_date: '2024-09-03',
+          dcvv_enabled: false,
+        };
+        break;
+      case AfgNamesEnum.CONSUMER_INNOMINADA_25K:
+        afg = {
+          id: 'afg-2lZYCpM3SS1Bn6mDP4VLPgOaHXo',
+          name: 'Consumer-Innominada-25k',
+          card_type_supported: ['PHYSICAL'],
+          innominate: true,
+          months_to_expiration: 96,
+          issued_account: 9,
+          fee_account: 36,
+          exchange_rate_type: 'none',
+          exchange_rate_amount: 0,
+          non_usd_exchange_rate_amount: 0,
+          dcc_exchange_rate_amount: 0,
+          local_withdrawal_allowed: true,
+          international_withdrawal_allowed: true,
+          local_ecommerce_allowed: true,
+          international_ecommerce_allowed: true,
+          local_purchases_allowed: true,
+          international_purchases_allowed: true,
+          product_id: 'prd-2dK0YVgQ2DnpvfNcq8pmdNnwz0I',
+          local_extracash_allowed: true,
+          international_extracash_allowed: true,
+          plastic_model: 1,
+          kit_model: 1,
+          status: 'ACTIVE',
+          embossing_company: 'IDEMIA',
+          courier_company: 'DOMINA',
+          exchange_currency_name: 'COP',
+          activation_code_enabled: false,
+          total_exchange_rate: 4149.79,
+          total_non_usd_exchange_rate: 4149.79,
+          total_dcc_exchange_rate: 4149.79,
+          provider: 'MASTERCARD',
+          custom_name_on_card_enabled: false,
+          provider_algorithm: 'MCHIP',
+          start_date: '2024-09-03',
+          dcvv_enabled: false,
+        };
+        break;
+      case AfgNamesEnum.CONSUMER_INNOMINADA_100K:
+        afg = {
+          id: 'afg-2lZYHlB3qAN9LnPKMV395flMUlp',
+          name: 'Consumer-Innominada-100k',
+          card_type_supported: ['PHYSICAL'],
+          innominate: true,
+          months_to_expiration: 96,
+          issued_account: 9,
+          fee_account: 36,
+          exchange_rate_type: 'none',
+          exchange_rate_amount: 0,
+          non_usd_exchange_rate_amount: 0,
+          dcc_exchange_rate_amount: 0,
+          local_withdrawal_allowed: true,
+          international_withdrawal_allowed: true,
+          local_ecommerce_allowed: true,
+          international_ecommerce_allowed: true,
+          local_purchases_allowed: true,
+          international_purchases_allowed: true,
+          product_id: 'prd-2dK0YVgQ2DnpvfNcq8pmdNnwz0I',
+          local_extracash_allowed: true,
+          international_extracash_allowed: true,
+          plastic_model: 1,
+          kit_model: 1,
+          status: 'ACTIVE',
+          embossing_company: 'IDEMIA',
+          courier_company: 'DOMINA',
+          exchange_currency_name: 'COP',
+          activation_code_enabled: false,
+          total_exchange_rate: 4149.79,
+          total_non_usd_exchange_rate: 4149.79,
+          total_dcc_exchange_rate: 4149.79,
+          provider: 'MASTERCARD',
+          custom_name_on_card_enabled: false,
+          provider_algorithm: 'MCHIP',
+          start_date: '2024-09-03',
+          dcvv_enabled: false,
+        };
+        break;
+      // VIRTUAL
+      case AfgNamesEnum.CONSUMER_VIRTUAL_1K:
+        afg = {
+          id: 'afg-2lZYP9KVezJJcvSKCkAMbNPOolq',
+          name: 'Consumer-Virtual-1k',
+          card_type_supported: ['VIRTUAL'],
+          innominate: false,
+          months_to_expiration: 96,
+          issued_account: 9,
+          fee_account: 36,
+          exchange_rate_type: 'none',
+          exchange_rate_amount: 0,
+          non_usd_exchange_rate_amount: 0,
+          dcc_exchange_rate_amount: 0,
+          local_withdrawal_allowed: true,
+          international_withdrawal_allowed: true,
+          local_ecommerce_allowed: true,
+          international_ecommerce_allowed: true,
+          local_purchases_allowed: true,
+          international_purchases_allowed: true,
+          product_id: 'prd-2dK0YVgQ2DnpvfNcq8pmdNnwz0I',
+          local_extracash_allowed: true,
+          international_extracash_allowed: true,
+          plastic_model: 1,
+          kit_model: 1,
+          status: 'ACTIVE',
+          embossing_company: 'IDEMIA',
+          courier_company: 'DOMINA',
+          exchange_currency_name: 'COP',
+          activation_code_enabled: false,
+          total_exchange_rate: 4149.79,
+          total_non_usd_exchange_rate: 4149.79,
+          total_dcc_exchange_rate: 4149.79,
+          provider: 'MASTERCARD',
+          custom_name_on_card_enabled: false,
+          provider_algorithm: 'MCHIP',
+          start_date: '2024-09-03',
+          dcvv_enabled: false,
+        };
+        break;
+      case AfgNamesEnum.CONSUMER_VIRTUAL_2K:
+        afg = {
+          id: 'afg-2lZYTHIOaWFW1uB8kg79vuhuWuS',
+          name: 'Consumer-Virtual-2k',
+          card_type_supported: ['VIRTUAL'],
+          innominate: false,
+          months_to_expiration: 96,
+          issued_account: 9,
+          fee_account: 36,
+          exchange_rate_type: 'none',
+          exchange_rate_amount: 0,
+          non_usd_exchange_rate_amount: 0,
+          dcc_exchange_rate_amount: 0,
+          local_withdrawal_allowed: true,
+          international_withdrawal_allowed: true,
+          local_ecommerce_allowed: true,
+          international_ecommerce_allowed: true,
+          local_purchases_allowed: true,
+          international_purchases_allowed: true,
+          product_id: 'prd-2dK0YVgQ2DnpvfNcq8pmdNnwz0I',
+          local_extracash_allowed: true,
+          international_extracash_allowed: true,
+          plastic_model: 1,
+          kit_model: 1,
+          status: 'ACTIVE',
+          embossing_company: 'IDEMIA',
+          courier_company: 'DOMINA',
+          exchange_currency_name: 'COP',
+          activation_code_enabled: false,
+          total_exchange_rate: 4149.79,
+          total_non_usd_exchange_rate: 4149.79,
+          total_dcc_exchange_rate: 4149.79,
+          provider: 'MASTERCARD',
+          custom_name_on_card_enabled: false,
+          provider_algorithm: 'MCHIP',
+          start_date: '2024-09-03',
+          dcvv_enabled: false,
+        };
+        break;
+      case AfgNamesEnum.CONSUMER_VIRTUAL_5K:
+        afg = {
+          id: 'afg-2lZhmFyzsHojufE42Tfn1X73mnG',
+          name: 'Consumer-Virtual-5k',
+          card_type_supported: ['VIRTUAL'],
+          innominate: false,
+          months_to_expiration: 96,
+          issued_account: 9,
+          fee_account: 36,
+          exchange_rate_type: 'none',
+          exchange_rate_amount: 0,
+          non_usd_exchange_rate_amount: 0,
+          dcc_exchange_rate_amount: 0,
+          local_withdrawal_allowed: true,
+          international_withdrawal_allowed: true,
+          local_ecommerce_allowed: true,
+          international_ecommerce_allowed: true,
+          local_purchases_allowed: true,
+          international_purchases_allowed: true,
+          product_id: 'prd-2dK0YVgQ2DnpvfNcq8pmdNnwz0I',
+          local_extracash_allowed: true,
+          international_extracash_allowed: true,
+          plastic_model: 1,
+          kit_model: 1,
+          status: 'ACTIVE',
+          embossing_company: 'THALES',
+          courier_company: 'DOMINA',
+          exchange_currency_name: 'COP',
+          activation_code_enabled: false,
+          total_exchange_rate: 4149.79,
+          total_non_usd_exchange_rate: 4149.79,
+          total_dcc_exchange_rate: 4149.79,
+          provider: 'MASTERCARD',
+          custom_name_on_card_enabled: false,
+          provider_algorithm: 'MCHIP',
+          start_date: '2024-09-03',
+          dcvv_enabled: false,
+        };
+        break;
+      case AfgNamesEnum.CONSUMER_VIRTUAL_10K:
+        afg = {
+          id: 'afg-2lZYZ7oGxBT1FhsSnBvywgVrCQq',
+          name: 'Consumer-Virtual-10k',
+          card_type_supported: ['VIRTUAL'],
+          innominate: false,
+          months_to_expiration: 96,
+          issued_account: 9,
+          fee_account: 36,
+          exchange_rate_type: 'none',
+          exchange_rate_amount: 0,
+          non_usd_exchange_rate_amount: 0,
+          dcc_exchange_rate_amount: 0,
+          local_withdrawal_allowed: true,
+          international_withdrawal_allowed: true,
+          local_ecommerce_allowed: true,
+          international_ecommerce_allowed: true,
+          local_purchases_allowed: true,
+          international_purchases_allowed: true,
+          product_id: 'prd-2dK0YVgQ2DnpvfNcq8pmdNnwz0I',
+          local_extracash_allowed: true,
+          international_extracash_allowed: true,
+          plastic_model: 1,
+          kit_model: 1,
+          status: 'ACTIVE',
+          embossing_company: 'IDEMIA',
+          courier_company: 'DOMINA',
+          exchange_currency_name: 'COP',
+          activation_code_enabled: false,
+          total_exchange_rate: 4149.79,
+          total_non_usd_exchange_rate: 4149.79,
+          total_dcc_exchange_rate: 4149.79,
+          provider: 'MASTERCARD',
+          custom_name_on_card_enabled: false,
+          provider_algorithm: 'MCHIP',
+          start_date: '2024-09-03',
+          dcvv_enabled: false,
+        };
+        break;
+      default:
+        throw new BadRequestException('Card AFG not found');
+    }
+    return afg;
+  }
+
+  private getAfgStage(cardAfg: AfgNamesEnum) {
+    let afg = {
+      id: 'afg-2VtGPHue8VIrXsJa0H7OzLLri4T',
+      name: 'Afinidad basica 2',
+      card_type_supported: ['VIRTUAL', 'PHYSICAL'],
+      innominate: false,
+      months_to_expiration: 96,
+      issued_account: 9,
+      fee_account: 36,
+      exchange_rate_type: 'none',
+      exchange_rate_amount: 0,
+      non_usd_exchange_rate_amount: 0,
+      dcc_exchange_rate_amount: 0,
+      local_withdrawal_allowed: false,
+      international_withdrawal_allowed: false,
+      local_ecommerce_allowed: true,
+      international_ecommerce_allowed: true,
+      local_purchases_allowed: true,
+      international_purchases_allowed: true,
+      product_id: 'prd-2VtGP4RvXv5enzWYe2jikrxucrG',
+      local_extracash_allowed: true,
+      international_extracash_allowed: true,
+      plastic_model: 1,
+      kit_model: 1,
+      status: 'ACTIVE',
+      embossing_company: 'THALES',
+      courier_company: 'ESTAFETA',
+      exchange_currency_name: 'MXN',
+      activation_code_enabled: false,
+      total_exchange_rate: 20.6,
+      total_non_usd_exchange_rate: 20.6,
+      total_dcc_exchange_rate: 20.6,
+      provider: 'MASTERCARD',
+      custom_name_on_card_enabled: false,
+      provider_algorithm: 'EMV_CSKD',
+      start_date: '2023-09-25',
+      dcvv_enabled: false,
+    };
+    switch (cardAfg) {
+      case AfgNamesEnum.CONSUMER_NOMINADA_3K:
+      case AfgNamesEnum.CONSUMER_NOMINADA_10K:
+      case AfgNamesEnum.CONSUMER_NOMINADA_25K:
+      case AfgNamesEnum.CONSUMER_NOMINADA_100K:
+        afg = {
+          id: 'afg-2fdxV2deQc0qHDbTtCwOlbFZJBL',
+          name: 'B2Crypto COL physical credit nominated',
+          card_type_supported: ['PHYSICAL'],
+          innominate: false,
+          months_to_expiration: 96,
+          issued_account: 9,
+          fee_account: 36,
+          exchange_rate_type: '100',
+          exchange_rate_amount: 100,
+          non_usd_exchange_rate_amount: 100,
+          dcc_exchange_rate_amount: 0,
+          local_withdrawal_allowed: true,
+          international_withdrawal_allowed: true,
+          local_ecommerce_allowed: true,
+          international_ecommerce_allowed: true,
+          local_purchases_allowed: true,
+          international_purchases_allowed: true,
+          product_id: 'prd-2fdxUv6l6VEVxlgOxt2UGCCUZXs',
+          local_extracash_allowed: true,
+          international_extracash_allowed: true,
+          plastic_model: 1,
+          kit_model: 1,
+          status: 'ACTIVE',
+          embossing_company: 'IDEMIA',
+          courier_company: 'DOMINA',
+          exchange_currency_name: 'COP',
+          activation_code_enabled: false,
+          total_exchange_rate: 4169.8,
+          total_non_usd_exchange_rate: 4169.8,
+          total_dcc_exchange_rate: 4128.51,
+          provider: 'MASTERCARD',
+          custom_name_on_card_enabled: false,
+          provider_algorithm: 'MCHIP',
+          start_date: '2024-04-26',
+          dcvv_enabled: false,
+        };
+        break;
+      case AfgNamesEnum.CONSUMER_INNOMINADA_25K:
+      case AfgNamesEnum.CONSUMER_INNOMINADA_100K:
+        afg = {
+          id: 'afg-2jc1143Egwfm4SUOaAwBz9IfZKb',
+          name: 'B2Crypto innominated',
+          card_type_supported: ['PHYSICAL'],
+          innominate: true,
+          months_to_expiration: 96,
+          issued_account: 9,
+          fee_account: 36,
+          exchange_rate_type: 'none',
+          exchange_rate_amount: 0,
+          non_usd_exchange_rate_amount: 0,
+          dcc_exchange_rate_amount: 0,
+          local_withdrawal_allowed: true,
+          international_withdrawal_allowed: true,
+          local_ecommerce_allowed: true,
+          international_ecommerce_allowed: true,
+          local_purchases_allowed: true,
+          international_purchases_allowed: true,
+          product_id: 'prd-2arLJXW8moDb5CppLToizmmw66q',
+          local_extracash_allowed: true,
+          international_extracash_allowed: true,
+          plastic_model: 1,
+          kit_model: 1,
+          status: 'ACTIVE',
+          embossing_company: 'IDEMIA',
+          courier_company: 'DOMINA',
+          exchange_currency_name: 'COP',
+          activation_code_enabled: false,
+          total_exchange_rate: 4128.51,
+          total_non_usd_exchange_rate: 4128.51,
+          total_dcc_exchange_rate: 4128.51,
+          provider: 'MASTERCARD',
+          custom_name_on_card_enabled: false,
+          provider_algorithm: 'MCHIP',
+          start_date: '2024-07-22',
+          dcvv_enabled: false,
+        };
+        break;
+      case AfgNamesEnum.CONSUMER_VIRTUAL_1K:
+      case AfgNamesEnum.CONSUMER_VIRTUAL_2K:
+      case AfgNamesEnum.CONSUMER_VIRTUAL_5K:
+      case AfgNamesEnum.CONSUMER_VIRTUAL_10K:
+        afg = {
+          id: 'afg-2jhjNvaMmNsNHzbx54nWv12j9MQ',
+          name: 'B2Crypto Virtual',
+          card_type_supported: ['VIRTUAL'],
+          innominate: false,
+          months_to_expiration: 96,
+          issued_account: 9,
+          fee_account: 36,
+          exchange_rate_type: 'none',
+          exchange_rate_amount: 0,
+          non_usd_exchange_rate_amount: 0,
+          dcc_exchange_rate_amount: 0,
+          local_withdrawal_allowed: true,
+          international_withdrawal_allowed: true,
+          local_ecommerce_allowed: true,
+          international_ecommerce_allowed: true,
+          local_purchases_allowed: true,
+          international_purchases_allowed: true,
+          product_id: 'prd-2arLJXW8moDb5CppLToizmmw66q',
+          local_extracash_allowed: true,
+          international_extracash_allowed: true,
+          plastic_model: 1,
+          kit_model: 1,
+          status: 'ACTIVE',
+          embossing_company: 'IDEMIA',
+          courier_company: 'DOMINA',
+          exchange_currency_name: 'COP',
+          activation_code_enabled: false,
+          total_exchange_rate: 4128.51,
+          total_non_usd_exchange_rate: 4128.51,
+          total_dcc_exchange_rate: 4128.51,
+          provider: 'MASTERCARD',
+          custom_name_on_card_enabled: false,
+          provider_algorithm: 'MCHIP',
+          start_date: '2024-07-24',
+          dcvv_enabled: false,
+        };
+        break;
+    }
+    return afg;
+  }
+
+  private async buildAFG(
+    afgId?: string,
+    cardAfg: AfgNamesEnum = AfgNamesEnum.CONSUMER_VIRTUAL_1K,
+  ) {
+    let afg =
+      process.env.ENVIRONMENT === 'DEV' || process.env.ENVIRONMENT === 'STAGE'
+        ? this.getAfgStage(cardAfg)
+        : process.env.ENVIRONMENT === 'PROD'
+        ? this.getAfgProd(cardAfg)
+        : null;
+    Logger.debug(
+      `AFG: ${JSON.stringify(afg)}`,
+      'CardServiceController.buildAFG',
+    );
+    // TODO[hender-20/08/2024] check the level user (individual/corporate)
+    if (afgId) {
+      afg = {
+        id: afgId ?? 'afg-2arMn990ZksFKAHS5PngRPHqRmS',
+        name: afgId
+          ? 'migration'
+          : 'B2Crypto COL physical virtual credit nominated',
+        card_type_supported: ['VIRTUAL'],
+        innominate: false,
+        months_to_expiration: 84,
+        issued_account: 9,
+        fee_account: 36,
+        exchange_rate_type: 'none',
+        exchange_rate_amount: 100,
+        non_usd_exchange_rate_amount: 100,
+        dcc_exchange_rate_amount: 0,
+        local_withdrawal_allowed: true,
+        international_withdrawal_allowed: true,
+        local_ecommerce_allowed: true,
+        international_ecommerce_allowed: true,
+        local_purchases_allowed: true,
+        international_purchases_allowed: true,
+        product_id: 'prd-2arLJXW8moDb5CppLToizmmw66q',
+        local_extracash_allowed: true,
+        international_extracash_allowed: true,
+        plastic_model: 1,
+        kit_model: 1,
+        status: 'ACTIVE',
+        embossing_company: 'THALES',
+        courier_company: 'DOMINA',
+        exchange_currency_name: 'COP',
+        activation_code_enabled: false,
+        total_exchange_rate: 4169.8,
+        total_non_usd_exchange_rate: 4169.8,
+        total_dcc_exchange_rate: 4128.51,
+        provider: 'MASTERCARD',
+        custom_name_on_card_enabled: false,
+        provider_algorithm: 'MCHIP',
+        start_date: '2024-01-12',
+        dcvv_enabled: true,
+      };
+    }
+    const group = await this.groupService.getAll({
+      where: {
+        slug: CommonService.getSlug(afg.name),
+      },
+    });
+    if (group.totalElements < 1) {
+      const categoryAffinityGroupList = await this.categoryService.getAll({
+        where: {
+          slug: 'affinity-group',
+        },
+      });
+      if (categoryAffinityGroupList.totalElements < 1) {
+        categoryAffinityGroupList.list.push(
+          await this.categoryService.newCategory({
+            name: 'Affinity Group',
+            description: 'Affinity Group to Cards',
+            type: TagEnum.CATEGORY,
+            resources: [ResourcesEnum.GROUP],
+          }),
+        );
+      }
+      const categoryAffinityGroup = categoryAffinityGroupList.list[0];
+      const statusActive = await this.statusService.getAll({
+        where: {
+          slug: 'active',
+        },
+      });
+      if (!statusActive.totalElements) {
+        throw new BadRequestException('Status active not found');
+      }
+      // Create Affinity Group
+      group.list.push(
+        await this.groupService.newGroup({
+          name: afg.name,
+          valueGroup: afg.id,
+          status: statusActive.list[0]?._id,
+          category: categoryAffinityGroup._id,
+        }),
+      );
+    }
+    return group;
+  }
+
   @ApiTags(SwaggerSteakeyConfigEnum.TAG_CARD)
   @ApiSecurity('b2crypto-key')
   @ApiBearerAuth('bearerToken')
   @UseGuards(ApiKeyAuthGuard)
   @Get('shipping/:idCard')
+  @NoCache()
   async getShippingPhysicalCard(
     @Param('idCard') idCard: string,
     @Req() req?: any,
@@ -467,6 +1104,7 @@ export class CardServiceController extends AccountServiceController {
           user.personalData.phoneNumber,
       },
     });
+
     if (rtaShippingCard.data.id) {
       const account = await this.cardService.createOne({
         type: TypesAccountEnum.CARD,
@@ -497,16 +1135,32 @@ export class CardServiceController extends AccountServiceController {
     if (!createDto.from) {
       throw new BadRequestException('I need a wallet to recharge card');
     }
+    if (!createDto.to) {
+      throw new BadRequestException('I need a card to recharge');
+    }
     const to = await this.getAccountService().findOneById(
       createDto.to.toString(),
     );
     if (to.type != TypesAccountEnum.CARD) {
+      Logger.error(
+        'Type not same',
+        CardServiceController.name,
+        'Card.rechargeOne.card',
+      );
       throw new BadRequestException('Card not found');
+    }
+    if (!to) {
+      throw new BadRequestException('Card is not valid');
     }
     const from = await this.getAccountService().findOneById(
       createDto.from.toString(),
     );
     if (from.type != TypesAccountEnum.WALLET) {
+      Logger.error(
+        'Type not same',
+        CardServiceController.name,
+        'Card.rechargeOne.wallet',
+      );
       throw new BadRequestException('Wallet not found');
     }
     if (!from) {
@@ -567,6 +1221,8 @@ export class CardServiceController extends AccountServiceController {
         account: to._id,
         userCreator: req?.user?.id,
         userAccount: to.owner,
+        typeAccount: to.type,
+        typeAccountType: to.accountType,
         typeTransaction: depositCardCategory._id,
         psp: internalPspAccount.psp,
         pspAccount: internalPspAccount._id,
@@ -591,10 +1247,10 @@ export class CardServiceController extends AccountServiceController {
         currencyCustodial: from.currencyCustodial,
         amountCustodial: createDto.amount,
         account: from._id,
-        typeAccount: from.type,
-        typeAccountType: from.accountType,
         userCreator: req?.user?.id,
         userAccount: from.owner,
+        typeAccount: from.type,
+        typeAccountType: from.accountType,
         typeTransaction: withDrawalWalletCategory._id,
         psp: internalPspAccount.psp,
         pspAccount: internalPspAccount._id,
@@ -659,7 +1315,21 @@ export class CardServiceController extends AccountServiceController {
 
   @Delete(':cardID')
   deleteOneById(@Param('cardID') id: string, req?: any) {
-    return this.getAccountService().deleteOneById(id);
+    //return this.getAccountService().deleteOneById(id);
+    throw new UnauthorizedException();
+  }
+
+  @Get('pomelo/check')
+  async checkCardsInPomelo() {
+    //await this.checkCardsCreatedInPomelo(null, null);
+    this.cardBuilder.emitAccountEventClient(
+      EventsNamesAccountEnum.checkCardsCreatedInPomelo,
+      'pomelo',
+    );
+    return {
+      statusCode: 200,
+      message: 'Started',
+    };
   }
 
   @MessagePattern(EventsNamesAccountEnum.pomeloTransaction)
@@ -667,7 +1337,7 @@ export class CardServiceController extends AccountServiceController {
     CommonService.ack(ctx);
     try {
       let txnAmount = 0;
-      Logger.log(`Looking for card: ${data.id}`, 'CardController');
+      Logger.log(`Looking for card: ${data.id}`, CardServiceController.name);
       const cardList = await this.cardService.findAll({
         where: {
           statusText: StatusAccountEnum.UNLOCK,
@@ -681,7 +1351,7 @@ export class CardServiceController extends AccountServiceController {
       if (data.authorize) {
         Logger.log(
           `Card balance: ${card.amount} | Movement amount: ${data.amount}`,
-          'CardController',
+          CardServiceController.name,
         );
         const allowedBalance =
           card.amount * (1.0 - this.BLOCK_BALANCE_PERCENTAGE);
@@ -703,7 +1373,7 @@ export class CardServiceController extends AccountServiceController {
       });
       return CardsEnum.CARD_PROCESS_OK;
     } catch (error) {
-      Logger.error(error, 'CardController');
+      Logger.error(error, CardServiceController.name);
       return CardsEnum.CARD_PROCESS_FAILURE;
     }
   }
@@ -712,7 +1382,164 @@ export class CardServiceController extends AccountServiceController {
   async findByCardId(@Ctx() ctx: RmqContext, @Payload() data: any) {
     CommonService.ack(ctx);
     try {
-      Logger.log(`Looking for card: ${data.id}`, 'CardController');
+      Logger.log(`Looking for card: ${data.id}`, CardServiceController.name);
+      const cardList = await this.getCardById(data.id);
+      if (!cardList || !cardList.list[0]) {
+        throw new NotFoundException(`Card ${data.id} was not found`);
+      }
+      return cardList.list[0];
+    } catch (error) {
+      Logger.error(error, CardServiceController.name);
+    }
+  }
+
+  private async getCardById(cardId: string) {
+    try {
+      Logger.log(`Looking for card: ${cardId}`, CardServiceController.name);
+      const cardList = await this.cardService.findAll({
+        where: {
+          'cardConfig.id': cardId,
+        },
+      });
+      return cardList;
+    } catch (error) {
+      Logger.error(error, CardServiceController.name);
+    }
+  }
+
+  @MessagePattern(EventsNamesAccountEnum.checkCardsCreatedInPomelo)
+  async checkCardsCreatedInPomelo(
+    @Ctx() ctx: RmqContext,
+    @Payload() data: any,
+  ) {
+    CommonService.ack(ctx);
+    try {
+      Logger.log(`Start`, CardServiceController.name);
+      const paginator: ResponsePaginator<User> = new ResponsePaginator<User>();
+      paginator.currentPage = 1;
+      paginator.firstPage = 1;
+      const cardIntegration = await this.integration.getCardIntegration(
+        IntegrationCardEnum.POMELO,
+      );
+      if (!cardIntegration) {
+        throw new BadRequestException('Bad integration card');
+      }
+      do {
+        const usersPaginator: ResponsePaginator<User> =
+          await this.cardBuilder.getPromiseUserEventClient(
+            EventsNamesUserEnum.findAll,
+            {
+              relations: ['personalData'],
+              page: paginator.currentPage,
+            },
+          );
+        Logger.debug(
+          `page ${paginator.currentPage} de ${usersPaginator.lastPage}`,
+          `Check cards users ${usersPaginator.totalElements}`,
+        );
+        for (const usr of usersPaginator.list) {
+          //Logger.debug(usr?.userCard?.id, `User ${usr.email}`);
+          if (usr.userCard) {
+            const cards = await cardIntegration.getCardByQuery({
+              user_id: usr.userCard.id,
+              page_size: 1000,
+            });
+            //Logger.debug(cards, `Result pomelo`);
+            for (const crd of cards.data) {
+              //Logger.debug(crd.id, `Search card`);
+              const card = await this.cardService.findAll({
+                where: {
+                  'cardConfig.id': crd.id,
+                },
+              });
+              if (!card.totalElements) {
+                const cardDto = this.buildCardDto(
+                  crd,
+                  usr.personalData,
+                  usr.email,
+                );
+                const n_card = await this.cardService.createOne(
+                  cardDto as AccountCreateDto,
+                );
+                Logger.debug(n_card.id, `Card created for ${usr.email}`);
+              }
+            }
+          }
+        }
+        paginator.currentPage = usersPaginator.nextPage;
+        paginator.nextPage = usersPaginator.nextPage;
+      } while (paginator.nextPage !== paginator.firstPage);
+    } catch (error) {
+      Logger.error(error, CardServiceController.name);
+    }
+  }
+  private buildCardDto(
+    pomeloCard: any,
+    person: any,
+    email: string,
+    balance = 0,
+  ) {
+    let statusText: string;
+    if (pomeloCard?.status === 'ACTIVE') {
+      statusText = StatusAccountEnum.UNLOCK;
+    } else if (pomeloCard?.status === 'BLOCKED') {
+      statusText = StatusAccountEnum.LOCK;
+    } else {
+      statusText = StatusAccountEnum.CANCEL;
+    }
+    return {
+      name: person?.firstName,
+      type: TypesAccountEnum.CARD,
+      accountType: CardTypesAccountEnum[pomeloCard.card_type],
+      firstName: person?.firstName ?? person?.name,
+      lastName: person?.lastName,
+      docId: person?.numDocId,
+      address: person?.location?.address,
+      email: email,
+      telephone: person?.phoneNumber,
+      description: pomeloCard?.affinity_group_name,
+      afgId: pomeloCard?.affinity_group_id,
+      accountId: pomeloCard?.id,
+      owner: person?.user,
+      statusText,
+      amount: balance ?? 0,
+      currency: CurrencyCodeB2cryptoEnum.USD,
+      amountCustodial: balance ?? 0,
+      currencyCustodial: CurrencyCodeB2cryptoEnum.USD,
+      amountBlocked: 0,
+      currencyBlocked: CurrencyCodeB2cryptoEnum.USD,
+      amountBlockedCustodial: 0,
+      currencyBlockedCustodial: CurrencyCodeB2cryptoEnum.USD,
+      cardConfig: {
+        id: pomeloCard?.id,
+        user_id: pomeloCard?.user_id,
+        affinity_group_id: pomeloCard?.affinity_group_id,
+        card_type: pomeloCard?.card_type,
+        status: pomeloCard?.status,
+        start_date: pomeloCard?.start_date,
+        last_four: pomeloCard?.last_four,
+        provider: pomeloCard?.provider,
+        product_type: pomeloCard?.product_type,
+        address: {
+          street_name: person?.location?.address?.street_name,
+          street_number: person?.location?.address?.street_number,
+          floor: person?.location?.address?.floor ?? '',
+          apartment: person?.location?.address?.apartment ?? '',
+          city: person?.location?.address?.city,
+          region: person?.location?.address?.region,
+          country: CountryCodeEnum.Colombia,
+          zip_code: person?.location?.address?.zip_code,
+          neighborhood: person?.location?.address?.neighborhood,
+        },
+      },
+    };
+  }
+
+  @MessagePattern(EventsNamesAccountEnum.setBalanceByCard)
+  async setBalanceByCard(@Ctx() ctx: RmqContext, @Payload() data: any) {
+    CommonService.ack(ctx);
+    try {
+      Logger.log(`Looking for card: ${data.id}`, CardServiceController.name);
       const cardList = await this.cardService.findAll({
         where: {
           'cardConfig.id': data.id,
@@ -721,9 +1548,16 @@ export class CardServiceController extends AccountServiceController {
       if (!cardList || !cardList.list[0]) {
         throw new NotFoundException(`Card ${data.id} was not found`);
       }
-      return cardList.list[0];
+      const card = cardList.list[0];
+      await this.cardService.customUpdateOne({
+        id: card._id,
+        $inc: {
+          amount: card.amount ? 0 : data.amount,
+          amountCustodial: card.amountCustodial ? 0 : data.amount,
+        },
+      });
     } catch (error) {
-      Logger.error(error, 'CardController');
+      Logger.error(error, CardServiceController.name);
     }
   }
 
@@ -735,7 +1569,7 @@ export class CardServiceController extends AccountServiceController {
     // TODO[hender - 2024/08/12] Check the Surname, City, Region to remove special characters
     // TODO[hender - 2024/08/12] Check the Surname, City, Region to remove numbers
     const rtaUserCard = await cardIntegration.getUser({
-      email: user.email,
+      email: user.email.toLowerCase(),
     });
     let userCardConfig: UserCard;
     if (rtaUserCard.data.length > 0) {

@@ -31,18 +31,21 @@ import { StatusUpdateDto } from '@status/status/dto/status.update.dto';
 import EventsNamesStatusEnum from './enum/events.names.status.enum';
 import { StatusServiceService } from './status-service.service';
 import GenericServiceController from '@common/common/interfaces/controller.generic.interface';
+import { NoCache } from '@common/common/decorators/no-cache.decorator';
 
 @ApiTags('Status')
 @Controller('status')
 export class StatusServiceController implements GenericServiceController {
   constructor(private readonly statusService: StatusServiceService) {}
 
+  @NoCache()
   @Get('all')
   // @CheckPoliciesAbility(new PolicyHandlerStatusRead())
   async findAll(@Query() query: QuerySearchAnyDto) {
     return this.statusService.getAll(query);
   }
 
+  @NoCache()
   @Get(':statusID')
   // @CheckPoliciesAbility(new PolicyHandlerStatusRead())
   async findOneById(@Param('statusID') id: string) {

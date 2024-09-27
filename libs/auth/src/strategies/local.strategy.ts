@@ -25,6 +25,9 @@ export class LocalStrategy extends PassportStrategy(Strategy) {
         }
         const crmId = await this.getCrm(req.body.crmId);
         const user = await this.validate(username, password);
+        if (!user.active) {
+          return done(false);
+        }
         if (user.message) {
           return done(user);
         }

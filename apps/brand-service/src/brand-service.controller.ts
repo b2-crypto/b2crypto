@@ -38,6 +38,7 @@ import { AuthGuard } from '@nestjs/passport';
 import { ConfigCheckStatsDto } from '@stats/stats/dto/config.check.stats.dto';
 import { BrandServiceService } from './brand-service.service';
 import EventsNamesBrandEnum from './enum/events.names.brand.enum';
+import { NoCache } from '@common/common/decorators/no-cache.decorator';
 
 @ApiTags('BRAND')
 @Controller('brand')
@@ -45,6 +46,7 @@ export class BrandServiceController implements GenericServiceController {
   constructor(private readonly brandService: BrandServiceService) {}
 
   @Get('all')
+  @NoCache()
   // @CheckPoliciesAbility(new PolicyHandlerBrandRead())
   async findAll(@Query() query: QuerySearchAnyDto) {
     return this.brandService.getAll(query);
@@ -53,6 +55,7 @@ export class BrandServiceController implements GenericServiceController {
   @ApiKeyCheck()
   @UseGuards(AuthGuard('api-key'))
   @Get()
+  @NoCache()
   // @CheckPoliciesAbility(new PolicyHandlerBrandRead())
   async findAllApiKey(@Query() query: QuerySearchAnyDto) {
     query.take = await this.brandService.count(query);
@@ -68,18 +71,21 @@ export class BrandServiceController implements GenericServiceController {
   }
 
   @Get('all/retention')
+  @NoCache()
   // @CheckPoliciesAbility(new PolicyHandlerBrandRead())
   async findAllRetention(@Query() query: QuerySearchAnyDto) {
     return this.brandService.getAllRetention(query);
   }
 
   @Get('all/sales')
+  @NoCache()
   // @CheckPoliciesAbility(new PolicyHandlerBrandRead())
   async findAllSales(@Query() query: QuerySearchAnyDto) {
     return this.brandService.getAllSales(query);
   }
 
   @Get('all/:departmentName')
+  @NoCache()
   // @CheckPoliciesAbility(new PolicyHandlerBrandRead())
   async findAllByDepartment(
     @Param('departmentName') departmentName: string,
@@ -89,6 +95,7 @@ export class BrandServiceController implements GenericServiceController {
   }
 
   @Get(':brandID')
+  @NoCache()
   // @CheckPoliciesAbility(new PolicyHandlerBrandRead())
   async findOneById(@Param('brandID') id: string) {
     return this.brandService.getOne(id);

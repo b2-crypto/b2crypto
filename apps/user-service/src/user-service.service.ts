@@ -110,7 +110,7 @@ export class UserServiceService {
           // Swap if currency is different
         }
       }
-      Logger.debug('userBalance', `balance ${usr.email}`);
+      Logger.log('Balance updated', `balance ${usr.email}`);
       return this.updateUser({
         id: usr._id,
         balance: userBalance,
@@ -122,10 +122,6 @@ export class UserServiceService {
         const users = await this.getAll({
           page: currentPage,
         });
-        Logger.debug(
-          `${users.nextPage}`,
-          `page ${currentPage}/${users.lastPage}`,
-        );
         currentPage = users.nextPage;
         for (const usr of users.list) {
           promises.push(

@@ -34,18 +34,21 @@ import {
 } from '@nestjs/microservices';
 import EventsNamesMessageEnum from './enum/events.names.message.enum';
 import { MessageServiceService } from './message-service.service';
+import { NoCache } from '@common/common/decorators/no-cache.decorator';
 
 @ApiTags('MESSAGE')
 @Controller('message')
 export class MessageServiceController implements GenericServiceController {
   constructor(private readonly messageService: MessageServiceService) {}
 
+  @NoCache()
   @Get('all')
   // @CheckPoliciesAbility(new PolicyHandlerMessageRead())
   async findAll(@Query() query: QuerySearchAnyDto) {
     return this.messageService.getAll(query);
   }
 
+  @NoCache()
   @Get(':messageID')
   // @CheckPoliciesAbility(new PolicyHandlerMessageRead())
   async findOneById(@Param('messageID') id: string) {
@@ -183,7 +186,7 @@ export class MessageServiceController implements GenericServiceController {
     try {
       this.messageService.sendEmailDisclaimer(lead);
     } catch (err) {
-      Logger.error(err, MessageServiceController.name);
+      Logger.error(err, `${MessageServiceController.name}-sendEmailDisclaimer`);
     }
   }
 
@@ -197,7 +200,10 @@ export class MessageServiceController implements GenericServiceController {
     try {
       await this.messageService.sendEmailOtpNotification(message);
     } catch (err) {
-      Logger.error(err, MessageServiceController.name);
+      Logger.error(
+        err,
+        `${MessageServiceController.name}-sendEmailOtpNotification`,
+      );
     }
   }
 
@@ -212,6 +218,135 @@ export class MessageServiceController implements GenericServiceController {
       await this.messageService.sendEmailBalanceReport(message);
     } catch (err) {
       Logger.error(err, MessageServiceController.name);
+    }
+  }
+
+  @AllowAnon()
+  @EventPattern(EventsNamesMessageEnum.sendCardRequestConfirmationEmail)
+  async eventSendCardRequestConfirmationEmail(
+    @Payload() message: MessageCreateDto,
+    @Ctx() ctx: RmqContext,
+  ) {
+    CommonService.ack(ctx);
+    try {
+      await this.messageService.sendCardRequestConfirmationEmail(message);
+    } catch (err) {
+      Logger.error(
+        err,
+        `${MessageServiceController.name}-sendCardRequestConfirmationEmail`,
+      );
+    }
+  }
+
+  @AllowAnon()
+  @EventPattern(EventsNamesMessageEnum.sendProfileRegistrationCreation)
+  async eventSendProfileRegistrationCreation(
+    @Payload() message: MessageCreateDto,
+    @Ctx() ctx: RmqContext,
+  ) {
+    CommonService.ack(ctx);
+    try {
+      await this.messageService.sendProfileRegistrationCreation(message);
+    } catch (err) {
+      Logger.error(
+        err,
+        `${MessageServiceController.name}-sendProfileRegistrationCreation`,
+      );
+    }
+  }
+
+  @AllowAnon()
+  @EventPattern(EventsNamesMessageEnum.sendVirtualPhysicalCards)
+  async eventSendVirtualPhysicalCards(
+    @Payload() message: MessageCreateDto,
+    @Ctx() ctx: RmqContext,
+  ) {
+    CommonService.ack(ctx);
+    try {
+      await this.messageService.sendVirtualPhysicalCards(message);
+    } catch (err) {
+      Logger.error(
+        err,
+        `${MessageServiceController.name}-sendVirtualPhysicalCards`,
+      );
+    }
+  }
+
+  @AllowAnon()
+  @EventPattern(EventsNamesMessageEnum.sendAdjustments)
+  async eventSendAdjustments(
+    @Payload() message: MessageCreateDto,
+    @Ctx() ctx: RmqContext,
+  ) {
+    CommonService.ack(ctx);
+    try {
+      await this.messageService.sendAdjustments(message);
+    } catch (err) {
+      Logger.error(err, `${MessageServiceController.name}-sendAdjustments`);
+    }
+  }
+
+  @AllowAnon()
+  @EventPattern(EventsNamesMessageEnum.sendCryptoWalletsManagement)
+  async eventSendCryptoWalletsManagement(
+    @Payload() message: MessageCreateDto,
+    @Ctx() ctx: RmqContext,
+  ) {
+    CommonService.ack(ctx);
+    try {
+      await this.messageService.sendCryptoWalletsManagement(message);
+    } catch (err) {
+      Logger.error(
+        err,
+        `${MessageServiceController.name}-sendCryptoWalletsManagement`,
+      );
+    }
+  }
+
+  @AllowAnon()
+  @EventPattern(EventsNamesMessageEnum.sendSecurityNotifications)
+  async eventSendSecurityNotifications(
+    @Payload() message: MessageCreateDto,
+    @Ctx() ctx: RmqContext,
+  ) {
+    CommonService.ack(ctx);
+    try {
+      await this.messageService.sendSecurityNotifications(message);
+    } catch (err) {
+      Logger.error(
+        err,
+        `${MessageServiceController.name}-sendSecurityNotifications`,
+      );
+    }
+  }
+
+  @AllowAnon()
+  @EventPattern(EventsNamesMessageEnum.sendPasswordRestoredEmail)
+  async eventSendPasswordRestoredEmail(
+    @Payload() message: MessageCreateDto,
+    @Ctx() ctx: RmqContext,
+  ) {
+    CommonService.ack(ctx);
+    try {
+      await this.messageService.sendPasswordRestoredEmail(message);
+    } catch (err) {
+      Logger.error(
+        err,
+        `${MessageServiceController.name}-sendPasswordRestoredEmail`,
+      );
+    }
+  }
+  @AllowAnon()
+  @EventPattern(EventsNamesMessageEnum.sendPurchases)
+  async eventSendPurchases(
+    @Payload() message: MessageCreateDto,
+    @Ctx() ctx: RmqContext,
+  ) {
+    CommonService.ack(ctx);
+    try {
+      await this.messageService.sendPurchases(message);
+    } catch (err) {
+      Logger.error(err, `${MessageServiceController.name}-sendPurchasesEmail`);
     }
   }
 }

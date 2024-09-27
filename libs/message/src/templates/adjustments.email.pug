@@ -1,0 +1,36 @@
+doctype html
+html(lang="es")
+  include ./partials/head.pug
+  body
+    .container
+      include ./partials/header.pug
+      .content
+        h2 Notificación de Ajuste de Transacción
+        p Estimado/a usuario,
+
+        p Se ha realizado un ajuste en una de tus transacciones recientes. A continuación, te proporcionamos los detalles:
+
+        h3 Detalle del Ajuste:
+        ul
+          li
+            strong Tipo de Transacción: 
+            | #{vars.transactionType}
+          li
+            strong Comerciante: 
+            | #{vars.merchantName}
+          li
+            strong Últimos 4 dígitos de la tarjeta: 
+            | #{vars.cardLastFour}
+          li
+            strong Monto Local: 
+            | #{vars.amountLocal} #{vars.currencyLocal}
+
+        h3 Motivo del Ajuste:
+        p #{vars.transactionType}
+
+        h3 Actualización de Saldo:
+        p Te informamos que tu saldo ha sido actualizado para reflejar este ajuste. Puedes verificar tu saldo actualizado a través de nuestra banca en línea, aplicación móvil, o visitando una de nuestras sucursales.
+
+        p Gracias por tu comprensión y por ser cliente de nuestros servicios.
+
+      include ./partials/footer.pug

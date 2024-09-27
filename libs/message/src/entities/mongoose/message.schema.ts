@@ -5,10 +5,13 @@ import { Scope } from '@permission/permission/entities/mongoose/scope.schema';
 import { Status } from '@status/status/entities/mongoose/status.schema';
 import { User } from '@user/user/entities/mongoose/user.schema';
 import * as mongoose from 'mongoose';
-import { Document, ObjectId } from 'mongoose';
+import { Document, ObjectId, Schema as MongooseSchema } from 'mongoose';
 import { MessageEntity } from '../message.entity';
 
-export class VarsMessageTemplate {}
+export class VarsMessageTemplate {
+  [key: string]: any;
+}
+
 export type MessageDocument = Message & Document;
 
 @Schema({
@@ -33,7 +36,8 @@ export class Message extends MessageEntity {
   body: string;
 
   @Prop({
-    type: () => VarsMessageTemplate,
+    type: MongooseSchema.Types.Mixed,
+    default: {},
   })
   vars: VarsMessageTemplate;
 

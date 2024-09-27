@@ -14,11 +14,4 @@ export class AppController {
   getHealth() {
     return { statusCode: 200, message: 'OK' };
   }
-
-  @HttpCode(HttpStatus.NO_CONTENT)
-  @AllowAnon()
-  @Get('')
-  redirectToHealth() {
-    this.logger.log('No content');
-  }
 }

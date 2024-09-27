@@ -1,0 +1,41 @@
+doctype html
+html
+    head
+        meta(charset="utf-8")
+        link(rel="icon" href="/favicon.png")
+        meta(name="viewport" content="width=device-width, initial-scale=1")
+        meta(name="theme-color" content="#000000")
+        meta(name="description" content="Connecting the world | Follow the whales")
+        link(rel="apple-touch-icon" href="/favicon.png")
+        link(rel="manifest" href="/manifest.json")
+        title(Sign In | B2Pay - Worldwide Financial Services)
+        link(rel="preconnect" href="https://fonts.googleapis.com")
+        link(rel="preconnect" href="https://fonts.gstatic.com" crossorigin="")
+        link(href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet")
+        link(rel="stylesheet" href="https://www.pay.b2fintech.com/assets/index-af89ae14.css")
+        link(rel="stylesheet" href="/assets/manual.tx.css")
+
+body 
+    div(id="root")
+        div(class="horizontal full ltr main-section antialiased relative font-nunito text-sm font-normal")
+            div(class="text-black dark:text-white-dark min-h-screen")
+                div(class="w-full max-w-[440px] p-4")
+                    div
+                        h1(
+                            class="text-3xl font-extrabold uppercase !leading-snug text-primary md:text-4xl"
+                        )
+                            | RECARGA MANUAL
+                        p(class="text-base font-bold leading-normal text-white-dark")
+                            | Hola #{name}, el resultado de la recarga manual de #{amount} USDT es
+                    if success
+                        h2(
+                            class="text-1xl font-extrabold uppercase !leading-snug text-secondary md:text-2xl"
+                        ) Before #{amountBefore} USDT - After #{amountAfter} USDT
+                    h4(
+                        class="text-1xl font-extrabold uppercase !leading-snug text-secondary md:text-2xl"
+                    ) #{message}
+                    a(
+                        class="btn btn-gradient w-full border-0 uppercase shadow-[0_10px_20px_-10px_rgba(59,97,166,0.44)]"
+                        href="javascript:history.go(-1)"
+                    ) Registrar otra transaccion manual
+                    p(class="absolute bottom-1 w-full text-center dark:text-white") © 2024 | B2Pay Todos los derechos reservados

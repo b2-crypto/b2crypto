@@ -5,7 +5,10 @@ export const roleProviders = [
   {
     provide: 'ROLE_MODEL_MONGOOSE',
     useFactory: (connection: Connection) => {
-      //connection?.plugin(mongooseSlugUpdater);
+      // if (connection.plugin) {
+      //   connection.plugin(mongooseSlugUpdater);
+      // }
+
       return connection.model('roles', RoleSchema);
     },
     inject: ['MONGOOSE_CONNECTION'],
