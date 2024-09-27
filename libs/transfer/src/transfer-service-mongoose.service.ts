@@ -8,8 +8,13 @@ import {
   Transfer,
   TransferDocument,
 } from '@transfer/transfer/entities/mongoose/transfer.schema';
-import { Model } from 'mongoose';
+import { Aggregate, Model } from 'mongoose';
+import { ObjectId } from 'mongodb';
 import { ApproveOrRejectDepositDto } from './dto/approve.or.reject.deposit.dto';
+import { QuerySearchAnyDto } from '@common/common/models/query_search-any.dto';
+import { OperationTransactionType } from './enum/operation.transaction.type.enum';
+import TypesAccountEnum from '@account/account/enum/types.account.enum';
+import { isArray, isMongoId } from 'class-validator';
 
 @Injectable()
 export class TransferServiceMongooseService extends BasicServiceModel<
@@ -171,5 +176,176 @@ export class TransferServiceMongooseService extends BasicServiceModel<
       CommonService.getSeparatorSearchText() +
       transfer.department?.searchText
     );
+  }
+
+  async getHistoryCardPurchases(query?: QuerySearchAnyDto, shortData = true) {
+    query = query ?? {};
+    query.where = query.where ?? {};
+    query.where['typeAccount'] = TypesAccountEnum.CARD;
+    query.where['operationType'] = OperationTransactionType.purchase;
+    return this.getHistoryGroupById(query, shortData);
+  }
+
+  async getHistoryCardWalletDeposits(
+    query?: QuerySearchAnyDto,
+    shortData = true,
+  ) {
+    query = query ?? {};
+    query.where = query.where ?? {};
+    query.where['typeAccount'] = TypesAccountEnum.WALLET;
+    query.where['operationType'] = OperationTransactionType.deposit;
+    return this.getHistoryGroupById(query, shortData);
+  }
+
+  async getHistoryGroupById(query: QuerySearchAnyDto, shortData = true) {
+    query = query ?? {};
+    const aggregate = this.transferModel.aggregate();
+    this.setMatch(aggregate, query);
+    this.setOrder(aggregate, query);
+    this.setGroup(aggregate, shortData);
+    this.setProject(aggregate);
+    const list = await aggregate.exec();
+    return list;
+  }
+
+  private setGroup(
+    aggregate: Aggregate<any[]>,
+    shortData = false,
+    id?: string | JSON,
+  ) {
+    const configGroup = {
+      _id: id ?? '$_id',
+      //data: { $push: '$$ROOT' },
+    } as any;
+    configGroup.numeric_id = { $addToSet: '$numericId' };
+    configGroup.amount = { $addToSet: '$amount' };
+    configGroup.status = { $addToSet: '$statusPayment' };
+    configGroup.user_id = {
+      $addToSet: '$requestBodyJson.user.id',
+    };
+    configGroup.card_id = {
+      $addToSet: '$requestBodyJson.card.card_id',
+    };
+    configGroup.card_type = {
+      $addToSet: '$typeAccountType',
+    };
+    configGroup.operation_type = {
+      $addToSet: '$operationType',
+    };
+    configGroup.confirmed_at = {
+      $addToSet: '$confirmedAt',
+    };
+    if (!shortData) {
+      configGroup.expiration_date_validation = {
+        $addToSet: '$requestBodyJson.extra_data.expiration_date_validation',
+      };
+      configGroup.pin_validation = {
+        $addToSet: '$requestBodyJson.extra_data.pin_validation',
+      };
+      configGroup.cvv_validation = {
+        $addToSet: '$requestBodyJson.extra_data.cvv_validation',
+      };
+      configGroup.merchant = {
+        $addToSet: '$requestBodyJson.merchant.name',
+      };
+      configGroup.city = {
+        $addToSet: '$requestBodyJson.merchant.city',
+      };
+      configGroup.origin = {
+        $addToSet: '$requestBodyJson.transaction.origin',
+      };
+      configGroup.provider = {
+        $addToSet: '$requestBodyJson.card.provider',
+      };
+      configGroup.last_four = {
+        $addToSet: '$requestBodyJson.card.last_four',
+      };
+    }
+    aggregate.group(configGroup);
+  }
+
+  private setProject(aggregate: Aggregate<any[]>) {
+    aggregate.project({
+      _id: 0,
+      numeric_id: { $first: '$numeric_id' },
+      amount: { $first: '$amount' },
+      status: { $first: '$status' },
+      user_id: {
+        $first: '$user_id',
+      },
+      expiration_date_validation: {
+        $first: '$expiration_date_validation',
+      },
+      pin_validation: {
+        $first: '$pin_validation',
+      },
+      cvv_validation: {
+        $first: '$cvv_validation',
+      },
+      merchant: {
+        $first: '$merchant',
+      },
+      city: {
+        $first: '$city',
+      },
+      origin: {
+        $first: '$origin',
+      },
+      provider: {
+        $first: '$provider',
+      },
+      last_four: {
+        $first: '$last_four',
+      },
+      card_id: {
+        $first: '$card_id',
+      },
+      card_type: {
+        $first: '$card_type',
+      },
+      operation_type: {
+        $first: '$operation_type',
+      },
+      confirmed_at: {
+        $first: '$confirmed_at',
+      },
+    });
+  }
+
+  private setMatch(aggregate: Aggregate<any[]>, query: QuerySearchAnyDto) {
+    if (query.where) {
+      for (const key in query.where) {
+        if (isArray(query.where[key])) {
+          if (key === '$or') {
+            for (const attrOR in query.where[key]) {
+              for (const attr in query.where[key][attrOR]) {
+                query.where[key][attrOR][attr] = CommonService.checkDateAttr(
+                  query.where[key][attrOR][attr],
+                );
+              }
+            }
+            continue;
+          }
+          query.where[key] = {
+            $in: query.where[key].map((item) => new ObjectId(item)),
+          };
+        } else if (isMongoId(query.where[key])) {
+          query.where[key] = new ObjectId(query.where[key]);
+        } else if (query.where[key]['start'] || query.where[key]['end']) {
+          query.where[key] = CommonService.checkDateAttr(query.where[key]);
+        }
+      }
+      aggregate.match(query.where);
+    }
+  }
+
+  private setOrder(aggregate: Aggregate<any[]>, query: QuerySearchAnyDto) {
+    if (query.order) {
+      const sort = {};
+      for (const order of query.order) {
+        sort[order[0]] = order[1];
+      }
+      aggregate.sort(sort);
+    }
   }
 }
