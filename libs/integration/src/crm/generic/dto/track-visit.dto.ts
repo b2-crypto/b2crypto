@@ -1,2 +1,1 @@
-
-export interface TrackVisitDto{}
+export interface TrackVisitDto {}

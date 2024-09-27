@@ -1,24 +1,24 @@
 /* eslint-disable prettier/prettier */
 import { BuildersService } from '@builder/builders';
 import { QuerySearchAnyDto } from '@common/common/models/query_search-any.dto';
+import { CrmInterface } from '@crm/crm/entities/crm.interface';
+import { Crm } from '@crm/crm/entities/mongoose/crm.schema';
+import { LeadDocument } from '@lead/lead/entities/mongoose/lead.schema';
 import { MessageServiceMongooseService } from '@message/message';
 import { MessageCreateDto } from '@message/message/dto/message.create.dto';
 import { MessageUpdateDto } from '@message/message/dto/message.update.dto';
 import { MailerService } from '@nestjs-modules/mailer';
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import EventsNamesAccountEnum from 'apps/account-service/src/enum/events.names.account.enum';
+import EventsNamesCrmEnum from 'apps/crm-service/src/enum/events.names.crm.enum';
+import EventsNamesLeadEnum from 'apps/lead-service/src/enum/events.names.lead.enum';
+import EventsNamesUserEnum from 'apps/user-service/src/enum/events.names.user.enum';
+import axios from 'axios';
+import { isEmail } from 'class-validator';
+import * as pug from 'pug';
 import { EmailMessageBuilder } from './email-message.builder';
 import TemplatesMessageEnum from './enum/templates.message.enum';
-import EventsNamesAccountEnum from 'apps/account-service/src/enum/events.names.account.enum';
-import EventsNamesUserEnum from 'apps/user-service/src/enum/events.names.user.enum';
-import { isEmail } from 'class-validator';
-import EventsNamesCrmEnum from 'apps/crm-service/src/enum/events.names.crm.enum';
-import { Crm } from '@crm/crm/entities/mongoose/crm.schema';
-import { CrmInterface } from '@crm/crm/entities/crm.interface';
-import EventsNamesLeadEnum from 'apps/lead-service/src/enum/events.names.lead.enum';
-import axios from 'axios';
-import { LeadDocument } from '@lead/lead/entities/mongoose/lead.schema';
-import * as pug from 'pug';
 
 @Injectable()
 export class MessageServiceService {
@@ -345,4 +345,3 @@ export class MessageServiceService {
     return crm?.clientZone;
   }
 }
-

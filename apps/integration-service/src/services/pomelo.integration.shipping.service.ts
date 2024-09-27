@@ -12,7 +12,7 @@ export class PomeloIntegrationShippingService {
   async handleShippingNotification(
     notification: ShippingNotifications,
   ): Promise<any> {
-    let cachedResult = await this.cache.getResponse(
+    const cachedResult = await this.cache.getResponse(
       notification.idempotency_key,
     );
     if (cachedResult == null) {
@@ -27,7 +27,7 @@ export class PomeloIntegrationShippingService {
   }
 
   async handleCardEvents(event: CardEvents): Promise<any> {
-    let cachedResult = await this.cache.getResponse(event.idempotency_key);
+    const cachedResult = await this.cache.getResponse(event.idempotency_key);
     if (cachedResult == null) {
       const response = {
         statusCode: 204,

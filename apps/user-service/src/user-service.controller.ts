@@ -22,6 +22,7 @@ import {
 import { AllowAnon } from '@auth/auth/decorators/allow-anon.decorator';
 import { ApiKeyCheck } from '@auth/auth/decorators/api-key-check.decorator';
 import { ApiKeyAuthGuard } from '@auth/auth/guards/api.key.guard';
+import { BuildersService } from '@builder/builders';
 import { CommonService } from '@common/common';
 import { NoCache } from '@common/common/decorators/no-cache.decorator';
 import ActionsEnum from '@common/common/enums/ActionEnum';
@@ -49,7 +50,10 @@ import { UserServiceService } from './user-service.service';
 @ApiTags('USER')
 @Controller('users')
 export class UserServiceController implements GenericServiceController {
-  constructor(private readonly userService: UserServiceService) {}
+  constructor(
+    private readonly userService: UserServiceService,
+    private readonly builder: BuildersService,
+  ) {}
 
   @NoCache()
   @Get('all')

@@ -1,2 +1,1 @@
-
-export interface GetDepositDto{}
+export interface GetDepositDto {}
