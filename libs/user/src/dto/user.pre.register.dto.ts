@@ -1,8 +1,5 @@
-import { UserChangePasswordDto } from './user.change-password.dto';
 import { ApiProperty } from '@nestjs/swagger';
-import { ObjectId } from 'mongodb';
 import {
-  IsArray,
   IsBoolean,
   IsEmail,
   IsEmpty,
@@ -10,11 +7,8 @@ import {
   IsNotEmpty,
   IsOptional,
   IsString,
-  Matches,
-  MaxLength,
-  MinLength,
 } from 'class-validator';
-import { CommonService } from '@common/common';
+import { ObjectId } from 'mongodb';
 
 export class UserPreRegisterDto {
   @ApiProperty({

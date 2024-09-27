@@ -34,6 +34,7 @@ import { ApiTags } from '@nestjs/swagger';
 import { ActivityServiceService } from './activity-service.service';
 import EventsNamesActivityEnum from './enum/events.names.activity.enum';
 import { BuildersService } from '@builder/builders';
+import { NoCache } from '@common/common/decorators/no-cache.decorator';
 
 @ApiTags('ACTIVITY')
 @Controller('activity')
@@ -44,6 +45,7 @@ export class ActivityServiceController implements GenericServiceController {
   ) {}
 
   @Get('all')
+  @NoCache()
   // @CheckPoliciesAbility(new PolicyHandlerActivityRead())
   async findAll(@Query() query: QuerySearchAnyDto) {
     //return this.activityService.getAll(query);
@@ -54,6 +56,7 @@ export class ActivityServiceController implements GenericServiceController {
   }
 
   @Get(':activityID')
+  @NoCache()
   // @CheckPoliciesAbility(new PolicyHandlerActivityRead())
   async findOneById(
     @Param('activityID') id: string,

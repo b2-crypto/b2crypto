@@ -31,12 +31,14 @@ import { PermissionCreateDto } from '@permission/permission/dto/permission.creat
 import { PermissionUpdateDto } from '@permission/permission/dto/permission.update.dto';
 import EventsNamesPermissionEnum from './enum/events.names.permission.enum';
 import { PermissionServiceService } from './permission-service.service';
+import { NoCache } from '@common/common/decorators/no-cache.decorator';
 
 @ApiTags('PERMISSION')
 @Controller('permission')
 export class PermissionServiceController implements GenericServiceController {
   constructor(private readonly permissionService: PermissionServiceService) {}
 
+  @NoCache()
   @Get('all')
   // @CheckPoliciesAbility(new PolicyHandlerPermissionRead())
   async findAll(@Query() query: QuerySearchAnyDto) {
@@ -44,6 +46,7 @@ export class PermissionServiceController implements GenericServiceController {
     return this.permissionService.getAll(query);
   }
 
+  @NoCache()
   @Get('scope')
   // @CheckPoliciesAbility(new PolicyHandlerPermissionRead())
   async findAllScopes(@Query() query: QuerySearchAnyDto) {
@@ -52,6 +55,7 @@ export class PermissionServiceController implements GenericServiceController {
     return this.permissionService.findAllScope(query);
   }
 
+  @NoCache()
   @Get(':permissionID')
   // @CheckPoliciesAbility(new PolicyHandlerPermissionRead())
   async findOneById(@Param('permissionID') id: string) {

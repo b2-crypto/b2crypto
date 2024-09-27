@@ -32,6 +32,7 @@ import { TrafficUpdateDto } from '@traffic/traffic/dto/traffic.update.dto';
 import EventsNamesTrafficEnum from './enum/events.names.traffic.enum';
 import { TrafficServiceService } from './traffic-service.service';
 import GenericServiceController from '@common/common/interfaces/controller.generic.interface';
+import { NoCache } from '@common/common/decorators/no-cache.decorator';
 
 @ApiTags('TRAFFIC')
 @Controller('traffic')
@@ -41,12 +42,14 @@ export class TrafficServiceController implements GenericServiceController {
   };
   constructor(private readonly trafficService: TrafficServiceService) {}
 
+  @NoCache()
   @Get('all')
   // @CheckPoliciesAbility(new PolicyHandlerTrafficRead())
   async findAll(@Query() query: QuerySearchAnyDto) {
     return this.trafficService.getAll(query);
   }
 
+  @NoCache()
   @Get(':trafficID')
   // @CheckPoliciesAbility(new PolicyHandlerTrafficRead())
   async findOneById(@Param('trafficID') id: string) {

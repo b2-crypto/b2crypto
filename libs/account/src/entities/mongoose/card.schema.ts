@@ -46,6 +46,21 @@ export class Card {
 
   @Prop()
   name_on_card: string;
+
+  @Prop()
+  status: string;
+
+  @Prop()
+  start_date: Date;
+
+  @Prop()
+  last_four: string;
+
+  @Prop()
+  provider: string;
+
+  @Prop()
+  product_type: string;
 }
 
 @Schema()

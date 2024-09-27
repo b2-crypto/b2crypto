@@ -24,6 +24,7 @@ import { ApiKeyCheck } from '@auth/auth/decorators/api-key-check.decorator';
 import { ApiKeyAuthGuard } from '@auth/auth/guards/api.key.guard';
 import { BuildersService } from '@builder/builders';
 import { CommonService } from '@common/common';
+import { NoCache } from '@common/common/decorators/no-cache.decorator';
 import ActionsEnum from '@common/common/enums/ActionEnum';
 import GenericServiceController from '@common/common/interfaces/controller.generic.interface';
 import { QuerySearchAnyDto } from '@common/common/models/query_search-any.dto';
@@ -54,12 +55,14 @@ export class UserServiceController implements GenericServiceController {
     private readonly builder: BuildersService,
   ) {}
 
+  @NoCache()
   @Get('all')
   // @CheckPoliciesAbility(new PolicyHandlerUserRead())
   async findAll(@Query() query: QuerySearchAnyDto) {
     return this.userService.getAll(query);
   }
 
+  @NoCache()
   @Get('me')
   @ApiTags(SwaggerSteakeyConfigEnum.TAG_SECURITY)
   @ApiBearerAuth('bearerToken')
@@ -74,6 +77,7 @@ export class UserServiceController implements GenericServiceController {
   @ApiKeyCheck()
   @ApiTags(SwaggerSteakeyConfigEnum.TAG_SECURITY)
   @ApiSecurity('b2crypto-key')
+  @NoCache()
   @Get('email/:userEmail')
   // @CheckPoliciesAbility(new PolicyHandlerUserRead())
   async findOneByEmail(@Param('userEmail') email: string) {
@@ -87,6 +91,7 @@ export class UserServiceController implements GenericServiceController {
     };
   }
 
+  @NoCache()
   @Get(':userID')
   // @CheckPoliciesAbility(new PolicyHandlerUserRead())
   async findOneById(@Param('userID') id: string) {
@@ -196,6 +201,18 @@ export class UserServiceController implements GenericServiceController {
   }
 
   @AllowAnon()
+  @MessagePattern(EventsNamesUserEnum.findOneByEmail)
+  async findOneByEmailEvent(@Payload() email: string, @Ctx() ctx: RmqContext) {
+    CommonService.ack(ctx);
+    const users = await this.userService.getAll({
+      where: {
+        slugEmail: CommonService.getSlug(email),
+      },
+    });
+    return users.list[0];
+  }
+
+  @AllowAnon()
   @EventPattern(EventsNamesUserEnum.verifyEmail)
   async verifyEmail(@Payload() email: string, @Ctx() ctx: RmqContext) {
     CommonService.ack(ctx);
@@ -296,7 +313,7 @@ export class UserServiceController implements GenericServiceController {
       },
     });
     if (!users.totalElements) {
-      throw new NotFoundException();
+      throw new NotFoundException('Not found user');
     }
     return users.list[0];
   }
@@ -304,7 +321,7 @@ export class UserServiceController implements GenericServiceController {
   private async findUserByEmail(email: string) {
     const query = {
       where: {
-        email: email,
+        slugEmail: CommonService.getSlug(email),
       },
     };
     return await this.userService.getAll(query);

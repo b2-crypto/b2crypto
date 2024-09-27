@@ -31,7 +31,7 @@ export class PomeloShippingController {
   ): Promise<any> {
     Logger.log(
       `Idempotency: ${notification.idempotency_key}`,
-      'NotificationHandler',
+      'NotificationHandler - handleShippingNotification',
     );
     return await this.shippingService.handleShippingNotification(notification);
   }

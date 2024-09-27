@@ -31,18 +31,21 @@ import { RoleCreateDto } from '@role/role/dto/role.create.dto';
 import { RoleUpdateDto } from '@role/role/dto/role.update.dto';
 import EventsNamesRoleEnum from './enum/events.names.role.enum';
 import { RoleServiceService } from './role-service.service';
+import { NoCache } from '@common/common/decorators/no-cache.decorator';
 
 @ApiTags('Role')
 @Controller('role')
 export class RoleServiceController implements GenericServiceController {
   constructor(private readonly roleService: RoleServiceService) {}
 
+  @NoCache()
   @Get('all')
   // @CheckPoliciesAbility(new PolicyHandlerRoleRead())
   async findAll(@Query() query: QuerySearchAnyDto) {
     return this.roleService.getAll(query);
   }
 
+  @NoCache()
   @Get(':roleID')
   // @CheckPoliciesAbility(new PolicyHandlerRoleRead())
   async findOneById(@Param('roleID') id: string) {

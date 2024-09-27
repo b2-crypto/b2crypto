@@ -31,6 +31,7 @@ import {
 } from '@nestjs/microservices';
 import EventsNamesGroupEnum from './enum/events.names.group.enum';
 import { GroupServiceService } from './group-service.service';
+import { NoCache } from '@common/common/decorators/no-cache.decorator';
 
 @ApiTags('GROUP')
 @Controller('group')
@@ -38,12 +39,14 @@ export class GroupServiceController implements GenericServiceController {
   constructor(private readonly groupService: GroupServiceService) {}
 
   @Get('all')
+  @NoCache()
   // @CheckPoliciesAbility(new PolicyHandlerGroupRead())
   async findAll(@Query() query: QuerySearchAnyDto) {
     return this.groupService.getAll(query);
   }
 
   @Get(':groupID')
+  @NoCache()
   // @CheckPoliciesAbility(new PolicyHandlerGroupRead())
   async findOneById(@Param('groupID') id: string) {
     return this.groupService.getOne(id);

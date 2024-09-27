@@ -39,6 +39,7 @@ import { PspAccountResponseDto } from './dto/psp.account.response.dto';
 import EventsNamesCategoryEnum from './enum/events.names.category.enum';
 import { ApiKeyAuthGuard } from '@auth/auth/guards/api.key.guard';
 import { SwaggerSteakeyConfigEnum } from 'libs/config/enum/swagger.stakey.config.enum';
+import { NoCache } from '@common/common/decorators/no-cache.decorator';
 
 @ApiTags('CATEGORY')
 @Controller('category')
@@ -46,12 +47,14 @@ export class CategoryServiceController implements GenericServiceController {
   constructor(private readonly categoryService: CategoryServiceService) {}
 
   @Get('all')
+  @NoCache()
   // @CheckPoliciesAbility(new PolicyHandlerCategoryRead())
   async findAll(@Query() query: QuerySearchAnyDto) {
     return this.categoryService.getAll(query);
   }
 
   @Get('type/:type')
+  @NoCache()
   // @CheckPoliciesAbility(new PolicyHandlerCategoryRead())
   async categoryListByType(
     @Query() query: QuerySearchAnyDto,
@@ -61,6 +64,7 @@ export class CategoryServiceController implements GenericServiceController {
   }
 
   @Get('/resources')
+  @NoCache()
   //@ApiTags('Integration Category')
   @ApiKeyCheck()
   //@UseGuards(ApiKeyAffiliateAuthGuard)
@@ -84,6 +88,7 @@ export class CategoryServiceController implements GenericServiceController {
   }
 
   @Get('/actions')
+  @NoCache()
   //@ApiTags('Integration Category')
   @ApiKeyCheck()
   //@UseGuards(ApiKeyAffiliateAuthGuard)
@@ -107,6 +112,7 @@ export class CategoryServiceController implements GenericServiceController {
   }
 
   @Get('/scopes')
+  @NoCache()
   //@ApiTags('Integration Category')
   @ApiKeyCheck()
   //@UseGuards(ApiKeyAffiliateAuthGuard)
@@ -130,6 +136,7 @@ export class CategoryServiceController implements GenericServiceController {
   }
 
   @Get('/country')
+  @NoCache()
   @ApiTags('Affiliate Category')
   @ApiTags('Integration Category')
   @ApiTags(SwaggerSteakeyConfigEnum.TAG_LIST)
@@ -167,6 +174,7 @@ export class CategoryServiceController implements GenericServiceController {
     description: 'The affiliate secret key',
   })
   @Get('/currency')
+  @NoCache()
   @ApiResponse({
     status: 200,
     description: 'List of currencies',
@@ -192,6 +200,7 @@ export class CategoryServiceController implements GenericServiceController {
     description: 'The affiliate secret key',
   })
   @Get('/referral-type')
+  @NoCache()
   @ApiResponse({
     status: 200,
     description: 'List of referral types',
@@ -213,6 +222,7 @@ export class CategoryServiceController implements GenericServiceController {
   @ApiKeyCheck()
   @UseGuards(ApiKeyAuthGuard)
   @Get('/transaction-type')
+  @NoCache()
   @ApiResponse({
     status: 200,
     description: 'List of Monetary transaction',
@@ -234,6 +244,7 @@ export class CategoryServiceController implements GenericServiceController {
   @ApiKeyCheck()
   @UseGuards(ApiKeyAuthGuard)
   @Get('/operation-type')
+  @NoCache()
   @ApiResponse({
     status: 200,
     description: 'List of Monetary transaction',
@@ -254,6 +265,7 @@ export class CategoryServiceController implements GenericServiceController {
   @UseGuards(ApiKeyAffiliateAuthGuard)
   @ApiSecurity('b2crypto-key')
   @Get('psp-account')
+  @NoCache()
   @ApiResponse({
     status: 200,
     description: 'List of Psp Accounts',
@@ -274,11 +286,13 @@ export class CategoryServiceController implements GenericServiceController {
   @UseGuards(ApiKeyAuthGuard)
   @ApiSecurity('b2crypto-key')
   @Get('/doc-type')
+  @NoCache()
   async docIdTypeList(@Query() query: QuerySearchAnyDto) {
     return this.categoryListByType(query, 'doc_type');
   }
 
   @Get(':categoryID')
+  @NoCache()
   // @CheckPoliciesAbility(new PolicyHandlerCategoryRead())
   async findOneById(@Param('categoryID') id: string) {
     return this.categoryService.getOne(id);

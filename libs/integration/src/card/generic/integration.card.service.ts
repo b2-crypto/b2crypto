@@ -12,7 +12,7 @@ import axios, {
   AxiosResponse,
   CreateAxiosDefaults,
 } from 'axios';
-import { CardDto } from './dto/card.dto';
+import { CardDto, CardSearchDto } from './dto/card.dto';
 import { ClientCardDto } from './dto/client.card.dto';
 import { ShippingDto } from './dto/shipping.dto';
 import { UserCardDto } from './dto/user.card.dto';
@@ -25,11 +25,18 @@ export class IntegrationCardService<
   // DTO
   TUserCardDto = UserCardDto,
   TCardDto = CardDto,
+  TCardSearchDto = CardSearchDto,
   TShippingDto = ShippingDto,
   // Results
   TUserResponse = UserResponseDto,
   TShippingResponse = ShippingResultInterface,
-> implements IntegrationCardInterface<TUserCardDto, TCardDto, TUserResponse>
+> implements
+    IntegrationCardInterface<
+      TUserCardDto,
+      TCardDto,
+      TCardSearchDto,
+      TUserResponse
+    >
 {
   http: AxiosInstance;
   private routesMap: CardRoutesInterface;
@@ -151,6 +158,15 @@ export class IntegrationCardService<
     //return this.http.get(this.routesMap.searchUser, userCard);
     return this.fetch('GET', this.routesMap.searchUser, userCard);
   }
+  async getUsersByQuery(query: any) {
+    let path = '';
+    if (query.userId) {
+      path = `${this.routesMap.searchUser}/${query.userId}`;
+    } else {
+      path = `${this.routesMap.searchUser}?filter[size]=${query.page_size}&filter[page]=${query.page}`;
+    }
+    return await this.fetch('GET', path);
+  }
   async createUser(userCard: TUserCardDto): Promise<AxiosResponse<any[], any>> {
     //return this.http.post(this.routesMap.createUser, userCard);
     return this.fetch('POST', this.routesMap.createUser, userCard);
@@ -160,9 +176,13 @@ export class IntegrationCardService<
   }
 
   async getCard(card: TCardDto): Promise<AxiosResponse<any[], any>> {
-    return this.http.get(this.routesMap.searchCard, card);
+    return await this.fetch('GET', this.routesMap.searchCard, card);
   }
-  async createCard(card: TCardDto): Promise<AxiosResponse<any[], any>> {
+  async getCardByQuery(query: CardSearchDto) {
+    const path = `${this.routesMap.searchCard}?filter[user_id]=${query.user_id}&page[size]=${query.page_size}`;
+    return await this.fetch('GET', path);
+  }
+  async createCard(card: any): Promise<AxiosResponse<any[], any>> {
     //return this.http.post(this.routesMap.createCard, card);
     return this.fetch('POST', this.routesMap.createCard, card);
   }

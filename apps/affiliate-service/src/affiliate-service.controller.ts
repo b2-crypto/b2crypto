@@ -55,6 +55,7 @@ import EventsNamesStatusEnum from 'apps/status-service/src/enum/events.names.sta
 import EventsNamesCategoryEnum from 'apps/category-service/src/enum/events.names.category.enum';
 import TagEnum from '@common/common/enums/TagEnum';
 import ResponseB2Crypto from '@response-b2crypto/response-b2crypto/models/ResponseB2Crypto';
+import { NoCache } from '@common/common/decorators/no-cache.decorator';
 
 @ApiTags('AFFILIATE')
 @Controller('affiliate')
@@ -69,6 +70,7 @@ export class AffiliateServiceController implements GenericServiceController {
   }
 
   @Get('all')
+  @NoCache()
   // @CheckPoliciesAbility(new PolicyHandlerAffiliateRead())
   @ApiResponse({
     status: 200,
@@ -86,6 +88,7 @@ export class AffiliateServiceController implements GenericServiceController {
   @ApiKeyCheck()
   @UseGuards(AuthGuard('api-key'))
   @Get()
+  @NoCache()
   // @CheckPoliciesAbility(new PolicyHandlerAffiliateRead())
   @ApiResponse({
     status: 200,
@@ -117,18 +120,21 @@ export class AffiliateServiceController implements GenericServiceController {
   }
 
   @Get('check-stats')
+  @NoCache()
   // @CheckPoliciesAbility(new PolicyHandlerAffiliateAll())
   async checkStatsForAllAffiliate() {
     return this.affiliateService.checkStatsForOneAffiliate();
   }
 
   @Get('check-stats/:affiliateId')
+  @NoCache()
   // @CheckPoliciesAbility(new PolicyHandlerAffiliateAll())
   async checkStatsForOneAffiliate(@Param('affiliateId') affiliateId?: string) {
     return this.affiliateService.checkStatsForOneAffiliate(affiliateId);
   }
 
   @Get('byTpId/:tpId')
+  @NoCache()
   // @CheckPoliciesAbility(new PolicyHandlerAffiliateSearch())
   @ApiResponse({
     status: 200,
@@ -143,6 +149,7 @@ export class AffiliateServiceController implements GenericServiceController {
 
   // Todo[hender-30-01-2024] Add to endpoint list
   @Get('check-stats-affiliates')
+  @NoCache()
   // @CheckPoliciesAbility(new PolicyHandlerAffiliateSearch())
   @ApiResponse({
     status: 200,

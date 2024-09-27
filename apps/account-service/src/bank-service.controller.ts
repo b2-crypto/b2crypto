@@ -25,6 +25,7 @@ import { StatusServiceService } from 'apps/status-service/src/status-service.ser
 import { UserServiceService } from 'apps/user-service/src/user-service.service';
 import { AccountServiceController } from './account-service.controller';
 import { AccountServiceService } from './account-service.service';
+import { NoCache } from '@common/common/decorators/no-cache.decorator';
 
 @ApiTags('BANK')
 @Controller('bank')
@@ -47,6 +48,7 @@ export class BankServiceController extends AccountServiceController {
   }
 
   @Get('all')
+  @NoCache()
   findAll(@Query() query: QuerySearchAnyDto, req?: any) {
     query = query ?? {};
     query.where = query.where ?? {};
@@ -54,6 +56,7 @@ export class BankServiceController extends AccountServiceController {
     return this.bankAccountService.findAll(query);
   }
   @Get('me')
+  @NoCache()
   findAllMe(@Query() query: QuerySearchAnyDto, @Req() req?: any) {
     query = query ?? {};
     query.where = query.where ?? {};

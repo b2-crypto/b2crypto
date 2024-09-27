@@ -15,4 +15,5 @@ export interface CryptoRoutesInterface {
   createDeposit?: string;
   searchDeposit?: string;
   getDeposit?: string;
+  getTransferByDeposit?: string;
 }

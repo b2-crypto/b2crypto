@@ -64,6 +64,7 @@ import TagEnum from '@common/common/enums/TagEnum';
 import EventsNamesTransferEnum from 'apps/transfer-service/src/enum/events.names.transfer.enum';
 import EventsNamesCrmEnum from 'apps/crm-service/src/enum/events.names.crm.enum';
 import ResponseB2Crypto from '@response-b2crypto/response-b2crypto/models/ResponseB2Crypto';
+import { NoCache } from '@common/common/decorators/no-cache.decorator';
 
 @ApiTags('LEAD')
 @Controller('lead')
@@ -110,6 +111,7 @@ export class LeadServiceController implements GenericServiceController {
 
   @ApiKeyCheck()
   @UseGuards(AuthGuard('api-key'))
+  @NoCache()
   @Get('integration')
   // @CheckPoliciesAbility(new PolicyHandlerLeadRead())
   async findAllApiKey(
@@ -143,6 +145,7 @@ export class LeadServiceController implements GenericServiceController {
     return this.leadService.getPaginatorAffiliate(rta);
   }
 
+  @NoCache()
   @Get()
   @ApiTags('Affiliate Lead')
   @ApiTags('Integration Lead')
@@ -168,6 +171,7 @@ export class LeadServiceController implements GenericServiceController {
     return this.leadService.findAllLeadFromAffiliate(req, query);
   }
 
+  @NoCache()
   @Get('/id/:leadID')
   @ApiTags('Affiliate Lead')
   @ApiTags('Integration Lead')
@@ -193,6 +197,7 @@ export class LeadServiceController implements GenericServiceController {
     return this.leadService.findAllLeadByIdFromAffiliate(req, id);
   }
 
+  @NoCache()
   @Get('/tpId/:tpIdLead')
   //@ApiTags('Affiliate Lead')
   @ApiTags('Integration Lead')
@@ -218,6 +223,7 @@ export class LeadServiceController implements GenericServiceController {
     return this.leadService.findAllLeadByTpIdFromAffiliate(req, tpId);
   }
 
+  @NoCache()
   @Get('/referral/:referral')
   //@ApiTags('Affiliate Lead')
   @ApiTags('Integration Lead')
@@ -251,6 +257,7 @@ export class LeadServiceController implements GenericServiceController {
     );
   }
 
+  @NoCache()
   @Get('/referral-type/:referralTypeShortName')
   //@ApiTags('Affiliate Lead')
   @ApiTags('Integration Lead')
@@ -284,6 +291,7 @@ export class LeadServiceController implements GenericServiceController {
     );
   }
 
+  @NoCache()
   @Get('/country/:countryCode')
   //@ApiTags('Affiliate Lead')
   @ApiTags('Integration Lead')
@@ -317,6 +325,7 @@ export class LeadServiceController implements GenericServiceController {
     );
   }
 
+  @NoCache()
   @Get('/stats/:tpId')
   @ApiTags('Integration Lead')
   @ApiKeyCheck()
@@ -344,6 +353,7 @@ export class LeadServiceController implements GenericServiceController {
     return this.leadService.statsTransferLeadByAffiliate(req, tpId);
   }
 
+  @NoCache()
   @Get('all')
   // @CheckPoliciesAbility(new PolicyHandlerLeadRead())
   @ApiResponse({
@@ -374,6 +384,7 @@ export class LeadServiceController implements GenericServiceController {
     return this.leadService.getAll(query);
   }
 
+  @NoCache()
   @Get('filter-new')
   // @CheckPoliciesAbility(new PolicyHandlerLeadRead())
   @ApiResponse({
@@ -390,6 +401,7 @@ export class LeadServiceController implements GenericServiceController {
     return this.leadService.getNew(query);
   }
 
+  @NoCache()
   @Get('database')
   // @CheckPoliciesAbility(new PolicyHandlerLeadRead())
   @ApiResponse({
@@ -406,6 +418,7 @@ export class LeadServiceController implements GenericServiceController {
     return this.leadService.getDatabase(query);
   }
 
+  @NoCache()
   @Get('transfer-ftd')
   // @CheckPoliciesAbility(new PolicyHandlerLeadRead())
   @ApiResponse({
@@ -422,6 +435,7 @@ export class LeadServiceController implements GenericServiceController {
     return this.leadService.getTransferFtd(query);
   }
 
+  @NoCache()
   @Get('transfer-ftd-date')
   // @CheckPoliciesAbility(new PolicyHandlerLeadRead())
   @ApiResponse({
@@ -438,6 +452,7 @@ export class LeadServiceController implements GenericServiceController {
     return this.leadService.getTransferFtdDate(query);
   }
 
+  @NoCache()
   @Get('force-partial-ftd')
   // @CheckPoliciesAbility(new PolicyHandlerLeadRead())
   @ApiResponse({
@@ -483,6 +498,7 @@ export class LeadServiceController implements GenericServiceController {
     };
   }
 
+  @NoCache()
   @Get('update-list-transfers-lead')
   // @CheckPoliciesAbility(new PolicyHandlerLeadRead())
   async updateListTransfersLead(
@@ -554,6 +570,7 @@ export class LeadServiceController implements GenericServiceController {
     return leadsUpdated;
   }
 
+  @NoCache()
   @Get('transfer-ftd-late')
   // @CheckPoliciesAbility(new PolicyHandlerLeadRead())
   @ApiResponse({
@@ -570,6 +587,7 @@ export class LeadServiceController implements GenericServiceController {
     return this.leadService.getTransferFtdLate(query);
   }
 
+  @NoCache()
   @Get('cftd-transfer-ftd')
   // @CheckPoliciesAbility(new PolicyHandlerLeadRead())
   @ApiResponse({
@@ -586,6 +604,7 @@ export class LeadServiceController implements GenericServiceController {
     return this.leadService.getCftdTransferFtd(query);
   }
 
+  @NoCache()
   @Get('retention')
   // @CheckPoliciesAbility(new PolicyHandlerLeadRead())
   @ApiResponse({
@@ -602,6 +621,7 @@ export class LeadServiceController implements GenericServiceController {
     return this.leadService.getRetention(query);
   }
 
+  @NoCache()
   @Get('cftd')
   // @CheckPoliciesAbility(new PolicyHandlerLeadRead())
   @ApiResponse({
@@ -618,6 +638,7 @@ export class LeadServiceController implements GenericServiceController {
     return this.leadService.getCftd(query);
   }
 
+  @NoCache()
   @Get('moved')
   // @CheckPoliciesAbility(new PolicyHandlerLeadRead())
   async listMovedLead(@Query() query: QuerySearchAnyDto, @Req() req?) {
@@ -625,6 +646,7 @@ export class LeadServiceController implements GenericServiceController {
     return this.leadService.getAllMovedLeads(query);
   }
 
+  @NoCache()
   @Get('new')
   // @CheckPoliciesAbility(new PolicyHandlerLeadRead())
   async listNewLead(@Query() query: QuerySearchAnyDto, @Req() req?) {
@@ -632,6 +654,7 @@ export class LeadServiceController implements GenericServiceController {
     return this.leadService.getAllActiveLeads(query, true);
   }
 
+  @NoCache()
   @Get('inactive')
   // @CheckPoliciesAbility(new PolicyHandlerLeadRead())
   async listInactiveLead(@Query() query: QuerySearchAnyDto, @Req() req?) {
@@ -640,12 +663,14 @@ export class LeadServiceController implements GenericServiceController {
     return this.leadService.getAllActiveLeads(query, false); */
   }
 
+  @NoCache()
   @Get('active')
   // @CheckPoliciesAbility(new PolicyHandlerLeadRead())
   async listActiveLead(@Query() query: QuerySearchAnyDto, @Req() req?) {
     query = await this.filterFromUserPermissions(query, req);
     return this.listNewLead(query);
   }
+  @NoCache()
   @Get('send-to-crm')
   // @CheckPoliciesAbility(new PolicyHandlerLeadRead())
   async sendToCrm(@Query() query: QuerySearchAnyDto, @Req() req?) {
@@ -668,6 +693,7 @@ export class LeadServiceController implements GenericServiceController {
     };
   }
 
+  @NoCache()
   @Get('byTpId/:tpId')
   // @CheckPoliciesAbility(new PolicyHandlerLeadRead())
   @ApiResponse({
@@ -686,6 +712,7 @@ export class LeadServiceController implements GenericServiceController {
     return this.leadService.getOneByTpId(tpId, query.relations);
   }
 
+  @NoCache()
   @Get(':leadID')
   // @CheckPoliciesAbility(new PolicyHandlerLeadRead())
   @ApiResponse({
@@ -857,12 +884,14 @@ export class LeadServiceController implements GenericServiceController {
     return this.leadService.deleteLead(id);
   }
 
+  @NoCache()
   @Get('transfers/:leadID')
   // @CheckPoliciesAbility(new PolicyHandlerLeadRead())
   async checkTransfersByLead(@Param('leadID') id: string) {
     return this.leadService.checkTransfersLead(id);
   }
 
+  @NoCache()
   @Get('check-status/:leadID')
   // @CheckPoliciesAbility(new PolicyHandlerLeadRead())
   async checkStatusByLead(@Param('leadID') id: string) {
