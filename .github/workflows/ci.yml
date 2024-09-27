@@ -79,6 +79,7 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           comment-on-pr: true
           diff: true
+          color: always
         env:
           PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
           COMMIT_SHA: ${{ steps.short-sha.outputs.sha }}
