@@ -73,6 +73,7 @@ jobs:
           command: preview
           stack-name: ${{ github.event.pull_request.base.ref == 'main' && 'b2fintech/production' || github.event.pull_request.base.ref == 'test' && 'b2fintech/testing' || 'b2fintech/staging' }}
           work-dir: ./iac
+          github-token: ${{ secrets.GITHUB_TOKEN }}
           comment-on-pr: true
           # diff: true
         env:
