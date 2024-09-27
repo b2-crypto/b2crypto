@@ -14,11 +14,4 @@ export class AppController {
   getHealth() {
     return { statusCode: 200, message: 'OK' };
   }
-
-  @HttpCode(HttpStatus.OK)
-  @AllowAnon()
-  @Get('')
-  home() {
-    return { statusCode: 200, message: 'Home' };
-  }
 }
