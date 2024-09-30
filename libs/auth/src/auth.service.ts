@@ -76,7 +76,6 @@ export class AuthService {
         slugEmail: CommonService.getSlug(email),
       },
     } as QuerySearchAnyDto);
-    Logger.debug(listUser, 'AuthService.getUser');
     const user = listUser.list[0];
     if (user && bcrypt.compareSync(password, user.password)) {
       /* let permissions = [];
