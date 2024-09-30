@@ -10,6 +10,7 @@ export class B2CryptoCacheInterceptor extends CacheInterceptor {
       context.getHandler(),
     );
 
-    return !ignoreCaching || request.method === 'GET';
+    //return !ignoreCaching || request.method === 'GET';
+    return false;
   }
 }
