@@ -446,6 +446,7 @@ export class AuthServiceController {
     return createdUser;
   }
 
+  @NoCache()
   @AllowAnon()
   @ApiKeyCheck()
   @UseGuards(ApiKeyAuthGuard)
@@ -505,6 +506,7 @@ export class AuthServiceController {
   }
 
   @IsRefresh()
+  @NoCache()
   @ApiKeyCheck()
   @UseGuards(ApiKeyAuthGuard)
   @ApiSecurity('b2crypto-key')
@@ -525,6 +527,7 @@ export class AuthServiceController {
   }
 
   @ApiKeyCheck()
+  @NoCache()
   @Post('sign-in')
   @UseGuards(ApiKeyAuthGuard, LocalAuthGuard)
   @ApiSecurity('b2crypto-key')
@@ -547,6 +550,7 @@ export class AuthServiceController {
     });
   }
 
+  @NoCache()
   @AllowAnon()
   @MessagePattern(EventsNamesUserEnum.authorization)
   async authorizationEvent(

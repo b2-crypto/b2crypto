@@ -311,20 +311,22 @@ export class ClientsIntegrationController {
         EventsNamesTransferEnum.createOne,
         transferDto,
       );
-      const base64EncodeFile = await this.encodeFileBase64(file.path);
-      if (transfer?._id) {
-        this.builder.emitFileEventClient(EventsNamesFileEnum.createOne, {
-          name: file.filename,
-          description: `File manual transaction ${transfer?._id}`,
-          path: file.path,
-          encodeBase64: base64EncodeFile,
-          mimetype: file.mimetype,
-          user: transferDto.userCreator,
-          resourceType: ResourcesEnum.TRANSFER,
-          resourceId: transfer?._id,
-          //category: ObjectId;
-        });
-        message = 'Recarga exitosa';
+      if (file?.path) {
+        const base64EncodeFile = await this.encodeFileBase64(file.path);
+        if (transfer?._id) {
+          this.builder.emitFileEventClient(EventsNamesFileEnum.createOne, {
+            name: file.filename,
+            description: `File manual transaction ${transfer?._id}`,
+            path: file.path,
+            encodeBase64: base64EncodeFile,
+            mimetype: file.mimetype,
+            user: transferDto.userCreator,
+            resourceType: ResourcesEnum.TRANSFER,
+            resourceId: transfer?._id,
+            //category: ObjectId;
+          });
+          message = 'Recarga exitosa';
+        }
       }
       localVarsTemplate = {
         success: !!transfer?._id,
