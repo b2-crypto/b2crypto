@@ -447,6 +447,24 @@ export class TransferServiceController implements GenericServiceController {
   }
 
   @NoCache()
+  @Get('send-last-6h-history/:shortData')
+  // @CheckPoliciesAbility(new PolicyHandlerTransferCreate())
+  async sendLast6hHistory_(
+    @Param('shortData') shortData = true,
+    @Request() req,
+  ) {
+    //await this.transferService.sendLast6hHistoryCardPurchases(!!shortData);
+    this.builder.emitTransferEventClient(
+      EventsNamesTransferEnum.sendLast6hHistory,
+      shortData,
+    );
+    return {
+      statusCode: 200,
+      message: 'Sended',
+    };
+  }
+
+  @NoCache()
   @Get('send-last-6h-history-card-purchases/:shortData')
   // @CheckPoliciesAbility(new PolicyHandlerTransferCreate())
   async sendLast6hHistoryCardPurchases(
@@ -660,6 +678,19 @@ export class TransferServiceController implements GenericServiceController {
   ) {
     CommonService.ack(ctx);
     await this.transferService.sendLast6hHistoryCardWalletDeposits(!!shortData);
+    return true;
+  }
+
+  @AllowAnon()
+  @EventPattern(EventsNamesTransferEnum.sendLast6hHistory)
+  // @CheckPoliciesAbility(new PolicyHandlerTransferCreate())
+  async sendLast6hHistory(
+    @Payload() shortData = true,
+    @Ctx() ctx?: RmqContext,
+  ) {
+    CommonService.ack(ctx);
+    await this.transferService.sendLast6hHistoryCardWalletDeposits(!!shortData);
+    await this.transferService.sendLast6hHistoryCardPurchases(!!shortData);
     return true;
   }
 

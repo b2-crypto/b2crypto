@@ -1455,7 +1455,7 @@ export class TransferServiceService
     query.where = {};
     const end = new Date();
     const start = new Date();
-    const last_6h = 6 * 60 * 60 * 1000;
+    const last_6h = 6 * /*30 * 24 **/ 60 * 60 * 1000;
     start.setTime(end.getTime() - last_6h);
     query.where.createdAt = {
       start: start.toISOString(),
@@ -1475,7 +1475,7 @@ export class TransferServiceService
     query.where = {};
     const end = new Date();
     const start = new Date();
-    const last_6h = 6 * 60 * 60 * 1000;
+    const last_6h = 6 * 30 * 24 * 60 * 60 * 1000;
     start.setTime(end.getTime() - last_6h);
     query.where.createdAt = {
       start: start.toISOString(),
@@ -1499,8 +1499,8 @@ export class TransferServiceService
         ? process.env.ENVIRONMENT
         : ''
     } ${params.name} transaction - from ${this.printShortDate(
-      params.end,
-    )} to ${this.printShortDate(params.start)}`;
+      params.start,
+    )} to ${this.printShortDate(params.end)}`;
     const headers = [
       'numeric_id',
       'user_id',
@@ -1619,12 +1619,17 @@ export class TransferServiceService
     Logger.log('File created', TransferServiceService.name);
     return new Promise((res) => {
       // Wait file creation
+      Logger.log(`Rows ${list.length}`, TransferServiceService.name);
+      let time = 0;
+      list.forEach((item) => {
+        const customItem = this.getCustomObj(headers, item);
+        // Added rows
+        const idx = 50 * (item.numericId ?? 1);
+        time += idx;
+        setTimeout(() => this.addDataToFile(customItem, filename, false), idx);
+      });
+      Logger.debug(time / 1000, 'Total seg');
       setTimeout(async () => {
-        list.forEach((item) => {
-          const customItem = this.getCustomObj(headers, item);
-          // Added rows
-          this.addDataToFile(customItem, filename, false);
-        });
         // Wait file sending
         this.responseFileContent({
           filename,
@@ -1632,7 +1637,7 @@ export class TransferServiceService
           listName,
           res,
         });
-      }, 1000);
+      }, 5000);
     });
   }
   private responseFileContent({ filename, fileUri, listName, res }) {
@@ -1688,6 +1693,7 @@ export class TransferServiceService
   }
 
   private addDataToFile(item, filename, isFirst, onlyHeaders = false) {
+    //Logger.debug(JSON.stringify(item), filename);
     this.builder.emitFileEventClient<File>(EventsNamesFileEnum.addDataToFile, {
       isFirst,
       onlyHeaders,

@@ -25,6 +25,7 @@ enum EventsNamesTransferEnum {
   checkTransferInB2BinPay = 'TRANSFER.CHECK.B2BINPAY',
   sendLast6hHistoryCardPurchases = 'TRANSFER.SEND.LAST.6H.HISTORY.CARD.PURCHASE',
   sendLast6hHistoryCardWalletDeposits = 'TRANSFER.SEND.LAST.6H.HISTORY.CARD.WALLET.DEPOSITS',
+  sendLast6hHistory = 'TRANSFER.SEND.LAST.6H.HISTORY',
 }
 
 export default EventsNamesTransferEnum;

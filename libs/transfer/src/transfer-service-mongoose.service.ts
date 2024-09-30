@@ -1,7 +1,12 @@
 import dbIntegrationEnum from '@builder/builders/enums/db-integration.enum';
 import { CommonService } from '@common/common';
 import { BasicServiceModel } from '@common/common/models/basic-service.model';
-import { BadRequestException, Inject, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Inject,
+  Injectable,
+  Logger,
+} from '@nestjs/common';
 import { TransferCreateDto } from '@transfer/transfer/dto/transfer.create.dto';
 import { TransferUpdateDto } from '@transfer/transfer/dto/transfer.update.dto';
 import {
@@ -14,7 +19,7 @@ import { ApproveOrRejectDepositDto } from './dto/approve.or.reject.deposit.dto';
 import { QuerySearchAnyDto } from '@common/common/models/query_search-any.dto';
 import { OperationTransactionType } from './enum/operation.transaction.type.enum';
 import TypesAccountEnum from '@account/account/enum/types.account.enum';
-import { isArray, isMongoId } from 'class-validator';
+import { isArray, IsMongoId, isMongoId } from 'class-validator';
 
 @Injectable()
 export class TransferServiceMongooseService extends BasicServiceModel<
@@ -192,7 +197,10 @@ export class TransferServiceMongooseService extends BasicServiceModel<
   ) {
     query = query ?? {};
     query.where = query.where ?? {};
-    query.where['typeAccount'] = TypesAccountEnum.WALLET;
+    query.where['typeAccount'] = [
+      TypesAccountEnum.CARD,
+      TypesAccountEnum.WALLET,
+    ];
     query.where['operationType'] = OperationTransactionType.deposit;
     return this.getHistoryGroupById(query, shortData);
   }
@@ -218,7 +226,8 @@ export class TransferServiceMongooseService extends BasicServiceModel<
       //data: { $push: '$$ROOT' },
     } as any;
     configGroup.numeric_id = { $addToSet: '$numericId' };
-    configGroup.amount = { $addToSet: '$amount' };
+    configGroup.amount = { $addToSet: '$amountCustodial' };
+    configGroup.currency = { $addToSet: '$currencyCustodial' };
     configGroup.status = { $addToSet: '$statusPayment' };
     configGroup.user_id = {
       $addToSet: '$requestBodyJson.user.id',
@@ -269,6 +278,7 @@ export class TransferServiceMongooseService extends BasicServiceModel<
       _id: 0,
       numeric_id: { $first: '$numeric_id' },
       amount: { $first: '$amount' },
+      currency: { $first: '$currency' },
       status: { $first: '$status' },
       user_id: {
         $first: '$user_id',
@@ -327,7 +337,12 @@ export class TransferServiceMongooseService extends BasicServiceModel<
             continue;
           }
           query.where[key] = {
-            $in: query.where[key].map((item) => new ObjectId(item)),
+            $in: query.where[key].map((item) => {
+              if (isMongoId(item)) {
+                return new ObjectId(item);
+              }
+              return item;
+            }),
           };
         } else if (isMongoId(query.where[key])) {
           query.where[key] = new ObjectId(query.where[key]);
