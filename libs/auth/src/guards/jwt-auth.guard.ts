@@ -40,6 +40,7 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
     ) {
       incomingMessage.headers.checkApiKey = true;
     }
+    Logger.debug(incomingMessage.headers, 'JwtAuthGuard');
     if (
       isPublic ||
       isRefresh ||
