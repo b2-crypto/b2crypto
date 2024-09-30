@@ -29,6 +29,7 @@ const {
   DEFAULT_CURRENCY_CONVERSION_COIN,
   AUTHORIZATIONS_BLOCK_BALANCE_PERCENTAGE,
   POMELO_WHITELISTED_IPS_CHECK,
+  VPC_CIDR_BLOCK,
 } = VARS_ENV;
 const TAGS = {
   Company: COMPANY_NAME,
@@ -87,7 +88,7 @@ export const ecrImageData = {
 const ec2Vpc = new awsx.ec2.Vpc(`${COMPANY_NAME}-${PROJECT_NAME}-${STACK}`, {
   enableNetworkAddressUsageMetrics: true,
   numberOfAvailabilityZones: 3,
-  cidrBlock: '10.0.0.0/16',
+  cidrBlock: VPC_CIDR_BLOCK,
   enableDnsHostnames: true,
   enableDnsSupport: true,
   tags: TAGS,
