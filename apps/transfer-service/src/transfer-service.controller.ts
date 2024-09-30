@@ -445,6 +445,60 @@ export class TransferServiceController implements GenericServiceController {
       transfer?.responseAccount?.data?.attributes?.payment_page,
     );
   }
+
+  @NoCache()
+  @Get('send-last-6h-history/:shortData')
+  // @CheckPoliciesAbility(new PolicyHandlerTransferCreate())
+  async sendLast6hHistory_(
+    @Param('shortData') shortData = true,
+    @Request() req,
+  ) {
+    //await this.transferService.sendLast6hHistoryCardPurchases(!!shortData);
+    this.builder.emitTransferEventClient(
+      EventsNamesTransferEnum.sendLast6hHistory,
+      shortData,
+    );
+    return {
+      statusCode: 200,
+      message: 'Sended',
+    };
+  }
+
+  @NoCache()
+  @Get('send-last-6h-history-card-purchases/:shortData')
+  // @CheckPoliciesAbility(new PolicyHandlerTransferCreate())
+  async sendLast6hHistoryCardPurchases(
+    @Param('shortData') shortData = true,
+    @Request() req,
+  ) {
+    //await this.transferService.sendLast6hHistoryCardPurchases(!!shortData);
+    this.builder.emitTransferEventClient(
+      EventsNamesTransferEnum.sendLast6hHistoryCardPurchases,
+      shortData,
+    );
+    return {
+      statusCode: 200,
+      message: 'Sended',
+    };
+  }
+
+  @NoCache()
+  @Get('send-last-6h-history-card-wallet-deposits/:shortData')
+  // @CheckPoliciesAbility(new PolicyHandlerTransferCreate())
+  async sendLast6hHistoryCardWalletDeposits(
+    @Param('shortData') shortData = true,
+    @Request() req,
+  ) {
+    //await this.transferService.sendLast6hHistoryCardPurchases(!!shortData);
+    this.builder.emitTransferEventClient(
+      EventsNamesTransferEnum.sendLast6hHistoryCardWalletDeposits,
+      shortData,
+    );
+    return {
+      statusCode: 200,
+      message: 'Sended',
+    };
+  }
   // ----------------------------
 
   @Post('credit')
@@ -604,8 +658,45 @@ export class TransferServiceController implements GenericServiceController {
   }
 
   @AllowAnon()
+  @EventPattern(EventsNamesTransferEnum.sendLast6hHistoryCardPurchases)
+  // @CheckPoliciesAbility(new PolicyHandlerTransferCreate())
+  async sendLast6hHistoryCardPurchasesEvent(
+    @Payload() shortData = true,
+    @Ctx() ctx?: RmqContext,
+  ) {
+    CommonService.ack(ctx);
+    await this.transferService.sendLast6hHistoryCardPurchases(!!shortData);
+    return true;
+  }
+
+  @AllowAnon()
+  @EventPattern(EventsNamesTransferEnum.sendLast6hHistoryCardWalletDeposits)
+  // @CheckPoliciesAbility(new PolicyHandlerTransferCreate())
+  async sendLast6hHistoryCardWalletDepositsEvent(
+    @Payload() shortData = true,
+    @Ctx() ctx?: RmqContext,
+  ) {
+    CommonService.ack(ctx);
+    await this.transferService.sendLast6hHistoryCardWalletDeposits(!!shortData);
+    return true;
+  }
+
+  @AllowAnon()
+  @EventPattern(EventsNamesTransferEnum.sendLast6hHistory)
+  // @CheckPoliciesAbility(new PolicyHandlerTransferCreate())
+  async sendLast6hHistory(
+    @Payload() shortData = true,
+    @Ctx() ctx?: RmqContext,
+  ) {
+    CommonService.ack(ctx);
+    await this.transferService.sendLast6hHistoryCardWalletDeposits(!!shortData);
+    await this.transferService.sendLast6hHistoryCardPurchases(!!shortData);
+    return true;
+  }
+
+  @AllowAnon()
   @MessagePattern(EventsNamesTransferEnum.findAll)
-  findAllEvent(query: QuerySearchAnyDto, ctx: RmqContext) {
+  findAllEvent(query: QuerySearchAnyDto, @Ctx() ctx?: RmqContext) {
     CommonService.ack(ctx);
     return this.findAll(query);
   }
