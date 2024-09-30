@@ -236,7 +236,7 @@ export class ClientsIntegrationController {
       };
       html = pug.renderFile(localPathTemplate, localVarsTemplate);
     } catch (error) {
-      Logger.error(error, `ClientsController-signIn`);
+      Logger.error(error, `ClientsController-signIn check`);
     }
     return res
       .setHeader('Content-Type', 'text/html; charset=utf-8')
@@ -336,7 +336,7 @@ export class ClientsIntegrationController {
       };
       html = pug.renderFile(localPathTemplate, localVarsTemplate);
     } catch (error) {
-      Logger.error(error, `ClientsController-signIn`);
+      Logger.error(error, `ClientsController-signIn manual Tx recharge`);
     }
     return res
       .setHeader('Content-Type', 'text/html; charset=utf-8')
