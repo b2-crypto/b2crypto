@@ -79,6 +79,7 @@ config:
   b2crypto-iac:TESTING: "false"
   b2crypto-iac:TZ: UTC
   b2crypto-iac:URL_API_EMAIL_APP: ""
+  b2crypto-iac:VPC_CIDR_BLOCK: 10.0.0.0/24
   mongodbatlas:privateKey:
     secure: AAABAJFdVXnOY/vvAjZNhf0vkUSTpcG68T8LZr0s4LAoQWSH10IJzZvnqSOFhVGY/69AKGSCVQkbl/a7uB1QWT5XcZQ=
   mongodbatlas:publicKey:
