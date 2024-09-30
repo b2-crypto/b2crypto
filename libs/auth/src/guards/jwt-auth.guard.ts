@@ -1,3 +1,4 @@
+import { Authorization } from './../../../integration/src/dto/pomelo.process.body.dto';
 import { ExecutionContext, Injectable, Logger } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { AuthGuard } from '@nestjs/passport';
@@ -40,7 +41,7 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
     ) {
       incomingMessage.headers.checkApiKey = true;
     }
-    Logger.debug(incomingMessage.headers, 'JwtAuthGuard');
+    Logger.debug(incomingMessage.headers.authorization, 'JwtAuthGuard');
     if (
       isPublic ||
       isRefresh ||
