@@ -1475,7 +1475,7 @@ export class TransferServiceService
     query.where = {};
     const end = new Date();
     const start = new Date();
-    const last_6h = 6 * 30 * 24 * 60 * 60 * 1000;
+    const last_6h = 6 * /*30 * 24 **/ 60 * 60 * 1000;
     start.setTime(end.getTime() - last_6h);
     query.where.createdAt = {
       start: start.toISOString(),
