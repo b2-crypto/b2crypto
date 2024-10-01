@@ -1504,6 +1504,7 @@ export class TransferServiceService
     )} to ${this.printShortDate(params.end)}`;
     const headers = [
       'numeric_id',
+      'email',
       'user_id',
       'card_id',
       'card_type',
@@ -1548,7 +1549,7 @@ export class TransferServiceService
 
   private async sendEmailToList(promisesAttachments, subject) {
     const destiny = [
-      /* {
+      {
         name: 'Luisa',
         lastName: 'Fernanda',
         email: 'luisa.fernanda@b2crypto.com',
@@ -1562,7 +1563,7 @@ export class TransferServiceService
         name: 'Hamilton',
         lastName: 'Smith',
         email: 'devops@b2fintech.com',
-      }, */
+      },
       {
         name: 'Hender',
         lastName: 'Orlando',
