@@ -256,7 +256,7 @@ export class MessageServiceService {
   ) {
     try {
       if(this.configService.get<string>('ENVIRONMENT') !== EnvironmentEnum.prod) {
-        Logger.error(message.destinyText, 'Sended email');
+        Logger.debug(message.destinyText, 'Sended email');
         return { success: true };
       }
       const recipient = message.destinyText;
