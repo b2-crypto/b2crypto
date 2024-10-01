@@ -1,6 +1,7 @@
 **/.git
-Dockerfile
-.dockerignore
+**/Dockerfile*
+**/docker-compose.y*ml
+**/.dockerignore
 **/node_modules
 npm-debug.log
 dist

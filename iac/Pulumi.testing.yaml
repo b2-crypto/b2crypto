@@ -1,0 +1,86 @@
+config:
+  aws:accessKey:
+    secure: AAABAOY2m6djdDXvlg341meTbdZdVl0E+OJYIl+NEv4TrFgliPdTg2IrQxMuP/EcDLHAjg==
+  aws:region: us-east-2
+  aws:secretKey:
+    secure: AAABADpzt2ACxtwPPJ2sveqXxFYTMQNx3664NkqXq1fWRRjEbqEq27jcRAR7udybTqzhXwJt8nrx/bjM59XRfISk1TVWTJyy
+  b2crypto-iac:API_KEY_EMAIL_APP: ""
+  b2crypto-iac:APP_NAME: B2Crypto
+  b2crypto-iac:AUTH_EXPIRE_IN: 8h
+  b2crypto-iac:AUTH_MAX_SECONDS_TO_REFRESH: "60"
+  b2crypto-iac:AUTH_SECRET:
+    secure: AAABAAQ3ic7goRYsVqh/DPHkaH5G3oeEH9vH7bWUi42nmUGfCuuEDQ==
+  b2crypto-iac:AUTHORIZATIONS_BLOCK_BALANCE_PERCENTAGE: "0.1"
+  b2crypto-iac:AWS_SES_FROM_DEFAULT:
+    secure: AAABAFaFOnJbJP+zLMHa8zwdZHUzFfYDSSBV7d+BMza7p+rYlFAceqx8SDlxybmFsK9SDfw=
+  b2crypto-iac:AWS_SES_HOST:
+    secure: AAABAPdaHR+jBRzwr2fLq91H4tvQCUsMCtHZfHWkbmnMgU25s9iZ1+tz3coU+jO/COt2T0tD/ExR9OwJ4DFw8MS1
+  b2crypto-iac:AWS_SES_PASSWORD:
+    secure: AAABAHI6xvoMqJ+hiIBOc4aBlcauKlhpSuluoSl5CePHF9vTmWcxWHbZ2R+6gQoA6n1NMzWaXs6GqtQVeVALPwNOQP61LKND440JSg==
+  b2crypto-iac:AWS_SES_PORT: "587"
+  b2crypto-iac:AWS_SES_SMTP_PASSWORD:
+    secure: AAABAMu7m4tMhCY8gE+Z5Jw7JzlBWfDwuBSADIDSrXAqHZuPzZkESonw+Xm7cZFWlPyNWDPNQgysNaiC4ev0ZlNUV3Q5T0wyETGwJg==
+  b2crypto-iac:AWS_SES_SMTP_USERNAME:
+    secure: AAABAFf0EaiZX8zJV8io5eNWcXWxXxGtskx8NEcVxSC7EN0LSAXHt1UoDquXUhWEvsX77A==
+  b2crypto-iac:AWS_SES_USERNAME:
+    secure: AAABABY4IbIDlH33FkRSJ9wmEvPt4mPRCiJ+95fPWTWqwtYUHEkE1kIujL3cPk7nRyXsTw==
+  b2crypto-iac:CACHE_MAX_ITEMS: "50"
+  b2crypto-iac:CACHE_TTL: "20"
+  b2crypto-iac:CURRENCY_CONVERSION_API_KEY:
+    secure: AAABAI9/jX+f9KwJVorgQ7krSCCR7TE8EntuuYr8Ot+2s9fozjxJ/SoKwPluc3lo5Ua/odJQb7qxsLDngD3OQw==
+  b2crypto-iac:CURRENCY_CONVERSION_API_URL:
+    secure: AAABACc6hCvleTrMU4PWoG3ofRMhfkFdoixkKC28iPbY/WeYQ6tM9uef7qThCQ66gu/fDB0TgHxpIVmsrh8WNgmF1fP6QgPUfH0=
+  b2crypto-iac:DATABASE_NAME: b2crypto
+  b2crypto-iac:DATABASE_URL:
+    secure: AAABAK84XNMMOo3u09OqE6md+q9aZn8KIKOm58bXb9GYuEMGLI4kLSpL6DJDil9iDjREDmddwJPcIu9DtsgoSaB3ZET7bTlrDzBFsGcUoXe1XkW7GC8dq6F0AW54onr+3AAj51rS8cQ2uApgYZJsYm3iP9zWnhktnWv16PdF/4PofaDU8R1sB7jn7lY55a+tOME0KT+nSnqHxp+RmSY=
+  b2crypto-iac:DEFAULT_CURRENCY_CONVERSION_COIN: USD
+  b2crypto-iac:ENVIRONMENT: TEST
+  b2crypto-iac:GOOGLE_2FA: "false"
+  b2crypto-iac:POMELO_API_URL:
+    secure: AAABAKT4DuVw/1bywzZv7QnP67D8YlTm+IhX4LNkAcdISaTFFj1PuQc5YlCtZkL4kwvyC8OH0NeOvPCNeg==
+  b2crypto-iac:POMELO_AUDIENCE:
+    secure: AAABABSpBVsI5swW+tnnNb1wLcPTg5ygHq8iZG3tzPo32mWPjtCBcYtmJ/7CcnhgbQ2mT2zACNPPiD6gLo8=
+  b2crypto-iac:POMELO_AUTH_GRANT_TYPE:
+    secure: AAABAGPCz6BPwoEgRvmo6+xCcOBvoKcgbukGSTH7QNTH/3VUooorD2N+WOEFEVY5h9w=
+  b2crypto-iac:POMELO_CLIENT_ID:
+    secure: AAABANBHNmrz2nStoDDgspei/WVKFyekHPcqOwgyemkvleWcF6FWN7aUS2TVOHzZiw5U5q9+pfygmWyKLGqMZQ==
+  b2crypto-iac:POMELO_SECRET_ID:
+    secure: AAABAOc3CNPL7c0UCSdQqIWIbymYYRlTQ6ltaLkrPcbLSFb5Wek3FlCffG97z57KjZf6XSOmupuJejsGLf8Gs2Iqe+112Gq/uHYMpt37AlubdchS6Vhzj/vW2sosKuUw
+  b2crypto-iac:POMELO_SFTP_HOST:
+    secure: AAABADaIF0DRvgd6jA0zlMKTzH6a6CyQ918fzPgy9/LztNqnrIObtIczK7Ki6M9RcIU=
+  b2crypto-iac:POMELO_SFTP_PASSPHRASE:
+    secure: AAABAKyZH/tX9CwoArtvbUNz/2ozU751+RArRuzDWrZep1nPL2IS+A==
+  b2crypto-iac:POMELO_SFTP_PORT:
+    secure: AAABADfHvSGeLcNTuc7+zLnvSAjQxS5WzTBSl5Z4Ly2EiQ==
+  b2crypto-iac:POMELO_SFTP_USR:
+    secure: AAABAKJtNnkbv9TO/KKXcwrbGmwmX3A6VolQmLl6/0mqqy+eGraI
+  b2crypto-iac:POMELO_SIGNATURE_SECRET_KEY_DIC:
+    secure: AAABAI0lXNy1UF1hr5vTZddzui4eo9/rXQcsw/pvMyrO9PvF68W3ARPV7JNLAP/hsWVCdDFkjsYOBgLn0hAsvew3VSZhgpJUMyw/JYTrbhZNYBkH7e5eDDhEtU3gDwdryTlSKAZs5bc+7Nju6T2LVPaSY8j0PuewuPiMmy9KDw==
+  b2crypto-iac:POMELO_WHITELISTED_IPS:
+    secure: AAABAHOEQJ1arIE0bJsvlg9VkLAsJq+HXfXSSAr88f5uGQQPbB+TxxRJzn6LUme6j5Dt5D4mqTMB0DrN8nNmShEiY8NkFkZ9ZynaQDzJcWALqYyfJfdom69c
+  b2crypto-iac:POMELO_WHITELISTED_IPS_CHECK: "ON"
+  b2crypto-iac:PORT: "80"
+  b2crypto-iac:RABBIT_MQ_HOST:
+    secure: AAABALcTq7ijtu6fAeVpYxLu22snNCeC2o/VqJ/LBS3Wc+f3mFS6l1isHYEt8U1EdzXjO1AfZhLeGthx+yYafLeKYqxcq3JLZ3Jtc9AtkpL8ei/yhubF+31g1EAWnmG3Kg==
+  b2crypto-iac:RABBIT_MQ_PASSWORD:
+    secure: AAABAM23ncgIPLpuNTw6mV7OIcDIHjKU3SfmwJo5Yd1YdbXIzJ31rVcM0DYBR5r/z1OWgEGXFjfC5fm2D4d8Zw==
+  b2crypto-iac:RABBIT_MQ_PORT: "5671"
+  b2crypto-iac:RABBIT_MQ_QUEUE: TEST
+  b2crypto-iac:RABBIT_MQ_USERNAME:
+    secure: AAABAHreYFQ4iFjfKy2GGCveK/jSdOGgKjWikkcTcn3xpxASLoxViQ==
+  b2crypto-iac:REDIS_HOST:
+    secure: AAABAMBCr7T4S+O7byxnAaHqyx6csgRKHj7vF9lskqXfIcYXxzJvWj8znW0VMKSEwa7v9NawTTmEbau6sE464H0JhTKUp+IYcKZn1MpGczatFCphTaY=
+  b2crypto-iac:REDIS_PASSWORD:
+    secure: AAABAFfmApRg/M46ywuTWpRivAMMgiwmZgtbZoTWY1urL3IH27GKyYfnAITv2hcsQQEd1rpmov6YOFs92mE71A==
+  b2crypto-iac:REDIS_PORT: "14419"
+  b2crypto-iac:REDIS_USERNAME:
+    secure: AAABAHfW2+azlTMDrX5w4/fgKHChcw3jYFbJRhpJ9gI/bntVVgBS
+  b2crypto-iac:STACK: testing
+  b2crypto-iac:TESTING: "false"
+  b2crypto-iac:TZ: UTC
+  b2crypto-iac:URL_API_EMAIL_APP: ""
+  b2crypto-iac:VPC_CIDR_BLOCK: 10.1.0.0/16
+  mongodbatlas:privateKey:
+    secure: AAABAJFdVXnOY/vvAjZNhf0vkUSTpcG68T8LZr0s4LAoQWSH10IJzZvnqSOFhVGY/69AKGSCVQkbl/a7uB1QWT5XcZQ=
+  mongodbatlas:publicKey:
+    secure: AAABAKqpIxOQXjK5DBmtjFI4EYf36+BuzThEVIYu+nyFAR+AAka01g==

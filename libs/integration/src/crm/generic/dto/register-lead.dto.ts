@@ -1,2 +1,1 @@
-
-export interface RegisterLeadDto{}
+export interface RegisterLeadDto {}
