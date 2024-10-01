@@ -76,6 +76,7 @@ import { FileDocument } from '@file/file/entities/mongoose/file.schema';
 import TransportEnum from '@common/common/enums/TransportEnum';
 import EventsNamesMessageEnum from 'apps/message-service/src/enum/events.names.message.enum';
 import { EnvironmentEnum } from '@common/common/enums/environment.enum';
+import EventsNamesUserEnum from 'apps/user-service/src/enum/events.names.user.enum';
 
 @Injectable()
 export class TransferServiceService
@@ -335,6 +336,10 @@ export class TransferServiceService
             data: deposit.data as unknown as DataTransferAccountResponse,
           };
           await this.updateTransfer(transferSaved);
+          this.builder.emitUserEventClient(
+            EventsNamesUserEnum.checkBalanceUser,
+            account.owner,
+          );
         } catch (err) {
           await this.lib.remove(transferSaved._id);
           Logger.error(err, 'Error Transfer creation');
