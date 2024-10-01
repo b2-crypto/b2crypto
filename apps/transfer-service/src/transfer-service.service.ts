@@ -338,7 +338,7 @@ export class TransferServiceService
           await this.updateTransfer(transferSaved);
           this.builder.emitUserEventClient(
             EventsNamesUserEnum.checkBalanceUser,
-            account.owner,
+            transferSaved.userAccount,
           );
         } catch (err) {
           await this.lib.remove(transferSaved._id);
