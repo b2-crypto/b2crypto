@@ -19,6 +19,7 @@ import EventsNamesLeadEnum from 'apps/lead-service/src/enum/events.names.lead.en
 import axios from 'axios';
 import { LeadDocument } from '@lead/lead/entities/mongoose/lead.schema';
 import * as pug from 'pug';
+import { EnvironmentEnum } from '@common/common/enums/environment.enum';
 
 @Injectable()
 export class MessageServiceService {
@@ -254,6 +255,10 @@ export class MessageServiceService {
     template: TemplatesMessageEnum,
   ) {
     try {
+      if(this.configService.get<string>('ENVIRONMENT') !== EnvironmentEnum.prod) {
+        Logger.error(message.destinyText, 'Sended email');
+        return { success: true };
+      }
       const recipient = message.destinyText;
 
       if (!isEmail(recipient)) {
@@ -279,7 +284,7 @@ export class MessageServiceService {
 
       return { success: true };
     } catch (error) {
-      console.error('Error sending email:', error);
+      Logger.error(error, 'Error sending email:');
       return { success: false, error: error.message };
     }
   }
