@@ -164,7 +164,7 @@ module.exports = {
       script: './dist-pm2/apps/b2crypto/main-gateway.js',
       watch: ['./dist-pm2/apps/b2crypto/main-gateway.js'],
       exp_backoff_restart_delay: 100,
-      instances: 'max',
+      instances: '1',
       exec_mode: 'cluster',
       //wait_ready: true,
       env: {
