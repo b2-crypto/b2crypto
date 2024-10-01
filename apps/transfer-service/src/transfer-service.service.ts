@@ -336,10 +336,6 @@ export class TransferServiceService
             data: deposit.data as unknown as DataTransferAccountResponse,
           };
           await this.updateTransfer(transferSaved);
-          this.builder.emitUserEventClient(
-            EventsNamesUserEnum.checkBalanceUser,
-            transferSaved.userAccount,
-          );
         } catch (err) {
           await this.lib.remove(transferSaved._id);
           Logger.error(err, 'Error Transfer creation');
@@ -537,10 +533,10 @@ export class TransferServiceService
       accountToUpdate.amount += amount;
     }
     await this.accountService.updateOne(accountToUpdate);
-    /* this.builder.emitLeadEventClient(
-      EventsNamesLeadEnum.updateOne,
-      leadToUpdate,
-    ); */
+    this.builder.emitUserEventClient(
+      EventsNamesUserEnum.checkBalanceUser,
+      transferSaved.userAccount,
+    );
   }
 
   async updateLead(
