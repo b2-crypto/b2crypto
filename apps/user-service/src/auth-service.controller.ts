@@ -474,6 +474,9 @@ export class AuthServiceController {
       EventsNamesUserEnum.createOne,
       userDto,
     );
+    if (!user._id) {
+      throw new BadRequestException('User already exists');
+    }
     try {
       user.personalData = await this.builder.getPromisePersonEventClient(
         EventsNamesPersonEnum.createOne,
@@ -501,7 +504,8 @@ export class AuthServiceController {
         EventsNamesUserEnum.deleteOneById,
         user._id.toString(),
       );
-      throw error;
+      //throw error;
+      throw new BadRequestException('Person already exists');
     }
   }
 
