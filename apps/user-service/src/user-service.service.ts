@@ -62,9 +62,9 @@ export class UserServiceService {
       return Promise.all(promises);
     }
   }
-  async updateBalance(id?: string) {
-    if (isMongoId(id)) {
-      const usr = await this.getOne(id);
+  async updateBalance(userId?: string) {
+    if (isMongoId(userId)) {
+      const usr = await this.getOne(userId);
       if (!usr._id) {
         throw new NotFoundException('User not found');
       }
@@ -87,6 +87,7 @@ export class UserServiceService {
           owner: usr._id,
         },
       });
+      Logger.log(userId, 'Balance update');
       for (const account of accounts.list) {
         userBalance.ALL.quantity++;
         userBalance.ALL.amount += account.amount;

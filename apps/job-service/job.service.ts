@@ -31,7 +31,10 @@ export class JobService {
     timeZone: process.env.TZ,
   })
   async sendLast6hHistoryTransfer() {
-    Logger.log('Sended last 6h history transfer', JobService.name);
+    Logger.log(
+      'Sended last 6h history transfer',
+      `${this.env} - ${JobService.name}`,
+    );
     if (this.env == EnvironmentEnum.prod) {
       this.builder.emitTransferEventClient(
         EventsNamesTransferEnum.sendLast6hHistoryCardPurchases,
@@ -48,8 +51,11 @@ export class JobService {
     timeZone: process.env.TZ,
   })
   async sendBalanceCardReportsCron() {
-    Logger.log('Sended balance card report', JobService.name);
-    /* if (this.env == EnvironmentEnum.prod) {
+    Logger.log(
+      'Sended balance card report',
+      `${this.env} - ${JobService.name}`,
+    );
+    if (this.env == EnvironmentEnum.prod) {
       await this.builder.getPromiseAccountEventClient(
         EventsNamesAccountEnum.sendBalanceReport,
         {
@@ -58,45 +64,48 @@ export class JobService {
           },
         },
       );
-    } */
+    }
   }
 
   @Cron(JobService.periodicTime.checkBalanceUser, {
     timeZone: process.env.TZ,
   })
   checkBalanceUserCron() {
-    Logger.log('Checked balance users', JobService.name);
-    /* if (this.env == EnvironmentEnum.prod) {
+    Logger.log('Checked balance users', `${this.env} - ${JobService.name}`);
+    if (this.env == EnvironmentEnum.prod) {
       this.builder.emitUserEventClient(
         EventsNamesUserEnum.checkBalanceUser,
         '0',
       );
-    } */
+    }
   }
 
   @Cron(JobService.periodicTime.checkCardsInPomelo, {
     timeZone: process.env.TZ,
   })
   checkCardsInPomelo() {
-    Logger.log('Checking Cards in pomelo', JobService.name);
-    /* if (this.env === EnvironmentEnum.prod) {
+    Logger.log('Checking Cards in pomelo', `${this.env} - ${JobService.name}`);
+    if (this.env === EnvironmentEnum.prod) {
       this.builder.emitAccountEventClient(
         EventsNamesAccountEnum.checkCardsCreatedInPomelo,
         'pomelo',
       );
-    } */
+    }
   }
 
   @Cron(JobService.periodicTime.checkB2BinPayTransfers, {
     timeZone: process.env.TZ,
   })
   checkB2BinPayTransfers() {
-    Logger.log('Checking B2BinPay transfers', JobService.name);
-    /* if (this.env === EnvironmentEnum.prod) {
+    Logger.log(
+      'Checking B2BinPay transfers',
+      `${this.env} - ${JobService.name}`,
+    );
+    if (this.env === EnvironmentEnum.prod) {
       this.builder.emitTransferEventClient(
         EventsNamesTransferEnum.checkTransferInB2BinPay,
         'b2binpay',
       );
-    } */
+    }
   }
 }

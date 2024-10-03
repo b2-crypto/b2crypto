@@ -2,8 +2,10 @@ import { Category } from '@category/category/entities/mongoose/category.schema';
 import { GroupEntity } from '@group/group/entities/group.entity';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import * as mongoose from 'mongoose';
-import { Document, ObjectId } from 'mongoose';
+import { Document } from 'mongoose';
 import { GroupInterface } from '../group.interface';
+import { GroupTypeEnum } from '@group/group/enum/group.type.enum';
+import { User } from '@user/user/entities/mongoose/user.schema';
 
 export type GroupDocument = Group & Document;
 
@@ -22,6 +24,12 @@ export class Group extends GroupEntity implements GroupInterface {
   @Prop()
   valueGroup: string;
 
+  @Prop({ type: String, enum: GroupTypeEnum, default: GroupTypeEnum.GROUP })
+  type: GroupTypeEnum;
+
+  @Prop({ default: 0 })
+  valueGroupNumber: number;
+
   @Prop()
   description: string;
 
@@ -34,7 +42,10 @@ export class Group extends GroupEntity implements GroupInterface {
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'groups' })
   groupParent: Group;
 
-  @Prop({ type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'groups' }] })
+  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'users' })
+  user: User;
+
+  @Prop({ type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'categories' }] })
   rules: Category[];
 }
 

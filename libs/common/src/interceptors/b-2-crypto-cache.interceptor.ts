@@ -1,4 +1,5 @@
-import { CacheInterceptor, ExecutionContext } from '@nestjs/common';
+import { CacheInterceptor, ExecutionContext, Logger } from '@nestjs/common';
+import * as crypto from 'crypto';
 
 export class B2CryptoCacheInterceptor extends CacheInterceptor {
   protected isRequestCacheable(context: ExecutionContext): boolean {
@@ -9,7 +10,32 @@ export class B2CryptoCacheInterceptor extends CacheInterceptor {
       'ignoreCaching',
       context.getHandler(),
     );
+    const req = context.switchToHttp().getRequest();
+    Logger.log(`Ignore Caching: ${!ignoreCaching}`, 'B2CryptoCacheInterceptor');
+    Logger.log(
+      `Authorization: ${!!req.headers['authorization']}`,
+      'B2CryptoCacheInterceptor',
+    );
+    return (
+      !ignoreCaching ||
+      !!req.headers['authorization'] ||
+      request.method === 'GET'
+    );
+  }
+  protected trackBy(context: ExecutionContext): string | undefined {
+    const req = context.switchToHttp().getRequest();
+    const bearerToken = req.headers['authorization'];
+    const body = JSON.stringify(req.body);
+    const url = req.url;
+    const method = req.method;
+    const ip = req.ip;
+    const params = JSON.stringify(req.params);
+    const query = JSON.stringify(req.query);
+    const userId = req.user?.id ?? 'anonymous-user';
+    const clientId = req.clientApi ?? 'anonymous-client';
 
-    return !ignoreCaching || request.method === 'GET';
+    const key = `${bearerToken}${body}${url}${method}${ip}${params}${query}${userId}${clientId}`;
+    const hash = crypto.createHash('sha256').update(key).digest('hex');
+    return hash;
   }
 }
