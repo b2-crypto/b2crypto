@@ -89,4 +89,7 @@ export default registerAs('config', () => ({
   POMELO_SFTP_USR: process.env.POMELO_SFTP_USR,
   POMELO_SFTP_PASSPHRASE: process.env.POMELO_SFTP_PASSPHRASE,
   LOGO_URL: process.env.LOGO_URL,
+  SOCIAL_MEDIA_ICONS: process.env.SOCIAL_MEDIA_ICONS,
+  SOCIAL_MEDIA_LINKS: process.env.SOCIAL_MEDIA_LINKS,
+
 }));

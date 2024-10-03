@@ -209,11 +209,38 @@ export class TransferServiceMongooseService extends BasicServiceModel<
     query = query ?? {};
     const aggregate = this.transferModel.aggregate();
     this.setMatch(aggregate, query);
+    this.setLookupUser(aggregate);
     this.setOrder(aggregate, query);
     this.setGroup(aggregate, shortData);
     this.setProject(aggregate);
     const list = await aggregate.exec();
     return list;
+  }
+
+  private setLookupUser(aggregate: Aggregate<any[]>) {
+    aggregate.lookup({
+      from: 'users',
+      localField: 'userAccount',
+      foreignField: '_id',
+      as: 'email',
+      pipeline: [
+        {
+          $project: {
+            _id: 0,
+            email: '$email',
+          },
+        },
+      ],
+    });
+    aggregate.addFields({
+      email: {
+        $first: '$email.email',
+      },
+    });
+  }
+
+  private setLookup(aggregate: Aggregate<any[]>, configLookup: any) {
+    aggregate.lookup(configLookup);
   }
 
   private setGroup(
@@ -226,6 +253,7 @@ export class TransferServiceMongooseService extends BasicServiceModel<
       //data: { $push: '$$ROOT' },
     } as any;
     configGroup.numeric_id = { $addToSet: '$numericId' };
+    configGroup.email = { $addToSet: '$email' };
     configGroup.amount = { $addToSet: '$amountCustodial' };
     configGroup.currency = { $addToSet: '$currencyCustodial' };
     configGroup.status = { $addToSet: '$statusPayment' };
@@ -276,6 +304,9 @@ export class TransferServiceMongooseService extends BasicServiceModel<
   private setProject(aggregate: Aggregate<any[]>) {
     aggregate.project({
       _id: 0,
+      email: {
+        $first: '$email',
+      },
       numeric_id: { $first: '$numeric_id' },
       amount: { $first: '$amount' },
       currency: { $first: '$currency' },

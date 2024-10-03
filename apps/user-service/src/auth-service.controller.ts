@@ -446,6 +446,7 @@ export class AuthServiceController {
     return createdUser;
   }
 
+  @NoCache()
   @AllowAnon()
   @ApiKeyCheck()
   @UseGuards(ApiKeyAuthGuard)
@@ -462,23 +463,25 @@ export class AuthServiceController {
   @ApiResponse(ResponseB2Crypto.getResponseSwagger(500, ActionsEnum.LOGIN)) */
   @Post('pre-registry')
   async preRegistryUser(@Body() userDto: UserPreRegisterDto, @Req() req) {
-    userDto.name =
-      userDto.name ?? userDto.username ?? userDto.email.split('@')[0];
+    userDto.name = userDto.name ?? userDto.username ?? userDto.email.split('@')[0];
     userDto.slugEmail = CommonService.getSlug(userDto.email);
     userDto.username = userDto.username ?? userDto.name;
     userDto.slugUsername = CommonService.getSlug(userDto.username);
     const client = await this.getClientFromPublicKey(req.clientApi, false);
     userDto.description = userDto.campaign ?? client.name;
+
     const user = await this.builder.getPromiseUserEventClient(
       EventsNamesUserEnum.createOne,
       userDto,
     );
+    if (!user._id) {
+      throw new BadRequestException('User already exists');
+    }
     try {
       user.personalData = await this.builder.getPromisePersonEventClient(
         EventsNamesPersonEnum.createOne,
         {
           taxIdentificationValue: 0,
-          // Create person without same user request
           preRegistry: true,
           name: userDto.name,
           firstName: userDto.name,
@@ -489,22 +492,39 @@ export class AuthServiceController {
           user: user._id.toString(),
         } as unknown as PersonCreateDto,
       );
+
+      await this.builder.emitMessageEventClient(
+        EventsNamesMessageEnum.sendPreRegisterEmail,
+        {
+          destinyText: user.email,
+          vars: {
+            name: user.name,
+            email: user.email,
+            otp: user.otp, 
+            clientName: client.name,
+          },
+        },
+      );
+
       // TODO[hender-20/09/2024] Check why the active data is not saved in creation
       this.builder.emitUserEventClient(EventsNamesUserEnum.updateOne, {
         id: user._id.toString(),
         active: !!userDto.active,
       });
+
       return user;
     } catch (error) {
       await this.builder.getPromiseUserEventClient(
         EventsNamesUserEnum.deleteOneById,
         user._id.toString(),
       );
-      throw error;
+      //throw error;
+      throw new BadRequestException('Person already exists');
     }
   }
 
   @IsRefresh()
+  @NoCache()
   @ApiKeyCheck()
   @UseGuards(ApiKeyAuthGuard)
   @ApiSecurity('b2crypto-key')
@@ -525,6 +545,7 @@ export class AuthServiceController {
   }
 
   @ApiKeyCheck()
+  @NoCache()
   @Post('sign-in')
   @UseGuards(ApiKeyAuthGuard, LocalAuthGuard)
   @ApiSecurity('b2crypto-key')
@@ -547,6 +568,7 @@ export class AuthServiceController {
     });
   }
 
+  @NoCache()
   @AllowAnon()
   @MessagePattern(EventsNamesUserEnum.authorization)
   async authorizationEvent(
@@ -662,7 +684,9 @@ export class AuthServiceController {
 
   private async generateOtp(user: UserDocument, msOTP?: number) {
     if (!msOTP) {
-      msOTP = this.configService.get<number>('OTP_VALIDATION_TIME', 90000);
+      msOTP =
+        this.configService.get<number>('OTP_VALIDATION_TIME_SECONDS', 90) *
+        1000;
     }
     let otpSended = await this.getOtpGenerated(user.email);
     if (!otpSended) {

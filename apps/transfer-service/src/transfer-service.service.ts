@@ -76,6 +76,7 @@ import { FileDocument } from '@file/file/entities/mongoose/file.schema';
 import TransportEnum from '@common/common/enums/TransportEnum';
 import EventsNamesMessageEnum from 'apps/message-service/src/enum/events.names.message.enum';
 import { EnvironmentEnum } from '@common/common/enums/environment.enum';
+import EventsNamesUserEnum from 'apps/user-service/src/enum/events.names.user.enum';
 
 @Injectable()
 export class TransferServiceService
@@ -532,10 +533,10 @@ export class TransferServiceService
       accountToUpdate.amount += amount;
     }
     await this.accountService.updateOne(accountToUpdate);
-    /* this.builder.emitLeadEventClient(
-      EventsNamesLeadEnum.updateOne,
-      leadToUpdate,
-    ); */
+    this.builder.emitUserEventClient(
+      EventsNamesUserEnum.checkBalanceUser,
+      transferSaved.userAccount,
+    );
   }
 
   async updateLead(
@@ -1503,6 +1504,7 @@ export class TransferServiceService
     )} to ${this.printShortDate(params.end)}`;
     const headers = [
       'numeric_id',
+      'email',
       'user_id',
       'card_id',
       'card_type',
@@ -1547,7 +1549,7 @@ export class TransferServiceService
 
   private async sendEmailToList(promisesAttachments, subject) {
     const destiny = [
-      /* {
+      {
         name: 'Luisa',
         lastName: 'Fernanda',
         email: 'luisa.fernanda@b2crypto.com',
@@ -1561,7 +1563,7 @@ export class TransferServiceService
         name: 'Hamilton',
         lastName: 'Smith',
         email: 'devops@b2fintech.com',
-      }, */
+      },
       {
         name: 'Hender',
         lastName: 'Orlando',
@@ -1617,27 +1619,33 @@ export class TransferServiceService
     // File created
     this.addDataToFile(objBase, filename, true, true);
     Logger.log('File created', TransferServiceService.name);
+    const minSecWait = 2000;
     return new Promise((res) => {
       // Wait file creation
-      Logger.log(`Rows ${list.length}`, TransferServiceService.name);
-      let time = 0;
-      list.forEach((item) => {
-        const customItem = this.getCustomObj(headers, item);
-        // Added rows
-        const idx = 50 * (item.numericId ?? 1);
-        time += idx;
-        setTimeout(() => this.addDataToFile(customItem, filename, false), idx);
-      });
-      Logger.debug(time / 1000, 'Total seg');
       setTimeout(async () => {
-        // Wait file sending
-        this.responseFileContent({
-          filename,
-          fileUri,
-          listName,
-          res,
+        Logger.log(`Rows ${list.length}`, TransferServiceService.name);
+        let time = 0;
+        list.forEach((item) => {
+          const customItem = this.getCustomObj(headers, item);
+          // Added rows
+          const idx = 100 * (item.numericId ?? 1);
+          time += idx;
+          setTimeout(
+            () => this.addDataToFile(customItem, filename, false),
+            idx,
+          );
         });
-      }, 5000);
+        Logger.debug(time / 1000, 'Total seg');
+        setTimeout(async () => {
+          // Wait file sending
+          this.responseFileContent({
+            filename,
+            fileUri,
+            listName,
+            res,
+          });
+        }, time + minSecWait);
+      }, minSecWait);
     });
   }
   private responseFileContent({ filename, fileUri, listName, res }) {

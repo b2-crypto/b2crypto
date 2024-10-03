@@ -696,7 +696,7 @@ export class TransferServiceController implements GenericServiceController {
 
   @AllowAnon()
   @MessagePattern(EventsNamesTransferEnum.findAll)
-  findAllEvent(query: QuerySearchAnyDto, @Ctx() ctx?: RmqContext) {
+  findAllEvent(@Payload() query: QuerySearchAnyDto, @Ctx() ctx?: RmqContext) {
     CommonService.ack(ctx);
     return this.findAll(query);
   }

@@ -5,7 +5,7 @@ module.exports = {
       script: './dist-pm2/apps/b2crypto/main-microservices.js',
       watch: ['./dist-pm2/apps/b2crypto/main-microservices.js'],
       exp_backoff_restart_delay: 100,
-      instances: '1',
+      instances: 'max',
       exec_mode: 'cluster',
       //wait_ready: true,
       env: {
