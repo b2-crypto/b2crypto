@@ -165,6 +165,17 @@ export class MessageServiceService {
     );
   }
 
+  async sendPreRegisterEmail(message: MessageCreateDto) {
+    const emailMessage = new EmailMessageBuilder()
+      .setName('Pre-registration Confirmation')
+      .setBody('Thank you for pre-registering with B2pay.')
+      .setOriginText(this.getOriginEmail())
+      .setDestinyText(message.destinyText)
+      .setVars(message.vars)
+      .build();
+    return this.sendEmail(emailMessage, TemplatesMessageEnum.preRegister);
+  }
+
   async sendAdjustments(message: MessageCreateDto) {
     const getCard = await this.builder.getPromiseAccountEventClient(
       EventsNamesAccountEnum.findOneByCardId,
@@ -288,10 +299,11 @@ export class MessageServiceService {
       pageTitle: vars.name,
       headerColor: this.getHeaderColorForTemplate(template),
       headerTitle: vars.name,
-      logoUrl: process.env.LOGO_URL,
+      logoUrl: this.configService.getOrThrow('LOGO_URL'),
+      socialMediaIcons: this.configService.getOrThrow('SOCIAL_MEDIA_ICONS'),
+      socialMediaLinks: this.configService.getOrThrow('SOCIAL_MEDIA_LINKS'),
       vars: vars,
     };
-
     const rta = pug.renderFile(template, templateVars);
     return rta;
   }
