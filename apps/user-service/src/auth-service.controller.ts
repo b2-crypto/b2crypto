@@ -463,13 +463,13 @@ export class AuthServiceController {
   @ApiResponse(ResponseB2Crypto.getResponseSwagger(500, ActionsEnum.LOGIN)) */
   @Post('pre-registry')
   async preRegistryUser(@Body() userDto: UserPreRegisterDto, @Req() req) {
-    userDto.name =
-      userDto.name ?? userDto.username ?? userDto.email.split('@')[0];
+    userDto.name = userDto.name ?? userDto.username ?? userDto.email.split('@')[0];
     userDto.slugEmail = CommonService.getSlug(userDto.email);
     userDto.username = userDto.username ?? userDto.name;
     userDto.slugUsername = CommonService.getSlug(userDto.username);
     const client = await this.getClientFromPublicKey(req.clientApi, false);
     userDto.description = userDto.campaign ?? client.name;
+
     const user = await this.builder.getPromiseUserEventClient(
       EventsNamesUserEnum.createOne,
       userDto,
@@ -482,7 +482,6 @@ export class AuthServiceController {
         EventsNamesPersonEnum.createOne,
         {
           taxIdentificationValue: 0,
-          // Create person without same user request
           preRegistry: true,
           name: userDto.name,
           firstName: userDto.name,
@@ -493,11 +492,26 @@ export class AuthServiceController {
           user: user._id.toString(),
         } as unknown as PersonCreateDto,
       );
+
+      await this.builder.emitMessageEventClient(
+        EventsNamesMessageEnum.sendPreRegisterEmail,
+        {
+          destinyText: user.email,
+          vars: {
+            name: user.name,
+            email: user.email,
+            otp: user.otp, 
+            clientName: client.name,
+          },
+        },
+      );
+
       // TODO[hender-20/09/2024] Check why the active data is not saved in creation
       this.builder.emitUserEventClient(EventsNamesUserEnum.updateOne, {
         id: user._id.toString(),
         active: !!userDto.active,
       });
+
       return user;
     } catch (error) {
       await this.builder.getPromiseUserEventClient(
