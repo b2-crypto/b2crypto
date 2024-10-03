@@ -1,0 +1,72 @@
+doctype html
+html(lang="es")
+  include ./partials/head.pug
+  body
+    .container
+      include ./partials/header.pug
+      .content
+        h1.title Confirmación de registro
+        
+        p.greeting Estimada #{vars.name}
+        
+        p.welcome 
+          | ¡Bienvenida a B2pay!
+          br
+          | Gracias por registrarte con nosotros. Para completar tu registro y activar tu cuenta, por favor verifica tu 
+          | dirección de correo electrónico copiando y pegando el siguiente código en la casilla correspondiente.
+
+        table(width="100%", cellpadding="0", cellspacing="0", border="0", style="margin-top: 20px;")
+          tr
+            td(style="text-align: center;")
+              each digit in vars.otp.toString().split('')
+                span(style="background-color: #1b1330; color: white; font-size: 25px; padding: 8px 12px; border-radius: 8px; margin: 0 5px; display: inline-block;") #{digit}
+
+        p.thanks Gracias por confiar en B2pay.
+
+        hr.divider
+
+        p.support-info Si tienes alguna pregunta o necesitas asistencia, no dudes en contactarnos a través de support@b2fintech.com.
+
+      include ./partials/footer.pug
+
+style.
+  .container {
+    max-width: 600px;
+    margin: 0 auto;
+    font-family: Arial, sans-serif;
+  }
+  .content {
+    padding: 20px;
+    background-color: #ffffff;
+  }
+  .title {
+    color: #333;
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  .greeting, .welcome, .fallback-info, .thanks, .expiry-info, .support-info {
+    color: #333;
+    line-height: 1.6;
+  }
+  .verification-code {
+    display: flex;
+    justify-content: center;
+    margin: 30px 0;
+  }
+  .digit {
+    background-color: #1b1330;
+    color: white;
+    font-size: 24px;
+    padding: 10px 15px;
+    margin: 0 5px;
+    border-radius: 5px;
+  }
+  .button-container {
+    text-align: center;
+    margin: 30px 0;
+  }
+  .divider {
+    border: none;
+    border-top: 1px solid #e0e0e0;
+    margin: 30px 0;
+  }

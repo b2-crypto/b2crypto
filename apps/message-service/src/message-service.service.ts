@@ -1,5 +1,6 @@
 /* eslint-disable prettier/prettier */
 import { BuildersService } from '@builder/builders';
+import { EnvironmentEnum } from '@common/common/enums/environment.enum';
 import { QuerySearchAnyDto } from '@common/common/models/query_search-any.dto';
 import { CrmInterface } from '@crm/crm/entities/crm.interface';
 import { Crm } from '@crm/crm/entities/mongoose/crm.schema';
@@ -165,6 +166,17 @@ export class MessageServiceService {
     );
   }
 
+  async sendPreRegisterEmail(message: MessageCreateDto) {
+    const emailMessage = new EmailMessageBuilder()
+      .setName('Pre-registration Confirmation')
+      .setBody('Thank you for pre-registering with B2pay.')
+      .setOriginText(this.getOriginEmail())
+      .setDestinyText(message.destinyText)
+      .setVars(message.vars)
+      .build();
+    return this.sendEmail(emailMessage, TemplatesMessageEnum.preRegister);
+  }
+
   async sendAdjustments(message: MessageCreateDto) {
     const getCard = await this.builder.getPromiseAccountEventClient(
       EventsNamesAccountEnum.findOneByCardId,
@@ -254,6 +266,12 @@ export class MessageServiceService {
     template: TemplatesMessageEnum,
   ) {
     try {
+      if (
+        this.configService.get<string>('ENVIRONMENT') !== EnvironmentEnum.prod
+      ) {
+        Logger.debug(message.destinyText, 'Sended email');
+        return { success: true };
+      }
       const recipient = message.destinyText;
 
       if (!isEmail(recipient)) {
@@ -279,7 +297,7 @@ export class MessageServiceService {
 
       return { success: true };
     } catch (error) {
-      console.error('Error sending email:', error);
+      Logger.error(error, 'Error sending email:');
       return { success: false, error: error.message };
     }
   }
@@ -288,10 +306,11 @@ export class MessageServiceService {
       pageTitle: vars.name,
       headerColor: this.getHeaderColorForTemplate(template),
       headerTitle: vars.name,
-      logoUrl: process.env.LOGO_URL,
+      logoUrl: this.configService.getOrThrow('LOGO_URL'),
+      socialMediaIcons: this.configService.getOrThrow('SOCIAL_MEDIA_ICONS'),
+      socialMediaLinks: this.configService.getOrThrow('SOCIAL_MEDIA_LINKS'),
       vars: vars,
     };
-
     const rta = pug.renderFile(template, templateVars);
     return rta;
   }
