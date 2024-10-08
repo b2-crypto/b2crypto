@@ -62,6 +62,7 @@ import { StatsLeadResponseDto } from './dto/lead.stats.response.dto';
 import { LoginLeadDto } from './dto/login.lead.dto';
 import { MoveLeadDto } from './dto/move_lead.dto';
 import EventsNamesLeadEnum from './enum/events.names.lead.enum';
+import { CategoryUpdateDto } from '@category/category/dto/category.update.dto';
 
 @Injectable()
 export class LeadServiceService
@@ -1076,7 +1077,8 @@ export class LeadServiceService
       leadData.referralType = (
         lead.referralType?.id ?? leadData.referralType
       ).toString();
-      leadData.referralTypeObj = lead.referralType;
+      leadData.referralTypeObj =
+        lead.referralType as unknown as CategoryUpdateDto;
       leadData.crmDepartment = lead.crmDepartment ?? affiliate.crm.department;
       leadData.description = lead.description ?? leadData.description;
       leadData.country = lead.country ?? leadData.country;
