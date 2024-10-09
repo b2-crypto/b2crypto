@@ -5,68 +5,37 @@ html(lang="es")
     .container
       include ./partials/header.pug
       .content
-        h1.title Confirmación de registro
+        h1(style="color: #1b1330; text-align: center; margin-bottom: 20px;") ¡Gracias por registrarte! Tu tarjeta está cada día más cerca.
         
-        p.greeting Estimada #{vars.name}
+        p(style="margin-bottom: 15px;") Estimad@ #{vars.name},
         
-        p.welcome 
-          | ¡Bienvenida a B2pay!
-          br
-          | Gracias por registrarte con nosotros. Para completar tu registro y activar tu cuenta, por favor verifica tu 
-          | dirección de correo electrónico copiando y pegando el siguiente código en la casilla correspondiente.
+        p(style="margin-bottom: 15px;")
+          | Nos complace informarte que te has registrado exitosamente en la lista de espera para obtener tu B2card.
+          | ¡Estás un paso más cerca de disfrutar de una experiencia financiera sin límites!
+        
+        p(style="margin-bottom: 15px;")
+          | En breve recibirás más información sobre el lanzamiento, las características de tu B2card, y cómo ser de los
+          | primeros en activarla.
+        
+        .platform-info(style="background-color: #f9f9f9; padding: 20px; margin: 20px 0; border-radius: 8px;")
+          h2(style="color: #1b1330; margin-top: 0;") Conoce tu nueva plataforma
+          
+          p(style="font-weight: bold;") Funciones principales de B2pay:
+          
+          ol(style="padding-left: 20px;")
+            li Tarjeta disponible: Accede a una tarjeta física o virtual para tus transacciones diarias.
+            li Recarga de wallet: Recarga tu billetera digital de forma sencilla y sin complicaciones.
+            li Pagos globales: Realiza pagos de manera rápida y segura en cualquier parte del mundo.
+            li Maneja tus finanzas: Accede a un historial personalizado de todos tus movimientos financieros.
+          
+          p
+            | No esperes más y comienza a explorar todas las posibilidades que B2pay tiene para ofrecerte.
+            | Estamos aquí para ayudarte en cada paso del camino.
+        
+        p(style="margin-bottom: 15px;") Gracias por confiar en B2pay.
 
-        table(width="100%", cellpadding="0", cellspacing="0", border="0", style="margin-top: 20px;")
-          tr
-            td(style="text-align: center;")
-              each digit in vars.otp.toString().split('')
-                span(style="background-color: #1b1330; color: white; font-size: 25px; padding: 8px 12px; border-radius: 8px; margin: 0 5px; display: inline-block;") #{digit}
-
-        p.thanks Gracias por confiar en B2pay.
-
-        hr.divider
-
-        p.support-info Si tienes alguna pregunta o necesitas asistencia, no dudes en contactarnos a través de support@b2fintech.com.
+        p(style="margin-bottom: 15px;")
+          | Si tienes alguna pregunta o necesitas asistencia, no dudes en contactarnos a través de 
+          a(href="mailto:support@b2fintech.com" style="color: #1b1330;") support@b2fintech.com
 
       include ./partials/footer.pug
-
-style.
-  .container {
-    max-width: 600px;
-    margin: 0 auto;
-    font-family: Arial, sans-serif;
-  }
-  .content {
-    padding: 20px;
-    background-color: #ffffff;
-  }
-  .title {
-    color: #333;
-    text-align: center;
-    margin-bottom: 20px;
-  }
-  .greeting, .welcome, .fallback-info, .thanks, .expiry-info, .support-info {
-    color: #333;
-    line-height: 1.6;
-  }
-  .verification-code {
-    display: flex;
-    justify-content: center;
-    margin: 30px 0;
-  }
-  .digit {
-    background-color: #1b1330;
-    color: white;
-    font-size: 24px;
-    padding: 10px 15px;
-    margin: 0 5px;
-    border-radius: 5px;
-  }
-  .button-container {
-    text-align: center;
-    margin: 30px 0;
-  }
-  .divider {
-    border: none;
-    border-top: 1px solid #e0e0e0;
-    margin: 30px 0;
-  }

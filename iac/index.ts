@@ -30,6 +30,9 @@ const {
   AUTHORIZATIONS_BLOCK_BALANCE_PERCENTAGE,
   POMELO_WHITELISTED_IPS_CHECK,
   VPC_CIDR_BLOCK,
+  DESIRED_COUNT_TASK,
+  MAX_CAPACITY_AUTOSCALING,
+  MIN_CAPACITY_AUTOSCALING,
 } = VARS_ENV;
 const TAGS = {
   Company: COMPANY_NAME,
@@ -127,24 +130,6 @@ const ec2SecurityGroup = new aws.ec2.SecurityGroup(
       {
         fromPort: parseInt(REDIS_PORT),
         toPort: parseInt(REDIS_PORT),
-        protocol: 'TCP',
-        cidrBlocks: ['0.0.0.0/0'],
-      },
-      {
-        fromPort: SECRETS.POMELO_SFTP_PORT.apply((value) => parseInt(value)),
-        toPort: SECRETS.POMELO_SFTP_PORT.apply((value) => parseInt(value)),
-        protocol: 'TCP',
-        cidrBlocks: ['0.0.0.0/0'],
-      },
-      {
-        fromPort: parseInt(AWS_SES_PORT),
-        toPort: parseInt(AWS_SES_PORT),
-        protocol: 'TCP',
-        cidrBlocks: ['0.0.0.0/0'],
-      },
-      {
-        fromPort: 27015,
-        toPort: 27017,
         protocol: 'TCP',
         cidrBlocks: ['0.0.0.0/0'],
       },
@@ -456,7 +441,7 @@ const ecsFargateService = new awsx.ecs.FargateService(
         },
       })),
     },
-    desiredCount: 1,
+    desiredCount: parseInt(DESIRED_COUNT_TASK),
     deploymentMinimumHealthyPercent: 100,
     deploymentMaximumPercent: 200,
     enableEcsManagedTags: true,
@@ -523,8 +508,8 @@ export const cloudwatchDashboardData = {
 const appautoscalingTarget = new aws.appautoscaling.Target(
   `${COMPANY_NAME}-${PROJECT_NAME}-${STACK}`,
   {
-    maxCapacity: 10,
-    minCapacity: 1,
+    maxCapacity: parseInt(MAX_CAPACITY_AUTOSCALING),
+    minCapacity: parseInt(MIN_CAPACITY_AUTOSCALING),
     resourceId: pulumi.interpolate`service/${ecsCluster.name}/${ecsFargateService.service.name}`,
     scalableDimension: 'ecs:service:DesiredCount',
     serviceNamespace: 'ecs',

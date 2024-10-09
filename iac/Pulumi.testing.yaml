@@ -1,9 +1,9 @@
 config:
   aws:accessKey:
-    secure: AAABAOY2m6djdDXvlg341meTbdZdVl0E+OJYIl+NEv4TrFgliPdTg2IrQxMuP/EcDLHAjg==
+    secure: AAABANFN96L7pYrsrliJWkmeE2iphVj2Gv/208MJfgTxeeTldfc+2eCCBI1VfPZd7wPk6w==
   aws:region: us-east-2
   aws:secretKey:
-    secure: AAABADpzt2ACxtwPPJ2sveqXxFYTMQNx3664NkqXq1fWRRjEbqEq27jcRAR7udybTqzhXwJt8nrx/bjM59XRfISk1TVWTJyy
+    secure: AAABAA1qzEwsWx+AjMmeghuBHgI1sfDlSGBZk6b1GcpLhYz1Ch79yLjufbqM+M4Hz0OK72aA6iHK9bHF4jx1vMEczkOPkAJD
   b2crypto-iac:API_KEY_EMAIL_APP: ""
   b2crypto-iac:APP_NAME: B2Crypto
   b2crypto-iac:AUTH_EXPIRE_IN: 8h
@@ -84,3 +84,22 @@ config:
     secure: AAABAJFdVXnOY/vvAjZNhf0vkUSTpcG68T8LZr0s4LAoQWSH10IJzZvnqSOFhVGY/69AKGSCVQkbl/a7uB1QWT5XcZQ=
   mongodbatlas:publicKey:
     secure: AAABAKqpIxOQXjK5DBmtjFI4EYf36+BuzThEVIYu+nyFAR+AAka01g==
+  b2crypto-iac:ETL_DATABASE_NAME:
+    secure: AAABAJ8nf7hkxMd/MufFj42vLax8ufHOgHd0qmxtI1R1lwZ6vDA=
+  b2crypto-iac:ETL_DATABASE_USERNAME:
+    secure: AAABANN92vYyuGFGFdv+T8P5tobczju1N04QR58E/obdbjT2/OYZ/gVjhkpwBIoi
+  b2crypto-iac:ETL_DATABASE_PASSWORD:
+    secure: AAABAMz4QtnzZ5YoLdya+0H9Wn2pYkL0bpfcXt1lcpsNJ2NQLtnDt5Kg/YvfJqVc4BCoLh5SivFu6Gx0USc=
+  b2crypto-iac:ETL_POSTGRE_PASSWORD:
+    secure: AAABADYyieMeOSF387oMxFH1r54+oUoWukKmnGOjzuWsKXO5oZdAKtumGSjulvmZN4eD8g0pnS2Up8HBs3E=
+  b2crypto-iac:ETL_POSTGRE_USERNAME:
+    secure: AAABAEQeSk6LNVuWTmuoUdPERG36BjOodP8zTuuPitiZlLqU6gM1IRLSTrk+5Ttw
+  b2crypto-iac:ETL_KESTRA_USERNAME:
+    secure: AAABAI46s/kho7qMxMIcRn3BCwp2e6e6BufpNo3uBZAOheCHNtDcrYkOn2bddw==
+  b2crypto-iac:ETL_KESTRA_PASSWORD:
+    secure: AAABAE46H/oUzkXhpSeSBGu+NanfJhr6Ci4HrgIuP495GAczGwU5JL/G+dg=
+  b2crypto-iac:ETL_POSTGRE_DATABASE:
+    secure: AAABAHy/EmBIanVcDpyt6vjVOdsWkKigt8sc2Xq95PcRxoR2tPg=
+  b2crypto-iac:MAX_CAPACITY_AUTOSCALING: "3"
+  b2crypto-iac:MIN_CAPACITY_AUTOSCALING: "1"
+  b2crypto-iac:DESIRED_COUNT_TASK: "1"

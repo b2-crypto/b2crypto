@@ -500,7 +500,6 @@ export class AuthServiceController {
           vars: {
             name: user.name,
             email: user.email,
-            otp: user.otp, 
             clientName: client.name,
           },
         },
