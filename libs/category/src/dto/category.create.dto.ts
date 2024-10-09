@@ -4,11 +4,13 @@ import {
   IsArray,
   IsEmpty,
   IsEnum,
+  IsMongoId,
   IsNumber,
   IsOptional,
   IsString,
 } from 'class-validator';
 import TagEnum from '@common/common/enums/TagEnum';
+import { ObjectId } from 'mongoose';
 
 export class CategoryCreateDto extends CreateAnyDto {
   @IsString()
@@ -38,4 +40,8 @@ export class CategoryCreateDto extends CreateAnyDto {
   @IsString()
   @IsOptional()
   valueText?: string;
+
+  @IsMongoId()
+  @IsOptional()
+  categoryParent?: ObjectId;
 }
