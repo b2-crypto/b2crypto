@@ -3,7 +3,7 @@ name: Deploy
 on:
   push:
     branches:
-      - main
+      - master
 
 env:
   AWS_REGION: ${{ vars.AWS_REGION }}
@@ -21,21 +21,21 @@ jobs:
     steps:
       - name: Check out the repository
         uses: actions/checkout@v3
-  
+
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-access-key-id: ${{ env.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ env.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
-  
+
       - name: Login to Amazon ECR Public
         id: login-ecr-public
         uses: aws-actions/amazon-ecr-login@v2
         with:
           mask-password: 'false'
           registry-type: public
-  
+
       - name: Build, tag, and push docker image to Amazon ECR Public
         env:
           REGISTRY: ${{ steps.login-ecr-public.outputs.registry }}
@@ -45,9 +45,9 @@ jobs:
         run: |
           docker build -t $REGISTRY/$REGISTRY_ALIAS/$REPOSITORY:$IMAGE_TAG .
           docker push $REGISTRY/$REGISTRY_ALIAS/$REPOSITORY:$IMAGE_TAG
-#          docker build -t $IMAGE_TAG .
-#          docker tag $IMAGE_TAG:latest $REGISTRY/$REGISTRY_ALIAS/$IMAGE_TAG:latest
-#          docker push $REGISTRY/$REGISTRY_ALIAS/$REPOSITORY:latest
+  #          docker build -t $IMAGE_TAG .
+  #          docker tag $IMAGE_TAG:latest $REGISTRY/$REGISTRY_ALIAS/$IMAGE_TAG:latest
+  #          docker push $REGISTRY/$REGISTRY_ALIAS/$REPOSITORY:latest
   deploy:
     name: Deploy the new Docker image to ECS
     runs-on: ubuntu-latest
