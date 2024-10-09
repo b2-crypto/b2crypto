@@ -359,7 +359,10 @@ export class MessageServiceController implements GenericServiceController {
     try {
       await this.messageService.sendPreRegisterEmail(message);
     } catch (err) {
-      Logger.error(err, `${MessageServiceController.name}-sendPreRegisterEmail`);
+      Logger.error(
+        err,
+        `${MessageServiceController.name}-sendPreRegisterEmail`,
+      );
     }
   }
 }

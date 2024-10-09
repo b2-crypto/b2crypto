@@ -463,7 +463,8 @@ export class AuthServiceController {
   @ApiResponse(ResponseB2Crypto.getResponseSwagger(500, ActionsEnum.LOGIN)) */
   @Post('pre-registry')
   async preRegistryUser(@Body() userDto: UserPreRegisterDto, @Req() req) {
-    userDto.name = userDto.name ?? userDto.username ?? userDto.email.split('@')[0];
+    userDto.name =
+      userDto.name ?? userDto.username ?? userDto.email.split('@')[0];
     userDto.slugEmail = CommonService.getSlug(userDto.email);
     userDto.username = userDto.username ?? userDto.name;
     userDto.slugUsername = CommonService.getSlug(userDto.username);
