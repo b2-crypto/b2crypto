@@ -1,9 +1,9 @@
 config:
   aws:accessKey:
-    secure: AAABAIypp264GyOvhy+kyYyCi0uFIYPdv0W04w/LAmXoJH+0Edm6GpoJbIHeoHdt/h2JXg==
+    secure: AAABAIf0OYB18DiROL+wnq8yCdK2oI/8eVww0h/1V02FmUydmFpY5VyfIVEDjeZdpszRUw==
   aws:region: us-east-2
   aws:secretKey:
-    secure: AAABAFYQPkvzV/XJVxiAcdqQ7TkWs2xrYlB4T6K4cvK3PjHtAxprCwf7Rz/A2GJRekkTI7yV4fNxoPstJ1XG6/sVAMHuqZfC
+    secure: AAABAEBTOAo/CnFolO0QROAI5njNH3UbrfGaz49hwseEil92STls+LS0JLeJzE0YMT+yYppP0Zo2HjnHCOGCflgusxh5A6NP
   b2crypto-iac:API_KEY_EMAIL_APP: ""
   b2crypto-iac:APP_NAME: B2Crypto
   b2crypto-iac:AUTH_EXPIRE_IN: 8h
@@ -84,3 +84,6 @@ config:
     secure: AAABABxe6kP4YoDTfdceRhQ40D1zgodMLKSN8l3+yr/WnopAI1991UxS3isxr0IowP9wwlHMllhxKk8d6wDdK6aPAvs=
   mongodbatlas:publicKey:
     secure: AAABADdHBxQZloxXS5GGJ5N6Pb6VKKrMU8nQFygdgttkajEjobRCnA==
+  b2crypto-iac:MAX_CAPACITY_AUTOSCALING: "3"
+  b2crypto-iac:MIN_CAPACITY_AUTOSCALING: "1"
+  b2crypto-iac:DESIRED_COUNT_TASK: "1"

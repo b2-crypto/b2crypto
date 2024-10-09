@@ -40,6 +40,7 @@ import EventsNamesCategoryEnum from './enum/events.names.category.enum';
 import { ApiKeyAuthGuard } from '@auth/auth/guards/api.key.guard';
 import { SwaggerSteakeyConfigEnum } from 'libs/config/enum/swagger.stakey.config.enum';
 import { NoCache } from '@common/common/decorators/no-cache.decorator';
+import ResourcesEnum from '@common/common/enums/ResourceEnum';
 
 @ApiTags('CATEGORY')
 @Controller('category')
@@ -289,6 +290,61 @@ export class CategoryServiceController implements GenericServiceController {
   @NoCache()
   async docIdTypeList(@Query() query: QuerySearchAnyDto) {
     return this.categoryListByType(query, 'doc_type');
+  }
+
+  @ApiKeyCheck()
+  @Get('levels')
+  // @CheckPoliciesAbility(new PolicyHandlerCategoryRead())
+  async listLevels() {
+    const rta = [];
+    const levels = await this.categoryService.getAll({
+      where: { type: TagEnum.LEVEL },
+    });
+    for (const level of levels.list) {
+      level['options'] = [];
+      const customLevels = await this.categoryService.getAll({
+        where: {
+          categoryParent: level.id ?? level._id,
+          type: TagEnum.CUSTOM_LEVEL,
+        },
+      });
+
+      for (const customLevel of customLevels.list) {
+        const customRules = await this.categoryService.getAll({
+          where: {
+            categoryParent: customLevel.id ?? customLevel._id,
+            type: TagEnum.CUSTOM_RULE,
+          },
+        });
+        customLevel['rules'] = customRules.list.map((rule) => {
+          return {
+            _id: rule._id,
+            name: rule.name,
+            description: rule.description,
+            valueNumber: rule.valueNumber,
+            valueText: rule.valueText,
+          };
+        });
+        level['options'].push({
+          _id: customLevel._id,
+          name: customLevel.name,
+          rules: customLevel['rules'],
+          description: customLevel.description,
+          valueNumber: customLevel.valueNumber,
+          valueText: customLevel.valueText,
+        });
+      }
+      rta.push({
+        _id: level._id,
+        name: level.name,
+        variants: level['options'],
+        description: level.description,
+        valueNumber: level.valueNumber,
+        valueText: level.valueText,
+      });
+    }
+
+    return rta;
   }
 
   @Get(':categoryID')
