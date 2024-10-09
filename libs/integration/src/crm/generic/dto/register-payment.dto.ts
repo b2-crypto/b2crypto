@@ -1,2 +1,1 @@
-
-export interface RegisterPaymentDto{}
+export interface RegisterPaymentDto {}

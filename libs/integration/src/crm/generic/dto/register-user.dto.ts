@@ -1,2 +1,1 @@
-
-export interface RegisterUserDto{}
+export interface RegisterUserDto {}

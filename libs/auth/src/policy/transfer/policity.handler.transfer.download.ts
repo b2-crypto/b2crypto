@@ -5,9 +5,6 @@ import { IPolicyHandler } from '../policy.handler.ability';
 
 export class PolicyHandlerTransferDownload implements IPolicyHandler {
   handle(ability: AppAbility) {
-    return ability.can(
-      ActionsEnum.DOWNLOAD,
-      ResourcesEnum.TRANSFER,
-    );
+    return ability.can(ActionsEnum.DOWNLOAD, ResourcesEnum.TRANSFER);
   }
 }
