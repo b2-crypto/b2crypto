@@ -18,6 +18,7 @@ import {
 import { ResponsePaginator } from '@common/common/interfaces/response-pagination.interface';
 import { Account } from '@account/account/entities/mongoose/account.schema';
 import TypesAccountEnum from '@account/account/enum/types.account.enum';
+import { UserLevelUpDto } from '@user/user/dto/user.level.up.dto';
 
 @Injectable()
 export class UserServiceService {
@@ -210,6 +211,13 @@ export class UserServiceService {
     delete updateRequest.id;
     delete updateRequest._id;
     return this.lib.update(id, updateRequest);
+  }
+
+  levelUp(userLevelUpDto: UserLevelUpDto) {
+    // check physical cards
+    // check value to pay
+    // balance is enough
+    throw 'The user does not have enough money to level up';
   }
 
   async download() {
