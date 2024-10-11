@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -22,7 +23,6 @@ import {
 import { AllowAnon } from '@auth/auth/decorators/allow-anon.decorator';
 import { ApiKeyCheck } from '@auth/auth/decorators/api-key-check.decorator';
 import { ApiKeyAuthGuard } from '@auth/auth/guards/api.key.guard';
-import { BuildersService } from '@builder/builders';
 import { CommonService } from '@common/common';
 import { NoCache } from '@common/common/decorators/no-cache.decorator';
 import ActionsEnum from '@common/common/enums/ActionEnum';
@@ -46,14 +46,12 @@ import { SwaggerSteakeyConfigEnum } from 'libs/config/enum/swagger.stakey.config
 import { ObjectId } from 'mongodb';
 import EventsNamesUserEnum from './enum/events.names.user.enum';
 import { UserServiceService } from './user-service.service';
+import { UserLevelUpDto } from '@user/user/dto/user.level.up.dto';
 
 @ApiTags('USER')
 @Controller('users')
 export class UserServiceController implements GenericServiceController {
-  constructor(
-    private readonly userService: UserServiceService,
-    private readonly builder: BuildersService,
-  ) {}
+  constructor(private readonly userService: UserServiceService) {}
 
   @NoCache()
   @Get('all')
@@ -125,6 +123,16 @@ export class UserServiceController implements GenericServiceController {
     createUsersDto: UserRegisterDto[],
   ) {
     return this.userService.newManyUser(createUsersDto);
+  }
+
+  @Patch('level-up')
+  // @CheckPoliciesAbility(new PolicyHandlerUserUpdate())
+  async levelUp(@Body() userLevelUpDto: UserLevelUpDto) {
+    try {
+      return this.userService.levelUp(userLevelUpDto);
+    } catch (error) {
+      throw new BadRequestException(error);
+    }
   }
 
   @Patch()
