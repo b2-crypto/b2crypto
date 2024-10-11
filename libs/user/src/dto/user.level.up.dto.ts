@@ -7,4 +7,6 @@ export class UserLevelUpDto {
   id?: ObjectId;
   @IsMongoId()
   level: ObjectId;
+  @IsMongoId()
+  wallet: ObjectId;
 }
