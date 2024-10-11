@@ -2,38 +2,43 @@ import * as aws from '@pulumi/aws';
 import * as awsx from '@pulumi/awsx';
 import * as pulumi from '@pulumi/pulumi';
 import { randomBytes } from 'crypto';
-import { SECRETS, VARS_ENV } from './secrets';
-
-const {
-  COMPANY_NAME,
-  PROJECT_NAME,
-  STACK,
-  CREATED_BY,
-  ENVIRONMENT,
-  PORT,
+import {
+  API_KEY_EMAIL_APP,
   APP_NAME,
-  GOOGLE_2FA,
+  AUTH_EXPIRE_IN,
+  AUTH_MAX_SECONDS_TO_REFRESH,
+  AUTHORIZATIONS_BLOCK_BALANCE_PERCENTAGE,
+  AWS_SES_PORT,
+  CACHE_MAX_ITEMS,
+  CACHE_TTL,
+  COMPANY_NAME,
+  CREATED_BY,
   DATABASE_NAME,
+  DEFAULT_CURRENCY_CONVERSION_COIN,
+  DESIRED_COUNT_TASK,
+  ENVIRONMENT,
+  GOOGLE_2FA,
+  LOGO_URL,
+  MAX_CAPACITY_AUTOSCALING,
+  MIN_CAPACITY_AUTOSCALING,
+  MQ_DEPLOYMENT_MODE,
+  POMELO_WHITELISTED_IPS_CHECK,
+  PORT,
+  PROJECT_NAME,
+  RABBIT_MQ_INSTANCE_TYPE,
   RABBIT_MQ_PORT,
   RABBIT_MQ_QUEUE,
   REDIS_PORT,
-  CACHE_TTL,
-  CACHE_MAX_ITEMS,
-  AUTH_MAX_SECONDS_TO_REFRESH,
-  AUTH_EXPIRE_IN,
-  API_KEY_EMAIL_APP,
-  URL_API_EMAIL_APP,
+  SECRETS,
+  SOCIAL_MEDIA_ICONS,
+  SOCIAL_MEDIA_LINKS,
+  STACK,
   TESTING,
   TZ,
-  AWS_SES_PORT,
-  DEFAULT_CURRENCY_CONVERSION_COIN,
-  AUTHORIZATIONS_BLOCK_BALANCE_PERCENTAGE,
-  POMELO_WHITELISTED_IPS_CHECK,
+  URL_API_EMAIL_APP,
   VPC_CIDR_BLOCK,
-  DESIRED_COUNT_TASK,
-  MAX_CAPACITY_AUTOSCALING,
-  MIN_CAPACITY_AUTOSCALING,
-} = VARS_ENV;
+} from './secrets';
+
 const TAGS = {
   Company: COMPANY_NAME,
   Projects: PROJECT_NAME,
@@ -189,6 +194,41 @@ export const ec2SecurityGroupData = {
   ingress: ec2SecurityGroup.ingress,
 };
 
+const mqBrokerRabbitMQ = new aws.mq.Broker(
+  `${COMPANY_NAME}-${PROJECT_NAME}-${STACK}-rabbit-mq`,
+  {
+    brokerName: `${COMPANY_NAME}-${PROJECT_NAME}-${STACK}-rabbit-mq`,
+    engineType: 'RABBITMQ',
+    engineVersion: '3.13',
+    hostInstanceType: RABBIT_MQ_INSTANCE_TYPE,
+    publiclyAccessible: true,
+    users: [
+      {
+        username: SECRETS.RABBIT_MQ_USERNAME,
+        password: SECRETS.RABBIT_MQ_PASSWORD,
+      },
+    ],
+    subnetIds:
+      MQ_DEPLOYMENT_MODE === 'SINGLE_INSTANCE'
+        ? ec2Vpc.publicSubnetIds.apply((subnets) => [...subnets].slice(0, 1))
+        : [],
+    logs: {
+      general: true,
+      audit: false,
+    },
+    autoMinorVersionUpgrade: true,
+    deploymentMode: MQ_DEPLOYMENT_MODE,
+    authenticationStrategy: 'SIMPLE',
+    tags: TAGS,
+  },
+);
+
+export const mqBrokerRabbitMQData = {
+  id: mqBrokerRabbitMQ.id,
+  brokerName: mqBrokerRabbitMQ.brokerName,
+  instances: mqBrokerRabbitMQ.instances,
+};
+
 const ecsCluster = new aws.ecs.Cluster(`${COMPANY_NAME}`, {
   name: `${STACK}`,
   tags: TAGS,
@@ -268,7 +308,7 @@ const ecsFargateService = new awsx.ecs.FargateService(
       family: `${COMPANY_NAME}-${PROJECT_NAME}-${STACK}`,
       cpu: '1024',
       memory: '2048',
-      container: SECRETS.apply((secrets) => ({
+      container: {
         name: `${PROJECT_NAME}`,
         image: ecrImageData.imageUri,
         cpu: 1024,
@@ -282,33 +322,40 @@ const ecsFargateService = new awsx.ecs.FargateService(
           { name: 'DATABASE_NAME', value: DATABASE_NAME },
           {
             name: 'DATABASE_URL',
-            value: secrets.DATABASE_URL,
+            value: SECRETS.DATABASE_URL,
           },
           {
             name: 'RABBIT_MQ_HOST',
-            value: secrets.RABBIT_MQ_HOST,
+            value: mqBrokerRabbitMQ.instances.apply(
+              (instances) =>
+                instances[0].endpoints[0]
+                  ?.split('//')
+                  .pop()
+                  ?.split(':')
+                  .shift() as string,
+            ),
           },
           { name: 'RABBIT_MQ_PORT', value: RABBIT_MQ_PORT },
           { name: 'RABBIT_MQ_QUEUE', value: RABBIT_MQ_QUEUE },
           {
             name: 'RABBIT_MQ_USERNAME',
-            value: secrets.RABBIT_MQ_USERNAME,
+            value: SECRETS.RABBIT_MQ_USERNAME,
           },
           {
             name: 'RABBIT_MQ_PASSWORD',
-            value: secrets.RABBIT_MQ_PASSWORD,
+            value: SECRETS.RABBIT_MQ_PASSWORD,
           },
           {
             name: 'REDIS_HOST',
-            value: secrets.REDIS_HOST,
+            value: SECRETS.REDIS_HOST,
           },
           {
             name: 'REDIS_USERNAME',
-            value: secrets.REDIS_USERNAME,
+            value: SECRETS.REDIS_USERNAME,
           },
           {
             name: 'REDIS_PASSWORD',
-            value: secrets.REDIS_PASSWORD,
+            value: SECRETS.REDIS_PASSWORD,
           },
           { name: 'REDIS_PORT', value: REDIS_PORT },
           { name: 'CACHE_TTL', value: CACHE_TTL },
@@ -319,7 +366,7 @@ const ecsFargateService = new awsx.ecs.FargateService(
           },
           {
             name: 'AUTH_SECRET',
-            value: secrets.AUTH_SECRET,
+            value: SECRETS.AUTH_SECRET,
           },
           { name: 'AUTH_EXPIRE_IN', value: AUTH_EXPIRE_IN },
           {
@@ -334,20 +381,20 @@ const ecsFargateService = new awsx.ecs.FargateService(
           { name: 'TZ', value: TZ },
           {
             name: 'AWS_SES_FROM_DEFAULT',
-            value: secrets.AWS_SES_FROM_DEFAULT,
+            value: SECRETS.AWS_SES_FROM_DEFAULT,
           },
           {
             name: 'AWS_SES_HOST',
-            value: secrets.AWS_SES_HOST,
+            value: SECRETS.AWS_SES_HOST,
           },
           { name: 'AWS_SES_PORT', value: AWS_SES_PORT },
           {
             name: 'AWS_SES_USERNAME',
-            value: secrets.AWS_SES_USERNAME,
+            value: SECRETS.AWS_SES_USERNAME,
           },
           {
             name: 'AWS_SES_PASSWORD',
-            value: secrets.AWS_SES_PASSWORD,
+            value: SECRETS.AWS_SES_PASSWORD,
           },
           {
             name: 'DEFAULT_CURRENCY_CONVERSION_COIN',
@@ -359,7 +406,7 @@ const ecsFargateService = new awsx.ecs.FargateService(
           },
           {
             name: 'POMELO_SIGNATURE_SECRET_KEY_DIC',
-            value: secrets.POMELO_SIGNATURE_SECRET_KEY_DIC,
+            value: SECRETS.POMELO_SIGNATURE_SECRET_KEY_DIC,
           },
           {
             name: 'POMELO_WHITELISTED_IPS_CHECK',
@@ -367,51 +414,63 @@ const ecsFargateService = new awsx.ecs.FargateService(
           },
           {
             name: 'POMELO_WHITELISTED_IPS',
-            value: secrets.POMELO_WHITELISTED_IPS,
+            value: SECRETS.POMELO_WHITELISTED_IPS,
           },
           {
             name: 'POMELO_CLIENT_ID',
-            value: secrets.POMELO_CLIENT_ID,
+            value: SECRETS.POMELO_CLIENT_ID,
           },
           {
             name: 'POMELO_SECRET_ID',
-            value: secrets.POMELO_SECRET_ID,
+            value: SECRETS.POMELO_SECRET_ID,
           },
           {
             name: 'POMELO_AUDIENCE',
-            value: secrets.POMELO_AUDIENCE,
+            value: SECRETS.POMELO_AUDIENCE,
           },
           {
             name: 'POMELO_AUTH_GRANT_TYPE',
-            value: secrets.POMELO_AUTH_GRANT_TYPE,
+            value: SECRETS.POMELO_AUTH_GRANT_TYPE,
           },
           {
             name: 'POMELO_API_URL',
-            value: secrets.POMELO_API_URL,
+            value: SECRETS.POMELO_API_URL,
           },
           {
             name: 'CURRENCY_CONVERSION_API_KEY',
-            value: secrets.CURRENCY_CONVERSION_API_KEY,
+            value: SECRETS.CURRENCY_CONVERSION_API_KEY,
           },
           {
             name: 'CURRENCY_CONVERSION_API_URL',
-            value: secrets.CURRENCY_CONVERSION_API_URL,
+            value: SECRETS.CURRENCY_CONVERSION_API_URL,
           },
           {
             name: 'POMELO_SFTP_HOST',
-            value: secrets.POMELO_SFTP_HOST,
+            value: SECRETS.POMELO_SFTP_HOST,
           },
           {
             name: 'POMELO_SFTP_PORT',
-            value: secrets.POMELO_SFTP_PORT,
+            value: SECRETS.POMELO_SFTP_PORT,
           },
           {
             name: 'POMELO_SFTP_USR',
-            value: secrets.POMELO_SFTP_USR,
+            value: SECRETS.POMELO_SFTP_USR,
           },
           {
             name: 'POMELO_SFTP_PASSPHRASE',
-            value: secrets.POMELO_SFTP_PASSPHRASE,
+            value: SECRETS.POMELO_SFTP_PASSPHRASE,
+          },
+          {
+            name: 'LOGO_URL',
+            value: LOGO_URL,
+          },
+          {
+            name: 'SOCIAL_MEDIA_ICONS',
+            value: SOCIAL_MEDIA_ICONS,
+          },
+          {
+            name: 'SOCIAL_MEDIA_LINKS',
+            value: SOCIAL_MEDIA_LINKS,
           },
         ],
         portMappings: [
@@ -439,7 +498,7 @@ const ecsFargateService = new awsx.ecs.FargateService(
             'awslogs-stream-prefix': 'ecs-task',
           },
         },
-      })),
+      },
     },
     desiredCount: parseInt(DESIRED_COUNT_TASK),
     deploymentMinimumHealthyPercent: 100,

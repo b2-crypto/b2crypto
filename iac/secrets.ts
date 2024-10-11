@@ -86,37 +86,50 @@ export const SECRETS = pulumi
     }),
   );
 
-export const VARS_ENV = {
-  COMPANY_NAME: 'b2crypto',
-  PROJECT_NAME: 'monolith',
-  STACK: config.require('STACK'),
-  CREATED_BY: 'Pulumi IaC',
-  ENVIRONMENT: config.require('ENVIRONMENT'),
-  PORT: config.require('PORT'),
-  APP_NAME: config.require('APP_NAME'),
-  GOOGLE_2FA: config.require('GOOGLE_2FA'),
-  DATABASE_NAME: config.require('DATABASE_NAME'),
-  RABBIT_MQ_PORT: config.require('RABBIT_MQ_PORT'),
-  RABBIT_MQ_QUEUE: config.require('RABBIT_MQ_QUEUE'),
-  REDIS_PORT: config.require('REDIS_PORT'),
-  CACHE_TTL: config.require('CACHE_TTL'),
-  CACHE_MAX_ITEMS: config.require('CACHE_MAX_ITEMS'),
-  AUTH_MAX_SECONDS_TO_REFRESH: config.require('AUTH_MAX_SECONDS_TO_REFRESH'),
-  AUTH_EXPIRE_IN: config.require('AUTH_EXPIRE_IN'),
-  API_KEY_EMAIL_APP: config.require('API_KEY_EMAIL_APP'),
-  URL_API_EMAIL_APP: config.require('URL_API_EMAIL_APP'),
-  TESTING: config.require('TESTING'),
-  TZ: config.require('TZ'),
-  AWS_SES_PORT: config.require('AWS_SES_PORT'),
-  DEFAULT_CURRENCY_CONVERSION_COIN: config.require(
-    'DEFAULT_CURRENCY_CONVERSION_COIN',
-  ),
-  AUTHORIZATIONS_BLOCK_BALANCE_PERCENTAGE: config.require(
-    'AUTHORIZATIONS_BLOCK_BALANCE_PERCENTAGE',
-  ),
-  POMELO_WHITELISTED_IPS_CHECK: config.require('POMELO_WHITELISTED_IPS_CHECK'),
-  VPC_CIDR_BLOCK: config.require('VPC_CIDR_BLOCK'),
-  DESIRED_COUNT_TASK: config.require('DESIRED_COUNT_TASK'),
-  MAX_CAPACITY_AUTOSCALING: config.require('MAX_CAPACITY_AUTOSCALING'),
-  MIN_CAPACITY_AUTOSCALING: config.require('MIN_CAPACITY_AUTOSCALING'),
-};
+export const COMPANY_NAME = 'b2crypto';
+export const PROJECT_NAME = 'monolith';
+export const STACK = config.require('STACK');
+export const CREATED_BY = 'Pulumi IaC';
+export const ENVIRONMENT = config.require('ENVIRONMENT');
+export const PORT = config.require('PORT');
+export const APP_NAME = config.require('APP_NAME');
+export const GOOGLE_2FA = config.require('GOOGLE_2FA');
+export const DATABASE_NAME = config.require('DATABASE_NAME');
+export const RABBIT_MQ_PORT = config.require('RABBIT_MQ_PORT');
+export const RABBIT_MQ_QUEUE = config.require('RABBIT_MQ_QUEUE');
+export const REDIS_PORT = config.require('REDIS_PORT');
+export const CACHE_TTL = config.require('CACHE_TTL');
+export const CACHE_MAX_ITEMS = config.require('CACHE_MAX_ITEMS');
+export const AUTH_MAX_SECONDS_TO_REFRESH = config.require(
+  'AUTH_MAX_SECONDS_TO_REFRESH',
+);
+export const AUTH_EXPIRE_IN = config.require('AUTH_EXPIRE_IN');
+export const API_KEY_EMAIL_APP = config.require('API_KEY_EMAIL_APP');
+export const URL_API_EMAIL_APP = config.require('URL_API_EMAIL_APP');
+export const TESTING = config.require('TESTING');
+export const TZ = config.require('TZ');
+export const AWS_SES_PORT = config.require('AWS_SES_PORT');
+export const DEFAULT_CURRENCY_CONVERSION_COIN = config.require(
+  'DEFAULT_CURRENCY_CONVERSION_COIN',
+);
+export const AUTHORIZATIONS_BLOCK_BALANCE_PERCENTAGE = config.require(
+  'AUTHORIZATIONS_BLOCK_BALANCE_PERCENTAGE',
+);
+export const POMELO_WHITELISTED_IPS_CHECK = config.require(
+  'POMELO_WHITELISTED_IPS_CHECK',
+);
+export const VPC_CIDR_BLOCK = config.require('VPC_CIDR_BLOCK');
+export const DESIRED_COUNT_TASK = config.require('DESIRED_COUNT_TASK');
+export const MAX_CAPACITY_AUTOSCALING = config.require(
+  'MAX_CAPACITY_AUTOSCALING',
+);
+export const MIN_CAPACITY_AUTOSCALING = config.require(
+  'MIN_CAPACITY_AUTOSCALING',
+);
+export const LOGO_URL = config.require('LOGO_URL');
+export const SOCIAL_MEDIA_ICONS = config.require('SOCIAL_MEDIA_ICONS');
+export const SOCIAL_MEDIA_LINKS = config.require('SOCIAL_MEDIA_LINKS');
+export const RABBIT_MQ_INSTANCE_TYPE = config.require(
+  'RABBIT_MQ_INSTANCE_TYPE',
+);
+export const MQ_DEPLOYMENT_MODE = config.require('MQ_DEPLOYMENT_MODE');
