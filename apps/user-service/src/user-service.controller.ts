@@ -321,7 +321,7 @@ export class UserServiceController implements GenericServiceController {
       },
     });
     if (!users.totalElements) {
-      throw new NotFoundException('Not found user ApiKey');
+      throw new NotFoundException(`Not found user ApiKey "${publicKey}"`);
     }
     return users.list[0];
   }
