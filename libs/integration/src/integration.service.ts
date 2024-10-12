@@ -20,6 +20,7 @@ import { IntegrationCryptoService } from './crypto/generic/integration.crypto.se
 import { IntegrationIdentityEnum } from './identity/generic/domain/integration.identity.enum';
 import { IntegrationIdentityService } from './identity/generic/integration.identity.service';
 import { CACHE_MANAGER, Cache } from '@nestjs/cache-manager';
+import { FireblocksIntegrationService } from './crypto/fireblocks/fireblocks-integration.service';
 
 @Injectable()
 export class IntegrationService {
@@ -161,6 +162,12 @@ export class IntegrationService {
     switch (cryptoCategoryName.toUpperCase()) {
       case IntegrationCryptoEnum.B2CORE:
         //cryptoType = new B2CoreIntegrationService(crypto, this.configService);
+        break;
+      case IntegrationCryptoEnum.FIREBLOKS:
+        cryptoType = new FireblocksIntegrationService(
+          this.configService,
+          this.cacheManager,
+        );
         break;
       case IntegrationCryptoEnum.B2BINPAY:
         cryptoType = new B2BinPayIntegrationService(
