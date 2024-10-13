@@ -2,6 +2,7 @@ import { AccountServiceMongooseService } from '@account/account/account-service-
 import { AccountCreateDto } from '@account/account/dto/account.create.dto';
 import { AccountUpdateDto } from '@account/account/dto/account.update.dto';
 import { AccountDocument } from '@account/account/entities/mongoose/account.schema';
+import WalletTypesAccountEnum from '@account/account/enum/wallet.types.account.enum';
 import { BuildersService } from '@builder/builders';
 import { CommonService } from '@common/common';
 import { EnvironmentEnum } from '@common/common/enums/environment.enum';
@@ -13,6 +14,8 @@ import { QuerySearchAnyDto } from '@common/common/models/query_search-any.dto';
 import { UpdateAnyDto } from '@common/common/models/update-any.dto';
 import { FileUpdateDto } from '@file/file/dto/file.update.dto';
 import { FileDocument } from '@file/file/entities/mongoose/file.schema';
+import { IntegrationService } from '@integration/integration';
+import IntegrationCryptoEnum from '@integration/integration/crypto/enums/IntegrationCryptoEnum';
 import { AttachmentsEmailConfig } from '@message/message/dto/message.create.dto';
 import {
   BadRequestException,
@@ -23,6 +26,7 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Ctx, RmqContext } from '@nestjs/microservices';
+import EventsNamesCrmEnum from 'apps/crm-service/src/enum/events.names.crm.enum';
 import EventsNamesFileEnum from 'apps/file-service/src/enum/events.names.file.enum';
 import EventsNamesMessageEnum from 'apps/message-service/src/enum/events.names.message.enum';
 import EventsNamesStatusEnum from 'apps/status-service/src/enum/events.names.status.enum';
@@ -38,12 +42,44 @@ export class AccountServiceService
     private readonly builder: BuildersService,
     @Inject(AccountServiceMongooseService)
     private lib: AccountServiceMongooseService,
+    private readonly integration: IntegrationService,
   ) {}
   async download(
     query: QuerySearchAnyDto,
     context?: any,
   ): Promise<AccountDocument[]> {
     throw new NotImplementedException('Method not implemented.');
+  }
+  async availableWalletsFireblocks(
+    query?: QuerySearchAnyDto,
+  ): Promise<ResponsePaginator<AccountDocument>> {
+    // Job to check fireblocks available wallets
+    query = query || new QuerySearchAnyDto();
+    query.where = query.where || {};
+    query.where.owner = {
+      $exists: false,
+    };
+    const list = await this.lib.findAll(query);
+    const fireblocksCrm = await this.builder.getPromiseCrmEventClient(
+      EventsNamesCrmEnum.findOneByName,
+      IntegrationCryptoEnum.FIREBLOCKS,
+    );
+    if (!list.totalElements) {
+      const cryptoType = await this.integration.getCryptoIntegration(
+        null,
+        IntegrationCryptoEnum.FIREBLOCKS,
+        '',
+      );
+      const tmp = await cryptoType.getAvailablerWallets();
+      const promises = [];
+      tmp.forEach((wallet: AccountCreateDto) => {
+        wallet.crm = fireblocksCrm._id;
+        wallet.accountType = WalletTypesAccountEnum.VAULT;
+        return promises.push(this.lib.create(wallet));
+      });
+      list.list = await Promise.all(promises);
+    }
+    return list;
   }
   async getBalanceByAccountTypeCard(
     query: QuerySearchAnyDto,
