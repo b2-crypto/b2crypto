@@ -88,6 +88,21 @@ export class AccountEntity implements AccountInterface {
   accountName: string;
   @ApiProperty({
     type: String,
+    description: 'Protocol of the account in integration',
+  })
+  protocol: string;
+  @ApiProperty({
+    type: String,
+    description: 'Native accountname of the account in integration',
+  })
+  nativeAccountName: string;
+  @ApiProperty({
+    type: String,
+    description: 'number of decimals of the account in integration',
+  })
+  decimals: number;
+  @ApiProperty({
+    type: String,
     description: 'Account password of the account in integration',
   })
   accountPassword: string;

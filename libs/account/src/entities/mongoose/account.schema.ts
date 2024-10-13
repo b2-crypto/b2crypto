@@ -64,6 +64,15 @@ export class Account extends AccountEntity {
   accountName: string;
 
   @Prop()
+  protocol: string;
+
+  @Prop()
+  nativeAccountName: string;
+
+  @Prop()
+  decimals: number;
+
+  @Prop()
   accountPassword: string;
 
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'categories' })

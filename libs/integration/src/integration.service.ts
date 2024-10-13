@@ -163,7 +163,7 @@ export class IntegrationService {
       case IntegrationCryptoEnum.B2CORE:
         //cryptoType = new B2CoreIntegrationService(crypto, this.configService);
         break;
-      case IntegrationCryptoEnum.FIREBLOKS:
+      case IntegrationCryptoEnum.FIREBLOCKS:
         cryptoType = new FireblocksIntegrationService(
           this.configService,
           this.cacheManager,

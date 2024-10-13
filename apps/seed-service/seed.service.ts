@@ -79,6 +79,7 @@ export class SeedService {
       !countPermissions /*||
       !countTransfers*/
     ) {
+      Logger.debug('Seeding initial data...', SeedService.name);
       // await this.clearStats();
       // await this.clearActivities();
       // await this.clearPersons();
