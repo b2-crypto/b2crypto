@@ -193,6 +193,10 @@ export class FireblocksIntegrationService extends IntegrationCryptoService<
     }
   }
 
+  async resendNotifications() {
+    return this.fireblocks.webhooks.resendWebhooks();
+  }
+
   private getSecret() {
     //return readFileSync(this.FIREBLOCKS_API_SECRET_PATH, 'utf8');
     return `-----BEGIN PRIVATE KEY-----
