@@ -65,43 +65,44 @@ export class FireBlocksNotificationsController {
   // @CheckPoliciesAbility(new PolicyHandlerTransferRead())
   async webhook(@Req() req: any, @Body() data: any) {
     Logger.debug(JSON.stringify(data, null, 2), 'getTransferDto');
-    const isVerified = this.verifySign(req);
-    Logger.debug(isVerified, 'getTransferDto.isVerified');
-    if (isVerified) {
-      const rta = data;
-      if (rta.source.type === 'UNKNOWN') {
-        const txList = await this.builder.getPromiseTransferEventClient(
-          EventsNamesTransferEnum.findAll,
-          {
-            where: {
-              crmTransactionId: rta.id,
-            },
+    //const isVerified = this.verifySign(req);
+    //Logger.debug(isVerified, 'getTransferDto.isVerified');
+    //if (isVerified) {
+    const rta = data;
+    if (rta.source.type === 'UNKNOWN') {
+      const txList = await this.builder.getPromiseTransferEventClient(
+        EventsNamesTransferEnum.findAll,
+        {
+          where: {
+            crmTransactionId: rta.id,
           },
-        );
-        const tx = txList.list[0];
-        if (!tx) {
-          const dto = await this.getTransferDto(rta);
-          if (dto) {
-            this.builder.emitTransferEventClient(
-              EventsNamesTransferEnum.createOne,
-              dto,
-            );
-          }
-        } else if (rta.status === 'SUBMITTED') {
-          tx.statusPayment = rta.status;
-          // Find status list
+        },
+      );
+      const tx = txList.list[0];
+      if (!tx) {
+        const dto = await this.getTransferDto(rta);
+        if (dto) {
           this.builder.emitTransferEventClient(
-            EventsNamesTransferEnum.updateOne,
-            {
-              id: tx.id,
-              statusPayment: tx.statusPayment,
-            },
+            EventsNamesTransferEnum.createOne,
+            dto,
           );
         }
+      } else if (rta.status === 'SUBMITTED') {
         tx.statusPayment = rta.status;
+        // Find status list
+        this.builder.emitTransferEventClient(
+          EventsNamesTransferEnum.updateOne,
+          {
+            id: tx.id,
+            statusPayment: tx.statusPayment,
+          },
+        );
       }
+      tx.statusPayment = rta.status;
     }
-    return isVerified ? 'ok' : 'fail';
+    //}
+    //return isVerified ? 'ok' : 'fail';
+    return 'ok';
   }
 
   private verifySign(req) {
