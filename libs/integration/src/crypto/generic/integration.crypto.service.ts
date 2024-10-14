@@ -199,4 +199,7 @@ export class IntegrationCryptoService<
   async getAvailablerWallets(): Promise<WalletDto[]> {
     throw new NotImplementedException('Method not implemented.');
   }
+  async resendNotifications(): Promise<any> {
+    throw new NotImplementedException('Method not implemented.');
+  }
 }
