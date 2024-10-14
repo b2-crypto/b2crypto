@@ -55,11 +55,9 @@ import EventsNamesPspAccountEnum from 'apps/psp-service/src/enum/events.names.ps
 import EventsNamesPspEnum from 'apps/psp-service/src/enum/events.names.psp.enum';
 import EventsNamesStatsEnum from 'apps/stats-service/src/enum/events.names.stats.enum';
 import EventsNamesStatusEnum from 'apps/status-service/src/enum/events.names.status.enum';
-import axios from 'axios';
 import { isArray, isMongoId } from 'class-validator';
 import { BrandInterface } from 'libs/brand/src/entities/brand.interface';
 import { ObjectId } from 'mongodb';
-import { isObjectIdOrHexString } from 'mongoose';
 import { ApproveOrRejectDepositDto } from '../../../libs/transfer/src/dto/approve.or.reject.deposit.dto';
 import { TransferLeadStatsDto } from './dto/transfer.lead.stat.dto';
 import EventsNamesTransferEnum from './enum/events.names.transfer.enum';
@@ -511,7 +509,7 @@ export class TransferServiceService
     };
 
     if (transferSaved.isApprove) {
-      let amount = transferSaved.amount;
+      let multiply = 1;
       if (
         transferSaved.operationType ===
           OperationTransactionType.reversal_deposit ||
@@ -528,9 +526,9 @@ export class TransferServiceService
         transferSaved.operationType === OperationTransactionType.withdrawal ||
         transferSaved.operationType === OperationTransactionType.purchase
       ) {
-        amount *= -1;
+        multiply = -1;
       }
-      accountToUpdate.amount += amount;
+      accountToUpdate.amount += transferSaved.amount * multiply;
     }
     await this.accountService.updateOne(accountToUpdate);
     this.builder.emitUserEventClient(
@@ -829,7 +827,15 @@ export class TransferServiceService
   }
 
   async updateTransfer(transfer: TransferUpdateDto) {
-    return this.lib.update(transfer.id, transfer);
+    const rta = await this.lib.update(transfer.id, transfer);
+    if (transfer.approvedAt || transfer.isApprove) {
+      this.updateAccount(
+        rta.account as unknown as AccountInterface,
+        rta,
+        false,
+      );
+    }
+    return rta;
   }
 
   async updateTransferFromLatamCashier(
@@ -951,10 +957,15 @@ export class TransferServiceService
   }
 
   async updateManyTransfer(transfers: TransferUpdateDto[]) {
-    return this.lib.updateMany(
+    const list = await this.lib.updateMany(
       transfers.map((transfer) => transfer.id.toString()),
       transfers,
     );
+    // this.builder.emitUserEventClient(
+    //   EventsNamesUserEnum.checkBalanceUser,
+    //   transferSaved.userAccount,
+    // );
+    return list;
   }
 
   async deleteTransfer(id: string) {

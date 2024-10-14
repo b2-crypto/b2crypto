@@ -40,7 +40,6 @@ import EventsNamesCategoryEnum from './enum/events.names.category.enum';
 import { ApiKeyAuthGuard } from '@auth/auth/guards/api.key.guard';
 import { SwaggerSteakeyConfigEnum } from 'libs/config/enum/swagger.stakey.config.enum';
 import { NoCache } from '@common/common/decorators/no-cache.decorator';
-import ResourcesEnum from '@common/common/enums/ResourceEnum';
 
 @ApiTags('CATEGORY')
 @Controller('category')
