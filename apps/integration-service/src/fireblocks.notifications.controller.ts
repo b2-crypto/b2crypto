@@ -168,6 +168,14 @@ export class FireBlocksNotificationsController {
     const isDeposit = data.destination.type === 'VAULT_ACCOUNT';
     const isWithdrawal = data.destination.type === 'EXTERNAL_WALLET';
     const ownerIdWallet = isDeposit ? data.destination.name : data.source.name;
+    // const brand = await this.builder.getPromiseBrandEventClient(
+    //   EventsNamesBrandEnum.findOneByName,
+    //   ownerIdWallet.replace('-vault', ''),
+    // );
+    // if (!brand || !brand.owner) {
+    //   throw new BadRequestException('Brand without owner');
+    // }
+    // const ownerId = brand.owner;
     const ownerId = ownerIdWallet.replace('-vault', '');
     const crm = await this.getFireblocksCrm();
     const queryWhereWallet = {
@@ -241,69 +249,3 @@ export class FireBlocksNotificationsController {
     } as unknown as TransferCreateDto;
   }
 }
-
-/**
- *
-{
-"type": "TRANSACTION_CREATED",
-"tenantId": "570e9a45-da12-5c4f-aace-1ad090b14bcc",
-"timestamp": 1728869004528,
-"data": {
-  "id": "042f11a6-11f6-4517-b354-441b748f6406",
-  "createdAt": 1728868173575,
-  "lastUpdated": 1728868173597,
-  "assetId": "TRX_USDT_S2UZ",
-  "source": {
-    "id": "",
-    "type": "UNKNOWN",
-    "name": "External",
-    "subType": ""
-  },
-  "destination": {
-    "id": "3",
-    "type": "VAULT_ACCOUNT",
-    "name": "66c380fe6ed3fd68b3d26f11-vault",
-    "subType": ""
-  },
-  "amount": 10,
-  "networkFee": 0,
-  "netAmount": 10,
-  "sourceAddress": "TNXoiAJ3dct8Fjg4M9fkLFh9S2v9TXc32G",
-  "destinationAddress": "TEfbRgA6KFzfcYoVNiN1xha7sZ4GnLNioc",
-  "destinationAddressDescription": "",
-  "destinationTag": "",
-  "status": "CONFIRMING",
-  "txHash": "c14588d1428f3be316484223ae69f29b7e33e87ba81cac96d9b2582c17f5b245",
-  "subStatus": "PENDING_BLOCKCHAIN_CONFIRMATIONS",
-  "signedBy": [],
-  "createdBy": "",
-  "rejectedBy": "",
-  "amountUSD": 9.99,
-  "addressType": "",
-  "note": "",
-  "exchangeTxId": "",
-  "requestedAmount": 10,
-  "feeCurrency": "TRX",
-  "operation": "TRANSFER",
-  "customerRefId": null,
-  "numOfConfirmations": 1,
-  "amountInfo": {
-    "amount": "10",
-    "requestedAmount": "10",
-    "netAmount": "10",
-    "amountUSD": "9.99"
-  },
-  "feeInfo": {
-    "networkFee": "0"
-  },
-  "destinations": [],
-  "externalTxId": null,
-  "blockInfo": {
-    "blockHeight": "66073101",
-    "blockHash": "0000000003f0320d93e1bf3bd0917d3dda6b2cf5ee80acd33f2a086b80f26f7c"
-  },
-  "signedMessages": [],
-  "assetType": "TRON_TRC20"
-}
- *
- */

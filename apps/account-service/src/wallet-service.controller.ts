@@ -50,6 +50,7 @@ import { FireblocksIntegrationService } from '@integration/integration/crypto/fi
 import CurrencyCodeB2cryptoEnum from '@common/common/enums/currency-code-b2crypto.enum';
 import CountryCodeEnum from '@common/common/enums/country.code.b2crypto.enum';
 import { AccountDocument } from '@account/account/entities/mongoose/account.schema';
+import { JwtAuthGuard } from '@auth/auth/guards/jwt-auth.guard';
 
 @ApiTags('E-WALLET')
 @Controller('wallets')
@@ -117,8 +118,10 @@ export class WalletServiceController extends AccountServiceController {
   @ApiBearerAuth('bearerToken')
   @ApiSecurity('b2crypto-key')
   @Post('create')
+  @UseGuards(ApiKeyAuthGuard, JwtAuthGuard)
   async createOne(@Body() createDto: WalletCreateDto, @Req() req?: any) {
     let rta = null;
+    createDto.brand = req.user.brand;
     switch (createDto.accountType) {
       case WalletTypesAccountEnum.EWALLET:
         rta = this.createWalletB2BinPay(createDto, req);
@@ -151,13 +154,13 @@ export class WalletServiceController extends AccountServiceController {
       fireblocksCrm._id,
       createDto.name,
     );
-    // Check if the first vault with owner = user and showToOwner = false
     const vaultUser = await this.getVaultUser(
+      // req.clientApi,
       userId,
       fireblocksCrm._id,
       walletBase,
+      createDto.brand,
     );
-    // Check if the user is owner of the wallet with name
     createDto.type = TypesAccountEnum.WALLET;
     createDto.accountName = walletBase.accountName;
     createDto.nativeAccountName = walletBase.nativeAccountName;
@@ -228,14 +231,17 @@ export class WalletServiceController extends AccountServiceController {
     fireblocksCrmId: string,
     vaultUser: AccountDocument,
   ) {
+    const walletName = `${dtoWallet.name}-${userId}`;
     let walletUser = (
       await this.walletService.findAll({
         where: {
-          name: dtoWallet.name,
+          name: walletName,
           owner: userId,
           accountType: WalletTypesAccountEnum.VAULT,
           crm: fireblocksCrmId,
           showToOwner: true,
+          brand: dtoWallet.brand,
+          referral: vaultUser.id,
         },
       })
     ).list[0];
@@ -245,6 +251,8 @@ export class WalletServiceController extends AccountServiceController {
       const newWallet = await cryptoType.createWallet(
         vaultUser.accountId,
         dtoWallet.accountId,
+        // walletName,
+        // userId,
       );
       if (!newWallet) {
         throw new BadRequestException('Error creating new wallet');
@@ -267,14 +275,15 @@ export class WalletServiceController extends AccountServiceController {
     userId: string,
     fireblocksCrmId: string,
     walletBase: AccountDocument,
+    brandId: string,
   ) {
     let vaultUser = (
       await this.walletService.findAll({
         where: {
-          owner: userId,
           accountType: WalletTypesAccountEnum.VAULT,
           crm: fireblocksCrmId,
           showToOwner: false,
+          owner: userId,
         },
       })
     ).list[0];
@@ -308,7 +317,7 @@ export class WalletServiceController extends AccountServiceController {
         protocol: walletBase.protocol,
         country: CountryCodeEnum.Colombia,
         personalData: undefined,
-        brand: undefined,
+        brand: brandId,
         affiliate: undefined,
         totalTransfer: 0,
         quantityTransfer: 0,

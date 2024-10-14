@@ -314,13 +314,3 @@ export class AccountCreateDto extends CreateAnyDto implements AccountInterface {
   @IsEmpty()
   afgId?: string;
 }
-
-/**
-{ // Vault - fireblocks
-  "id": "3",
-  "name": "66c380fe6ed3fd68b3d26f11-vault",
-  "hiddenOnUI": false,
-  "assets": [],
-  "autoFuel": true
-}
- */

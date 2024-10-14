@@ -108,17 +108,38 @@ export class FireblocksIntegrationService extends IntegrationCryptoService<
     }
   }
   // creating a new vault account
-  async createWallet(vaultId: string, assetId: string) {
+  async createWallet(
+    vaultId: string,
+    assetId: string,
+    walletName?: string,
+    customerId?: string,
+  ) {
     try {
-      const walletUser = await this.fireblocks.vaults.createVaultAccountAsset({
+      const data = {
         vaultAccountId: vaultId,
         assetId: assetId,
-      });
+        createAddressRequest: undefined,
+      };
+      let walletUser = null;
+      if (walletName) {
+        data.createAddressRequest = {
+          description: walletName,
+          customerRefId: customerId,
+        };
+        walletUser =
+          await this.fireblocks.vaults.createVaultAccountAssetAddress(data);
+      } else {
+        walletUser = await this.fireblocks.vaults.createVaultAccountAsset(data);
+      }
 
       Logger.debug(JSON.stringify(walletUser, null, 2), 'createWallet');
       return walletUser.data;
     } catch (e) {
-      Logger.error(e, 'createWallet');
+      if (e.message.indexOf('not found') > -1) {
+        await this.createWallet(vaultId, assetId);
+        return this.createWallet(vaultId, assetId, walletName, customerId);
+      }
+      Logger.error(e.message, 'createWallet');
       throw e;
     }
   }
