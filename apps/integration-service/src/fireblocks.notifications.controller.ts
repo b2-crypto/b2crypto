@@ -64,7 +64,8 @@ export class FireBlocksNotificationsController {
   @Post('webhook')
   // @CheckPoliciesAbility(new PolicyHandlerTransferRead())
   async webhook(@Req() req: any, @Body() data: any) {
-    Logger.debug(JSON.stringify(data, null, 2), 'getTransferDto');
+    Logger.debug(JSON.stringify(data, null, 2), 'getTransferDto.body');
+    Logger.log(req.headers, 'getTransferDto.headers');
     //const isVerified = this.verifySign(req);
     //Logger.debug(isVerified, 'getTransferDto.isVerified');
     //if (isVerified) {
@@ -79,8 +80,10 @@ export class FireBlocksNotificationsController {
         },
       );
       const tx = txList.list[0];
+      Logger.debug(tx, 'tx');
       if (!tx) {
         const dto = await this.getTransferDto(rta);
+        Logger.debug(dto, 'dto');
         if (dto) {
           this.builder.emitTransferEventClient(
             EventsNamesTransferEnum.createOne,
@@ -98,10 +101,12 @@ export class FireBlocksNotificationsController {
           },
         );
       }
+      Logger.debug(rta.status, `${rta.id} - ${rta.status}`);
       tx.statusPayment = rta.status;
     }
     //}
     //return isVerified ? 'ok' : 'fail';
+    Logger.debug(this.verifySign(req), 'getTransferDto.isVerified');
     return 'ok';
   }
 
@@ -203,128 +208,67 @@ export class FireBlocksNotificationsController {
 }
 
 /**
- * "type": "TRANSACTION_CREATED",
- * "timestamp": 1728857033697,
-//! Gas station CREATED
+ *
 {
-1|b2crypto-gateway        |   "type": "TRANSACTION_CREATED",
-1|b2crypto-gateway        |   "tenantId": "570e9a45-da12-5c4f-aace-1ad090b14bcc",
-1|b2crypto-gateway        |   "timestamp": 1728857019639,
-1|b2crypto-gateway        |   "data": {
-1|b2crypto-gateway        |     "id": "c950c5ff-ea37-4d49-8ba2-41a22400097a",
-1|b2crypto-gateway        |     "createdAt": 1728857003735,
-1|b2crypto-gateway        |     "lastUpdated": 1728857003735,
-1|b2crypto-gateway        |     "assetId": "TRX",
-1|b2crypto-gateway        |     "source": {
-1|b2crypto-gateway        |       "id": "2",
-1|b2crypto-gateway        |       "type": "VAULT_ACCOUNT",
-1|b2crypto-gateway        |       "name": "GasStation",
-1|b2crypto-gateway        |       "subType": ""
-1|b2crypto-gateway        |     },
-1|b2crypto-gateway        |     "destination": {
-1|b2crypto-gateway        |       "id": "3",
-1|b2crypto-gateway        |       "type": "VAULT_ACCOUNT",
-1|b2crypto-gateway        |       "name": "66c380fe6ed3fd68b3d26f11-vault",
-1|b2crypto-gateway        |       "subType": ""
-1|b2crypto-gateway        |     },
-1|b2crypto-gateway        |     "amount": 60,
-1|b2crypto-gateway        |     "sourceAddress": "",
-1|b2crypto-gateway        |     "destinationAddress": "",
-1|b2crypto-gateway        |     "destinationAddressDescription": "",
-1|b2crypto-gateway        |     "destinationTag": "",
-1|b2crypto-gateway        |     "status": "SUBMITTED",
-1|b2crypto-gateway        |     "txHash": "",
-1|b2crypto-gateway        |     "subStatus": "",
-1|b2crypto-gateway        |     "signedBy": [],
-1|b2crypto-gateway        |     "createdBy": "gas-station",
-1|b2crypto-gateway        |     "rejectedBy": "",
-1|b2crypto-gateway        |     "amountUSD": 9.74,
-1|b2crypto-gateway        |     "addressType": "",
-1|b2crypto-gateway        |     "note": "Gas Tank auto-fuel",
-1|b2crypto-gateway        |     "exchangeTxId": "",
-1|b2crypto-gateway        |     "requestedAmount": 60,
-1|b2crypto-gateway        |     "feeCurrency": "TRX",
-1|b2crypto-gateway        |     "operation": "TRANSFER",
-1|b2crypto-gateway        |     "customerRefId": null,
-1|b2crypto-gateway        |     "amountInfo": {
-1|b2crypto-gateway        |       "amount": "60",
-1|b2crypto-gateway        |       "requestedAmount": "60",
-1|b2crypto-gateway        |       "amountUSD": "9.74"
-1|b2crypto-gateway        |     },
-1|b2crypto-gateway        |     "feeInfo": {},
-1|b2crypto-gateway        |     "destinations": [],
-1|b2crypto-gateway        |     "externalTxId": null,
-1|b2crypto-gateway        |     "blockInfo": {},
-1|b2crypto-gateway        |     "signedMessages": [],
-1|b2crypto-gateway        |     "assetType": "BASE_ASSET"
-1|b2crypto-gateway        |   }
-1|b2crypto-gateway        | }
-
-//! CREATED
-{
-  "type": "TRANSACTION_CREATED",
-  "tenantId": "570e9a45-da12-5c4f-aace-1ad090b14bcc",
-  "timestamp": 1728857299238,
-  "data": {
-    "id": "f1c3d97d-8f50-48bb-bc44-45574bbffb88",
-    "createdAt": 1728857003108,
-    "lastUpdated": 1728857003160,
-    "assetId": "TRX_USDT_S2UZ",
-    "source": {
-      "id": "",
-      "type": "UNKNOWN",
-      "name": "External",
-      "subType": ""
-    },
-    "destination": {
-      "id": "3",
-      "type": "VAULT_ACCOUNT",
-      "name": "66c380fe6ed3fd68b3d26f11-vault",
-      "subType": ""
-    },
-    "amount": 10,
-    "networkFee": 0,
-    "netAmount": 10,
-    "sourceAddress": "TNXoiAJ3dct8Fjg4M9fkLFh9S2v9TXc32G",
-    "destinationAddress": "TEfbRgA6KFzfcYoVNiN1xha7sZ4GnLNioc",
-    "destinationAddressDescription": "",
-    "destinationTag": "",
-    "status": "CONFIRMING",
-    "txHash": "b649cec48056922620aaa4e696d5db7b6bd5799e1c9f055fd2b08e00ed6cc342",
-    "subStatus": "PENDING_BLOCKCHAIN_CONFIRMATIONS",
-    "signedBy": [],
-    "createdBy": "",
-    "rejectedBy": "",
-    "amountUSD": 10,
-    "addressType": "",
-    "note": "",
-    "exchangeTxId": "",
-    "requestedAmount": 10,
-    "feeCurrency": "TRX",
-    "operation": "TRANSFER",
-    "customerRefId": null,
-    "numOfConfirmations": 1,
-    "amountInfo": {
-      "amount": "10",
-      "requestedAmount": "10",
-      "netAmount": "10",
-      "amountUSD": "10.00"
-    },
-    "feeInfo": {
-      "networkFee": "0"
-    },
-    "destinations": [],
-    "externalTxId": null,
-    "blockInfo": {
-      "blockHeight": "66069380",
-      "blockHash": "0000000003f02384c401227153d8ef00ed71da66a7860e9805115d05654e8a60"
-    },
-    "signedMessages": [],
-    "assetType": "TRON_TRC20"
-  }
+"type": "TRANSACTION_CREATED",
+"tenantId": "570e9a45-da12-5c4f-aace-1ad090b14bcc",
+"timestamp": 1728869004528,
+"data": {
+  "id": "042f11a6-11f6-4517-b354-441b748f6406",
+  "createdAt": 1728868173575,
+  "lastUpdated": 1728868173597,
+  "assetId": "TRX_USDT_S2UZ",
+  "source": {
+    "id": "",
+    "type": "UNKNOWN",
+    "name": "External",
+    "subType": ""
+  },
+  "destination": {
+    "id": "3",
+    "type": "VAULT_ACCOUNT",
+    "name": "66c380fe6ed3fd68b3d26f11-vault",
+    "subType": ""
+  },
+  "amount": 10,
+  "networkFee": 0,
+  "netAmount": 10,
+  "sourceAddress": "TNXoiAJ3dct8Fjg4M9fkLFh9S2v9TXc32G",
+  "destinationAddress": "TEfbRgA6KFzfcYoVNiN1xha7sZ4GnLNioc",
+  "destinationAddressDescription": "",
+  "destinationTag": "",
+  "status": "CONFIRMING",
+  "txHash": "c14588d1428f3be316484223ae69f29b7e33e87ba81cac96d9b2582c17f5b245",
+  "subStatus": "PENDING_BLOCKCHAIN_CONFIRMATIONS",
+  "signedBy": [],
+  "createdBy": "",
+  "rejectedBy": "",
+  "amountUSD": 9.99,
+  "addressType": "",
+  "note": "",
+  "exchangeTxId": "",
+  "requestedAmount": 10,
+  "feeCurrency": "TRX",
+  "operation": "TRANSFER",
+  "customerRefId": null,
+  "numOfConfirmations": 1,
+  "amountInfo": {
+    "amount": "10",
+    "requestedAmount": "10",
+    "netAmount": "10",
+    "amountUSD": "9.99"
+  },
+  "feeInfo": {
+    "networkFee": "0"
+  },
+  "destinations": [],
+  "externalTxId": null,
+  "blockInfo": {
+    "blockHeight": "66073101",
+    "blockHash": "0000000003f0320d93e1bf3bd0917d3dda6b2cf5ee80acd33f2a086b80f26f7c"
+  },
+  "signedMessages": [],
+  "assetType": "TRON_TRC20"
 }
-
-//! SUBMITED
-
- * 
+ *
  */
