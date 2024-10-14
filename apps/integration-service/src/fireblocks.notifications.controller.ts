@@ -96,7 +96,7 @@ export class FireBlocksNotificationsController {
         }
       } else if (
         (rta?.status === 'SUBMITTED' || rta?.status === 'COMPLETED') &&
-        !tx.isApproved
+        !tx.isApprove
       ) {
         const status = await this.builder.getPromiseStatusEventClient(
           EventsNamesStatusEnum.findOneByName,
