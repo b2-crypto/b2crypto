@@ -2,12 +2,15 @@ import { AccountDocument } from '@account/account/entities/mongoose/account.sche
 import WalletTypesAccountEnum from '@account/account/enum/wallet.types.account.enum';
 import { AllowAnon } from '@auth/auth/decorators/allow-anon.decorator';
 import { BuildersService } from '@builder/builders';
+import { CommonService } from '@common/common';
 import { NoCache } from '@common/common/decorators/no-cache.decorator';
 import CurrencyCodeB2cryptoEnum from '@common/common/enums/currency-code-b2crypto.enum';
+import { StatusCashierEnum } from '@common/common/enums/StatusCashierEnum';
 import { IntegrationService } from '@integration/integration';
 import IntegrationCryptoEnum from '@integration/integration/crypto/enums/IntegrationCryptoEnum';
 import { FireblocksIntegrationService } from '@integration/integration/crypto/fireblocks/fireblocks-integration.service';
 import {
+  BadRequestException,
   Body,
   Controller,
   Get,
@@ -21,6 +24,7 @@ import { OperationTransactionType } from '@transfer/transfer/enum/operation.tran
 import EventsNamesAccountEnum from 'apps/account-service/src/enum/events.names.account.enum';
 import EventsNamesCategoryEnum from 'apps/category-service/src/enum/events.names.category.enum';
 import EventsNamesCrmEnum from 'apps/crm-service/src/enum/events.names.crm.enum';
+import EventsNamesStatusEnum from 'apps/status-service/src/enum/events.names.status.enum';
 import EventsNamesTransferEnum from 'apps/transfer-service/src/enum/events.names.transfer.enum';
 import * as crypto from 'crypto';
 
@@ -64,50 +68,65 @@ export class FireBlocksNotificationsController {
   @Post('webhook')
   // @CheckPoliciesAbility(new PolicyHandlerTransferRead())
   async webhook(@Req() req: any, @Body() data: any) {
-    Logger.debug(JSON.stringify(data, null, 2), 'getTransferDto.body');
-    Logger.log(req.headers, 'getTransferDto.headers');
     //const isVerified = this.verifySign(req);
     //Logger.debug(isVerified, 'getTransferDto.isVerified');
     //if (isVerified) {
-    const rta = data;
-    if (rta.source.type === 'UNKNOWN') {
+    const rta = data.data;
+    if (
+      rta?.source.type === 'UNKNOWN' ||
+      (rta?.source.type === 'VAULT_ACCOUNT' &&
+        rta?.destination.type === 'EXTERNAL_WALLET')
+    ) {
       const txList = await this.builder.getPromiseTransferEventClient(
         EventsNamesTransferEnum.findAll,
         {
           where: {
-            crmTransactionId: rta.id,
+            idPayment: rta.id,
           },
         },
       );
       const tx = txList.list[0];
-      Logger.debug(tx, 'tx');
       if (!tx) {
-        const dto = await this.getTransferDto(rta);
-        Logger.debug(dto, 'dto');
+        const dto = await this.getTransferDto(data);
         if (dto) {
           this.builder.emitTransferEventClient(
             EventsNamesTransferEnum.createOne,
             dto,
           );
         }
-      } else if (rta.status === 'SUBMITTED') {
+      } else if (
+        (rta?.status === 'SUBMITTED' || rta?.status === 'COMPLETED') &&
+        !tx.isApproved
+      ) {
+        const status = await this.builder.getPromiseStatusEventClient(
+          EventsNamesStatusEnum.findOneByName,
+          StatusCashierEnum.APPROVED,
+        );
         tx.statusPayment = rta.status;
+        tx.status = status;
         // Find status list
         this.builder.emitTransferEventClient(
           EventsNamesTransferEnum.updateOne,
           {
-            id: tx.id,
+            id: tx._id,
+            status: status._id,
+            responsePayment: data,
             statusPayment: tx.statusPayment,
+            isApprove: true,
+            rejectedAt: null,
+            approvedAt: new Date(),
           },
         );
       }
-      Logger.debug(rta.status, `${rta.id} - ${rta.status}`);
-      tx.statusPayment = rta.status;
+      Logger.debug(rta?.status, `${rta?.id} - ${rta.status}`);
     }
     //}
     //return isVerified ? 'ok' : 'fail';
-    Logger.debug(this.verifySign(req), 'getTransferDto.isVerified');
-    return 'ok';
+    //Logger.debug(this.verifySign(req), 'getTransferDto.isVerified');
+    return {
+      statusCode: 200,
+      message: 'ok',
+    };
   }
 
   private verifySign(req) {
@@ -144,8 +163,12 @@ export class FireBlocksNotificationsController {
     return this.crm;
   }
 
-  private async getTransferDto(data) {
-    const ownerId = data.destination.name.replace('-vault', '');
+  private async getTransferDto(fullData) {
+    const data = fullData.data;
+    const isDeposit = data.destination.type === 'VAULT_ACCOUNT';
+    const isWithdrawal = data.destination.type === 'EXTERNAL_WALLET';
+    const ownerIdWallet = isDeposit ? data.destination.name : data.source.name;
+    const ownerId = ownerIdWallet.replace('-vault', '');
     const crm = await this.getFireblocksCrm();
     const queryWhereWallet = {
       owner: ownerId,
@@ -165,10 +188,16 @@ export class FireBlocksNotificationsController {
       Logger.error(queryWhereWallet, 'Wallet not found with where');
       return null;
     }
-    const isApproved = data.status === 'SUBMITTED';
-    //! Check withdrawal
-    const isDeposit = true;
-    const isWithdrawal = false;
+    const isApproved =
+      data.status === 'SUBMITTED' || data.status === 'COMPLETED';
+    let statusText = StatusCashierEnum.PENDING;
+    if (isApproved) {
+      statusText = StatusCashierEnum.APPROVED;
+    }
+    const status = await this.builder.getPromiseStatusEventClient(
+      EventsNamesStatusEnum.findOneByName,
+      statusText,
+    );
     let operationText = 'transfer';
     let operationType = OperationTransactionType.noApply;
     if (isDeposit) {
@@ -180,15 +209,21 @@ export class FireBlocksNotificationsController {
     }
     const operation = await this.builder.getPromiseCategoryEventClient(
       EventsNamesCategoryEnum.findOneByNameType,
-      operationText,
+      { slug: CommonService.getSlug(operationText) },
     );
+    if (!operation?._id) {
+      throw new BadRequestException('Not found operation');
+    }
     return {
-      responseAccount: data,
+      responseAccount: fullData,
       idPayment: data.id,
       statusPayment: data.status,
       //leadAccountId: data.assetId,
       amount: data.amount,
-      currency: data.assetType,
+      status,
+      //! Check crypto currencies
+      //currency: data.assetType,
+      currency: CurrencyCodeB2cryptoEnum.USDT,
       amountCustodial: data.amountUSD,
       currencyCustodial: CurrencyCodeB2cryptoEnum.USD,
       operationType,
