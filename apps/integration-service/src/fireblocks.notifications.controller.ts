@@ -137,6 +137,7 @@ export class FireBlocksNotificationsController {
   }
 
   private async getTransferDto(data) {
+    Logger.debug(JSON.stringify(data, null, 2), 'getTransferDto');
     const ownerId = data.destination.name.replace('-vault', '');
     const crm = await this.getFireblocksCrm();
     const queryWhereWallet = {
