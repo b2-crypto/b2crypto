@@ -64,7 +64,9 @@ export class FireBlocksNotificationsController {
   @Post('webhook')
   // @CheckPoliciesAbility(new PolicyHandlerTransferRead())
   async webhook(@Req() req: any, @Body() data: any) {
+    Logger.debug(JSON.stringify(data, null, 2), 'getTransferDto');
     const isVerified = this.verifySign(req);
+    Logger.debug(isVerified, 'getTransferDto.isVerified');
     if (isVerified) {
       const rta = data;
       if (rta.source.type === 'UNKNOWN') {
@@ -137,7 +139,6 @@ export class FireBlocksNotificationsController {
   }
 
   private async getTransferDto(data) {
-    Logger.debug(JSON.stringify(data, null, 2), 'getTransferDto');
     const ownerId = data.destination.name.replace('-vault', '');
     const crm = await this.getFireblocksCrm();
     const queryWhereWallet = {
