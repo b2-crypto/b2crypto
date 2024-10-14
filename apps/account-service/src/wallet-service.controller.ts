@@ -326,7 +326,6 @@ export class WalletServiceController extends AccountServiceController {
         amountBlockedCustodial: 0,
         currencyBlockedCustodial: CurrencyCodeB2cryptoEnum.USD,
       });
-      // Create one with showToOwner in false and type in VAULT
     }
 
     return vaultUser;

@@ -1,4 +1,3 @@
-import { PersonUpdateDto } from '@person/person/dto/person.update.dto';
 import { UserChangePasswordDto } from './user.change-password.dto';
 import { Type } from 'class-transformer';
 import { ObjectId } from 'mongodb';
@@ -90,6 +89,10 @@ export class UserCreateDto extends UserChangePasswordDto {
   @IsOptional()
   @IsMongoId({ each: true })
   permissions: Array<ObjectId>;
+
+  @IsOptional()
+  @IsMongoId()
+  brand: ObjectId;
 
   @IsBoolean()
   @IsOptional()

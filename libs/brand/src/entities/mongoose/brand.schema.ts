@@ -8,6 +8,7 @@ import { Traffic } from '@traffic/traffic/entities/mongoose/traffic.schema';
 import { ObjectId } from 'mongodb';
 import * as mongoose from 'mongoose';
 import { Document } from 'mongoose';
+import { User } from '@user/user/entities/mongoose/user.schema';
 
 export type BrandDocument = Brand & Document;
 
@@ -64,6 +65,9 @@ export class Brand extends BrandEntity {
 
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'categories' })
   department: Category;
+
+  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'users' })
+  owner: User;
 
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'crms' })
   currentCrm: Crm;
