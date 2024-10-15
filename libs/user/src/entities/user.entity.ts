@@ -46,6 +46,7 @@ export class UserEntity implements UserInterface {
   permissions: Array<PermissionEntity>;
   authorizations: Array<string>;
   category: CategoryEntity;
+  level: CategoryEntity;
   personalData: PersonEntity;
   userParent: UserEntity;
   verifyIdentity: boolean;
