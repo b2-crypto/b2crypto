@@ -109,6 +109,7 @@ export class WalletServiceController extends AccountServiceController {
       where: {
         owner: userId,
         type: TypesAccountEnum.WALLET,
+        showToOwner: true,
       },
     });
     if (rta.totalElements == 0) {
@@ -133,7 +134,7 @@ export class WalletServiceController extends AccountServiceController {
           totalTransfer: 0,
           quantityTransfer: 0,
           showToOwner: false,
-          statusText: StatusAccountEnum.VISIBLE,
+          statusText: StatusAccountEnum.UNLOCK,
           accountStatus: [],
           createdAt: undefined,
           updatedAt: undefined,
