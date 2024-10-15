@@ -330,6 +330,7 @@ export class UserServiceService {
       customLevel.rules = await this.builder.getPromiseCategoryEventClient(
         EventsNamesCategoryEnum.findAll,
         {
+          take: 1000,
           where: {
             categoryParent: customLevel.id ?? customLevel._id,
             type: TagEnum.CUSTOM_RULE,
@@ -351,7 +352,7 @@ export class UserServiceService {
     return this.lib.update(userId, {
       id: userId,
       level: levelId,
-      rules,
+      rules: rules.flat(),
     });
   }
 
