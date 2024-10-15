@@ -138,7 +138,7 @@ export class WalletServiceController extends AccountServiceController {
   }
 
   private async createWalletFireblocks(createDto: WalletCreateDto, req?: any) {
-    const userId = req?.user.id ?? createDto.owner;
+    const userId = createDto.owner ?? req?.user.id;
     if (!userId) {
       throw new BadRequestException('Need the user id to continue');
     }
