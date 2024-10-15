@@ -304,6 +304,7 @@ export class WalletServiceController extends AccountServiceController {
       if (!newWallet) {
         throw new BadRequestException('Error creating new wallet');
       }
+      dtoWallet.showToOwner = true;
       dtoWallet.accountName = newWallet.address;
       dtoWallet.pin =
         dtoWallet.pin ??
