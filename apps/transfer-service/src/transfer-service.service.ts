@@ -530,11 +530,12 @@ export class TransferServiceService
       }
       accountToUpdate.amount += transferSaved.amount * multiply;
     }
-    await this.accountService.updateOne(accountToUpdate);
+    const accountUpdated = await this.accountService.updateOne(accountToUpdate);
     this.builder.emitUserEventClient(
       EventsNamesUserEnum.checkBalanceUser,
       transferSaved.userAccount,
     );
+    return accountUpdated;
   }
 
   async updateLead(

@@ -282,10 +282,10 @@ export class UserServiceService {
     user.level = userLevelUpDto.level;
     try {
       // Create tx
-      const pspAccount = this.getPspAccountBySlug(
+      const pspAccount = await this.getPspAccountBySlug(
         CommonService.getSlug('b2fintech'),
       );
-      const typeTransaction = this.getCategoryBySlug(
+      const typeTransaction = await this.getCategoryBySlug(
         CommonService.getSlug('Purchase wallet'),
       );
       const tx = await this.builder.getPromiseTransferEventClient(
@@ -296,11 +296,14 @@ export class UserServiceService {
           operationType: OperationTransactionType.purchase,
           amount: totalPurchase,
           owner: userLevelUpDto.user,
+          userAccount: wallet.owner,
           currency: currentLevel.valueText,
-          account: wallet.id,
+          account: wallet._id,
           page: `Old level ${currentLevel.name}`,
           description: `Level up to ${nextLevel.name}`,
           statusPayment: StatusCashierEnum.APPROVED,
+          approvedAt: new Date(),
+          isApprove: true,
         },
       );
       return this.updateLevelUser(
@@ -345,13 +348,11 @@ export class UserServiceService {
         }),
       );
     }
-
-    const userRta = await this.updateUser({
+    return this.lib.update(userId, {
       id: userId,
       level: levelId,
       rules,
     });
-    return userRta;
   }
 
   private async getCategoryBySlug(slug: string): Promise<CategoryInterface> {
