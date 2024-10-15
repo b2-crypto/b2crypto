@@ -254,7 +254,7 @@ export class UserServiceService {
 
   async levelUp(userLevelUpDto: UserLevelUpDto) {
     const user = await this.getOne(userLevelUpDto.user);
-    const currentLevel = await this.getCategoryById(user.level);
+    const currentLevel = await this.getCategoryById(user.level.toString());
     const nextLevel = await this.getCategoryById(userLevelUpDto.level);
     const wallet = await this.getAccountById(userLevelUpDto.wallet);
     // check to pay
@@ -270,7 +270,8 @@ export class UserServiceService {
     );
     const totalPayment =
       physicalCardList.totalElements * currentLevel.valueNumber;
-    const totalToPay = physicalCardList.totalElements * nextLevel.valueNumber;
+    const totalToPay =
+      (physicalCardList.totalElements || 1) * nextLevel.valueNumber;
     const totalPurchase = totalToPay - totalPayment;
     // check value to pay
     if (totalPurchase > wallet.amount * 0.9) {
@@ -388,11 +389,10 @@ export class UserServiceService {
   }
 
   private async getCategoryById(categoryId): Promise<CategoryInterface> {
-    const categoryList = await this.builder.getPromiseCategoryEventClient(
+    const category = await this.builder.getPromiseCategoryEventClient(
       EventsNamesCategoryEnum.findOneById,
       categoryId,
     );
-    const category = categoryList.list[0];
     if (!category) {
       throw new BadRequestException(`Category ${categoryId} not found`);
     }
@@ -400,11 +400,10 @@ export class UserServiceService {
   }
 
   private async getAccountById(accountId): Promise<AccountInterface> {
-    const accountList = await this.builder.getPromiseAccountEventClient(
+    const account = await this.builder.getPromiseAccountEventClient(
       EventsNamesAccountEnum.findOneById,
       accountId,
     );
-    const account = accountList.list[0];
     if (!account) {
       throw new BadRequestException(`Account ${accountId} not found`);
     }

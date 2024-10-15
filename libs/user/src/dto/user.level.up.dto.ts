@@ -11,5 +11,6 @@ export class UserLevelUpDto {
   wallet: ObjectId;
   @IsMongoId()
   @IsEmpty()
+  @IsOptional()
   user: ObjectId;
 }
