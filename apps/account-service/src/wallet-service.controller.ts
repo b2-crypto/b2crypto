@@ -98,12 +98,58 @@ export class WalletServiceController extends AccountServiceController {
   @ApiSecurity('b2crypto-key')
   @Get('me')
   @NoCache()
-  findAllMe(@Query() query: QuerySearchAnyDto, @Req() req?: any) {
+  async findAllMe(@Query() query: QuerySearchAnyDto, @Req() req?: any) {
+    const userId = CommonService.getUserId(req);
     query = query ?? {};
     query.where = query.where ?? {};
     query.where.type = TypesAccountEnum.WALLET;
     query.where.showToOwner = true;
     query = CommonService.getQueryWithUserId(query, req, 'owner');
+    const rta = await this.walletService.findAll({
+      where: {
+        owner: userId,
+        type: TypesAccountEnum.WALLET,
+      },
+    });
+    if (rta.totalElements == 0) {
+      await this.createOne(
+        {
+          owner: query.where.owner,
+          name: 'USD Tether (Tron)',
+          accountType: WalletTypesAccountEnum.VAULT,
+          type: TypesAccountEnum.WALLET,
+          pin: 0,
+          id: undefined,
+          slug: '',
+          searchText: '',
+          docId: '',
+          secret: '',
+          address: null,
+          email: '',
+          telephone: '',
+          description: '',
+          decimals: 0,
+          hasSendDisclaimer: false,
+          totalTransfer: 0,
+          quantityTransfer: 0,
+          showToOwner: false,
+          statusText: StatusAccountEnum.VISIBLE,
+          accountStatus: [],
+          createdAt: undefined,
+          updatedAt: undefined,
+          cardConfig: undefined,
+          amount: 0,
+          currency: CurrencyCodeB2cryptoEnum.USDT,
+          amountCustodial: 0,
+          currencyCustodial: CurrencyCodeB2cryptoEnum.USD,
+          amountBlocked: 0,
+          currencyBlocked: CurrencyCodeB2cryptoEnum.USD,
+          amountBlockedCustodial: 0,
+          currencyBlockedCustodial: CurrencyCodeB2cryptoEnum.USD,
+        },
+        req,
+      );
+    }
     return this.walletService.findAll(query);
   }
 
