@@ -42,6 +42,7 @@ export interface UserInterface {
   permissions: Array<PermissionInterface>;
   authorizations: Array<string>;
   category: CategoryInterface;
+  level: CategoryInterface;
   personalData: PersonInterface;
   userParent: UserInterface;
   verifyIdentity: boolean;

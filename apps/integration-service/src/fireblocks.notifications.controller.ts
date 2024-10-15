@@ -94,10 +94,7 @@ export class FireBlocksNotificationsController {
             dto,
           );
         }
-      } else if (
-        (rta?.status === 'SUBMITTED' || rta?.status === 'COMPLETED') &&
-        !tx.isApprove
-      ) {
+      } else if (rta?.status === 'COMPLETED' && !tx.isApprove) {
         const status = await this.builder.getPromiseStatusEventClient(
           EventsNamesStatusEnum.findOneByName,
           StatusCashierEnum.APPROVED,
@@ -196,11 +193,22 @@ export class FireBlocksNotificationsController {
       Logger.error(queryWhereWallet, 'Wallet not found with where');
       return null;
     }
-    const isApproved =
-      data.status === 'SUBMITTED' || data.status === 'COMPLETED';
+    let isApproved = null;
+    if (data.status === 'COMPLETED') {
+      isApproved = true;
+    } else if (
+      data.status === 'REJECTED' ||
+      data.status === 'FAILED' ||
+      data.status === 'CANCELED' ||
+      data.status === 'BLOCKED'
+    ) {
+      isApproved = false;
+    }
     let statusText = StatusCashierEnum.PENDING;
-    if (isApproved) {
+    if (isApproved === true) {
       statusText = StatusCashierEnum.APPROVED;
+    } else if (isApproved === false) {
+      statusText = StatusCashierEnum.REJECTED;
     }
     const status = await this.builder.getPromiseStatusEventClient(
       EventsNamesStatusEnum.findOneByName,
@@ -241,8 +249,8 @@ export class FireBlocksNotificationsController {
       crm,
       userAccount: wallet.owner,
       isApprove: isApproved,
-      approvedAt: isApproved ? new Date() : null,
-      rejectedAt: isApproved ? null : new Date(),
+      approvedAt: isApproved === true ? new Date() : null,
+      rejectedAt: isApproved === false ? null : new Date(),
       userApprover: isApproved ? null : wallet.owner,
       userRejecter: isApproved ? null : wallet.owner,
       description: data.note,

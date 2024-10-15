@@ -127,8 +127,9 @@ export class UserServiceController implements GenericServiceController {
 
   @Patch('level-up')
   // @CheckPoliciesAbility(new PolicyHandlerUserUpdate())
-  async levelUp(@Body() userLevelUpDto: UserLevelUpDto) {
+  async levelUp(@Body() userLevelUpDto: UserLevelUpDto, @Req() req?: any) {
     try {
+      userLevelUpDto.user = req?.user.id;
       return this.userService.levelUp(userLevelUpDto);
     } catch (error) {
       throw new BadRequestException(error);
@@ -312,6 +313,12 @@ export class UserServiceController implements GenericServiceController {
       id: user.id,
       twoFactorIsActive: true,
     });
+  }
+
+  @AllowAnon()
+  @EventPattern(EventsNamesUserEnum.updateLeveluser)
+  async updateLevelUser(@Payload() data: { user: string; level: string }) {
+    await this.userService.updateLevelUser(data.level, data.user);
   }
 
   private async findOneByApiKey(publicKey: string) {

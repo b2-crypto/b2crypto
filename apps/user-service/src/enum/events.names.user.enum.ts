@@ -22,6 +22,7 @@ enum EventsNamesUserEnum {
 
   verifyEmail = 'USER.VERIFY.EMAIL',
   checkBalanceUser = 'USER.CHECK.BALANCE',
+  updateLeveluser = 'USER.UPDATE.LEVEL',
 }
 
 export default EventsNamesUserEnum;
