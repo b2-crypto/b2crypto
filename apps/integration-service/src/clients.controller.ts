@@ -327,6 +327,8 @@ export class ClientsIntegrationController {
           });
           message = 'Recarga exitosa';
         }
+      } else {
+        message = 'Recarga exitosa';
       }
       localVarsTemplate = {
         success: !!transfer?._id,
