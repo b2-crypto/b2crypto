@@ -336,8 +336,9 @@ export class CardServiceController extends AccountServiceController {
     if (cardTypeName === 'physical') {
       cardTypeName = 'fisica';
     }
-    const configLimitCards = user.rules.filter((variant) =>
-      CommonService.getSlug(variant.name).indexOf(cardTypeName),
+    const configLimitCards = user.rules.filter(
+      (variant) =>
+        CommonService.getSlug(variant.name).indexOf(cardTypeName) !== -1,
     )[0];
     if (!configLimitCards) {
       throw new BadRequestException('Not found rule for type cards');
