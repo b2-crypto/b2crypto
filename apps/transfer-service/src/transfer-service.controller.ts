@@ -412,7 +412,6 @@ export class TransferServiceController implements GenericServiceController {
   }
 
   @NoCache()
-  @ApiTags(SwaggerSteakeyConfigEnum.TAG_DEPOSIT)
   @ApiBearerAuth('bearerToken')
   @UseGuards(ApiKeyAuthGuard)
   @ApiHeader({
