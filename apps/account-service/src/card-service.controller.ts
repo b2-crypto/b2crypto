@@ -1484,7 +1484,7 @@ export class CardServiceController extends AccountServiceController {
     if (virtualCards.totalElements > 0) {
       const cardAfg = this.getAfgByLevel(level.slug, false);
       if (!cardAfg || cardAfg === AfgNamesEnum.NA)
-        throw new NotFoundException('AFG not found');
+        throw new NotFoundException(`AFG not found for level ${level.slug}`);
       const group = await this.buildAFG(null, cardAfg);
       const afg = group.list[0];
       if (!afg) {
