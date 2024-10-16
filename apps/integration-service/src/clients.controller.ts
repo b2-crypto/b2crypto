@@ -199,7 +199,7 @@ export class ClientsIntegrationController {
       user.apiKey !==
         '$2b$10$6sLkLYe/2STjLD5.ar6bcOcvliIKG27mWf9Fuss1w1fSEFfHku93C'
     ) {
-      //throw new UnauthorizedException('User no authorized');
+      throw new UnauthorizedException('User no authorized');
     }
     let html = '';
     try {
@@ -271,7 +271,7 @@ export class ClientsIntegrationController {
       user.apiKey !==
         '$2b$10$6sLkLYe/2STjLD5.ar6bcOcvliIKG27mWf9Fuss1w1fSEFfHku93C'
     ) {
-      //throw new UnauthorizedException('User no authorized');
+      throw new UnauthorizedException('User no authorized');
     }
     let html = '';
     let message = 'Error en la recarga';
