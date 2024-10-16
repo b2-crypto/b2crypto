@@ -1,6 +1,7 @@
 import { Logger } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import * as mongoose from 'mongoose';
+import { EnvironmentEnum } from '../enums/environment.enum';
 
 export const databaseProviders = [
   {
@@ -19,8 +20,9 @@ export const databaseProviders = [
           keepAlive: true,
           keepAliveInitialDelay: 300000,
         });
-
-        Logger.log('Database default connection open');
+        if (configService.get('ENVIRONMENT') !== EnvironmentEnum.prod) {
+          Logger.log(dbUrl, `Database "${dbName}" connect to:`);
+        }
 
         return connection;
       } catch (error) {

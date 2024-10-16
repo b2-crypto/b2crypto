@@ -109,6 +109,12 @@ export class UserRegisterDto extends UserChangePasswordDto {
   twoFactorSecret: string;
 
   @IsEmpty()
+  brand?: ObjectId;
+
+  @IsEmpty()
+  level?: ObjectId;
+
+  @IsEmpty()
   twoFactorIsActive: boolean;
 
   @IsBoolean()

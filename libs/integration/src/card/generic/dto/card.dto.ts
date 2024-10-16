@@ -17,24 +17,24 @@ export class CardDto {
 
   @IsString()
   @IsOptional()
-  user_id: string;
+  user_id?: string;
 
   @IsString()
   @IsOptional()
-  affinity_group_id: string;
+  affinity_group_id?: string;
 
   @IsString()
   @IsOptional()
-  card_type: string;
+  card_type?: string;
 
   @IsString()
   @IsObject({})
   @Type(() => Address)
-  address: Address;
+  address?: Address;
 
   @IsString()
   @IsOptional()
-  previous_card_id: string;
+  previous_card_id?: string;
 
   @IsString()
   @IsOptional()

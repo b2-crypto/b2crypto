@@ -8,8 +8,10 @@ enum EventsNamesAccountEnum {
   createMany = 'ACCOUNT.CREATE.MANY',
   createOne = 'ACCOUNT.CREATE.ONE',
   createOneWallet = 'ACCOUNT.CREATE.ONE.WALLET',
+  createOneCard = 'ACCOUNT.CREATE.ONE.CARD',
   updateMany = 'ACCOUNT.UPDATE.MANY',
   updateOne = 'ACCOUNT.UPDATE.ONE',
+  updateOneCard = 'ACCOUNT.UPDATE.ONE.CARD',
   customUpdateOne = 'ACCOUNT.CUSTOM.UPDATE.ONE',
   updateAmount = 'ACCOUNT.UPDATE.AMOUNT',
   updateOneByTpId = 'ACCOUNT.UPDATE.ONE.BY.TP.ID',
@@ -39,6 +41,7 @@ enum EventsNamesAccountEnum {
   checkStatsDateAll = 'CARD.CHECK.STATS.DATE.ALL',
 
   athorizationTx = 'CARD.AUTHORIZATION.TX',
+  levelUpCards = 'CARD.LEVEL.UP',
 }
 
 export default EventsNamesAccountEnum;

@@ -3,7 +3,13 @@ import { QuerySearchAnyDto } from '@common/common/models/query_search-any.dto';
 import { UserRegisterDto } from '@user/user/dto/user.register.dto';
 import { UserUpdateDto } from '@user/user/dto/user.update.dto';
 import { UserServiceMongooseService } from '@user/user';
-import { Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Inject,
+  Injectable,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
 import { ObjectId } from 'mongodb';
 import { ClientProxy } from '@nestjs/microservices';
 import { BuildersService } from '@builder/builders';
@@ -19,6 +25,17 @@ import { ResponsePaginator } from '@common/common/interfaces/response-pagination
 import { Account } from '@account/account/entities/mongoose/account.schema';
 import TypesAccountEnum from '@account/account/enum/types.account.enum';
 import { UserLevelUpDto } from '@user/user/dto/user.level.up.dto';
+import EventsNamesCategoryEnum from 'apps/category-service/src/enum/events.names.category.enum';
+import CardTypesAccountEnum from '@account/account/enum/card.types.account.enum';
+import { StatusCashierEnum } from '@common/common/enums/StatusCashierEnum';
+import EventsNamesTransferEnum from 'apps/transfer-service/src/enum/events.names.transfer.enum';
+import EventsNamesPspAccountEnum from 'apps/psp-service/src/enum/events.names.psp.acount.enum';
+import { OperationTransactionType } from '@transfer/transfer/enum/operation.transaction.type.enum';
+import { CategoryInterface } from '@category/category/entities/category.interface';
+import { AccountInterface } from '@account/account/entities/account.interface';
+import { PspAccountInterface } from '@psp-account/psp-account/entities/psp-account.interface';
+import TagEnum from '@common/common/enums/TagEnum';
+import EventsNamesUserEnum from './enum/events.names.user.enum';
 
 @Injectable()
 export class UserServiceService {
@@ -176,7 +193,25 @@ export class UserServiceService {
     user.username = user.username ?? CommonService.getSlug(user.name);
     user.slugUsername = CommonService.getSlug(user.username);
     user.verifyEmail = true;
-    return this.lib.create(user);
+    if (!user.level) {
+      const level0 = await this.builder.getPromiseCategoryEventClient(
+        EventsNamesCategoryEnum.findAll,
+        {
+          where: {
+            slug: 'grupo-0',
+          },
+        },
+      );
+      user.level = level0.list[0];
+    }
+    const userCreated = await this.lib.create(user);
+    if (userCreated.level) {
+      this.builder.emitUserEventClient(EventsNamesUserEnum.updateLeveluser, {
+        user: userCreated._id,
+        level: user.level._id,
+      });
+    }
+    return userCreated;
   }
 
   async newManyUser(createUsersDto: UserRegisterDto[]) {
@@ -184,7 +219,11 @@ export class UserServiceService {
   }
 
   async updateUser(user: UserUpdateDto) {
-    return this.lib.update(user.id.toString(), user);
+    const userUpdated = this.lib.update(user.id.toString(), user);
+    if (user.level) {
+      return this.updateLevelUser(user.level, user.id.toString());
+    }
+    return userUpdated;
   }
 
   async updateManyUsers(users: UserUpdateDto[]) {
@@ -213,11 +252,174 @@ export class UserServiceService {
     return this.lib.update(id, updateRequest);
   }
 
-  levelUp(userLevelUpDto: UserLevelUpDto) {
-    // check physical cards
+  async levelUp(userLevelUpDto: UserLevelUpDto) {
+    const user = await this.getOne(userLevelUpDto.user);
+    const currentLevel = await this.getCategoryById(user.level.toString());
+    const nextLevel = await this.getCategoryById(userLevelUpDto.level);
+    const wallet = await this.getAccountById(userLevelUpDto.wallet);
+    // check to pay
+    const physicalCardList = await this.builder.getPromiseAccountEventClient(
+      EventsNamesAccountEnum.findAll,
+      {
+        where: {
+          type: TypesAccountEnum.CARD,
+          owner: userLevelUpDto.user,
+          accountType: CardTypesAccountEnum.PHYSICAL,
+        },
+      },
+    );
+    const totalPayment =
+      physicalCardList.totalElements * currentLevel.valueNumber;
+    const totalToPay =
+      (physicalCardList.totalElements || 1) * nextLevel.valueNumber;
+    const totalPurchase = totalToPay - totalPayment;
     // check value to pay
-    // balance is enough
-    throw 'The user does not have enough money to level up';
+    if (totalPurchase > wallet.amount * 0.9) {
+      throw new BadRequestException(
+        'The user does not have enough money to level up',
+      );
+    }
+    user.level = userLevelUpDto.level;
+    try {
+      // Create tx
+      const pspAccount = await this.getPspAccountBySlug(
+        CommonService.getSlug('b2fintech'),
+      );
+      const typeTransaction = await this.getCategoryBySlug(
+        CommonService.getSlug('Purchase wallet'),
+      );
+      const tx = await this.builder.getPromiseTransferEventClient(
+        EventsNamesTransferEnum.createOne,
+        {
+          pspAccount,
+          typeTransaction,
+          operationType: OperationTransactionType.purchase,
+          amount: totalPurchase,
+          leadCrmName: 'LEVEL_UP',
+          owner: userLevelUpDto.user,
+          userAccount: wallet.owner,
+          currency: currentLevel.valueText,
+          account: wallet._id,
+          page: `Old level ${currentLevel.name}`,
+          description: `Level up to ${nextLevel.name}`,
+          statusPayment: StatusCashierEnum.APPROVED,
+          approvedAt: new Date(),
+          isApprove: true,
+        },
+      );
+      return this.updateLevelUser(
+        userLevelUpDto.level.toString(),
+        userLevelUpDto.user.toString(),
+      );
+    } catch (error) {
+      throw new BadRequestException(error);
+    }
+  }
+
+  async updateLevelUser(levelId: string, userId: string) {
+    const customLevels = await this.builder.getPromiseCategoryEventClient(
+      EventsNamesCategoryEnum.findAll,
+      {
+        where: {
+          categoryParent: levelId,
+          type: TagEnum.CUSTOM_LEVEL,
+        },
+      },
+    );
+    const rules = [];
+    for (const customLevel of customLevels.list) {
+      customLevel.rules = await this.builder.getPromiseCategoryEventClient(
+        EventsNamesCategoryEnum.findAll,
+        {
+          take: 1000,
+          where: {
+            categoryParent: customLevel.id ?? customLevel._id,
+            type: TagEnum.CUSTOM_RULE,
+          },
+        },
+      );
+      rules.push({
+        name: customLevel.name,
+        description: customLevel.description,
+        valueNumber: customLevel.valueNumber,
+        valueText: customLevel.valueText,
+        rules: customLevel.rules.list.map((rule) => {
+          return {
+            _id: rule._id,
+            name: rule.name,
+            description: rule.description,
+            valueNumber: rule.valueNumber,
+            valueText: rule.valueText,
+          };
+        }),
+      });
+    }
+    const user = await this.lib.update(userId, {
+      id: userId,
+      level: levelId,
+      rules: rules.flat(),
+    });
+    this.builder.emitAccountEventClient(
+      EventsNamesAccountEnum.levelUpCards,
+      userId,
+    );
+    return user;
+  }
+
+  private async getCategoryBySlug(slug: string): Promise<CategoryInterface> {
+    const categoryList = await this.builder.getPromiseCategoryEventClient(
+      EventsNamesCategoryEnum.findAll,
+      {
+        where: {
+          slug,
+        },
+      },
+    );
+    const category = categoryList.list[0];
+    if (!category) {
+      throw new BadRequestException(`Category ${slug} not found`);
+    }
+    return category;
+  }
+
+  private async getPspAccountBySlug(
+    slug: string,
+  ): Promise<PspAccountInterface> {
+    const pspAccountList = await this.builder.getPromisePspAccountEventClient(
+      EventsNamesPspAccountEnum.findAll,
+      {
+        where: {
+          slug,
+        },
+      },
+    );
+    const pspAccount = pspAccountList.list[0];
+    if (!pspAccount) {
+      throw new BadRequestException(`Psp account ${slug} not found`);
+    }
+    return pspAccount;
+  }
+
+  private async getCategoryById(categoryId): Promise<CategoryInterface> {
+    const category = await this.builder.getPromiseCategoryEventClient(
+      EventsNamesCategoryEnum.findOneById,
+      categoryId,
+    );
+    if (!category) {
+      throw new BadRequestException(`Category ${categoryId} not found`);
+    }
+    return category;
+  }
+
+  private async getAccountById(accountId): Promise<AccountInterface> {
+    const account = await this.builder.getPromiseAccountEventClient(
+      EventsNamesAccountEnum.findOneById,
+      accountId,
+    );
+    if (!account) {
+      throw new BadRequestException(`Account ${accountId} not found`);
+    }
+    return account;
   }
 
   async download() {
