@@ -32,7 +32,6 @@ import {
   Inject,
   Logger,
   NotFoundException,
-  NotImplementedException,
   Param,
   Patch,
   Post,
@@ -44,6 +43,7 @@ import {
 import { ConfigService } from '@nestjs/config';
 import {
   Ctx,
+  EventPattern,
   MessagePattern,
   Payload,
   RmqContext,
@@ -76,6 +76,7 @@ import { AccountServiceController } from './account-service.controller';
 import { AccountServiceService } from './account-service.service';
 import { AfgNamesEnum } from './enum/afg.names.enum';
 import EventsNamesAccountEnum from './enum/events.names.account.enum';
+import { AccountUpdateDto } from '@account/account/dto/account.update.dto';
 
 @ApiTags('CARD')
 @Controller('cards')
@@ -166,18 +167,16 @@ export class CardServiceController extends AccountServiceController {
   @Post('create')
   @UseGuards(ApiKeyAuthGuard)
   async createOne(@Body() createDto: CardCreateDto, @Req() req?: any) {
+    const userId = createDto.owner || req?.user?.id;
+    const user: User = await this.getUser(userId);
     createDto.accountType =
       createDto.accountType ?? CardTypesAccountEnum.VIRTUAL;
-    let cardAfg = AfgNamesEnum.CONSUMER_VIRTUAL_1K;
-    if (createDto.accountType === CardTypesAccountEnum.PHYSICAL) {
-      cardAfg = AfgNamesEnum.CONSUMER_NOMINADA_3K;
-    }
-    let user: User;
-    if (createDto.owner) {
-      user = await this.getUser(createDto.owner);
-    } else {
-      user = await this.getUser(req?.user?.id);
-    }
+    await this.validateRuleLimitCards(user, createDto.accountType);
+    const level = await this.getCategoryById(user.level.toString());
+    const cardAfg = this.getAfgByLevel(
+      level.slug,
+      createDto.accountType === CardTypesAccountEnum.PHYSICAL,
+    );
     if (!user.personalData) {
       throw new BadRequestException('Need the personal data to continue');
     }
@@ -302,6 +301,94 @@ export class CardServiceController extends AccountServiceController {
         description: desc,
       });
     }
+  }
+
+  private async validateRuleLimitCards(
+    user: User,
+    cardType: CardTypesAccountEnum,
+  ) {
+    let cardTypeName = CommonService.getSlug(cardType);
+    if (cardTypeName === 'physical') {
+      cardTypeName = 'fisica';
+    }
+    const configLimitCards = user.rules.filter((variant) =>
+      CommonService.getSlug(variant.name).indexOf(cardTypeName),
+    )[0];
+    if (!configLimitCards) {
+      throw new BadRequestException('Not found rule for type cards');
+    }
+    const ruleLimitCards = configLimitCards.rules.filter(
+      (variant) =>
+        CommonService.getSlug(variant.name).indexOf('limite-de-tarjetas') !==
+        -1,
+    )[0];
+    if (!ruleLimitCards) {
+      throw new BadRequestException('Not found rule limits cards');
+    }
+    const limitCards = ruleLimitCards.valueNumber;
+    const cardList = await this.cardService.findAll({
+      take: 1,
+      where: {
+        owner: user._id,
+        accountType: cardType,
+      },
+    });
+    if (cardList.totalElements + 1 > limitCards) {
+      throw new BadRequestException(
+        `You have reached the limit (${limitCards}) of cards`,
+      );
+    }
+  }
+
+  private async getCategoryByType(type: string) {
+    const category = await this.cardBuilder.getPromiseCategoryEventClient(
+      EventsNamesCategoryEnum.findOneByNameType,
+      {
+        take: 1000,
+        where: {
+          type,
+        },
+      },
+    );
+    if (!category.totalElements) {
+      throw new BadRequestException('Empty list');
+    }
+    return category;
+  }
+
+  private async getCategoryById(categoryId: string) {
+    const category = await this.cardBuilder.getPromiseCategoryEventClient(
+      EventsNamesCategoryEnum.findOneById,
+      categoryId,
+    );
+    if (!category) {
+      throw new BadRequestException('Not found');
+    }
+    return category;
+  }
+
+  private getAfgByLevel(levelSlug: string, cardPhysical = false): AfgNamesEnum {
+    const map = cardPhysical
+      ? {
+          'grupo-1': AfgNamesEnum.CONSUMER_NOMINADA_3K,
+          'grupo-2': AfgNamesEnum.CONSUMER_NOMINADA_10K,
+          'grupo-3': AfgNamesEnum.CONSUMER_INNOMINADA_25K,
+          'grupo-4': AfgNamesEnum.CONSUMER_INNOMINADA_100K,
+        }
+      : {
+          'grupo-0': AfgNamesEnum.CONSUMER_VIRTUAL_1K,
+          'grupo-1': AfgNamesEnum.CONSUMER_VIRTUAL_1K,
+          'grupo-2': AfgNamesEnum.CONSUMER_VIRTUAL_2K,
+          'grupo-3': AfgNamesEnum.CONSUMER_VIRTUAL_5K,
+          'grupo-4': AfgNamesEnum.CONSUMER_VIRTUAL_10K,
+        };
+
+    return (
+      map[levelSlug] ??
+      (() => {
+        throw new BadRequestException('Wrong level');
+      })()
+    );
   }
 
   private getAfgProd(cardAfg: AfgNamesEnum) {
@@ -1330,6 +1417,112 @@ export class CardServiceController extends AccountServiceController {
       statusCode: 200,
       message: 'Started',
     };
+  }
+
+  @MessagePattern(EventsNamesAccountEnum.createOneCard)
+  async createOneCard(@Ctx() ctx: RmqContext, @Payload() data: CardCreateDto) {
+    CommonService.ack(ctx);
+    return await this.createOne(data);
+  }
+
+  @MessagePattern(EventsNamesAccountEnum.updateOneCard)
+  async updateOneCard(
+    @Ctx() ctx: RmqContext,
+    @Payload() data: AccountUpdateDto,
+  ) {
+    CommonService.ack(ctx);
+    if (data.group) {
+      // Actualizar en Pomelo antes
+    }
+    return await this.updateOne(data);
+  }
+
+  @EventPattern(EventsNamesAccountEnum.levelUpCards)
+  async levelUpCards(@Ctx() ctx: RmqContext, @Payload() userId: string) {
+    CommonService.ack(ctx);
+    const user = await this.getUserById(userId);
+    const virtualCards = await this.cardService.findAll({
+      where: {
+        owner: user._id,
+        statusText: [StatusAccountEnum.UNLOCK, StatusAccountEnum.LOCK],
+        accountType: CardTypesAccountEnum.VIRTUAL,
+      },
+    });
+    const level = await this.getCategoryById(user.level);
+    if (virtualCards.totalElements > 0) {
+      const cardAfg = this.getAfgByLevel(level.slug, false);
+      const group = await this.buildAFG(null, cardAfg);
+      const afg = group.list[0];
+      if (!afg) {
+        throw new NotFoundException('AFG not found');
+      }
+      const cardIntegration = await this.integration.getCardIntegration(
+        IntegrationCardEnum.POMELO,
+      );
+      if (!cardIntegration) {
+        throw new BadRequestException('Bad integration card');
+      }
+      for (const card of virtualCards.list) {
+        try {
+          const rta = await cardIntegration.updateCard({
+            id: card.cardConfig.id,
+            affinity_group_id: afg.valueGroup,
+          });
+          this.cardBuilder.emitAccountEventClient(
+            EventsNamesAccountEnum.updateOne,
+            {
+              id: card._id.toString(),
+              group: afg._id,
+            },
+          );
+        } catch (error) {
+          Logger.error(error, `LevelUpCard-${card._id.toString()}`);
+          throw new BadRequestException('Bad update card');
+        }
+      }
+    }
+    const physicalCards = await this.cardService.findAll({
+      where: {
+        owner: user._id,
+        statusText: [StatusAccountEnum.UNLOCK, StatusAccountEnum.LOCK],
+        accountType: CardTypesAccountEnum.PHYSICAL,
+      },
+    });
+    if (physicalCards.totalElements > 0) {
+      physicalCards.list.forEach((card) => {
+        this.cardBuilder.emitAccountEventClient(
+          EventsNamesAccountEnum.createOneCard,
+          {
+            owner: user._id,
+            prevAccount: card._id.toString(),
+            accountType: CardTypesAccountEnum.PHYSICAL,
+          },
+        );
+      });
+    } else {
+      if (level.name.indexOf(3) > -1 || level.name.indexOf(4) > -1) {
+        // Si grupos 3 o 4 enviar mensaje a support@b2fintech.com
+      } else {
+        this.cardBuilder.emitAccountEventClient(
+          EventsNamesAccountEnum.createOneCard,
+          {
+            owner: user._id,
+            accountType: CardTypesAccountEnum.PHYSICAL,
+          },
+        );
+      }
+    }
+  }
+
+  private async getUserById(id: string) {
+    const user = await this.cardBuilder.getPromiseUserEventClient(
+      EventsNamesUserEnum.findOneById,
+      id,
+    );
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    return user;
   }
 
   @MessagePattern(EventsNamesAccountEnum.pomeloTransaction)
