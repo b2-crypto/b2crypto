@@ -26,7 +26,12 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { Ctx, EventPattern, Payload, RmqContext } from '@nestjs/microservices';
-import { ApiBearerAuth, ApiSecurity, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiExcludeEndpoint,
+  ApiSecurity,
+  ApiTags,
+} from '@nestjs/swagger';
 import { TransferCreateDto } from '@transfer/transfer/dto/transfer.create.dto';
 import { OperationTransactionType } from '@transfer/transfer/enum/operation.transaction.type.enum';
 import { User } from '@user/user/entities/mongoose/user.schema';
@@ -42,7 +47,7 @@ import { AccountServiceController } from './account-service.controller';
 import { AccountServiceService } from './account-service.service';
 import EventsNamesAccountEnum from './enum/events.names.account.enum';
 
-@ApiTags('E-WALLET')
+@ApiTags(SwaggerSteakeyConfigEnum.TAG_WALLET)
 @Controller('wallets')
 export class WalletServiceController extends AccountServiceController {
   constructor(
@@ -55,6 +60,7 @@ export class WalletServiceController extends AccountServiceController {
     super(walletService, ewalletBuilder);
   }
 
+  @ApiExcludeEndpoint()
   @ApiTags(SwaggerSteakeyConfigEnum.TAG_WALLET)
   @ApiBearerAuth('bearerToken')
   @ApiSecurity('b2crypto-key')
@@ -68,6 +74,7 @@ export class WalletServiceController extends AccountServiceController {
     return this.walletService.findAll(query);
   }
 
+  @ApiExcludeEndpoint()
   @ApiTags(SwaggerSteakeyConfigEnum.TAG_WALLET)
   @ApiBearerAuth('bearerToken')
   @ApiSecurity('b2crypto-key')
@@ -81,6 +88,7 @@ export class WalletServiceController extends AccountServiceController {
     return this.walletService.findAll(query);
   }
 
+  @ApiExcludeEndpoint()
   @ApiTags(SwaggerSteakeyConfigEnum.TAG_WALLET)
   @ApiBearerAuth('bearerToken')
   @ApiSecurity('b2crypto-key')
@@ -337,6 +345,7 @@ export class WalletServiceController extends AccountServiceController {
     }
   }
 
+  @ApiExcludeEndpoint()
   @Patch('lock/:walletId')
   @ApiTags(SwaggerSteakeyConfigEnum.TAG_WALLET)
   @ApiSecurity('b2crypto-key')
@@ -346,6 +355,7 @@ export class WalletServiceController extends AccountServiceController {
     return this.updateStatusAccount(id, StatusAccountEnum.LOCK);
   }
 
+  @ApiExcludeEndpoint()
   @Patch('unlock/:walletId')
   @ApiTags(SwaggerSteakeyConfigEnum.TAG_WALLET)
   @ApiSecurity('b2crypto-key')
@@ -355,6 +365,7 @@ export class WalletServiceController extends AccountServiceController {
     return this.updateStatusAccount(id, StatusAccountEnum.UNLOCK);
   }
 
+  @ApiExcludeEndpoint()
   @Patch('cancel/:walletId')
   @ApiTags(SwaggerSteakeyConfigEnum.TAG_WALLET)
   @ApiSecurity('b2crypto-key')
@@ -364,6 +375,7 @@ export class WalletServiceController extends AccountServiceController {
     return this.updateStatusAccount(id, StatusAccountEnum.CANCEL);
   }
 
+  @ApiExcludeEndpoint()
   @Patch('hidden/:walletId')
   @ApiTags(SwaggerSteakeyConfigEnum.TAG_WALLET)
   @ApiSecurity('b2crypto-key')
@@ -373,6 +385,7 @@ export class WalletServiceController extends AccountServiceController {
     return this.toggleVisibleToOwner(id, false);
   }
 
+  @ApiExcludeEndpoint()
   @Patch('visible/:walletId')
   @ApiTags(SwaggerSteakeyConfigEnum.TAG_WALLET)
   @ApiSecurity('b2crypto-key')
@@ -382,6 +395,7 @@ export class WalletServiceController extends AccountServiceController {
     return this.toggleVisibleToOwner(id, true);
   }
 
+  @ApiExcludeEndpoint()
   @Delete(':walletID')
   deleteOneById(@Param('walletID') id: string, req?: any) {
     //return this.getAccountService().deleteOneById(id);

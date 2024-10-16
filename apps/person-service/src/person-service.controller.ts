@@ -12,10 +12,17 @@ import {
   Req,
   UseGuards,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiSecurity, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiExcludeEndpoint,
+  ApiSecurity,
+  ApiTags,
+} from '@nestjs/swagger';
 
 import { AllowAnon } from '@auth/auth/decorators/allow-anon.decorator';
+import { ApiKeyAuthGuard } from '@auth/auth/guards/api.key.guard';
 import { CommonService } from '@common/common';
+import { NoCache } from '@common/common/decorators/no-cache.decorator';
 import GenericServiceController from '@common/common/interfaces/controller.generic.interface';
 import { QuerySearchAnyDto } from '@common/common/models/query_search-any.dto';
 import { UpdateAnyDto } from '@common/common/models/update-any.dto';
@@ -27,16 +34,14 @@ import {
 } from '@nestjs/microservices';
 import { PersonCreateDto } from '@person/person/dto/person.create.dto';
 import { PersonUpdateDto } from '@person/person/dto/person.update.dto';
+import { AddressSchema } from '@person/person/entities/mongoose/address.schema';
 import { UserServiceService } from 'apps/user-service/src/user-service.service';
+import { SwaggerSteakeyConfigEnum } from 'libs/config/enum/swagger.stakey.config.enum';
 import { BadRequestError } from 'passport-headerapikey';
 import EventsNamesPersonEnum from './enum/events.names.person.enum';
 import { PersonServiceService } from './person-service.service';
-import { ApiKeyAuthGuard } from '@auth/auth/guards/api.key.guard';
-import { AddressSchema } from '@person/person/entities/mongoose/address.schema';
-import { SwaggerSteakeyConfigEnum } from 'libs/config/enum/swagger.stakey.config.enum';
-import { NoCache } from '@common/common/decorators/no-cache.decorator';
 
-@ApiTags('PERSON')
+@ApiTags(SwaggerSteakeyConfigEnum.TAG_PROFILE)
 @Controller('persons')
 export class PersonServiceController implements GenericServiceController {
   constructor(
@@ -45,6 +50,7 @@ export class PersonServiceController implements GenericServiceController {
     private readonly userService: UserServiceService,
   ) {}
 
+  @ApiExcludeEndpoint()
   @NoCache()
   @Get('all')
   // @CheckPoliciesAbility(new PolicyHandlerPersonRead())
@@ -70,6 +76,7 @@ export class PersonServiceController implements GenericServiceController {
     return persons;
   }
 
+  @ApiExcludeEndpoint()
   @NoCache()
   @Get(':personID')
   // @CheckPoliciesAbility(new PolicyHandlerPersonRead())
@@ -119,6 +126,7 @@ export class PersonServiceController implements GenericServiceController {
     return personalData;
   }
 
+  @ApiExcludeEndpoint()
   @Post('all')
   // @CheckPoliciesAbility(new PolicyHandlerPersonCreate())
   async createMany(
@@ -178,6 +186,7 @@ export class PersonServiceController implements GenericServiceController {
     return this.personService.updatePerson(updatePersonDto);
   }
 
+  @ApiExcludeEndpoint()
   @Patch('all')
   // @CheckPoliciesAbility(new PolicyHandlerPersonUpdate())
   async updateMany(
@@ -187,12 +196,14 @@ export class PersonServiceController implements GenericServiceController {
     return this.personService.updateManyPersons(updatePersonsDto);
   }
 
+  @ApiExcludeEndpoint()
   @Delete(':personID')
   // @CheckPoliciesAbility(new PolicyHandlerPersonDelete())
   async deleteOneById(@Param('personID') id: string) {
     return this.personService.deletePerson(id);
   }
 
+  @ApiExcludeEndpoint()
   @Delete('all')
   // @CheckPoliciesAbility(new PolicyHandlerPersonDelete())
   async deleteManyById(
