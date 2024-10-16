@@ -411,7 +411,7 @@ export class CardServiceController extends AccountServiceController {
     return (
       map[levelSlug] ??
       (() => {
-        throw new BadRequestException('Wrong level');
+        throw new BadRequestException(`Wrong level ${levelSlug}`);
       })()
     );
   }

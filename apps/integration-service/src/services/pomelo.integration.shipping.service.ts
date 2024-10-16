@@ -38,6 +38,10 @@ export class PomeloIntegrationShippingService {
         statusCode: 204,
         body: {},
       };
+      Logger.debug(
+        JSON.stringify(event, null, 2),
+        'CardEvents-NotificationHandler',
+      );
       await this.cache.setResponse(event.idempotency_key, response);
       return response;
     }
