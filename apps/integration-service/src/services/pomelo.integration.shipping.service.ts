@@ -3,7 +3,7 @@ import {
   ShippingNotifications,
 } from '@integration/integration/dto/pomelo.shipping.body.dto';
 import { PomeloCache } from '@integration/integration/util/pomelo.integration.process.cache';
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 
 @Injectable()
 export class PomeloIntegrationShippingService {
@@ -20,6 +20,11 @@ export class PomeloIntegrationShippingService {
         statusCode: 204,
         body: {},
       };
+      Logger.debug(notification, 'Shipping-NotificationHandler');
+      Logger.debug(
+        JSON.stringify(notification, null, 2),
+        'Shipping-NotificationHandler',
+      );
       await this.cache.setResponse(notification.idempotency_key, response);
       return response;
     }

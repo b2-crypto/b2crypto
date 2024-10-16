@@ -8,6 +8,8 @@ enum StatusAccountEnum {
   VERIFIED = 'VERIFIED',
   SHIPPED = 'SHIPPED',
   DELIVERED = 'DELIVERED',
+  REJECTED = 'REJECTED',
+  DESTRUCTION = 'DESTRUCTION',
 }
 
 export default StatusAccountEnum;
