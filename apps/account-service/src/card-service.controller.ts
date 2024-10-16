@@ -180,7 +180,8 @@ export class CardServiceController extends AccountServiceController {
       level.slug,
       createDto.accountType === CardTypesAccountEnum.PHYSICAL,
     );
-    if (!cardAfg) throw new NotFoundException('AFG not found');
+    if (!cardAfg || cardAfg === AfgNamesEnum.NA)
+      throw new NotFoundException('AFG not found');
     if (!user.personalData) {
       throw new BadRequestException('Need the personal data to continue');
     }
@@ -396,7 +397,7 @@ export class CardServiceController extends AccountServiceController {
   private getAfgByLevel(levelSlug: string, cardPhysical = false): AfgNamesEnum {
     const map = cardPhysical
       ? {
-          'grupo-0': null,
+          'grupo-0': AfgNamesEnum.NA,
           'grupo-1': AfgNamesEnum.CONSUMER_NOMINADA_3K,
           'grupo-2': AfgNamesEnum.CONSUMER_NOMINADA_10K,
           'grupo-3': AfgNamesEnum.CONSUMER_INNOMINADA_25K,
@@ -1482,7 +1483,8 @@ export class CardServiceController extends AccountServiceController {
     const level = await this.getCategoryById(user.level);
     if (virtualCards.totalElements > 0) {
       const cardAfg = this.getAfgByLevel(level.slug, false);
-      if (!cardAfg) throw new NotFoundException('AFG not found');
+      if (!cardAfg || cardAfg === AfgNamesEnum.NA)
+        throw new NotFoundException('AFG not found');
       const group = await this.buildAFG(null, cardAfg);
       const afg = group.list[0];
       if (!afg) {
