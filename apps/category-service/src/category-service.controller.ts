@@ -297,11 +297,13 @@ export class CategoryServiceController implements GenericServiceController {
   async listLevels() {
     const rta = [];
     const levels = await this.categoryService.getAll({
+      take: 1000,
       where: { type: TagEnum.LEVEL },
     });
     for (const level of levels.list) {
       level['options'] = [];
       const customLevels = await this.categoryService.getAll({
+        take: 1000,
         where: {
           categoryParent: level.id ?? level._id,
           type: TagEnum.CUSTOM_LEVEL,
@@ -310,6 +312,7 @@ export class CategoryServiceController implements GenericServiceController {
 
       for (const customLevel of customLevels.list) {
         const customRules = await this.categoryService.getAll({
+          take: 1000,
           where: {
             categoryParent: customLevel.id ?? customLevel._id,
             type: TagEnum.CUSTOM_RULE,

@@ -9,7 +9,9 @@ export class RulesUser implements RulesUserModel {
   @Prop()
   description: string;
   @Prop()
-  valueNumber: string;
+  valueNumber: number;
   @Prop()
   valueText: string;
+  @Prop()
+  rules: [RulesUser];
 }

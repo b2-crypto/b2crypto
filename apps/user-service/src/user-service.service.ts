@@ -295,6 +295,7 @@ export class UserServiceService {
           typeTransaction,
           operationType: OperationTransactionType.purchase,
           amount: totalPurchase,
+          leadCrmName: 'LEVEL_UP',
           owner: userLevelUpDto.user,
           userAccount: wallet.owner,
           currency: currentLevel.valueText,
@@ -337,8 +338,12 @@ export class UserServiceService {
           },
         },
       );
-      rules.push(
-        customLevel.rules.list.map((rule) => {
+      rules.push({
+        name: customLevel.name,
+        description: customLevel.description,
+        valueNumber: customLevel.valueNumber,
+        valueText: customLevel.valueText,
+        rules: customLevel.rules.list.map((rule) => {
           return {
             _id: rule._id,
             name: rule.name,
@@ -347,13 +352,18 @@ export class UserServiceService {
             valueText: rule.valueText,
           };
         }),
-      );
+      });
     }
-    return this.lib.update(userId, {
+    const user = await this.lib.update(userId, {
       id: userId,
       level: levelId,
       rules: rules.flat(),
     });
+    this.builder.emitAccountEventClient(
+      EventsNamesAccountEnum.levelUpCards,
+      userId,
+    );
+    return user;
   }
 
   private async getCategoryBySlug(slug: string): Promise<CategoryInterface> {

@@ -725,7 +725,7 @@ export class TransferServiceService
   }
 
   private async checkTransferAccount(transfer: TransferCreateDto, data) {
-    transfer.leadCrmName = data.crm?.name;
+    transfer.leadCrmName = transfer.leadCrmName ?? data.crm?.name;
     transfer.psp = data.pspAccount?.psp;
     transfer.affiliate = data.account.affiliate;
     // Fill status
