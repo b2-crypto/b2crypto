@@ -113,6 +113,7 @@
   },
   "dependencies": {
     "@casl/ability": "^6.5.0",
+    "@fireblocks/ts-sdk": "^4.0.0",
     "@nestjs-modules/mailer": "^2.0.2",
     "@nestjs/axios": "^1.0.0",
     "@nestjs/cache-manager": "^2.2.2",

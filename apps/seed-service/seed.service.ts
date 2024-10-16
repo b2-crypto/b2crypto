@@ -79,20 +79,21 @@ export class SeedService {
       !countPermissions /*||
       !countTransfers*/
     ) {
-      await this.clearStats();
-      await this.clearActivities();
-      await this.clearPersons();
-      await this.seedStatus();
-      await this.seedCategory();
-      await this.seedPermissions();
-      await this.seedRoles();
-      await this.seedBrands();
-      await this.seedCrm();
-      await this.seedUsers();
-      await this.seedPsps();
-      await this.seedPspAccounts();
-      await this.seedAffiliates();
-      await this.seedLeads();
+      Logger.debug('Seeding initial data...', SeedService.name);
+      // await this.clearStats();
+      // await this.clearActivities();
+      // await this.clearPersons();
+      // await this.seedStatus();
+      // await this.seedCategory();
+      // await this.seedPermissions();
+      // await this.seedRoles();
+      // await this.seedBrands();
+      // await this.seedCrm();
+      // await this.seedUsers();
+      // await this.seedPsps();
+      // await this.seedPspAccounts();
+      // await this.seedAffiliates();
+      // await this.seedLeads();
       //await this.seedTransfers();
     }
     return {

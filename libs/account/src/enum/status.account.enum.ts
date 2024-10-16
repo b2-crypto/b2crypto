@@ -4,6 +4,12 @@ enum StatusAccountEnum {
   LOCK = 'LOCK',
   UNLOCK = 'UNLOCK',
   CANCEL = 'CANCEL',
+  ORDERED = 'ORDERED',
+  VERIFIED = 'VERIFIED',
+  SHIPPED = 'SHIPPED',
+  DELIVERED = 'DELIVERED',
+  REJECTED = 'REJECTED',
+  DESTRUCTION = 'DESTRUCTION',
 }
 
 export default StatusAccountEnum;

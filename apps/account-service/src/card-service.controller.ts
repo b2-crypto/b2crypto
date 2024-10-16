@@ -43,6 +43,7 @@ import {
 import { ConfigService } from '@nestjs/config';
 import {
   Ctx,
+  EventPattern,
   MessagePattern,
   Payload,
   RmqContext,
@@ -76,6 +77,8 @@ import { AccountServiceController } from './account-service.controller';
 import { AccountServiceService } from './account-service.service';
 import { AfgNamesEnum } from './enum/afg.names.enum';
 import EventsNamesAccountEnum from './enum/events.names.account.enum';
+import { AccountUpdateDto } from '@account/account/dto/account.update.dto';
+import WalletTypesAccountEnum from '@account/account/enum/wallet.types.account.enum';
 
 @ApiTags(SwaggerSteakeyConfigEnum.TAG_CARD)
 @Controller('cards')
@@ -166,18 +169,20 @@ export class CardServiceController extends AccountServiceController {
   @Post('create')
   @UseGuards(ApiKeyAuthGuard)
   async createOne(@Body() createDto: CardCreateDto, @Req() req?: any) {
+    const userId = createDto.owner || req?.user?.id;
+    const user: User = await this.getUser(userId);
     createDto.accountType =
       createDto.accountType ?? CardTypesAccountEnum.VIRTUAL;
-    let cardAfg = AfgNamesEnum.CONSUMER_VIRTUAL_1K;
-    if (createDto.accountType === CardTypesAccountEnum.PHYSICAL) {
-      cardAfg = AfgNamesEnum.CONSUMER_NOMINADA_3K;
+    if (!createDto.force) {
+      await this.validateRuleLimitCards(user, createDto.accountType);
     }
-    let user: User;
-    if (createDto.owner) {
-      user = await this.getUser(createDto.owner);
-    } else {
-      user = await this.getUser(req?.user?.id);
-    }
+    const level = await this.getCategoryById(user.level.toString());
+    const cardAfg = this.getAfgByLevel(
+      level.slug,
+      createDto.accountType === CardTypesAccountEnum.PHYSICAL,
+    );
+    if (!cardAfg || cardAfg === AfgNamesEnum.NA)
+      throw new NotFoundException('AFG not found');
     if (!user.personalData) {
       throw new BadRequestException('Need the personal data to continue');
     }
@@ -249,41 +254,61 @@ export class CardServiceController extends AccountServiceController {
           createDto?.address?.neighborhood ??
           user.personalData?.location?.address?.neighborhood,
       };
-      const card = await cardIntegration.createCard({
+      const cardDataIntegration = {
         user_id: account.userCardConfig.id,
         affinity_group_id: account.group.valueGroup,
         card_type: account.accountType,
         address: address,
-      });
+        previous_card_id: null,
+      };
+      // if (createDto.prevAccount) {
+      //   const prevCard = await this.cardService.findOneById(
+      //     createDto.prevAccount.toString(),
+      //   );
+      //   if (!prevCard || !prevCard.cardConfig) {
+      //     throw new BadRequestException('Prev account not found');
+      //   }
+      //   cardDataIntegration.previous_card_id = prevCard.cardConfig.id;
+      // }
+      const card = await cardIntegration.createCard(cardDataIntegration);
       const error = card['error'];
       if (error) {
         // TODO[hender - 2024-08-12] If problems with data user in Pomelo, flag to update in pomelo when update profile user
         throw new BadRequestException(error);
       }
       account.cardConfig = card.data as unknown as Card;
+      if (card.data['shipment_id']) {
+        const dataShipping = await cardIntegration.getShippingPhysicalCard(
+          card.data['shipment_id'],
+        );
+        account.responseShipping = dataShipping.data;
+        if (
+          dataShipping.data.status === StatusAccountEnum.REJECTED ||
+          dataShipping.data.status === StatusAccountEnum.DESTRUCTION
+        ) {
+          account.statusText = StatusAccountEnum.CANCEL;
+        }
+      }
       account.save();
+
+      const walletDTO = {
+        owner: account.owner,
+        name: 'USD Tether (Tron)',
+        type: TypesAccountEnum.WALLET,
+        accountType: WalletTypesAccountEnum.VAULT,
+      };
       const countWalletsUser =
         await this.cardBuilder.getPromiseAccountEventClient(
           EventsNamesAccountEnum.count,
           {
-            where: {
-              type: TypesAccountEnum.WALLET,
-              owner: account.owner,
-            },
+            take: 1,
+            where: walletDTO,
           },
         );
       if (countWalletsUser < 1) {
         this.cardBuilder.emitAccountEventClient(
           EventsNamesAccountEnum.createOneWallet,
-          {
-            owner: account.owner,
-            name: 'USDT',
-            pin: CommonService.getNumberDigits(
-              CommonService.randomIntNumber(4),
-              4,
-            ),
-            accountType: 'STABLECOIN',
-          },
+          walletDTO,
         );
       }
       return account;
@@ -302,6 +327,98 @@ export class CardServiceController extends AccountServiceController {
         description: desc,
       });
     }
+  }
+
+  private async validateRuleLimitCards(
+    user: User,
+    cardType: CardTypesAccountEnum,
+  ) {
+    let cardTypeName = CommonService.getSlug(cardType);
+    if (cardTypeName === 'physical') {
+      cardTypeName = 'fisica';
+    }
+    const configLimitCards = user.rules.filter(
+      (variant) =>
+        CommonService.getSlug(variant.name).indexOf(cardTypeName) !== -1,
+    )[0];
+    if (!configLimitCards) {
+      throw new BadRequestException('Not found rule for type cards');
+    }
+    const ruleLimitCards = configLimitCards.rules.filter(
+      (variant) =>
+        CommonService.getSlug(variant.name).indexOf('limite-de-tarjetas') !==
+        -1,
+    )[0];
+    if (!ruleLimitCards) {
+      throw new BadRequestException('Not found rule limits cards');
+    }
+    const limitCards = ruleLimitCards.valueNumber;
+    const cardList = await this.cardService.findAll({
+      take: 1,
+      where: {
+        owner: user._id,
+        showToOwner: true,
+        accountType: cardType,
+        statusText: [StatusAccountEnum.UNLOCK, StatusAccountEnum.LOCK],
+      },
+    });
+    if (cardList.totalElements + 1 > limitCards) {
+      throw new BadRequestException(
+        `You have (${cardList.totalElements}) reached the limit (${limitCards}) of cards`,
+      );
+    }
+  }
+
+  private async getCategoryByType(type: string) {
+    const category = await this.cardBuilder.getPromiseCategoryEventClient(
+      EventsNamesCategoryEnum.findOneByNameType,
+      {
+        take: 1000,
+        where: {
+          type,
+        },
+      },
+    );
+    if (!category.totalElements) {
+      throw new BadRequestException('Empty list');
+    }
+    return category;
+  }
+
+  private async getCategoryById(categoryId: string) {
+    const category = await this.cardBuilder.getPromiseCategoryEventClient(
+      EventsNamesCategoryEnum.findOneById,
+      categoryId,
+    );
+    if (!category) {
+      throw new BadRequestException('Not found');
+    }
+    return category;
+  }
+
+  private getAfgByLevel(levelSlug: string, cardPhysical = false): AfgNamesEnum {
+    const map = cardPhysical
+      ? {
+          'grupo-0': AfgNamesEnum.NA,
+          'grupo-1': AfgNamesEnum.CONSUMER_NOMINADA_3K,
+          'grupo-2': AfgNamesEnum.CONSUMER_NOMINADA_10K,
+          'grupo-3': AfgNamesEnum.CONSUMER_INNOMINADA_25K,
+          'grupo-4': AfgNamesEnum.CONSUMER_INNOMINADA_100K,
+        }
+      : {
+          'grupo-0': AfgNamesEnum.CONSUMER_VIRTUAL_1K,
+          'grupo-1': AfgNamesEnum.CONSUMER_VIRTUAL_1K,
+          'grupo-2': AfgNamesEnum.CONSUMER_VIRTUAL_2K,
+          'grupo-3': AfgNamesEnum.CONSUMER_VIRTUAL_5K,
+          'grupo-4': AfgNamesEnum.CONSUMER_VIRTUAL_10K,
+        };
+
+    return (
+      map[levelSlug] ??
+      (() => {
+        throw new BadRequestException(`Wrong level ${levelSlug}`);
+      })()
+    );
   }
 
   private getAfgProd(cardAfg: AfgNamesEnum) {
@@ -1273,6 +1390,7 @@ export class CardServiceController extends AccountServiceController {
   @ApiBearerAuth('bearerToken')
   @UseGuards(ApiKeyAuthGuard)
   async blockedOneById(@Param('cardId') id: string) {
+    // TODO: change status ON POMELO
     return this.updateStatusAccount(id, StatusAccountEnum.LOCK);
   }
 
@@ -1281,6 +1399,7 @@ export class CardServiceController extends AccountServiceController {
   @ApiBearerAuth('bearerToken')
   @UseGuards(ApiKeyAuthGuard)
   async unblockedOneById(@Param('cardId') id: string) {
+    // TODO: change status ON POMELO
     return this.updateStatusAccount(id, StatusAccountEnum.UNLOCK);
   }
 
@@ -1289,6 +1408,7 @@ export class CardServiceController extends AccountServiceController {
   @ApiBearerAuth('bearerToken')
   @UseGuards(ApiKeyAuthGuard)
   async cancelOneById(@Param('cardId') id: string) {
+    // TODO: change status ON POMELO
     return this.updateStatusAccount(id, StatusAccountEnum.CANCEL);
   }
 
@@ -1329,6 +1449,125 @@ export class CardServiceController extends AccountServiceController {
       statusCode: 200,
       message: 'Started',
     };
+  }
+
+  @MessagePattern(EventsNamesAccountEnum.createOneCard)
+  async createOneCard(@Ctx() ctx: RmqContext, @Payload() data: CardCreateDto) {
+    CommonService.ack(ctx);
+    return await this.createOne(data);
+  }
+
+  @MessagePattern(EventsNamesAccountEnum.updateOneCard)
+  async updateOneCard(
+    @Ctx() ctx: RmqContext,
+    @Payload() data: AccountUpdateDto,
+  ) {
+    CommonService.ack(ctx);
+    if (data.group) {
+      // Actualizar en Pomelo antes
+    }
+    return await this.updateOne(data);
+  }
+
+  @EventPattern(EventsNamesAccountEnum.levelUpCards)
+  async levelUpCards(@Ctx() ctx: RmqContext, @Payload() userId: string) {
+    CommonService.ack(ctx);
+    const user = await this.getUserById(userId);
+    const virtualCards = await this.cardService.findAll({
+      where: {
+        owner: user._id,
+        showToOwner: true,
+        statusText: [StatusAccountEnum.UNLOCK, StatusAccountEnum.LOCK],
+        accountType: CardTypesAccountEnum.VIRTUAL,
+      },
+    });
+    const level = await this.getCategoryById(user.level);
+    if (virtualCards.totalElements > 0) {
+      const cardAfg = this.getAfgByLevel(level.slug, false);
+      if (!cardAfg || cardAfg === AfgNamesEnum.NA)
+        throw new NotFoundException(`AFG not found for level ${level.slug}`);
+      const group = await this.buildAFG(null, cardAfg);
+      const afg = group.list[0];
+      if (!afg) {
+        throw new NotFoundException('AFG not found');
+      }
+      const cardIntegration = await this.integration.getCardIntegration(
+        IntegrationCardEnum.POMELO,
+      );
+      if (!cardIntegration) {
+        throw new BadRequestException('Bad integration card');
+      }
+      for (const card of virtualCards.list) {
+        try {
+          const rta = await cardIntegration.updateCard({
+            id: card.cardConfig.id,
+            affinity_group_id: afg.valueGroup,
+          });
+          this.cardBuilder.emitAccountEventClient(
+            EventsNamesAccountEnum.updateOne,
+            {
+              id: card._id.toString(),
+              group: afg._id,
+            },
+          );
+        } catch (error) {
+          Logger.error(error, `LevelUpCard-${card._id.toString()}`);
+          throw new BadRequestException('Bad update card');
+        }
+      }
+    }
+    const physicalCards = await this.cardService.findAll({
+      where: {
+        owner: user._id,
+        showToOwner: true,
+        statusText: [
+          StatusAccountEnum.UNLOCK,
+          StatusAccountEnum.LOCK,
+          StatusAccountEnum.ORDERED,
+          StatusAccountEnum.VERIFIED,
+          StatusAccountEnum.SHIPPED,
+          StatusAccountEnum.DELIVERED,
+        ],
+        accountType: CardTypesAccountEnum.PHYSICAL,
+      },
+    });
+    if (physicalCards.totalElements > 0) {
+      physicalCards.list.forEach((card) => {
+        this.cardBuilder.emitAccountEventClient(
+          EventsNamesAccountEnum.createOneCard,
+          {
+            force: true,
+            owner: user._id,
+            prevAccount: card._id.toString(),
+            statusText: StatusAccountEnum.ORDERED,
+            accountType: CardTypesAccountEnum.PHYSICAL,
+          },
+        );
+      });
+    } else {
+      if (level.name.indexOf(3) > -1 || level.name.indexOf(4) > -1) {
+        // Si grupos 3 o 4 enviar mensaje a support@b2fintech.com
+      } else {
+        this.cardBuilder.emitAccountEventClient(
+          EventsNamesAccountEnum.createOneCard,
+          {
+            owner: user._id,
+            accountType: CardTypesAccountEnum.PHYSICAL,
+          },
+        );
+      }
+    }
+  }
+
+  private async getUserById(id: string) {
+    const user = await this.cardBuilder.getPromiseUserEventClient(
+      EventsNamesUserEnum.findOneById,
+      id,
+    );
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    return user;
   }
 
   @MessagePattern(EventsNamesAccountEnum.pomeloTransaction)

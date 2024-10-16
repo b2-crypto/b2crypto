@@ -204,7 +204,12 @@ export class IntegrationCardService<
     );
   }
   async updateCard(card: TCardDto): Promise<AxiosResponse<any[], any>> {
-    return this.http.patch(this.routesMap.updateCard, card);
+    const cardId = card['id'];
+    delete card['id'];
+    return this.http.patch(
+      this.routesMap.updateCard.replace('{id}', cardId),
+      card,
+    );
   }
 
   async getAffinityGroup(

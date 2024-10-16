@@ -11,6 +11,7 @@ import { UserInterface } from '@user/user/entities/user.interface';
 import { ObjectId } from 'mongoose';
 import UserVerifyIdentityDto from '../dto/user.verify.identity.dto';
 import { UserBalanceModel } from './user.balance.model';
+import { BrandEntity } from '@brand/brand/entities/brand.entity';
 
 export class UserEntity implements UserInterface {
   _id?: ObjectId;
@@ -40,10 +41,12 @@ export class UserEntity implements UserInterface {
   amountCustodial: number;
   currencyCustodial: CurrencyCodeB2cryptoEnum;
   image: FileEntity;
+  brand: BrandEntity;
   role: RoleEntity;
   permissions: Array<PermissionEntity>;
   authorizations: Array<string>;
   category: CategoryEntity;
+  level: CategoryEntity;
   personalData: PersonEntity;
   userParent: UserEntity;
   verifyIdentity: boolean;
