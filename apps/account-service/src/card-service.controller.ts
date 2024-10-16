@@ -171,7 +171,9 @@ export class CardServiceController extends AccountServiceController {
     const user: User = await this.getUser(userId);
     createDto.accountType =
       createDto.accountType ?? CardTypesAccountEnum.VIRTUAL;
-    await this.validateRuleLimitCards(user, createDto.accountType);
+    if (!createDto.force) {
+      await this.validateRuleLimitCards(user, createDto.accountType);
+    }
     const level = await this.getCategoryById(user.level.toString());
     const cardAfg = this.getAfgByLevel(
       level.slug,
@@ -248,12 +250,23 @@ export class CardServiceController extends AccountServiceController {
           createDto?.address?.neighborhood ??
           user.personalData?.location?.address?.neighborhood,
       };
-      const card = await cardIntegration.createCard({
+      const cardDataIntegration = {
         user_id: account.userCardConfig.id,
         affinity_group_id: account.group.valueGroup,
         card_type: account.accountType,
         address: address,
-      });
+        previous_card_id: null,
+      };
+      if (createDto.prevAccount) {
+        const prevCard = await this.cardService.findOneById(
+          createDto.prevAccount.toString(),
+        );
+        if (!prevCard || !prevCard.cardConfig) {
+          throw new BadRequestException('Prev account not found');
+        }
+        cardDataIntegration.previous_card_id = prevCard.cardConfig.id;
+      }
+      const card = await cardIntegration.createCard(cardDataIntegration);
       const error = card['error'];
       if (error) {
         // TODO[hender - 2024-08-12] If problems with data user in Pomelo, flag to update in pomelo when update profile user
@@ -330,12 +343,14 @@ export class CardServiceController extends AccountServiceController {
       take: 1,
       where: {
         owner: user._id,
+        showToOwner: true,
         accountType: cardType,
+        statusText: [StatusAccountEnum.UNLOCK, StatusAccountEnum.LOCK],
       },
     });
     if (cardList.totalElements + 1 > limitCards) {
       throw new BadRequestException(
-        `You have reached the limit (${limitCards}) of cards`,
+        `You have (${cardList.totalElements}) reached the limit (${limitCards}) of cards`,
       );
     }
   }
@@ -1361,6 +1376,7 @@ export class CardServiceController extends AccountServiceController {
   @ApiBearerAuth('bearerToken')
   @UseGuards(ApiKeyAuthGuard)
   async blockedOneById(@Param('cardId') id: string) {
+    // TODO: change status ON POMELO
     return this.updateStatusAccount(id, StatusAccountEnum.LOCK);
   }
 
@@ -1370,6 +1386,7 @@ export class CardServiceController extends AccountServiceController {
   @ApiBearerAuth('bearerToken')
   @UseGuards(ApiKeyAuthGuard)
   async unblockedOneById(@Param('cardId') id: string) {
+    // TODO: change status ON POMELO
     return this.updateStatusAccount(id, StatusAccountEnum.UNLOCK);
   }
 
@@ -1379,6 +1396,7 @@ export class CardServiceController extends AccountServiceController {
   @ApiBearerAuth('bearerToken')
   @UseGuards(ApiKeyAuthGuard)
   async cancelOneById(@Param('cardId') id: string) {
+    // TODO: change status ON POMELO
     return this.updateStatusAccount(id, StatusAccountEnum.CANCEL);
   }
 
@@ -1444,6 +1462,7 @@ export class CardServiceController extends AccountServiceController {
     const virtualCards = await this.cardService.findAll({
       where: {
         owner: user._id,
+        showToOwner: true,
         statusText: [StatusAccountEnum.UNLOCK, StatusAccountEnum.LOCK],
         accountType: CardTypesAccountEnum.VIRTUAL,
       },
@@ -1484,7 +1503,15 @@ export class CardServiceController extends AccountServiceController {
     const physicalCards = await this.cardService.findAll({
       where: {
         owner: user._id,
-        statusText: [StatusAccountEnum.UNLOCK, StatusAccountEnum.LOCK],
+        showToOwner: true,
+        statusText: [
+          StatusAccountEnum.UNLOCK,
+          StatusAccountEnum.LOCK,
+          StatusAccountEnum.ORDERED,
+          StatusAccountEnum.VERIFIED,
+          StatusAccountEnum.SHIPPED,
+          StatusAccountEnum.DELIVERED,
+        ],
         accountType: CardTypesAccountEnum.PHYSICAL,
       },
     });
@@ -1493,6 +1520,7 @@ export class CardServiceController extends AccountServiceController {
         this.cardBuilder.emitAccountEventClient(
           EventsNamesAccountEnum.createOneCard,
           {
+            force: true,
             owner: user._id,
             prevAccount: card._id.toString(),
             accountType: CardTypesAccountEnum.PHYSICAL,
