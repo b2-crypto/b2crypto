@@ -77,6 +77,7 @@ import { AccountServiceService } from './account-service.service';
 import { AfgNamesEnum } from './enum/afg.names.enum';
 import EventsNamesAccountEnum from './enum/events.names.account.enum';
 import { AccountUpdateDto } from '@account/account/dto/account.update.dto';
+import WalletTypesAccountEnum from '@account/account/enum/wallet.types.account.enum';
 
 @ApiTags('CARD')
 @Controller('cards')
@@ -257,15 +258,15 @@ export class CardServiceController extends AccountServiceController {
         address: address,
         previous_card_id: null,
       };
-      if (createDto.prevAccount) {
-        const prevCard = await this.cardService.findOneById(
-          createDto.prevAccount.toString(),
-        );
-        if (!prevCard || !prevCard.cardConfig) {
-          throw new BadRequestException('Prev account not found');
-        }
-        cardDataIntegration.previous_card_id = prevCard.cardConfig.id;
-      }
+      // if (createDto.prevAccount) {
+      //   const prevCard = await this.cardService.findOneById(
+      //     createDto.prevAccount.toString(),
+      //   );
+      //   if (!prevCard || !prevCard.cardConfig) {
+      //     throw new BadRequestException('Prev account not found');
+      //   }
+      //   cardDataIntegration.previous_card_id = prevCard.cardConfig.id;
+      // }
       const card = await cardIntegration.createCard(cardDataIntegration);
       const error = card['error'];
       if (error) {
@@ -273,29 +274,38 @@ export class CardServiceController extends AccountServiceController {
         throw new BadRequestException(error);
       }
       account.cardConfig = card.data as unknown as Card;
+      if (card.data['shipment_id']) {
+        const dataShipping = await cardIntegration.getShippingPhysicalCard(
+          card.data['shipment_id'],
+        );
+        account.responseShipping = dataShipping.data;
+        if (
+          dataShipping.data.status === StatusAccountEnum.REJECTED ||
+          dataShipping.data.status === StatusAccountEnum.DESTRUCTION
+        ) {
+          account.statusText = StatusAccountEnum.CANCEL;
+        }
+      }
       account.save();
+
+      const walletDTO = {
+        owner: account.owner,
+        name: 'USD Tether (Tron)',
+        type: TypesAccountEnum.WALLET,
+        accountType: WalletTypesAccountEnum.VAULT,
+      };
       const countWalletsUser =
         await this.cardBuilder.getPromiseAccountEventClient(
           EventsNamesAccountEnum.count,
           {
-            where: {
-              type: TypesAccountEnum.WALLET,
-              owner: account.owner,
-            },
+            take: 1,
+            where: walletDTO,
           },
         );
       if (countWalletsUser < 1) {
         this.cardBuilder.emitAccountEventClient(
           EventsNamesAccountEnum.createOneWallet,
-          {
-            owner: account.owner,
-            name: 'USDT',
-            pin: CommonService.getNumberDigits(
-              CommonService.randomIntNumber(4),
-              4,
-            ),
-            accountType: 'STABLECOIN',
-          },
+          walletDTO,
         );
       }
       return account;
