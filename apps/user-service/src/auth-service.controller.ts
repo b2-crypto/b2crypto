@@ -413,12 +413,14 @@ export class AuthServiceController {
   @ApiResponse(ResponseB2Crypto.getResponseSwagger(404, ActionsEnum.LOGIN))
   @ApiResponse(ResponseB2Crypto.getResponseSwagger(500, ActionsEnum.LOGIN)) */
   @Post('registry')
-  async registryUser(@Body() userDto: UserRegisterDto) {
+  async registryUser(@Body() userDto: UserRegisterDto, @Req() req) {
+    const client = await this.getClientFromPublicKey(req.clientApi, false);
     userDto.name =
       userDto.name ?? userDto.username ?? userDto.email.split('@')[0];
     userDto.slugEmail = CommonService.getSlug(userDto.email);
     userDto.username = userDto.username ?? userDto.name;
     userDto.slugUsername = CommonService.getSlug(userDto.username);
+    userDto.brand = client.brand;
     const createdUser = await this.builder.getPromiseUserEventClient(
       EventsNamesUserEnum.createOne,
       userDto,
@@ -470,7 +472,7 @@ export class AuthServiceController {
     userDto.slugUsername = CommonService.getSlug(userDto.username);
     const client = await this.getClientFromPublicKey(req.clientApi, false);
     userDto.description = userDto.campaign ?? client.name;
-
+    userDto.brand = client.brand;
     const user = await this.builder.getPromiseUserEventClient(
       EventsNamesUserEnum.createOne,
       userDto,

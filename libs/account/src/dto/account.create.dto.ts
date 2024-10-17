@@ -138,6 +138,30 @@ export class AccountCreateDto extends CreateAnyDto implements AccountInterface {
 
   @ApiProperty({
     required: false,
+    description: 'ID Account',
+  })
+  @IsString()
+  @IsOptional()
+  protocol?: string;
+
+  @ApiProperty({
+    required: false,
+    description: 'ID Account',
+  })
+  @IsString()
+  @IsOptional()
+  nativeAccountName?: string;
+
+  @ApiProperty({
+    required: false,
+    description: 'ID Account',
+  })
+  @IsString()
+  @IsOptional()
+  decimals: number;
+
+  @ApiProperty({
+    required: false,
     description: 'Tecnical account name',
   })
   @IsString()
@@ -165,7 +189,7 @@ export class AccountCreateDto extends CreateAnyDto implements AccountInterface {
   })
   @IsString()
   @IsOptional()
-  referral: string;
+  referral?: string;
 
   @ApiProperty({
     required: false,
@@ -175,7 +199,7 @@ export class AccountCreateDto extends CreateAnyDto implements AccountInterface {
   })
   @IsEnum(CountryCodeEnum)
   @IsOptional()
-  country: CountryCodeEnum;
+  country?: CountryCodeEnum;
 
   @ApiProperty({
     required: false,
@@ -184,7 +208,7 @@ export class AccountCreateDto extends CreateAnyDto implements AccountInterface {
   })
   @IsString()
   @IsOptional()
-  referralType: string;
+  referralType?: string;
 
   @IsEmpty()
   referralTypeObj?: CategoryUpdateDto;
@@ -208,7 +232,7 @@ export class AccountCreateDto extends CreateAnyDto implements AccountInterface {
   @IsOptional()
   @ValidateNested()
   @Type(() => PersonCreateDto)
-  personalData: ObjectId;
+  personalData?: ObjectId;
 
   @IsOptional()
   @IsMongoId()
@@ -220,15 +244,15 @@ export class AccountCreateDto extends CreateAnyDto implements AccountInterface {
 
   @IsOptional()
   @IsMongoId()
-  crm: ObjectId;
+  crm?: ObjectId;
 
   @IsOptional()
   @IsMongoId()
-  brand: ObjectId;
+  brand?: ObjectId;
 
   @IsOptional()
   @IsMongoId()
-  affiliate: ObjectId;
+  affiliate?: ObjectId;
 
   @ApiProperty({
     required: false,
@@ -288,5 +312,5 @@ export class AccountCreateDto extends CreateAnyDto implements AccountInterface {
   @IsEmpty()
   currencyBlockedCustodial: CurrencyCodeB2cryptoEnum;
   @IsEmpty()
-  afgId: string;
+  afgId?: string;
 }

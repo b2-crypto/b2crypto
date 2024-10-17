@@ -24,11 +24,14 @@ export interface AccountInterface {
   telephone: string;
   accountType?: string;
   accountId?: string;
+  protocol?: string;
   accountName?: string;
+  nativeAccountName?: string;
+  decimals: number;
   accountPassword?: string;
   accountDepartment?: CategoryInterface;
   accountStatus?: StatusInterface[];
-  referral: string;
+  referral?: string;
   owner?: UserInterface;
   totalTransfer: number;
   quantityTransfer: number;
@@ -38,8 +41,8 @@ export interface AccountInterface {
   referralType?: CategoryInterface | string;
   group?: GroupInterface;
   status?: StatusInterface;
-  personalData: PersonInterface;
-  country: CountryCodeB2cryptoEnum;
+  personalData?: PersonInterface;
+  country?: CountryCodeB2cryptoEnum;
   crm?: CrmInterface;
   brand?: BrandInterface;
   affiliate?: AffiliateInterface;

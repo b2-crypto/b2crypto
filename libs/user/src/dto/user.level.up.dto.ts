@@ -1,4 +1,4 @@
-import { IsMongoId, IsOptional } from 'class-validator';
+import { IsEmpty, IsMongoId, IsOptional } from 'class-validator';
 import { ObjectId } from 'mongodb';
 
 export class UserLevelUpDto {
@@ -7,4 +7,10 @@ export class UserLevelUpDto {
   id?: ObjectId;
   @IsMongoId()
   level: ObjectId;
+  @IsMongoId()
+  wallet: ObjectId;
+  @IsMongoId()
+  @IsEmpty()
+  @IsOptional()
+  user: ObjectId;
 }

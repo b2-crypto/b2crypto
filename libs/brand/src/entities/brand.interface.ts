@@ -2,6 +2,7 @@ import { CategoryInterface } from '@category/category/entities/category.interfac
 import { CrmInterface } from '@crm/crm/entities/crm.interface';
 import { PspInterface } from '@psp/psp/entities/psp.interface';
 import { StatusInterface } from '@status/status/entities/status.interface';
+import { UserInterface } from '@user/user/entities/user.interface';
 import { ObjectId } from 'mongoose';
 
 export interface BrandInterface {
@@ -22,6 +23,7 @@ export interface BrandInterface {
   quantityAffiliateFtd: number;
   totalAffiliateFtd: number;
   totalAffiliateConversion: number;
+  owner: UserInterface;
   department: CategoryInterface;
   currentCrm: CrmInterface;
   status: StatusInterface;

@@ -12,6 +12,9 @@ import { UserEntity } from '@user/user/entities/user.entity';
 import mongoose, { Document, ObjectId } from 'mongoose';
 import { UserBalance } from './user.balance.schema';
 import { UserVerifyIdentitySchema } from './user.verify.identity.schema';
+import { Brand } from '@brand/brand/entities/mongoose/brand.schema';
+import { Category } from '@category/category/entities/mongoose/category.schema';
+import { RulesUser } from './rules.user.schema';
 
 export type UserDocument = User & Document;
 
@@ -124,8 +127,14 @@ export class User extends UserEntity {
   @Prop({ type: [String] })
   authorizations: Array<string>;
 
+  @Prop({ type: () => Array<RulesUser> })
+  rules: Array<RulesUser>;
+
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'files' })
   image: FileInterface;
+
+  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'brands' })
+  brand: Brand;
 
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'roles' })
   role: Role;
@@ -137,6 +146,12 @@ export class User extends UserEntity {
 
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'persons' })
   personalData: Person;
+
+  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'categories' })
+  category: Category;
+
+  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'categories' })
+  level: Category;
 
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'affiliates' })
   userParent: User;
