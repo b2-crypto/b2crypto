@@ -50,6 +50,7 @@ import {
 } from '@nestjs/microservices';
 import {
   ApiBearerAuth,
+  ApiExcludeEndpoint,
   ApiHeader,
   ApiSecurity,
   ApiTags,
@@ -79,7 +80,7 @@ import EventsNamesAccountEnum from './enum/events.names.account.enum';
 import { AccountUpdateDto } from '@account/account/dto/account.update.dto';
 import WalletTypesAccountEnum from '@account/account/enum/wallet.types.account.enum';
 
-@ApiTags('CARD')
+@ApiTags(SwaggerSteakeyConfigEnum.TAG_CARD)
 @Controller('cards')
 export class CardServiceController extends AccountServiceController {
   constructor(
@@ -104,6 +105,7 @@ export class CardServiceController extends AccountServiceController {
   private readonly BLOCK_BALANCE_PERCENTAGE: number =
     this.configService.get<number>('AUTHORIZATIONS_BLOCK_BALANCE_PERCENTAGE');
 
+  @ApiExcludeEndpoint()
   @Get('all')
   @NoCache()
   @ApiTags(SwaggerSteakeyConfigEnum.TAG_CARD)
@@ -145,9 +147,9 @@ export class CardServiceController extends AccountServiceController {
     }
   }
 
+  @ApiExcludeEndpoint()
   @Get('me')
   @NoCache()
-  @ApiTags(SwaggerSteakeyConfigEnum.TAG_CARD)
   @ApiBearerAuth('bearerToken')
   async findAllMe(@Query() query: QuerySearchAnyDto, @Req() req?: any) {
     query = query ?? {};
@@ -162,7 +164,6 @@ export class CardServiceController extends AccountServiceController {
     return rta;
   }
 
-  @ApiTags(SwaggerSteakeyConfigEnum.TAG_CARD)
   @ApiSecurity('b2crypto-key')
   @ApiBearerAuth('bearerToken')
   @Post('create')
@@ -1123,7 +1124,7 @@ export class CardServiceController extends AccountServiceController {
     return group;
   }
 
-  @ApiTags(SwaggerSteakeyConfigEnum.TAG_CARD)
+  @ApiExcludeEndpoint()
   @ApiSecurity('b2crypto-key')
   @ApiBearerAuth('bearerToken')
   @UseGuards(ApiKeyAuthGuard)
@@ -1158,7 +1159,7 @@ export class CardServiceController extends AccountServiceController {
     return card.responseShipping;
   }
 
-  @ApiTags(SwaggerSteakeyConfigEnum.TAG_CARD)
+  @ApiExcludeEndpoint()
   @ApiSecurity('b2crypto-key')
   @ApiBearerAuth('bearerToken')
   @UseGuards(ApiKeyAuthGuard)
@@ -1235,8 +1236,8 @@ export class CardServiceController extends AccountServiceController {
     throw new BadRequestException('Shipment was not created');
   }
 
+  @ApiExcludeEndpoint()
   @Post('recharge')
-  @ApiTags(SwaggerSteakeyConfigEnum.TAG_CARD)
   @ApiSecurity('b2crypto-key')
   @ApiBearerAuth('bearerToken')
   @UseGuards(ApiKeyAuthGuard)
@@ -1385,7 +1386,6 @@ export class CardServiceController extends AccountServiceController {
   }
 
   @Patch('lock/:cardId')
-  @ApiTags(SwaggerSteakeyConfigEnum.TAG_CARD)
   @ApiSecurity('b2crypto-key')
   @ApiBearerAuth('bearerToken')
   @UseGuards(ApiKeyAuthGuard)
@@ -1395,7 +1395,6 @@ export class CardServiceController extends AccountServiceController {
   }
 
   @Patch('unlock/:cardId')
-  @ApiTags(SwaggerSteakeyConfigEnum.TAG_CARD)
   @ApiSecurity('b2crypto-key')
   @ApiBearerAuth('bearerToken')
   @UseGuards(ApiKeyAuthGuard)
@@ -1405,7 +1404,6 @@ export class CardServiceController extends AccountServiceController {
   }
 
   @Patch('cancel/:cardId')
-  @ApiTags(SwaggerSteakeyConfigEnum.TAG_CARD)
   @ApiSecurity('b2crypto-key')
   @ApiBearerAuth('bearerToken')
   @UseGuards(ApiKeyAuthGuard)
@@ -1414,8 +1412,8 @@ export class CardServiceController extends AccountServiceController {
     return this.updateStatusAccount(id, StatusAccountEnum.CANCEL);
   }
 
+  @ApiExcludeEndpoint()
   @Patch('hidden/:cardId')
-  @ApiTags(SwaggerSteakeyConfigEnum.TAG_CARD)
   @ApiSecurity('b2crypto-key')
   @ApiBearerAuth('bearerToken')
   @UseGuards(ApiKeyAuthGuard)
@@ -1423,8 +1421,8 @@ export class CardServiceController extends AccountServiceController {
     return this.toggleVisibleToOwner(id, false);
   }
 
+  @ApiExcludeEndpoint()
   @Patch('visible/:cardId')
-  @ApiTags(SwaggerSteakeyConfigEnum.TAG_CARD)
   @ApiSecurity('b2crypto-key')
   @ApiBearerAuth('bearerToken')
   @UseGuards(ApiKeyAuthGuard)
@@ -1432,12 +1430,14 @@ export class CardServiceController extends AccountServiceController {
     return this.toggleVisibleToOwner(id, true);
   }
 
+  @ApiExcludeEndpoint()
   @Delete(':cardID')
   deleteOneById(@Param('cardID') id: string, req?: any) {
     //return this.getAccountService().deleteOneById(id);
     throw new UnauthorizedException();
   }
 
+  @ApiExcludeEndpoint()
   @Get('pomelo/check')
   async checkCardsInPomelo() {
     //await this.checkCardsCreatedInPomelo(null, null);

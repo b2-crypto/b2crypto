@@ -20,6 +20,7 @@ import {
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
+  ApiExcludeEndpoint,
   ApiHeader,
   ApiQuery,
   ApiResponse,
@@ -70,6 +71,7 @@ import { PomeloProcessEnum } from 'apps/integration-service/src/enums/pomelo.pro
 import EventsNamesPspAccountEnum from 'apps/psp-service/src/enum/events.names.psp.acount.enum';
 import EventsNamesStatsEnum from 'apps/stats-service/src/enum/events.names.stats.enum';
 import EventsNamesStatusEnum from 'apps/status-service/src/enum/events.names.status.enum';
+import { isMongoId } from 'class-validator';
 import { SwaggerSteakeyConfigEnum } from 'libs/config/enum/swagger.stakey.config.enum';
 import { ApproveOrRejectDepositDto } from '../../../libs/transfer/src/dto/approve.or.reject.deposit.dto';
 import { BoldTransferRequestDto } from './dto/bold.transfer.request.dto';
@@ -78,7 +80,6 @@ import { TransferCreateButtonDto } from './dto/transfer.create.button.dto';
 import { BoldStatusEnum } from './enum/bold.status.enum';
 import EventsNamesTransferEnum from './enum/events.names.transfer.enum';
 import { TransferServiceService } from './transfer-service.service';
-import { isMongoId } from 'class-validator';
 
 @ApiTags('TRANSFERS')
 @Controller('transfers')
@@ -91,6 +92,7 @@ export class TransferServiceController implements GenericServiceController {
     private readonly builder: BuildersService,
   ) {}
 
+  @ApiExcludeEndpoint()
   @AllowAnon()
   @Post('bold/webhook')
   // @CheckPoliciesAbility(new PolicyHandlerTransferRead())
@@ -154,6 +156,8 @@ export class TransferServiceController implements GenericServiceController {
       message: 'Transaction updated',
     };
   }
+
+  @ApiExcludeEndpoint()
   @NoCache()
   @Get('searchText')
   // @CheckPoliciesAbility(new PolicyHandlerTransferRead())
@@ -161,6 +165,8 @@ export class TransferServiceController implements GenericServiceController {
     //query = await this.filterFromUserPermissions(query, req);
     return this.transferService.getSearchText(query);
   }
+
+  @ApiExcludeEndpoint()
   @NoCache()
   @Get('all')
   // @CheckPoliciesAbility(new PolicyHandlerTransferRead())
@@ -169,6 +175,7 @@ export class TransferServiceController implements GenericServiceController {
     return this.transferService.getAll(query);
   }
 
+  @ApiExcludeEndpoint()
   @NoCache()
   @Get('me')
   @ApiTags(SwaggerSteakeyConfigEnum.TAG_DEPOSIT)
@@ -182,6 +189,7 @@ export class TransferServiceController implements GenericServiceController {
     return this.transferService.getAll(query);
   }
 
+  @ApiExcludeEndpoint()
   @NoCache()
   @Get('check-types-account/:transferID')
   @ApiTags(SwaggerSteakeyConfigEnum.TAG_DEPOSIT)
@@ -228,6 +236,7 @@ export class TransferServiceController implements GenericServiceController {
     }
   }
 
+  @ApiExcludeEndpoint()
   @NoCache()
   @Get('deposit')
   // @CheckPoliciesAbility(new PolicyHandlerTransferRead())
@@ -239,6 +248,7 @@ export class TransferServiceController implements GenericServiceController {
     return this.transferService.getAll(query);
   }
 
+  @ApiExcludeEndpoint()
   @NoCache()
   @Get('credit')
   // @CheckPoliciesAbility(new PolicyHandlerTransferRead())
@@ -250,6 +260,7 @@ export class TransferServiceController implements GenericServiceController {
     return this.transferService.getAll(query);
   }
 
+  @ApiExcludeEndpoint()
   @NoCache()
   @Get('withdrawal')
   // @CheckPoliciesAbility(new PolicyHandlerTransferRead())
@@ -261,6 +272,7 @@ export class TransferServiceController implements GenericServiceController {
     return this.transferService.getAll(query);
   }
 
+  @ApiExcludeEndpoint()
   @NoCache()
   @Get('debit')
   // @CheckPoliciesAbility(new PolicyHandlerTransferRead())
@@ -272,6 +284,7 @@ export class TransferServiceController implements GenericServiceController {
     return this.transferService.getAll(query);
   }
 
+  @ApiExcludeEndpoint()
   @NoCache()
   @Get('chargeback')
   // @CheckPoliciesAbility(new PolicyHandlerTransferRead())
@@ -283,6 +296,7 @@ export class TransferServiceController implements GenericServiceController {
     return this.transferService.getAll(query);
   }
 
+  @ApiExcludeEndpoint()
   @NoCache()
   @Get('check-numeric-id')
   // @CheckPoliciesAbility(new PolicyHandlerTransferRead())
@@ -301,6 +315,7 @@ export class TransferServiceController implements GenericServiceController {
     throw new NotFoundException(`Not found deposit "${id}"`);
   } */
 
+  @ApiExcludeEndpoint()
   @NoCache()
   @Get('credit/:transferID')
   // @CheckPoliciesAbility(new PolicyHandlerTransferRead())
@@ -326,6 +341,7 @@ export class TransferServiceController implements GenericServiceController {
     throw new NotFoundException(`Not found withdrawal "${id}"`);
   }
 
+  @ApiExcludeEndpoint()
   @NoCache()
   @Get('debit/:transferID')
   // @CheckPoliciesAbility(new PolicyHandlerTransferRead())
@@ -337,6 +353,7 @@ export class TransferServiceController implements GenericServiceController {
     throw new NotFoundException(`Not found debit "${id}"`);
   }
 
+  @ApiExcludeEndpoint()
   @NoCache()
   @Get('chargeback/:transferID')
   // @CheckPoliciesAbility(new PolicyHandlerTransferRead())
@@ -353,6 +370,7 @@ export class TransferServiceController implements GenericServiceController {
 
   // TODO[hender - 30-01-2024] Add to endpoint list
 
+  @ApiExcludeEndpoint()
   @NoCache()
   @Get(':transferID')
   // @CheckPoliciesAbility(new PolicyHandlerTransferRead())
@@ -360,6 +378,7 @@ export class TransferServiceController implements GenericServiceController {
     return this.transferService.getOne(id);
   }
 
+  @ApiExcludeEndpoint()
   @Post()
   // @CheckPoliciesAbility(new PolicyHandlerTransferCreate())
   async createOne(@Body() createTransferDto: TransferCreateDto, @Req() req) {
@@ -370,6 +389,7 @@ export class TransferServiceController implements GenericServiceController {
     return this.transferService.newTransfer(createTransferDto);
   }
 
+  @ApiExcludeEndpoint()
   @AllowAnon()
   @Post('bold/status')
   // @CheckPoliciesAbility(new PolicyHandlerTransferRead())
@@ -392,7 +412,6 @@ export class TransferServiceController implements GenericServiceController {
   }
 
   @NoCache()
-  @ApiTags(SwaggerSteakeyConfigEnum.TAG_DEPOSIT)
   @ApiBearerAuth('bearerToken')
   @UseGuards(ApiKeyAuthGuard)
   @ApiHeader({
@@ -446,6 +465,7 @@ export class TransferServiceController implements GenericServiceController {
     );
   }
 
+  @ApiExcludeEndpoint()
   @NoCache()
   @Get('send-last-6h-history/:shortData')
   // @CheckPoliciesAbility(new PolicyHandlerTransferCreate())
@@ -464,6 +484,7 @@ export class TransferServiceController implements GenericServiceController {
     };
   }
 
+  @ApiExcludeEndpoint()
   @NoCache()
   @Get('send-last-6h-history-card-purchases/:shortData')
   // @CheckPoliciesAbility(new PolicyHandlerTransferCreate())
@@ -482,6 +503,7 @@ export class TransferServiceController implements GenericServiceController {
     };
   }
 
+  @ApiExcludeEndpoint()
   @NoCache()
   @Get('send-last-6h-history-card-wallet-deposits/:shortData')
   // @CheckPoliciesAbility(new PolicyHandlerTransferCreate())
@@ -501,6 +523,7 @@ export class TransferServiceController implements GenericServiceController {
   }
   // ----------------------------
 
+  @ApiExcludeEndpoint()
   @Post('credit')
   // @CheckPoliciesAbility(new PolicyHandlerTransferCreate())
   async createOneCredit(
@@ -514,6 +537,7 @@ export class TransferServiceController implements GenericServiceController {
     createTransferDto.operationType = OperationTransactionType.credit;
     return this.transferService.newTransfer(createTransferDto);
   }
+
   @Post('withdrawal')
   // @CheckPoliciesAbility(new PolicyHandlerTransferCreate())
   async createOneWithdrawal(
@@ -527,6 +551,8 @@ export class TransferServiceController implements GenericServiceController {
     createTransferDto.operationType = OperationTransactionType.withdrawal;
     return this.transferService.newTransfer(createTransferDto);
   }
+
+  @ApiExcludeEndpoint()
   @Post('debit')
   // @CheckPoliciesAbility(new PolicyHandlerTransferCreate())
   async createOneDebit(
@@ -540,6 +566,8 @@ export class TransferServiceController implements GenericServiceController {
     createTransferDto.operationType = OperationTransactionType.debit;
     return this.transferService.newTransfer(createTransferDto);
   }
+
+  @ApiExcludeEndpoint()
   @Post('chargeback')
   // @CheckPoliciesAbility(new PolicyHandlerTransferCreate())
   async createOneChargeback(
@@ -554,6 +582,7 @@ export class TransferServiceController implements GenericServiceController {
     return this.transferService.newTransfer(createTransferDto);
   }
 
+  @ApiExcludeEndpoint()
   @Post('all')
   // @CheckPoliciesAbility(new PolicyHandlerTransferCreate())
   async createMany(
@@ -570,12 +599,14 @@ export class TransferServiceController implements GenericServiceController {
     return this.transferService.newManyTransfer(createTransfersDto);
   }
 
+  @ApiExcludeEndpoint()
   @Patch()
   // @CheckPoliciesAbility(new PolicyHandlerTransferUpdate())
   async updateOne(@Body() updateTransferDto: TransferUpdateDto) {
     return this.transferService.updateTransfer(updateTransferDto);
   }
 
+  @ApiExcludeEndpoint()
   @Post('latam-cashier')
   // @CheckPoliciesAbility(new PolicyHandlerTransferUpdate())
   @ApiTags('Integration Lead')
@@ -602,6 +633,7 @@ export class TransferServiceController implements GenericServiceController {
     );
   }
 
+  @ApiExcludeEndpoint()
   @Patch('approve')
   // @CheckPoliciesAbility(new PolicyHandlerTransferUpdate())
   async approveOne(
@@ -612,6 +644,7 @@ export class TransferServiceController implements GenericServiceController {
     return this.transferService.approveTransfer(approveOrRejectTransferDto);
   }
 
+  @ApiExcludeEndpoint()
   @Patch('send-to-crm')
   // @CheckPoliciesAbility(new PolicyHandlerTransferUpdate())
   async sendToCrm(
@@ -621,6 +654,7 @@ export class TransferServiceController implements GenericServiceController {
     return this.transferService.sendToCrm(approveOrRejectTransferDto);
   }
 
+  @ApiExcludeEndpoint()
   @Patch('reject')
   // @CheckPoliciesAbility(new PolicyHandlerTransferUpdate())
   async rejectOne(
@@ -631,6 +665,7 @@ export class TransferServiceController implements GenericServiceController {
     return this.transferService.rejectTransfer(approveOrRejectTransferDto);
   }
 
+  @ApiExcludeEndpoint()
   @Patch('all')
   // @CheckPoliciesAbility(new PolicyHandlerTransferUpdate())
   async updateMany(
@@ -640,6 +675,7 @@ export class TransferServiceController implements GenericServiceController {
     return this.transferService.updateManyTransfer(updateTransfersDto);
   }
 
+  @ApiExcludeEndpoint()
   @Delete('all')
   // @CheckPoliciesAbility(new PolicyHandlerTransferDelete())
   async deleteManyById(
@@ -651,6 +687,7 @@ export class TransferServiceController implements GenericServiceController {
     );
   }
 
+  @ApiExcludeEndpoint()
   @Delete(':transferID')
   // @CheckPoliciesAbility(new PolicyHandlerTransferDelete())
   async deleteOneById(@Param('transferID') id: string) {
