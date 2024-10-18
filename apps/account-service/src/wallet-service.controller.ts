@@ -718,7 +718,15 @@ export class WalletServiceController extends AccountServiceController {
     return this.updateStatusAccount(id, StatusAccountEnum.UNLOCK);
   }
 
-  @ApiExcludeEndpoint()
+  @Patch('withdraw')
+  @ApiTags(SwaggerSteakeyConfigEnum.TAG_WALLET)
+  @ApiSecurity('b2crypto-key')
+  @ApiBearerAuth('bearerToken')
+  @UseGuards(ApiKeyAuthGuard)
+  async withdraw(@Param('walletId') id: string) {
+    return this.updateStatusAccount(id, StatusAccountEnum.UNLOCK);
+  }
+
   @Patch('cancel/:walletId')
   @ApiTags(SwaggerSteakeyConfigEnum.TAG_WALLET)
   @ApiSecurity('b2crypto-key')
