@@ -1,15 +1,23 @@
 import { WalletDepositCreateDto } from '@account/account/dto/wallet-deposit.create.dto';
 import { WalletCreateDto } from '@account/account/dto/wallet.create.dto';
+import { AccountDocument } from '@account/account/entities/mongoose/account.schema';
 import StatusAccountEnum from '@account/account/enum/status.account.enum';
 import TypesAccountEnum from '@account/account/enum/types.account.enum';
+import WalletTypesAccountEnum from '@account/account/enum/wallet.types.account.enum';
 import { ApiKeyAuthGuard } from '@auth/auth/guards/api.key.guard';
+import { JwtAuthGuard } from '@auth/auth/guards/jwt-auth.guard';
 import { BuildersService } from '@builder/builders';
 import { CommonService } from '@common/common';
 import { NoCache } from '@common/common/decorators/no-cache.decorator';
+import CountryCodeEnum from '@common/common/enums/country.code.b2crypto.enum';
+import CurrencyCodeB2cryptoEnum from '@common/common/enums/currency-code-b2crypto.enum';
 import { EnvironmentEnum } from '@common/common/enums/environment.enum';
 import { StatusCashierEnum } from '@common/common/enums/StatusCashierEnum';
 import TagEnum from '@common/common/enums/TagEnum';
 import { QuerySearchAnyDto } from '@common/common/models/query_search-any.dto';
+import { IntegrationService } from '@integration/integration';
+import IntegrationCryptoEnum from '@integration/integration/crypto/enums/IntegrationCryptoEnum';
+import { FireblocksIntegrationService } from '@integration/integration/crypto/fireblocks/fireblocks-integration.service';
 import {
   BadRequestException,
   Body,
@@ -27,11 +35,17 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { Ctx, EventPattern, Payload, RmqContext } from '@nestjs/microservices';
-import { ApiBearerAuth, ApiSecurity, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiExcludeEndpoint,
+  ApiSecurity,
+  ApiTags,
+} from '@nestjs/swagger';
 import { TransferCreateDto } from '@transfer/transfer/dto/transfer.create.dto';
 import { OperationTransactionType } from '@transfer/transfer/enum/operation.transaction.type.enum';
 import { User } from '@user/user/entities/mongoose/user.schema';
 import EventsNamesCategoryEnum from 'apps/category-service/src/enum/events.names.category.enum';
+import EventsNamesCrmEnum from 'apps/crm-service/src/enum/events.names.crm.enum';
 import EventsNamesMessageEnum from 'apps/message-service/src/enum/events.names.message.enum';
 import EventsNamesPspAccountEnum from 'apps/psp-service/src/enum/events.names.psp.acount.enum';
 import EventsNamesStatusEnum from 'apps/status-service/src/enum/events.names.status.enum';
@@ -42,18 +56,9 @@ import { SwaggerSteakeyConfigEnum } from 'libs/config/enum/swagger.stakey.config
 import { AccountServiceController } from './account-service.controller';
 import { AccountServiceService } from './account-service.service';
 import EventsNamesAccountEnum from './enum/events.names.account.enum';
-import WalletTypesAccountEnum from '@account/account/enum/wallet.types.account.enum';
-import EventsNamesCrmEnum from 'apps/crm-service/src/enum/events.names.crm.enum';
-import IntegrationCryptoEnum from '@integration/integration/crypto/enums/IntegrationCryptoEnum';
-import { IntegrationService } from '@integration/integration';
-import { FireblocksIntegrationService } from '@integration/integration/crypto/fireblocks/fireblocks-integration.service';
-import CurrencyCodeB2cryptoEnum from '@common/common/enums/currency-code-b2crypto.enum';
-import CountryCodeEnum from '@common/common/enums/country.code.b2crypto.enum';
-import { AccountDocument } from '@account/account/entities/mongoose/account.schema';
-import { JwtAuthGuard } from '@auth/auth/guards/jwt-auth.guard';
 import { ConfigService } from '@nestjs/config';
 
-@ApiTags('E-WALLET')
+@ApiTags(SwaggerSteakeyConfigEnum.TAG_WALLET)
 @Controller('wallets')
 export class WalletServiceController extends AccountServiceController {
   private cryptoType = null;
@@ -81,6 +86,7 @@ export class WalletServiceController extends AccountServiceController {
     return this.cryptoType;
   }
 
+  @ApiExcludeEndpoint()
   @ApiTags(SwaggerSteakeyConfigEnum.TAG_WALLET)
   @ApiBearerAuth('bearerToken')
   @ApiSecurity('b2crypto-key')
@@ -95,6 +101,7 @@ export class WalletServiceController extends AccountServiceController {
     return this.walletService.findAll(query);
   }
 
+  @ApiExcludeEndpoint()
   @ApiTags(SwaggerSteakeyConfigEnum.TAG_WALLET)
   @ApiBearerAuth('bearerToken')
   @ApiSecurity('b2crypto-key')
@@ -691,6 +698,7 @@ export class WalletServiceController extends AccountServiceController {
     }
   }
 
+  @ApiExcludeEndpoint()
   @Patch('lock/:walletId')
   @ApiTags(SwaggerSteakeyConfigEnum.TAG_WALLET)
   @ApiSecurity('b2crypto-key')
@@ -700,6 +708,7 @@ export class WalletServiceController extends AccountServiceController {
     return this.updateStatusAccount(id, StatusAccountEnum.LOCK);
   }
 
+  @ApiExcludeEndpoint()
   @Patch('unlock/:walletId')
   @ApiTags(SwaggerSteakeyConfigEnum.TAG_WALLET)
   @ApiSecurity('b2crypto-key')
@@ -709,6 +718,7 @@ export class WalletServiceController extends AccountServiceController {
     return this.updateStatusAccount(id, StatusAccountEnum.UNLOCK);
   }
 
+  @ApiExcludeEndpoint()
   @Patch('cancel/:walletId')
   @ApiTags(SwaggerSteakeyConfigEnum.TAG_WALLET)
   @ApiSecurity('b2crypto-key')
@@ -718,6 +728,7 @@ export class WalletServiceController extends AccountServiceController {
     return this.updateStatusAccount(id, StatusAccountEnum.CANCEL);
   }
 
+  @ApiExcludeEndpoint()
   @Patch('hidden/:walletId')
   @ApiTags(SwaggerSteakeyConfigEnum.TAG_WALLET)
   @ApiSecurity('b2crypto-key')
@@ -727,6 +738,7 @@ export class WalletServiceController extends AccountServiceController {
     return this.toggleVisibleToOwner(id, false);
   }
 
+  @ApiExcludeEndpoint()
   @Patch('visible/:walletId')
   @ApiTags(SwaggerSteakeyConfigEnum.TAG_WALLET)
   @ApiSecurity('b2crypto-key')
@@ -736,6 +748,7 @@ export class WalletServiceController extends AccountServiceController {
     return this.toggleVisibleToOwner(id, true);
   }
 
+  @ApiExcludeEndpoint()
   @Delete(':walletID')
   deleteOneById(@Param('walletID') id: string, req?: any) {
     //return this.getAccountService().deleteOneById(id);

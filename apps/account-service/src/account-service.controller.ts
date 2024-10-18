@@ -4,6 +4,7 @@ import StatusAccountEnum from '@account/account/enum/status.account.enum';
 import { ActivityCreateDto } from '@activity/activity/dto/activity.create.dto';
 import { BuildersService } from '@builder/builders';
 import { CommonService } from '@common/common';
+import { NoCache } from '@common/common/decorators/no-cache.decorator';
 import GenericServiceController from '@common/common/interfaces/controller.generic.interface';
 import { CreateAnyDto } from '@common/common/models/create-any.dto';
 import { QuerySearchAnyDto } from '@common/common/models/query_search-any.dto';
@@ -31,12 +32,11 @@ import {
   Payload,
   RmqContext,
 } from '@nestjs/microservices';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiExcludeEndpoint, ApiTags } from '@nestjs/swagger';
 import EventsNamesStatusEnum from 'apps/status-service/src/enum/events.names.status.enum';
 import EventsNamesUserEnum from 'apps/user-service/src/enum/events.names.user.enum';
 import { AccountServiceService } from './account-service.service';
 import EventsNamesAccountEnum from './enum/events.names.account.enum';
-import { NoCache } from '@common/common/decorators/no-cache.decorator';
 
 @ApiTags('ACCOUNT')
 @Controller('accounts')
@@ -51,12 +51,14 @@ export class AccountServiceController implements GenericServiceController {
     return this.accountService;
   }
 
+  @ApiExcludeEndpoint()
   @Get('all')
   @NoCache()
   findAll(@Query() query: QuerySearchAnyDto, req?: any) {
     return this.accountService.findAll(query);
   }
 
+  @ApiExcludeEndpoint()
   @Get('send-balance-card-reports')
   async sendBalanceCardReports(@Req() req?: any) {
     const user = req?.user;
@@ -79,6 +81,7 @@ export class AccountServiceController implements GenericServiceController {
     };
   }
 
+  @ApiExcludeEndpoint()
   @Get('me')
   @NoCache()
   findAllMe(@Query() query: QuerySearchAnyDto, @Req() req?: any) {
@@ -86,42 +89,50 @@ export class AccountServiceController implements GenericServiceController {
     return this.accountService.findAll(query);
   }
 
+  @ApiExcludeEndpoint()
   @Patch('lock/:accountId')
   async blockedOneById(@Param('accountId') id: string) {
     return this.updateStatusAccount(id, StatusAccountEnum.LOCK);
   }
 
+  @ApiExcludeEndpoint()
   @Patch('unlock/:accountId')
   async unblockedOneById(@Param('accountId') id: string) {
     return this.updateStatusAccount(id, StatusAccountEnum.UNLOCK);
   }
 
+  @ApiExcludeEndpoint()
   @Patch('cancel/:accountId')
   async cancelOneById(@Param('accountId') id: string) {
     return this.updateStatusAccount(id, StatusAccountEnum.CANCEL);
   }
 
+  @ApiExcludeEndpoint()
   @Patch('hidden/:accountId')
   async disableOneById(@Param('accountId') id: string) {
     return this.toggleVisibleToOwner(id, false);
   }
 
+  @ApiExcludeEndpoint()
   @Patch('visible/:accountId')
   async enableOneById(@Param('accountId') id: string) {
     return this.toggleVisibleToOwner(id, true);
   }
 
+  @ApiExcludeEndpoint()
   @Get(':accountId')
   @NoCache()
   findOneById(@Param('accountId') id: string) {
     return this.accountService.findOneById(id);
   }
 
+  @ApiExcludeEndpoint()
   @Post('create')
   createOne(@Body() createDto: AccountCreateDto, req?: any) {
     return this.accountService.createOne(createDto);
   }
 
+  @ApiExcludeEndpoint()
   @Post('all')
   createMany(
     @Body(new ParseArrayPipe({ items: ActivityCreateDto }))
@@ -131,11 +142,13 @@ export class AccountServiceController implements GenericServiceController {
     return this.accountService.createMany(createsDto);
   }
 
+  @ApiExcludeEndpoint()
   @Patch()
   updateOne(@Body() updateDto: AccountUpdateDto, req?: any) {
     return this.accountService.updateOne(updateDto);
   }
 
+  @ApiExcludeEndpoint()
   @Patch('all')
   updateMany(
     @Body(new ParseArrayPipe({ items: ActivityCreateDto }))
@@ -145,6 +158,7 @@ export class AccountServiceController implements GenericServiceController {
     return this.accountService.updateMany(updatesDto);
   }
 
+  @ApiExcludeEndpoint()
   @Delete('all')
   deleteManyById(
     @Body(new ParseArrayPipe({ items: UpdateAnyDto })) ids: AccountUpdateDto[],
@@ -154,6 +168,7 @@ export class AccountServiceController implements GenericServiceController {
     throw new UnauthorizedException();
   }
 
+  @ApiExcludeEndpoint()
   @Delete(':accountID')
   deleteOneById(@Param('accountID') id: string, req?: any) {
     //return this.accountService.deleteOneById(id);

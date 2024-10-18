@@ -45,7 +45,7 @@ async function bootstrap() {
   addSwaggerIntegration(app);
   addSwaggerStakeyCard(app);
 
-  app.enableCors();
+  // app.enableCors();
   app.enableCors({
     origin: '*',
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
@@ -185,6 +185,9 @@ function addSwaggerGlobal(app: INestApplication) {
       StatusServiceModule,
       AffiliateServiceModule,
       PermissionServiceModule,
+      AccountServiceModule,
+      PersonServiceModule,
+      TransferServiceModule,
     ],
   });
 
