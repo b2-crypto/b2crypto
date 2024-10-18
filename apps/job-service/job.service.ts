@@ -84,7 +84,7 @@ export class JobService {
     timeZone: process.env.TZ,
   })
   checkCardsInPomelo() {
-    Logger.log('Checking Cards in pomelo', `${this.env} - ${JobService.name}`);
+    Logger.warn('Checking Cards in pomelo', `${this.env} - ${JobService.name}`);
     if (this.env === EnvironmentEnum.prod) {
       this.builder.emitAccountEventClient(
         EventsNamesAccountEnum.checkCardsCreatedInPomelo,
@@ -98,14 +98,18 @@ export class JobService {
   })
   checkB2BinPayTransfers() {
     Logger.log(
-      'Checking B2BinPay transfers',
+      'Disabled Job checkB2BinPayTransfers',
       `${this.env} - ${JobService.name}`,
     );
-    if (this.env === EnvironmentEnum.prod) {
-      this.builder.emitTransferEventClient(
-        EventsNamesTransferEnum.checkTransferInB2BinPay,
-        'b2binpay',
-      );
-    }
+    // Logger.log(
+    //   'Checking B2BinPay transfers',
+    //   `${this.env} - ${JobService.name}`,
+    // );
+    // if (this.env === EnvironmentEnum.prod) {
+    //   this.builder.emitTransferEventClient(
+    //     EventsNamesTransferEnum.checkTransferInB2BinPay,
+    //     'b2binpay',
+    //   );
+    // }
   }
 }
