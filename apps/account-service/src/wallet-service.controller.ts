@@ -56,6 +56,7 @@ import { SwaggerSteakeyConfigEnum } from 'libs/config/enum/swagger.stakey.config
 import { AccountServiceController } from './account-service.controller';
 import { AccountServiceService } from './account-service.service';
 import EventsNamesAccountEnum from './enum/events.names.account.enum';
+import { ConfigService } from '@nestjs/config';
 
 @ApiTags(SwaggerSteakeyConfigEnum.TAG_WALLET)
 @Controller('wallets')
@@ -68,6 +69,7 @@ export class WalletServiceController extends AccountServiceController {
     @Inject(BuildersService)
     readonly ewalletBuilder: BuildersService,
     private readonly integration: IntegrationService,
+    private readonly configService: ConfigService,
   ) {
     super(walletService, ewalletBuilder);
     this.getFireblocksType();
@@ -208,29 +210,32 @@ export class WalletServiceController extends AccountServiceController {
       fireblocksCrm._id,
       createDto.name,
     );
-    const vaultUser = await this.getVaultUser(
-      // req.clientApi,
-      userId,
-      fireblocksCrm._id,
-      walletBase,
-      createDto.brand,
-    );
-    createDto.type = TypesAccountEnum.WALLET;
-    createDto.accountName = walletBase.accountName;
-    createDto.nativeAccountName = walletBase.nativeAccountName;
-    createDto.accountId = walletBase.accountId;
-    createDto.crm = fireblocksCrm;
-    createDto.owner = user.id ?? user._id;
-    const createdWallet = await this.getWalletUser(
-      createDto,
-      userId,
-      fireblocksCrm._id,
-      vaultUser,
-    );
+    if (EnvironmentEnum.prod === this.configService.get('ENVIRONMENT')) {
+      const vaultUser = await this.getVaultUser(
+        // req.clientApi,
+        userId,
+        fireblocksCrm._id,
+        walletBase,
+        createDto.brand,
+      );
+      createDto.type = TypesAccountEnum.WALLET;
+      createDto.accountName = walletBase.accountName;
+      createDto.nativeAccountName = walletBase.nativeAccountName;
+      createDto.accountId = walletBase.accountId;
+      createDto.crm = fireblocksCrm;
+      createDto.owner = user.id ?? user._id;
+      const createdWallet = await this.getWalletUser(
+        createDto,
+        userId,
+        fireblocksCrm._id,
+        vaultUser,
+      );
 
-    this.sendNotification(createdWallet, user);
+      this.sendNotification(createdWallet, user);
 
-    return createdWallet;
+      return createdWallet;
+    }
+    throw new BadRequestException('Only work in Prod');
   }
 
   private async sendNotification(createdWallet: any, user: User) {
