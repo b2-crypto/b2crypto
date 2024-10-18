@@ -84,7 +84,7 @@ export class JobService {
     timeZone: process.env.TZ,
   })
   checkCardsInPomelo() {
-    Logger.log('Checking Cards in pomelo', `${this.env} - ${JobService.name}`);
+    Logger.warn('Checking Cards in pomelo', `${this.env} - ${JobService.name}`);
     if (this.env === EnvironmentEnum.prod) {
       this.builder.emitAccountEventClient(
         EventsNamesAccountEnum.checkCardsCreatedInPomelo,
