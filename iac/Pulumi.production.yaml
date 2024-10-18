@@ -30,7 +30,7 @@ config:
     secure: AAABADIXZfiAxtiASTFGNZLIhYYypTpSl07vW4R/W1eQ8fkN+DWS2w8+tDYzdrrCEUKBCW7pP6tyz62vlgZAog==
   b2crypto-iac:CURRENCY_CONVERSION_API_URL:
     secure: AAABALIY9swT1rccnRrVlt8ZFprM9Sqvn7zzSkrUyp1gObd5ECRLMbF/Tkrbwp0pdQPZe8AktKgKnbXXcVz5M40JWIzhsVUauaM=
-  b2crypto-iac:DATABASE_NAME: b2crypto
+  b2crypto-iac:DATABASE_NAME: b2fintech
   b2crypto-iac:DATABASE_URL:
     secure: AAABAMQsULCZcplyuHxDB76AyF1vwJI7dPri1hU+9THwunbLX67SOXQEvWNVANXXdvJ4oqm+nVnhkJgHYNEZXOLXXH+w0TiamkfHi+luevaulyPrEUGhIgjgKxirRGx3VWeCbdcspZsTUtFpc0sH5ESC0ZrikAvh+pUclH8SYbR5tkpwxyDB63CNNt6rENOFx50=
   b2crypto-iac:DEFAULT_CURRENCY_CONVERSION_COIN: USD

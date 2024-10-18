@@ -72,13 +72,13 @@ import { UserServiceService } from 'apps/user-service/src/user-service.service';
 import { isEmpty, isString } from 'class-validator';
 import { SwaggerSteakeyConfigEnum } from 'libs/config/enum/swagger.stakey.config.enum';
 
+import { AccountUpdateDto } from '@account/account/dto/account.update.dto';
+import WalletTypesAccountEnum from '@account/account/enum/wallet.types.account.enum';
 import { ResponsePaginator } from '../../../libs/common/src/interfaces/response-pagination.interface';
 import { AccountServiceController } from './account-service.controller';
 import { AccountServiceService } from './account-service.service';
 import { AfgNamesEnum } from './enum/afg.names.enum';
 import EventsNamesAccountEnum from './enum/events.names.account.enum';
-import { AccountUpdateDto } from '@account/account/dto/account.update.dto';
-import WalletTypesAccountEnum from '@account/account/enum/wallet.types.account.enum';
 
 @ApiTags(SwaggerSteakeyConfigEnum.TAG_CARD)
 @Controller('cards')
@@ -276,41 +276,45 @@ export class CardServiceController extends AccountServiceController {
         // TODO[hender - 2024-08-12] If problems with data user in Pomelo, flag to update in pomelo when update profile user
         throw new BadRequestException(error);
       }
-      account.cardConfig = card.data as unknown as Card;
-      if (card.data['shipment_id']) {
-        const dataShipping = await cardIntegration.getShippingPhysicalCard(
-          card.data['shipment_id'],
-        );
-        account.responseShipping = dataShipping.data;
-        if (
-          dataShipping.data.status === StatusAccountEnum.REJECTED ||
-          dataShipping.data.status === StatusAccountEnum.DESTRUCTION
-        ) {
-          account.statusText = StatusAccountEnum.CANCEL;
+
+      if (process.env.ENVIRONMENT !== 'TEST_STRESS') {
+        account.cardConfig = card.data as unknown as Card;
+        if (card.data['shipment_id']) {
+          const dataShipping = await cardIntegration.getShippingPhysicalCard(
+            card.data['shipment_id'],
+          );
+          account.responseShipping = dataShipping.data;
+          if (
+            dataShipping.data.status === StatusAccountEnum.REJECTED ||
+            dataShipping.data.status === StatusAccountEnum.DESTRUCTION
+          ) {
+            account.statusText = StatusAccountEnum.CANCEL;
+          }
+        }
+        await account.save();
+
+        const walletDTO = {
+          owner: account.owner,
+          name: 'USD Tether (Tron)',
+          type: TypesAccountEnum.WALLET,
+          accountType: WalletTypesAccountEnum.VAULT,
+        };
+        const countWalletsUser =
+          await this.cardBuilder.getPromiseAccountEventClient(
+            EventsNamesAccountEnum.count,
+            {
+              take: 1,
+              where: walletDTO,
+            },
+          );
+        if (countWalletsUser < 1) {
+          this.cardBuilder.emitAccountEventClient(
+            EventsNamesAccountEnum.createOneWallet,
+            walletDTO,
+          );
         }
       }
-      account.save();
 
-      const walletDTO = {
-        owner: account.owner,
-        name: 'USD Tether (Tron)',
-        type: TypesAccountEnum.WALLET,
-        accountType: WalletTypesAccountEnum.VAULT,
-      };
-      const countWalletsUser =
-        await this.cardBuilder.getPromiseAccountEventClient(
-          EventsNamesAccountEnum.count,
-          {
-            take: 1,
-            where: walletDTO,
-          },
-        );
-      if (countWalletsUser < 1) {
-        this.cardBuilder.emitAccountEventClient(
-          EventsNamesAccountEnum.createOneWallet,
-          walletDTO,
-        );
-      }
       return account;
     } catch (err) {
       await this.getAccountService().deleteOneById(account._id);
