@@ -72,6 +72,7 @@ export class FireBlocksNotificationsController {
     //Logger.debug(isVerified, 'getTransferDto.isVerified');
     //if (isVerified) {
     const rta = data.data;
+    Logger.debug(rta?.status, `${rta?.id} - ${rta.status}-start`);
     if (
       rta?.source.type === 'UNKNOWN' ||
       (rta?.source.type === 'VAULT_ACCOUNT' &&

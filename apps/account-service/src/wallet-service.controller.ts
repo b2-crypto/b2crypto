@@ -57,6 +57,7 @@ import { AccountServiceController } from './account-service.controller';
 import { AccountServiceService } from './account-service.service';
 import EventsNamesAccountEnum from './enum/events.names.account.enum';
 import { ConfigService } from '@nestjs/config';
+import { isMongoId } from 'class-validator';
 
 @ApiTags(SwaggerSteakeyConfigEnum.TAG_WALLET)
 @Controller('wallets')
@@ -316,7 +317,58 @@ export class WalletServiceController extends AccountServiceController {
       if (!newWallet) {
         throw new BadRequestException('Error creating new wallet');
       }
+      dtoWallet.responseCreation = newWallet;
       dtoWallet.showToOwner = true;
+      dtoWallet.accountName = newWallet.address;
+      dtoWallet.pin =
+        dtoWallet.pin ??
+        parseInt(
+          CommonService.getNumberDigits(CommonService.randomIntNumber(9999), 4),
+        );
+      dtoWallet.accountType = WalletTypesAccountEnum.VAULT;
+
+      walletUser = await this.walletService.createOne(dtoWallet);
+    }
+
+    return walletUser;
+  }
+
+  private async getWalletBrand(
+    dtoWallet: WalletCreateDto,
+    fireblocksCrmId: string,
+    vaultBrand: AccountDocument,
+    brandId: string,
+    accountType = WalletTypesAccountEnum.VAULT,
+  ) {
+    const walletName = `${dtoWallet.name}-${brandId}-${accountType}`;
+    let walletUser = (
+      await this.walletService.findAll({
+        where: {
+          name: walletName,
+          type: TypesAccountEnum.WALLET,
+          accountType,
+          crm: fireblocksCrmId,
+          showToOwner: true,
+          brand: dtoWallet.brand,
+          referral: vaultBrand.id,
+        },
+      })
+    ).list[0];
+    if (!walletUser) {
+      // Create one with showToOwner in false and type in VAULT
+      const cryptoType = await this.getFireblocksType();
+      const newWallet = await cryptoType.createWallet(
+        vaultBrand.accountId,
+        dtoWallet.accountId,
+        // walletName,
+        // userId,
+      );
+      if (!newWallet) {
+        throw new BadRequestException('Error creating new wallet');
+      }
+      dtoWallet.responseCreation = newWallet;
+      dtoWallet.showToOwner = true;
+      dtoWallet.brand = brandId;
       dtoWallet.accountName = newWallet.address;
       dtoWallet.pin =
         dtoWallet.pin ??
@@ -337,16 +389,16 @@ export class WalletServiceController extends AccountServiceController {
     walletBase: AccountDocument,
     brandId: string,
   ) {
-    let vaultUser = (
-      await this.walletService.findAll({
-        where: {
-          accountType: WalletTypesAccountEnum.VAULT,
-          crm: fireblocksCrmId,
-          showToOwner: false,
-          owner: userId,
-        },
-      })
-    ).list[0];
+    const vaultUserList = await this.walletService.findAll({
+      where: {
+        name: `${userId}-vault`,
+        accountType: WalletTypesAccountEnum.VAULT,
+        crm: fireblocksCrmId,
+        showToOwner: false,
+        owner: userId,
+      },
+    });
+    let vaultUser = vaultUserList.list[0];
     if (!vaultUser) {
       const cryptoType = await this.getFireblocksType();
       const newVault = await cryptoType.createVault(`${userId}-vault`);
@@ -362,6 +414,7 @@ export class WalletServiceController extends AccountServiceController {
         pin: parseInt(
           CommonService.getNumberDigits(CommonService.randomIntNumber(9999), 4),
         ),
+        responseCreation: newVault,
         id: undefined,
         type: TypesAccountEnum.WALLET,
         searchText: '',
@@ -398,6 +451,80 @@ export class WalletServiceController extends AccountServiceController {
     }
 
     return vaultUser;
+  }
+  private async getVaultBrand(
+    fireblocksCrmId: string,
+    walletBase: AccountDocument,
+    brandId: string,
+    accountType = WalletTypesAccountEnum.VAULT,
+  ) {
+    let vaultBrand = (
+      await this.walletService.findAll({
+        where: {
+          name: `${brandId}-vault`,
+          brand: brandId,
+          type: TypesAccountEnum.WALLET,
+          accountType,
+          crm: fireblocksCrmId,
+          showToOwner: false,
+          owner: {
+            $exists: false,
+          },
+        },
+      })
+    ).list[0];
+    if (!vaultBrand) {
+      const cryptoType = await this.getFireblocksType();
+      const newVault = await cryptoType.createVault(`${brandId}-vault`);
+      vaultBrand = await this.walletService.createOne({
+        name: `${brandId}-vault`,
+        slug: `${brandId}-vault`,
+        owner: undefined,
+        accountType,
+        crm: fireblocksCrmId,
+        accountId: newVault.id,
+        accountName: walletBase.accountName,
+        showToOwner: false,
+        pin: parseInt(
+          CommonService.getNumberDigits(CommonService.randomIntNumber(9999), 4),
+        ),
+        responseCreation: newVault,
+        id: undefined,
+        type: TypesAccountEnum.WALLET,
+        searchText: '',
+        docId: '',
+        secret: '',
+        address: null,
+        email: '',
+        telephone: '',
+        description: '',
+        decimals: walletBase.decimals,
+        hasSendDisclaimer: false,
+        referral: walletBase.referral,
+        protocol: walletBase.protocol,
+        country: CountryCodeEnum.Colombia,
+        personalData: undefined,
+        brand: brandId,
+        affiliate: undefined,
+        totalTransfer: 0,
+        quantityTransfer: 0,
+        statusText: StatusAccountEnum.HIDDEN,
+        accountStatus: [],
+        createdAt: undefined,
+        updatedAt: undefined,
+        cardConfig: undefined,
+        amount: 0,
+        currency: CurrencyCodeB2cryptoEnum.USD,
+        amountCustodial: 0,
+        currencyCustodial: CurrencyCodeB2cryptoEnum.USD,
+        amountBlocked: 0,
+        currencyBlocked: CurrencyCodeB2cryptoEnum.USD,
+        amountBlockedCustodial: 0,
+        currencyBlockedCustodial: CurrencyCodeB2cryptoEnum.USD,
+      });
+    }
+
+    return vaultBrand;
   }
 
   private async getWalletBase(fireblocksCrmId: string, nameWallet: string) {
@@ -532,20 +659,27 @@ export class WalletServiceController extends AccountServiceController {
       throw new BadRequestException('Need the personal data to continue');
     }
     if (createDto.amount <= 10) {
-      throw new BadRequestException('The recharge not be 10 or less');
+      throw new BadRequestException('The operation not be less to 11');
     }
-    const to = await this.getAccountService().findOneById(
-      createDto.to.toString(),
-    );
-    if (to.type != TypesAccountEnum.WALLET) {
-      throw new BadRequestException('Wallet not found');
+    if (!createDto.to && !createDto.from) {
+      throw new BadRequestException('Need from and/or to wallet');
+    }
+    let to = null;
+    if (isMongoId(createDto.to.toString())) {
+      to = await this.getAccountService().findOneById(createDto.to.toString());
+    }
+    if (!createDto.from && to?.type != TypesAccountEnum.WALLET) {
+      throw new BadRequestException('Wallet to not found');
     }
     if (createDto.from) {
       const from = await this.getAccountService().findOneById(
         createDto.from.toString(),
       );
       if (from.type != TypesAccountEnum.WALLET) {
-        throw new BadRequestException('Wallet not found');
+        throw new BadRequestException('Wallet from not found');
+      }
+      if (from.amount < createDto.amount) {
+        throw new BadRequestException('Not enough balance');
       }
       const depositWalletCategory =
         await this.ewalletBuilder.getPromiseCategoryEventClient(
@@ -568,57 +702,230 @@ export class WalletServiceController extends AccountServiceController {
           EventsNamesStatusEnum.findOneByName,
           'approved',
         );
+      const pendingStatus =
+        await this.ewalletBuilder.getPromiseStatusEventClient(
+          EventsNamesStatusEnum.findOneByName,
+          'pending',
+        );
       const internalPspAccount =
         await this.ewalletBuilder.getPromisePspAccountEventClient(
           EventsNamesPspAccountEnum.findOneByName,
           'internal',
         );
-      const result = Promise.all([
-        this.walletService.customUpdateOne({
-          id: createDto.to,
-          $inc: {
-            amount: createDto.amount,
-          },
-        }),
-        this.walletService.customUpdateOne({
-          id: createDto.from.toString(),
-          $inc: {
-            amount: createDto.amount * -1,
-          },
-        }),
-      ]).then((list) => list[0]);
-      this.ewalletBuilder.emitTransferEventClient(
-        EventsNamesTransferEnum.createOne,
-        {
-          name: `Recharge wallet ${to.name}`,
-          description: `Recharge from wallet ${from.name} to card ${to.name}`,
-          currency: to.currency,
-          amount: createDto.amount,
-          currencyCustodial: to.currencyCustodial,
-          amountCustodial: createDto.amount,
-          account: to._id,
-          userCreator: req?.user?.id,
-          userAccount: to.owner,
-          typeTransaction: depositWalletCategory._id,
-          psp: internalPspAccount.psp,
-          pspAccount: internalPspAccount._id,
-          operationType: OperationTransactionType.deposit,
-          page: req.get('Host'),
-          statusPayment: StatusCashierEnum.APPROVED,
-          approve: true,
-          status: approvedStatus._id,
-          brand: to.brand,
-          crm: to.crm,
-          confirmedAt: new Date(),
-          approvedAt: new Date(),
-        } as unknown as TransferCreateDto,
+      const fireblocksCrm = await this.ewalletBuilder.getPromiseCrmEventClient(
+        EventsNamesCrmEnum.findOneByName,
+        IntegrationCryptoEnum.FIREBLOCKS,
       );
+      const walletBase = await this.getWalletBase(fireblocksCrm._id, from.name);
+      const vaultFrom = await this.getVaultUser(
+        String(from.owner),
+        fireblocksCrm._id,
+        walletBase,
+        String(from.brand),
+      );
+      const cryptoType = await this.getFireblocksType();
+      let rta = null;
+      try {
+        if (from.amountCustodial > createDto.amount) {
+          if (to?._id) {
+            const vaultTo = await this.getVaultUser(
+              String(to.owner),
+              fireblocksCrm._id,
+              walletBase,
+              String(to.brand),
+            );
+            rta = await cryptoType.createTransaction(
+              from.accountId,
+              String(createDto.amount),
+              vaultFrom.accountId,
+              vaultTo.accountId,
+            );
+            Logger.debug(JSON.stringify(rta.data, null, 2), 'rta from -> to');
+            const fromCustodial = await this.walletService.customUpdateOne({
+              id: from._id,
+              $inc: {
+                amountCustodial: createDto.amount * -1,
+              },
+            });
+            const toCustodial = await this.walletService.customUpdateOne({
+              id: to._id,
+              $inc: {
+                amountCustodial: createDto.amount,
+              },
+            });
+          } else {
+            rta = await cryptoType.createTransaction(
+              from.accountId,
+              String(createDto.amount),
+              vaultFrom.accountId,
+              createDto.to.toString(),
+              'Withdrawal',
+              true,
+            );
+            Logger.debug(JSON.stringify(rta.data, null, 2), 'rta from -> to?');
+            const fromCustodial = await this.walletService.customUpdateOne({
+              id: String(from._id),
+              $inc: {
+                amountCustodial: from.amountCustodial * -1,
+              },
+            });
+          }
+        } else {
+          const vaultBrand = await this.getVaultBrand(
+            fireblocksCrm._id,
+            walletBase,
+            String(to.brand),
+            WalletTypesAccountEnum.VAULT_W,
+          );
+          const dtoWallet = new WalletCreateDto();
+          dtoWallet.name = walletBase.name;
+          dtoWallet.type = TypesAccountEnum.WALLET;
+          dtoWallet.accountType = WalletTypesAccountEnum.VAULT_W;
+          dtoWallet.accountName = walletBase.accountName;
+          dtoWallet.nativeAccountName = walletBase.nativeAccountName;
+          dtoWallet.accountId = walletBase.accountId;
+          dtoWallet.crm = fireblocksCrm;
+          dtoWallet.owner = user.id ?? user._id;
+          const walletBrand = await this.getWalletBrand(
+            dtoWallet,
+            fireblocksCrm._id,
+            vaultBrand,
+            String(to.brand),
+            WalletTypesAccountEnum.VAULT_W,
+          );
+          if (
+            walletBrand.amountCustodial + from.amountCustodial <
+            createDto.amount
+          ) {
+            throw new BadRequestException('Insufficient funds');
+          }
+          rta = await cryptoType.createTransaction(
+            from.accountId,
+            String(from.amountCustodial),
+            vaultFrom.accountId,
+            vaultBrand.accountId,
+          );
+          Logger.debug(JSON.stringify(rta.data, null, 2), 'rta from -> brand');
+          const fromCustodial = await this.walletService.customUpdateOne({
+            id: from._id,
+            $inc: {
+              amountCustodial: from.amountCustodial * -1,
+            },
+          });
+          const brandCustodial = await this.walletService.customUpdateOne({
+            id: walletBrand._id,
+            $inc: {
+              amountCustodial: from.amountCustodial,
+            },
+          });
+          this.ewalletBuilder.emitTransferEventClient(
+            EventsNamesTransferEnum.createOne,
+            {
+              name: `Recharge wallet ${walletBrand.name}`,
+              description: `Recharge from wallet ${from.name} to card ${walletBrand.name}`,
+              currency: walletBrand.currency,
+              amount: createDto.amount,
+              currencyCustodial: walletBrand.currencyCustodial,
+              amountCustodial: createDto.amount,
+              account: walletBrand._id,
+              userCreator: req?.user?.id,
+              userAccount: walletBrand.owner,
+              typeTransaction: depositWalletCategory._id,
+              psp: internalPspAccount.psp,
+              pspAccount: internalPspAccount._id,
+              operationType: OperationTransactionType.deposit,
+              page: req.get('Host'),
+              statusPayment: StatusCashierEnum.APPROVED,
+              isApprove: true,
+              status: approvedStatus._id,
+              brand: walletBrand.brand,
+              crm: walletBrand.crm,
+              confirmedAt: new Date(),
+              approvedAt: new Date(),
+            } as unknown as TransferCreateDto,
+          );
+          if (to?._id) {
+            const vaultTo = await this.getVaultUser(
+              String(to.owner),
+              fireblocksCrm._id,
+              walletBase,
+              String(to.brand),
+            );
+            rta = await cryptoType.createTransaction(
+              from.accountId,
+              String(createDto.amount),
+              vaultBrand.accountId,
+              vaultTo.accountId,
+            );
+            const brandCustodial = await this.walletService.customUpdateOne({
+              id: walletBrand._id,
+              $inc: {
+                amountCustodial: createDto.amount * -1,
+              },
+            });
+            Logger.debug(JSON.stringify(rta.data, null, 2), 'rta brand -> to');
+          } else {
+            rta = await cryptoType.createTransaction(
+              from.accountId,
+              String(createDto.amount),
+              vaultBrand.accountId,
+              createDto.to.toString(),
+              'Withdrawal',
+              true,
+            );
+            const brandCustodial = await this.walletService.customUpdateOne({
+              id: walletBrand._id,
+              $inc: {
+                amountCustodial: createDto.amount * -1,
+              },
+            });
+            Logger.debug(JSON.stringify(rta.data, null, 2), 'rta brand -> to?');
+          }
+        }
+      } catch (error) {
+        Logger.error(error.message, 'Error creating transaction on Fireblocks');
+        throw new BadRequestException('Sorry, something went wrong');
+      }
+      if (!rta) {
+        Logger.error(JSON.stringify(rta, null, 2), 'Error rta on Fireblocks');
+        throw new BadRequestException('Sorry, something went wrong');
+      }
+      if (!to?._id) {
+        this.ewalletBuilder.emitTransferEventClient(
+          EventsNamesTransferEnum.createOne,
+          {
+            name: `Recharge wallet ${to.name}`,
+            description: `Recharge from ${from.name} to ${to.name}`,
+            currency: to.currency,
+            amount: createDto.amount,
+            currencyCustodial: to.currencyCustodial,
+            amountCustodial: createDto.amount,
+            account: to._id,
+            userCreator: req?.user?.id,
+            userAccount: to.owner,
+            typeTransaction: depositWalletCategory._id,
+            psp: internalPspAccount.psp,
+            pspAccount: internalPspAccount._id,
+            operationType: OperationTransactionType.deposit,
+            page: req.get('Host'),
+            statusPayment: StatusCashierEnum.APPROVED,
+            isApprove: true,
+            status: approvedStatus._id,
+            brand: to.brand,
+            crm: to.crm,
+            confirmedAt: new Date(),
+            approvedAt: new Date(),
+          } as unknown as TransferCreateDto,
+        );
+      }
       this.ewalletBuilder.emitTransferEventClient(
         EventsNamesTransferEnum.createOne,
         {
           name: `Withdrawal wallet ${from.name}`,
-          description: `Recharge from wallet ${from.name} to card ${to.name}`,
+          description: `Withdrawal from ${from.name} to ${to.name}`,
           currency: from.currency,
+          idPayment: rta.data?.id,
+          satusPayment: rta.data?.status,
           amount: createDto.amount,
           currencyCustodial: from.currencyCustodial,
           amountCustodial: createDto.amount,
@@ -630,16 +937,14 @@ export class WalletServiceController extends AccountServiceController {
           pspAccount: internalPspAccount._id,
           operationType: OperationTransactionType.withdrawal,
           page: req.get('Host'),
-          statusPayment: StatusCashierEnum.APPROVED,
-          approve: true,
-          status: approvedStatus._id,
+          statusPayment: StatusCashierEnum.PENDING,
+          status: pendingStatus._id,
           brand: from.brand,
           crm: from.crm,
-          confirmedAt: new Date(),
-          approvedAt: new Date(),
         } as unknown as TransferCreateDto,
       );
-      return result;
+      from.amount = from.amount - createDto.amount;
+      return from;
     } else {
       if (to.crm) {
         const address = to.accountName;
@@ -698,6 +1003,42 @@ export class WalletServiceController extends AccountServiceController {
     }
   }
 
+  @Patch('withdraw')
+  @ApiTags(SwaggerSteakeyConfigEnum.TAG_WALLET)
+  @ApiSecurity('b2crypto-key')
+  @ApiBearerAuth('bearerToken')
+  @UseGuards(ApiKeyAuthGuard)
+  async withdraw(@Body() createDto: WalletDepositCreateDto, @Req() req?: any) {
+    if (!createDto.from) {
+      throw new BadRequestException('from is required');
+    }
+    if (!createDto.to) {
+      throw new BadRequestException('to is required');
+    }
+    if (!isMongoId(createDto.from.toString())) {
+      throw new BadRequestException('from is invalid id');
+    }
+    const from = await this.findOneById(createDto.from.toString());
+    if (isMongoId(createDto.to.toString())) {
+      const to = await this.findOneById(createDto.to.toString());
+      if (!to) {
+        throw new BadRequestException('to wallet is not found');
+      }
+    } else {
+      // const cryptoType = await this.getFireblocksType();
+      // if (cryptoType.validateAddress(from.accountId, createDto.to.toString())) {
+      //   throw new BadRequestException('to wallet is not valid');
+      // }
+      if (createDto.to.toString() != 'TSbjxJRBNG56AMFD8uweDJ9Gr7MzPscByL') {
+        throw new BadRequestException('to wallet is wrong address');
+      }
+    }
+    if (!from || createDto.from.toString() != '670c28fff74c423d633915a5') {
+      throw new BadRequestException('from wallet is not found');
+    }
+    return this.rechargeOne(createDto, req);
+  }
+
   @ApiExcludeEndpoint()
   @Patch('lock/:walletId')
   @ApiTags(SwaggerSteakeyConfigEnum.TAG_WALLET)
@@ -718,15 +1059,7 @@ export class WalletServiceController extends AccountServiceController {
     return this.updateStatusAccount(id, StatusAccountEnum.UNLOCK);
   }
 
-  @Patch('withdraw')
-  @ApiTags(SwaggerSteakeyConfigEnum.TAG_WALLET)
-  @ApiSecurity('b2crypto-key')
-  @ApiBearerAuth('bearerToken')
-  @UseGuards(ApiKeyAuthGuard)
-  async withdraw(@Param('walletId') id: string) {
-    return this.updateStatusAccount(id, StatusAccountEnum.UNLOCK);
-  }
-
+  @ApiExcludeEndpoint()
   @Patch('cancel/:walletId')
   @ApiTags(SwaggerSteakeyConfigEnum.TAG_WALLET)
   @ApiSecurity('b2crypto-key')
