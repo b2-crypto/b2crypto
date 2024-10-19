@@ -26,6 +26,7 @@ import EventsNamesCategoryEnum from 'apps/category-service/src/enum/events.names
 import EventsNamesCrmEnum from 'apps/crm-service/src/enum/events.names.crm.enum';
 import EventsNamesStatusEnum from 'apps/status-service/src/enum/events.names.status.enum';
 import EventsNamesTransferEnum from 'apps/transfer-service/src/enum/events.names.transfer.enum';
+import { isMongoId } from 'class-validator';
 import * as crypto from 'crypto';
 
 @Controller('fireblocks')
@@ -72,11 +73,11 @@ export class FireBlocksNotificationsController {
     //Logger.debug(isVerified, 'getTransferDto.isVerified');
     //if (isVerified) {
     const rta = data.data;
-    Logger.debug(rta, `${rta?.id} - ${rta.status}-start`);
+    Logger.debug(rta, '-start');
     if (
-      rta?.source.type === 'UNKNOWN' ||
-      (rta?.source.type === 'VAULT_ACCOUNT' &&
-        rta?.destination.type === 'EXTERNAL_WALLET')
+      rta?.source?.type === 'UNKNOWN' ||
+      (rta?.source?.type === 'VAULT_ACCOUNT' &&
+        rta?.destination?.type === 'EXTERNAL_WALLET')
     ) {
       const txList = await this.builder.getPromiseTransferEventClient(
         EventsNamesTransferEnum.findAll,
@@ -175,6 +176,10 @@ export class FireBlocksNotificationsController {
     // }
     // const ownerId = brand.owner;
     const ownerId = ownerIdWallet.replace('-vault', '');
+    if (!isMongoId(ownerId)) {
+      Logger.debug(ownerId, `Invalid ownerId ${ownerIdWallet}`);
+      return null;
+    }
     const crm = await this.getFireblocksCrm();
     const queryWhereWallet = {
       owner: ownerId,
