@@ -59,6 +59,8 @@ import EventsNamesAccountEnum from './enum/events.names.account.enum';
 import { ConfigService } from '@nestjs/config';
 import { isMongoId } from 'class-validator';
 import { AccountEntity } from '@account/account/entities/account.entity';
+import { CategoryDocument } from '@category/category/entities/mongoose/category.schema';
+import { ResponsePaginator } from '@common/common/interfaces/response-pagination.interface';
 
 @ApiTags(SwaggerSteakeyConfigEnum.TAG_WALLET)
 @Controller('wallets')
@@ -459,10 +461,11 @@ export class WalletServiceController extends AccountServiceController {
     brandId: string,
     accountType = WalletTypesAccountEnum.VAULT,
   ) {
+    const vaultName = `${brandId}-vault-${accountType}`;
     let vaultBrand = (
       await this.walletService.findAll({
         where: {
-          name: `${brandId}-vault`,
+          name: vaultName,
           brand: brandId,
           type: TypesAccountEnum.WALLET,
           accountType,
@@ -476,9 +479,9 @@ export class WalletServiceController extends AccountServiceController {
     ).list[0];
     if (!vaultBrand) {
       const cryptoType = await this.getFireblocksType();
-      const newVault = await cryptoType.createVault(`${brandId}-vault`);
+      const newVault = await cryptoType.createVault(vaultName);
       vaultBrand = await this.walletService.createOne({
-        name: `${brandId}-vault`,
+        name: vaultName,
         slug: `${brandId}-vault`,
         owner: undefined,
         accountType,
@@ -776,7 +779,7 @@ export class WalletServiceController extends AccountServiceController {
         const vaultBrandDeposit = await this.getVaultBrand(
           fireblocksCrm._id,
           walletBase,
-          to.brand.toString(),
+          from.brand.toString(),
           WalletTypesAccountEnum.VAULT_D,
         );
         const dtoWallet = new WalletCreateDto();
@@ -792,7 +795,7 @@ export class WalletServiceController extends AccountServiceController {
           dtoWallet,
           fireblocksCrm._id,
           vaultBrandDeposit,
-          String(to.brand),
+          String(from.brand),
           WalletTypesAccountEnum.VAULT_W,
         );
         if (from.amountCustodial > createDto.amount) {
@@ -838,78 +841,14 @@ export class WalletServiceController extends AccountServiceController {
               },
             }),
           );
-          if (from.amountCustodial - createDto.amount > valueToPay) {
-            promisesTx.push(
-              cryptoType.createTransaction(
-                from.accountId,
-                String(valueToPay),
-                vaultFrom.accountId,
-                vaultBrandDeposit.accountId,
-              ),
-              this.walletService.customUpdateOne({
-                id: from._id,
-                $inc: {
-                  amountCustodial: createDto.amount * -1,
-                },
-              }),
-              this.walletService.customUpdateOne({
-                id: walletBrandDeposit._id,
-                $inc: {
-                  amountCustodial: createDto.amount,
-                },
-              }),
-            );
-          }
-          this.ewalletBuilder.emitTransferEventClient(
-            EventsNamesTransferEnum.createOne,
-            {
-              name: `Payment transfer ${walletBrandDeposit.name}`,
-              description: `Payment from ${from.name} to ${walletBrandDeposit.name}`,
-              currency: walletBrandDeposit.currency,
-              amount: valueToPay,
-              currencyCustodial: walletBrandDeposit.currencyCustodial,
-              amountCustodial: valueToPay,
-              account: walletBrandDeposit._id,
-              userCreator: req?.user?.id,
-              userAccount: walletBrandDeposit.owner,
-              typeTransaction: paymentWalletCategory._id,
-              psp: internalPspAccount.psp,
-              pspAccount: internalPspAccount._id,
-              operationType: OperationTransactionType.payment,
-              page: req.get('Host'),
-              statusPayment: StatusCashierEnum.APPROVED,
-              isApprove: true,
-              status: approvedStatus._id,
-              brand: walletBrandDeposit.brand,
-              crm: walletBrandDeposit.crm,
-              confirmedAt: new Date(),
-              approvedAt: new Date(),
-            } as unknown as TransferCreateDto,
-          );
-          this.ewalletBuilder.emitTransferEventClient(
-            EventsNamesTransferEnum.createOne,
-            {
-              name: `Purchase transfer ${from.name}`,
-              description: `Purchase from ${from.name} to ${walletBrandDeposit?.name}`,
-              currency: from.currency,
-              idPayment: rta.data?.id,
-              responsepayment: rta.data,
-              amount: valueToPay,
-              currencyCustodial: from.currencyCustodial,
-              amountCustodial: valueToPay,
-              account: from._id,
-              userCreator: req?.user?.id,
-              userAccount: from.owner,
-              typeTransaction: purchaseWalletCategory._id,
-              psp: internalPspAccount.psp,
-              pspAccount: internalPspAccount._id,
-              operationType: OperationTransactionType.purchase,
-              page: req.get('Host'),
-              statusPayment: StatusCashierEnum.PENDING,
-              status: pendingStatus._id,
-              brand: from.brand,
-              crm: from.crm,
-            } as unknown as TransferCreateDto,
+          promisesTx.push(
+            this.payByServicesFromWallet(
+              from,
+              walletBrandDeposit,
+              valueToPay,
+              req?.user?.id,
+              rta.data,
+            ),
           );
           const rtaProm = await Promise.all(promisesTx);
           Logger.debug(
@@ -1015,8 +954,12 @@ export class WalletServiceController extends AccountServiceController {
               valueToPay,
               req?.user?.id,
               rta.data,
-              req.get('Host'),
             ),
+          );
+          const rtaProm = await Promise.all(promisesTx);
+          Logger.debug(
+            JSON.stringify(rtaProm, null, 2),
+            'Update amount custodial to? -> brand',
           );
         }
       } catch (error) {
@@ -1150,7 +1093,6 @@ export class WalletServiceController extends AccountServiceController {
     amount: number,
     creatorId: string,
     paymentResponse: any,
-    page?: string,
   ) {
     const paymentWalletCategory =
       await this.ewalletBuilder.getPromiseCategoryEventClient(
@@ -1200,7 +1142,7 @@ export class WalletServiceController extends AccountServiceController {
         psp: internalPspAccount.psp,
         pspAccount: internalPspAccount._id,
         operationType: OperationTransactionType.payment,
-        page,
+        page: 'Fee Transfer to wallet',
         statusPayment: StatusCashierEnum.APPROVED,
         isApprove: true,
         status: approvedStatus._id,
@@ -1228,7 +1170,7 @@ export class WalletServiceController extends AccountServiceController {
         psp: internalPspAccount.psp,
         pspAccount: internalPspAccount._id,
         operationType: OperationTransactionType.purchase,
-        page,
+        page: 'Fee Transfer to wallet',
         statusPayment: StatusCashierEnum.PENDING,
         status: pendingStatus._id,
         brand: walletFrom.brand,
@@ -1272,6 +1214,210 @@ export class WalletServiceController extends AccountServiceController {
       throw new BadRequestException('from wallet is not found');
     }
     return this.rechargeOne(createDto, req);
+  }
+
+  @EventPattern(EventsNamesAccountEnum.sweepOmnibus)
+  async sweepOmnibus(@Ctx() ctx: RmqContext, @Payload() data: any) {
+    CommonService.ack(ctx);
+    // const depositWalletCategory =
+    //   await this.ewalletBuilder.getPromiseCategoryEventClient(
+    //     EventsNamesCategoryEnum.findOneByNameType,
+    //     {
+    //       slug: 'deposit-wallet',
+    //       type: TagEnum.MONETARY_TRANSACTION_TYPE,
+    //     },
+    //   );
+    // if (!depositWalletCategory) {
+    //   throw new BadRequestException(
+    //     'Monetary transaction type "deposit wallet" not found',
+    //   );
+    // }
+    // const pendingStatus = await this.ewalletBuilder.getPromiseStatusEventClient(
+    //   EventsNamesStatusEnum.findOneByName,
+    //   'pending',
+    // );
+    // const internalPspAccount =
+    //   await this.ewalletBuilder.getPromisePspAccountEventClient(
+    //     EventsNamesPspAccountEnum.findOneByName,
+    //     'internal',
+    //   );
+    const fireblocksCrm = await this.ewalletBuilder.getPromiseCrmEventClient(
+      EventsNamesCrmEnum.findOneByName,
+      IntegrationCryptoEnum.FIREBLOCKS,
+    );
+    let walletList: ResponsePaginator<AccountEntity> = null;
+    const cryptoType = await this.getFireblocksType();
+    const walletsBase = {};
+    const valuts = {};
+    const wallets = {};
+    const promises = [];
+    Logger.log('Start sweep omnibus');
+    do {
+      walletList = await this.ewalletBuilder.getPromiseAccountEventClient(
+        EventsNamesAccountEnum.findAll,
+        {
+          page: walletList?.nextPage || 1,
+          where: {
+            owner: {
+              $exists: true,
+            },
+            type: TypesAccountEnum.WALLET,
+            accountType: WalletTypesAccountEnum.VAULT,
+            amountCustodial: {
+              $gt: 0,
+            },
+          },
+        },
+      );
+      for (const from of walletList.list) {
+        if (!walletsBase[from.name]) {
+          walletsBase[from.name] = await this.getWalletBase(
+            fireblocksCrm._id,
+            from.name,
+          );
+        }
+        const vauleToDeposit = from.amountCustodial * 0.8;
+        const vauleToWithdraw = from.amountCustodial * 0.2;
+        const walletBase = walletsBase[from.name];
+        const brandId = from.brand.toString();
+        if (!valuts[brandId]) {
+          valuts[brandId] = {
+            deposit: await this.getVaultBrand(
+              fireblocksCrm._id,
+              walletBase,
+              brandId.toString(),
+              WalletTypesAccountEnum.VAULT_D,
+            ),
+            withdraw: await this.getVaultBrand(
+              fireblocksCrm._id,
+              walletBase,
+              brandId.toString(),
+              WalletTypesAccountEnum.VAULT_W,
+            ),
+          };
+        }
+        if (!wallets[brandId]) {
+          wallets[brandId] = {
+            deposit: await this.getWallet(
+              walletBase,
+              fireblocksCrm._id,
+              valuts[brandId].deposit,
+              WalletTypesAccountEnum.VAULT_D,
+            ),
+            withdraw: await this.getWallet(
+              walletBase,
+              fireblocksCrm._id,
+              valuts[brandId].withdraw,
+              WalletTypesAccountEnum.VAULT_W,
+            ),
+          };
+        }
+        const vaultFrom = await this.getVaultUser(
+          from.owner.toString(),
+          fireblocksCrm._id,
+          walletBase,
+          from.brand.toString(),
+        );
+        promises.push(
+          // Deposit
+          cryptoType
+            .createTransaction(
+              from.accountId,
+              String(vauleToDeposit),
+              vaultFrom.accountId,
+              valuts[brandId].deposit.accountId,
+            )
+            .catch((err) => {
+              Logger.error(
+                err,
+                `Catch sweep error deposit ${vaultFrom.name}_${from.name}`,
+              );
+              return null;
+            })
+            .then((rta) => {
+              Logger.debug(
+                JSON.stringify(rta?.data, null, 2),
+                `rta sweep deposit ${vaultFrom.name}_${from.name}`,
+              );
+              return Promise.all([
+                this.walletService.customUpdateOne({
+                  id: from._id,
+                  $inc: {
+                    amountCustodial: vauleToDeposit * -1,
+                  },
+                }),
+                this.walletService.customUpdateOne({
+                  id: wallets[brandId].deposit._id,
+                  $inc: {
+                    amountCustodial: vauleToDeposit,
+                  },
+                }),
+              ]);
+            }),
+          // Withdraw
+          cryptoType
+            .createTransaction(
+              from.accountId,
+              String(vauleToWithdraw),
+              vaultFrom.accountId,
+              valuts[brandId].withdraw.accountId,
+            )
+            .catch((err) => {
+              Logger.error(
+                err,
+                `Catch sweep error withdrawal ${vaultFrom.name}_${from.name}`,
+              );
+              return null;
+            })
+            .then((rta) => {
+              Logger.debug(
+                JSON.stringify(rta?.data, null, 2),
+                `rta sweep withdrawal ${vaultFrom.name}_${from.name}`,
+              );
+              return Promise.all([
+                this.walletService.customUpdateOne({
+                  id: from._id,
+                  $inc: {
+                    amountCustodial: vauleToWithdraw * -1,
+                  },
+                }),
+                this.walletService.customUpdateOne({
+                  id: wallets[brandId].withdraw._id,
+                  $inc: {
+                    amountCustodial: vauleToWithdraw,
+                  },
+                }),
+              ]);
+            }),
+        );
+      }
+    } while (walletList.nextPage != 1);
+    await Promise.all(promises);
+    Logger.log('Finish sweep omnibus');
+  }
+
+  private async getWallet(
+    walletBase: AccountEntity,
+    fireblocksCrm: CategoryDocument,
+    vault: AccountDocument,
+    type: WalletTypesAccountEnum = WalletTypesAccountEnum.VAULT,
+  ) {
+    const dtoWallet = new WalletCreateDto();
+    dtoWallet.name = walletBase.name;
+    dtoWallet.type = TypesAccountEnum.WALLET;
+    dtoWallet.accountType = WalletTypesAccountEnum.VAULT_W;
+    dtoWallet.accountName = walletBase.accountName;
+    dtoWallet.nativeAccountName = walletBase.nativeAccountName;
+    dtoWallet.accountId = walletBase.accountId;
+    dtoWallet.crm = fireblocksCrm;
+    dtoWallet.owner = vault.owner;
+    return this.getWalletBrand(
+      dtoWallet,
+      fireblocksCrm._id,
+      vault,
+      String(vault.brand),
+      type,
+    );
   }
 
   @ApiExcludeEndpoint()

@@ -12,6 +12,7 @@ export class JobService {
   static readonly periodicTime = {
     //sendBalanceCardReports: CronExpression.EVERY_DAY_AT_1PM,
     sendBalanceCardReports: '30 10 * * *',
+    sweepOmnibus: CronExpression.EVERY_12_HOURS,
     checkBalanceUser: CronExpression.EVERY_DAY_AT_11AM,
     checkCardsInPomelo: '0 */6 * * * *',
     checkB2BinPayTransfers: CronExpression.EVERY_5_MINUTES,
@@ -89,6 +90,19 @@ export class JobService {
       this.builder.emitAccountEventClient(
         EventsNamesAccountEnum.checkCardsCreatedInPomelo,
         'pomelo',
+      );
+    }
+  }
+
+  @Cron(JobService.periodicTime.checkB2BinPayTransfers, {
+    timeZone: process.env.TZ,
+  })
+  sweepOmibus() {
+    Logger.log('Job sweep omibus', `${this.env} - ${JobService.name}`);
+    if (this.env === EnvironmentEnum.prod) {
+      this.builder.emitAccountEventClient(
+        EventsNamesAccountEnum.sweepOmnibus,
+        'omnibus',
       );
     }
   }
