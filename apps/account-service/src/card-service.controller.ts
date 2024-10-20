@@ -1178,6 +1178,9 @@ export class CardServiceController extends AccountServiceController {
     const physicalCardPending = await this.cardService.findAll({
       where: {
         owner: user._id,
+        responseShiping: {
+          $exists: true,
+        },
         cardConfig: {
           $exists: false,
         },
@@ -1258,6 +1261,9 @@ export class CardServiceController extends AccountServiceController {
     const to = await this.getAccountService().findOneById(
       createDto.to.toString(),
     );
+    if (!to) {
+      throw new BadRequestException('Card is not valid');
+    }
     if (to.type != TypesAccountEnum.CARD) {
       Logger.error(
         'Type not same',
@@ -1266,9 +1272,7 @@ export class CardServiceController extends AccountServiceController {
       );
       throw new BadRequestException('Card not found');
     }
-    if (!to) {
-      throw new BadRequestException('Card is not valid');
-    }
+    const valueToPay = to.type === TypesAccountEnum.CARD ? 0 : 5;
     const from = await this.getAccountService().findOneById(
       createDto.from.toString(),
     );
@@ -1311,26 +1315,15 @@ export class CardServiceController extends AccountServiceController {
         EventsNamesPspAccountEnum.findOneByName,
         'internal',
       );
-    // Create
-    const result = Promise.all([
-      this.cardService.customUpdateOne({
-        id: createDto.to,
-        $inc: {
-          amount: createDto.amount,
-        },
-      }),
-      this.cardService.customUpdateOne({
-        id: createDto.from.toString(),
-        $inc: {
-          amount: createDto.amount * -1,
-        },
-      }),
-    ]).then((list) => list[0]);
+    if (valueToPay > 0) {
+      // Pay transfer between cards
+      Logger.log('Pay transfer between cards', 'Make');
+    }
     this.cardBuilder.emitTransferEventClient(
       EventsNamesTransferEnum.createOne,
       {
-        name: `Recharge card ${to.name}`,
-        description: `Recharge from wallet ${from.name} to card ${to.name}`,
+        name: `Deposit card ${to.name}`,
+        description: `Deposit from wallet ${from.name} to card ${to.name}`,
         currency: to.currency,
         amount: createDto.amount,
         currencyCustodial: to.currencyCustodial,
@@ -1346,7 +1339,7 @@ export class CardServiceController extends AccountServiceController {
         operationType: OperationTransactionType.deposit,
         page: req.get('Host'),
         statusPayment: StatusCashierEnum.APPROVED,
-        approve: true,
+        isApprove: true,
         status: approvedStatus._id,
         brand: to.brand,
         crm: to.crm,
@@ -1358,7 +1351,7 @@ export class CardServiceController extends AccountServiceController {
       EventsNamesTransferEnum.createOne,
       {
         name: `Withdrawal wallet ${from.name}`,
-        description: `Recharge from wallet ${from.name} to card ${to.name}`,
+        description: `Withdrawal from wallet ${from.name} to card ${to.name}`,
         currency: from.currency,
         amount: createDto.amount,
         currencyCustodial: from.currencyCustodial,
@@ -1374,7 +1367,7 @@ export class CardServiceController extends AccountServiceController {
         operationType: OperationTransactionType.withdrawal,
         page: req.get('Host'),
         statusPayment: StatusCashierEnum.APPROVED,
-        approve: true,
+        isApprove: true,
         status: approvedStatus._id,
         brand: from.brand,
         crm: from.crm,
@@ -1382,7 +1375,8 @@ export class CardServiceController extends AccountServiceController {
         approvedAt: new Date(),
       } as unknown as TransferCreateDto,
     );
-    return result;
+    from.amount = from.amount - createDto.amount;
+    return from;
   }
 
   @Patch('lock/:cardId')
