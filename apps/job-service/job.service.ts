@@ -100,10 +100,10 @@ export class JobService {
   sweepOmibus() {
     Logger.log('Job sweep omibus', `${this.env} - ${JobService.name}`);
     if (this.env === EnvironmentEnum.prod) {
-      this.builder.emitAccountEventClient(
-        EventsNamesAccountEnum.sweepOmnibus,
-        'omnibus',
-      );
+      // this.builder.emitAccountEventClient(
+      //   EventsNamesAccountEnum.sweepOmnibus,
+      //   'omnibus',
+      // );
     }
   }
 
