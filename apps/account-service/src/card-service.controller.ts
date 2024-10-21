@@ -1240,7 +1240,6 @@ export class CardServiceController extends AccountServiceController {
     throw new BadRequestException('Shipment was not created');
   }
 
-  @ApiExcludeEndpoint()
   @Post('recharge')
   @ApiSecurity('b2crypto-key')
   @ApiBearerAuth('bearerToken')
