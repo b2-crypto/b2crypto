@@ -169,6 +169,8 @@ export class CardServiceController extends AccountServiceController {
   @Post('create')
   @UseGuards(ApiKeyAuthGuard)
   async createOne(@Body() createDto: CardCreateDto, @Req() req?: any) {
+    const isNotStressTest = () => process.env.ENVIRONMENT !== 'TEST_STRESS';
+
     const userId = createDto.owner || req?.user?.id;
     const user: User = await this.getUser(userId);
     createDto.accountType =
@@ -270,49 +272,87 @@ export class CardServiceController extends AccountServiceController {
       //   }
       //   cardDataIntegration.previous_card_id = prevCard.cardConfig.id;
       // }
-      const card = await cardIntegration.createCard(cardDataIntegration);
+      const card = isNotStressTest()
+        ? await cardIntegration.createCard(cardDataIntegration)
+        : { error: false, data: {} };
       const error = card['error'];
       if (error) {
         // TODO[hender - 2024-08-12] If problems with data user in Pomelo, flag to update in pomelo when update profile user
         throw new BadRequestException(error);
       }
 
-      if (process.env.ENVIRONMENT !== 'TEST_STRESS') {
-        account.cardConfig = card.data as unknown as Card;
-        if (card.data['shipment_id']) {
-          const dataShipping = await cardIntegration.getShippingPhysicalCard(
-            card.data['shipment_id'],
-          );
-          account.responseShipping = dataShipping.data;
-          if (
-            dataShipping.data.status === StatusAccountEnum.REJECTED ||
-            dataShipping.data.status === StatusAccountEnum.DESTRUCTION
-          ) {
-            account.statusText = StatusAccountEnum.CANCEL;
-          }
+      account.cardConfig = card.data as unknown as Card;
+      if (card.data['shipment_id']) {
+        const dataShipping = isNotStressTest()
+          ? await cardIntegration.getShippingPhysicalCard(
+              card.data['shipment_id'],
+            )
+          : {
+              data: {
+                id: '',
+                external_tracking_id: '',
+                status: StatusAccountEnum.VERIFIED,
+                status_detail: '',
+                shipment_type: '',
+                affinity_group_id: '',
+                affinity_group_name: '',
+                courier: { company: '', tracking_url: '' },
+                country_code: '',
+                created_at: '',
+                batch: { id: '', quantity: 0, has_stock: false, status: '' },
+                address: {
+                  street_name: '',
+                  street_number: '',
+                  floor: '',
+                  apartment: '',
+                  city: '',
+                  region: '',
+                  country: '',
+                  zip_code: '',
+                  neighborhood: '',
+                  additional_info: '',
+                },
+                receiver: {
+                  full_name: '',
+                  email: '',
+                  document_type: '',
+                  document_number: '',
+                  tax_identification_number: '',
+                  telephone_number: '',
+                },
+                user_id: '',
+              },
+            };
+        account.responseShipping = dataShipping.data;
+        if (
+          dataShipping.data.status === StatusAccountEnum.REJECTED ||
+          dataShipping.data.status === StatusAccountEnum.DESTRUCTION
+        ) {
+          account.statusText = StatusAccountEnum.CANCEL;
         }
-        await account.save();
+      }
+      if (isNotStressTest()) await account.save();
 
-        const walletDTO = {
-          owner: account.owner,
-          name: 'USD Tether (Tron)',
-          type: TypesAccountEnum.WALLET,
-          accountType: WalletTypesAccountEnum.VAULT,
-        };
-        const countWalletsUser =
-          await this.cardBuilder.getPromiseAccountEventClient(
+      const walletDTO = {
+        owner: account.owner,
+        name: 'USD Tether (Tron)',
+        type: TypesAccountEnum.WALLET,
+        accountType: WalletTypesAccountEnum.VAULT,
+      };
+      const countWalletsUser = isNotStressTest()
+        ? await this.cardBuilder.getPromiseAccountEventClient(
             EventsNamesAccountEnum.count,
             {
               take: 1,
               where: walletDTO,
             },
-          );
-        if (countWalletsUser < 1) {
-          this.cardBuilder.emitAccountEventClient(
-            EventsNamesAccountEnum.createOneWallet,
-            walletDTO,
-          );
-        }
+          )
+        : 1;
+      if (countWalletsUser < 1) {
+        this.cardBuilder.emitAccountEventClient(
+          EventsNamesAccountEnum.createOneWallet,
+          walletDTO,
+        );
       }
 
       return account;
