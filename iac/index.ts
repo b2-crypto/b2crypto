@@ -1,5 +1,6 @@
 import * as aws from '@pulumi/aws';
 import * as awsx from '@pulumi/awsx';
+import * as mongodbatlas from '@pulumi/mongodbatlas';
 import * as pulumi from '@pulumi/pulumi';
 import { randomBytes } from 'crypto';
 import {
@@ -46,6 +47,51 @@ const TAGS = {
   CreatedBy: CREATED_BY,
 };
 const TAG = process.env.COMMIT_SHA ?? randomBytes(4).toString('hex');
+const isTestingStress = () => STACK === 'testing-stress';
+
+const mongoAtlasClusterStressTest = isTestingStress()
+  ? new mongodbatlas.Cluster(`${COMPANY_NAME}-${PROJECT_NAME}-${STACK}`, {
+      projectId: SECRETS.MONGOATLAS_PROJECT_ID,
+      name: `${COMPANY_NAME}-${PROJECT_NAME}-${STACK}`,
+      providerName: 'AWS',
+      providerInstanceSizeName: 'M10',
+      providerRegionName: 'US_EAST_2',
+      mongoDbMajorVersion: '7.0',
+      clusterType: 'REPLICASET',
+      replicationSpecs: [
+        {
+          numShards: 1,
+          regionsConfigs: [
+            {
+              regionName: 'US_EAST_2',
+              electableNodes: 3,
+              priority: 7,
+            },
+          ],
+        },
+      ],
+      tags: Object.entries(TAGS).map(([key, value]) => ({
+        key,
+        value,
+      })),
+    })
+  : {
+      id: '',
+      name: pulumi.output(''),
+      mongoUri: pulumi.output(''),
+      srvAddress: pulumi.output(''),
+      connectionStrings: {
+        apply: () => pulumi.output(''),
+      },
+    };
+
+export const mongoAtlasClusterStressTestData = {
+  id: mongoAtlasClusterStressTest.id,
+  name: mongoAtlasClusterStressTest.name,
+  mongoUri: mongoAtlasClusterStressTest.mongoUri,
+  srvAddress: mongoAtlasClusterStressTest.srvAddress,
+  connectionStrings: mongoAtlasClusterStressTest.connectionStrings,
+};
 
 const acmCertificate = aws.acm.getCertificateOutput({
   domain: 'b2crypto.com',
@@ -322,7 +368,22 @@ const ecsFargateService = new awsx.ecs.FargateService(
           { name: 'DATABASE_NAME', value: DATABASE_NAME },
           {
             name: 'DATABASE_URL',
-            value: SECRETS.DATABASE_URL,
+            value: isTestingStress()
+              ? pulumi
+                  .all([
+                    mongoAtlasClusterStressTest.name,
+                    mongoAtlasClusterStressTest.connectionStrings.apply(
+                      (connections) => connections[0].standardSrv,
+                    ),
+                    SECRETS.MONGOATLAS_USERNAME,
+                    SECRETS.MONGOATLAS_PASSWORD,
+                  ])
+                  .apply(([name, standardSrv, username, password]) => {
+                    const [protocol, domain] = standardSrv.split('//');
+
+                    return `${protocol}//${username}:${password}@${domain}/?retryWrites=true&w=majority&appName=${name}`;
+                  })
+              : SECRETS.DATABASE_URL,
           },
           {
             name: 'RABBIT_MQ_HOST',

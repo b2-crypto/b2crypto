@@ -29,6 +29,9 @@ export const SECRETS = pulumi
     config.requireSecret('POMELO_SFTP_PORT'),
     config.requireSecret('POMELO_SFTP_USR'),
     config.requireSecret('POMELO_SFTP_PASSPHRASE'),
+    config.requireSecret('MONGOATLAS_PROJECT_ID'),
+    config.requireSecret('MONGOATLAS_USERNAME'),
+    config.requireSecret('MONGOATLAS_PASSWORD'),
   ])
   .apply(
     ([
@@ -57,6 +60,9 @@ export const SECRETS = pulumi
       POMELO_SFTP_PORT,
       POMELO_SFTP_USR,
       POMELO_SFTP_PASSPHRASE,
+      MONGOATLAS_PROJECT_ID,
+      MONGOATLAS_USERNAME,
+      MONGOATLAS_PASSWORD,
     ]) => ({
       DATABASE_URL,
       RABBIT_MQ_HOST,
@@ -83,6 +89,9 @@ export const SECRETS = pulumi
       POMELO_SFTP_PORT,
       POMELO_SFTP_USR,
       POMELO_SFTP_PASSPHRASE,
+      MONGOATLAS_PROJECT_ID,
+      MONGOATLAS_USERNAME,
+      MONGOATLAS_PASSWORD,
     }),
   );
 

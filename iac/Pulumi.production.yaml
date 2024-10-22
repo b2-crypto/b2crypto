@@ -95,7 +95,7 @@ config:
   b2crypto-iac:TESTING: "false"
   b2crypto-iac:TZ: UTC
   b2crypto-iac:URL_API_EMAIL_APP: ""
-  b2crypto-iac:VPC_CIDR_BLOCK: 10.1.0.0/16
+  b2crypto-iac:VPC_CIDR_BLOCK: 10.3.0.0/16
   mongodbatlas:privateKey:
     secure: AAABAMJZ0+qVxLuwGcvwozo5VPgkpAkBcdm+bMxa0LuHaFt2DiM+kwgq7x43QD1Dv2CCnMv+tJsw5LpRQ1y5XvJP3cg=
   mongodbatlas:publicKey:
@@ -108,3 +108,9 @@ config:
   b2crypto-iac:MIN_CAPACITY_AUTOSCALING: "3"
   b2crypto-iac:MQ_DEPLOYMENT_MODE: CLUSTER_MULTI_AZ
   b2crypto-iac:RABBIT_MQ_INSTANCE_TYPE: mq.m5.large
+  b2crypto-iac:MONGOATLAS_PROJECT_ID:
+    secure: AAABAOYIvAA4GCpfe0N9ppuPW+FKKaEwgnocxMOQjtNIhZtzWwc7uopnwZQbluGlJUwzDxglsWM=
+  b2crypto-iac:MONGOATLAS_PASSWORD:
+    secure: AAABANeY1Q9rckEuCyze8rOdI+Si/0oFfPtkllGkwqHy+aGk1OR9g3BdrXfH4b/K
+  b2crypto-iac:MONGOATLAS_USERNAME:
+    secure: AAABAMI7Pubk5PswoFuoIvnGcgi18tHEIuAMq/J6r7TC2cFuA2xavg==

@@ -34,7 +34,7 @@ config:
   b2crypto-iac:DATABASE_URL:
     secure: AAABAFqhGgHOOgomgbDQZ7KR77RZbpaN17j2W1VWh15kmKW2h+HlTXS4i3dUHZzudh77r359dd/d4ufwh4cr+ThVz6gbJPByuYH/Og89Ts+2SVF+fWTf3TmGLyzI9vghTYr3kYSbxDub4W8SELWH8c5NBMKYY0jQPQK6AT9h40Hp1CtyhvpQAzmop0KysIEmB5fvJIMLx027G003S6A=
   b2crypto-iac:DEFAULT_CURRENCY_CONVERSION_COIN: USD
-  b2crypto-iac:ENVIRONMENT: TEST_STRESS
+  b2crypto-iac:ENVIRONMENT: STAGE
   b2crypto-iac:GOOGLE_2FA: "false"
   b2crypto-iac:POMELO_API_URL:
     secure: AAABALuVw2IUPoXmeT7DuSiO/jbKdMtKIcr/V764vknSnjCIL/4vz3+8QhlxZRg4Df5rGY8DrpFXru9Oww==
@@ -92,3 +92,9 @@ config:
   b2crypto-iac:SOCIAL_MEDIA_ICONS: '{"facebook":"https://message-templates-resource.s3.eu-west-3.amazonaws.com/social/facebook.png","instagram":"https://message-templates-resource.s3.eu-west-3.amazonaws.com/social/instagram.png","linkedin":"https://message-templates-resource.s3.eu-west-3.amazonaws.com/social/linkedin.png","youtube":"https://message-templates-resource.s3.eu-west-3.amazonaws.com/social/youtube.png"}'
   b2crypto-iac:SOCIAL_MEDIA_LINKS: '{"facebook":"https://www.facebook.com/share/qT7RXDDgRqKigRnn/?mibextid=LQQJ4d","linkedin":"https://www.linkedin.com/company/b2fintech/?viewAsMember=true","instagram":"https://www.instagram.com/b2fintech/","youtube":"https://www.youtube.com"}'
   b2crypto-iac:MQ_DEPLOYMENT_MODE: SINGLE_INSTANCE
+  b2crypto-iac:MONGOATLAS_PROJECT_ID:
+    secure: AAABAEfxDiareIOHDHzn64UHzeVjlMISR157bT934QFekMCFnt0vGlxKfDFnk4dvgRUuOvnk7tQ=
+  b2crypto-iac:MONGOATLAS_PASSWORD:
+    secure: AAABAKIL1mp1+X4ipZknh7VFUZhY+8zahmOHWp3+QEZSn3NgH3ihStMl2ZKwQ5cZ
+  b2crypto-iac:MONGOATLAS_USERNAME:
+    secure: AAABAF8b3D4cWVJVJssn0JQ5Lj+UFL6bWQUdtLpJvPGZd2rI8wfHjQ==

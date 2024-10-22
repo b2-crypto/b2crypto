@@ -87,7 +87,7 @@ config:
   b2crypto-iac:RABBIT_MQ_PASSWORD:
     secure: AAABAOz6aCnyUAsN/wefaSxI2uzqjqjCps2KBsRjrHxjRibOasVE0XBtHOOpWjTLLzV2
   b2crypto-iac:RABBIT_MQ_PORT: '5671'
-  b2crypto-iac:RABBIT_MQ_QUEUE: PROD
+  b2crypto-iac:RABBIT_MQ_QUEUE: TEST_STRESS
   b2crypto-iac:RABBIT_MQ_USERNAME:
     secure: AAABAEpK8QfthMLq0HTzSvZ4/2IXceGStabU0b/6xytgU11dE4llsFug
   b2crypto-iac:REDIS_HOST:
@@ -99,12 +99,18 @@ config:
     secure: AAABANpvHnMG4JlxcSmfSZfpJV0A6+ZK+nYJSLYnoQvyno4kVu+i
   b2crypto-iac:SOCIAL_MEDIA_ICONS: '{"facebook":"https://message-templates-resource.s3.eu-west-3.amazonaws.com/social/facebook.png","instagram":"https://message-templates-resource.s3.eu-west-3.amazonaws.com/social/instagram.png","linkedin":"https://message-templates-resource.s3.eu-west-3.amazonaws.com/social/linkedin.png","youtube":"https://message-templates-resource.s3.eu-west-3.amazonaws.com/social/youtube.png"}'
   b2crypto-iac:SOCIAL_MEDIA_LINKS: '{"facebook":"https://www.facebook.com/share/qT7RXDDgRqKigRnn/?mibextid=LQQJ4d","linkedin":"https://www.linkedin.com/company/b2fintech/?viewAsMember=true","instagram":"https://www.instagram.com/b2fintech/","youtube":"https://www.youtube.com"}'
-  b2crypto-iac:STACK: production
+  b2crypto-iac:STACK: testing-stress
   b2crypto-iac:TESTING: 'false'
   b2crypto-iac:TZ: UTC
   b2crypto-iac:URL_API_EMAIL_APP: ''
-  b2crypto-iac:VPC_CIDR_BLOCK: 10.1.0.0/16
+  b2crypto-iac:VPC_CIDR_BLOCK: 10.2.0.0/16
   mongodbatlas:privateKey:
     secure: AAABAMTpY2FXz7/kGl5DNJuqS0a3syR6O9rcoGWYFHpEvxXrEMfQs5O0iMX12LsvkrJO2D9r9X3gZhYpte8/UBQNhuU=
   mongodbatlas:publicKey:
     secure: AAABAKSjxj8h1/fVh89PyAnCvFtOygb5uTE2wfx1QvIwdDgIAE9DRg==
+  b2crypto-iac:MONGOATLAS_PROJECT_ID:
+    secure: AAABAOIk4IKZQjjufkLx28kPlewC4TNvENzeFzFK/mPtX1fVxPAH7bwYhMtAvWd6byns6FptfPU=
+  b2crypto-iac:MONGOATLAS_USERNAME:
+    secure: AAABAHeIyvW8MztZuB7fi695QkwzRQNU2+ZEZOwQ4vQdLNTKyEZE/w==
+  b2crypto-iac:MONGOATLAS_PASSWORD:
+    secure: AAABAPCmgihjYQQgjsdwFA+tI9FO64gKwOfx3NhFkeAN72NjfL2nYmfDiepdmszi
