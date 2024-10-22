@@ -14,6 +14,7 @@ export class GroupEntity implements GroupInterface {
   })
   name: string;
   slug: string;
+  hidden: boolean;
   valueGroup: string;
   description: string;
   type: GroupTypeEnum;

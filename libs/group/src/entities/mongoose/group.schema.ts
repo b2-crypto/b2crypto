@@ -21,6 +21,9 @@ export class Group extends GroupEntity implements GroupInterface {
   @Prop()
   slug: string;
 
+  @Prop({ default: false })
+  hidden: boolean;
+
   @Prop()
   valueGroup: string;
 

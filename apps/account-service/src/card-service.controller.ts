@@ -1497,6 +1497,7 @@ export class CardServiceController extends AccountServiceController {
             id: card.cardConfig.id,
             affinity_group_id: afg.valueGroup,
           });
+          Logger.log(rta, `Updated AFG Card-${card._id.toString()}`);
           this.cardBuilder.emitAccountEventClient(
             EventsNamesAccountEnum.updateOne,
             {
@@ -1541,7 +1542,7 @@ export class CardServiceController extends AccountServiceController {
     } else {
       if (level.name.indexOf(3) > -1 || level.name.indexOf(4) > -1) {
         // Si grupos 3 o 4 enviar mensaje a support@b2fintech.com
-      } else {
+      } else if (level.name.indexOf(1) > -1 || level.name.indexOf(2) > -1) {
         this.cardBuilder.emitAccountEventClient(
           EventsNamesAccountEnum.createOneCard,
           {

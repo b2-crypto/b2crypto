@@ -4,6 +4,7 @@ import {
   Controller,
   Delete,
   Get,
+  Logger,
   NotFoundException,
   Param,
   ParseArrayPipe,
@@ -47,6 +48,7 @@ import { ObjectId } from 'mongodb';
 import EventsNamesUserEnum from './enum/events.names.user.enum';
 import { UserServiceService } from './user-service.service';
 import { UserLevelUpDto } from '@user/user/dto/user.level.up.dto';
+import { ResponsePaginator } from '@common/common/interfaces/response-pagination.interface';
 
 @ApiTags('USER')
 @Controller('users')
@@ -134,6 +136,78 @@ export class UserServiceController implements GenericServiceController {
     } catch (error) {
       throw new BadRequestException(error);
     }
+  }
+  @Patch('verify-by-card')
+  // @CheckPoliciesAbility(new PolicyHandlerUserUpdate())
+  async verifyUsersWithCard() {
+    const query = new QuerySearchAnyDto();
+    query.where = query.where ?? {};
+    query.where.verifyIdentity = false;
+    query.page = 0;
+    query.take = 10;
+    let users: ResponsePaginator<UserEntity> = null;
+    const promises = [];
+    do {
+      ++query.page;
+      users = await this.userService.getAll({
+        ...query,
+      });
+      for (const user of users.list) {
+        promises.push(
+          this.userService.verifyUsersWithCard(user._id.toString()),
+        );
+      }
+    } while (query.page < users.lastPage);
+    return Promise.all(promises);
+  }
+  @Patch('rules/me')
+  // @CheckPoliciesAbility(new PolicyHandlerUserUpdate())
+  async getRulesMe(@Req() req?: any) {
+    return this.getRules(req);
+  }
+
+  @Patch('rules')
+  // @CheckPoliciesAbility(new PolicyHandlerUserUpdate())
+  async getRules(@Req() req?: any) {
+    const user = req?.user;
+    const query = new QuerySearchAnyDto();
+    query.where = query.where ?? {};
+    query.page = 0;
+    query.take = 10;
+    query.relations = ['level'];
+    if (user.id) {
+      query.where._id = user.id;
+    }
+    let users: ResponsePaginator<UserEntity> = null;
+    const promises = [];
+    do {
+      ++query.page;
+      users = await this.userService.getAll({
+        ...query,
+      });
+      for (const user of users.list) {
+        promises.push(
+          this.userService
+            .applyAndGetRules({
+              id: user._id,
+              level: user.level,
+            } as unknown as UserUpdateDto)
+            .then((usr) => {
+              Logger.log(
+                `Apply level ${user.level?.name} to user ${user.email}`,
+                `page ${query.page}/${users.lastPage}`,
+              );
+              return {
+                user: usr._id,
+                level: usr.level._id,
+                email: usr.email,
+                rules: usr.rules,
+              };
+            }),
+        );
+      }
+    } while (query.page < users.lastPage);
+    return Promise.all(promises);
   }
 
   @Patch()

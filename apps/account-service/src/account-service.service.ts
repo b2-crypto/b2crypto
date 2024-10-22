@@ -2,7 +2,10 @@ import { AccountServiceMongooseService } from '@account/account/account-service-
 import { AccountCreateDto } from '@account/account/dto/account.create.dto';
 import { AccountUpdateDto } from '@account/account/dto/account.update.dto';
 import { AccountDocument } from '@account/account/entities/mongoose/account.schema';
+import StatusAccountEnum from '@account/account/enum/status.account.enum';
+import TypesAccountEnum from '@account/account/enum/types.account.enum';
 import WalletTypesAccountEnum from '@account/account/enum/wallet.types.account.enum';
+import { BrandEntity } from '@brand/brand/entities/brand.entity';
 import { BuildersService } from '@builder/builders';
 import { CommonService } from '@common/common';
 import { EnvironmentEnum } from '@common/common/enums/environment.enum';
@@ -26,16 +29,116 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Ctx, RmqContext } from '@nestjs/microservices';
+import { TransferEntity } from '@transfer/transfer/entities/transfer.entity';
+import EventsNamesBrandEnum from 'apps/brand-service/src/enum/events.names.brand.enum';
 import EventsNamesCrmEnum from 'apps/crm-service/src/enum/events.names.crm.enum';
 import EventsNamesFileEnum from 'apps/file-service/src/enum/events.names.file.enum';
 import EventsNamesMessageEnum from 'apps/message-service/src/enum/events.names.message.enum';
 import EventsNamesStatusEnum from 'apps/status-service/src/enum/events.names.status.enum';
+import EventsNamesTransferEnum from 'apps/transfer-service/src/enum/events.names.transfer.enum';
 import * as fs from 'fs';
 
 @Injectable()
 export class AccountServiceService
   implements BasicMicroserviceService<AccountDocument>
 {
+  async cleanWallet(query: QuerySearchAnyDto) {
+    Logger.log('Start', `Clean wallet`);
+    query = query || new QuerySearchAnyDto();
+    query.where = query.where || {};
+    query.where.type = TypesAccountEnum.WALLET;
+    query.where.statusText = StatusAccountEnum.LOCK;
+    query.where.amount = {
+      $lte: 0,
+    };
+    await this.cleanWalletsWithTransfers(query, 'LOCK');
+    query.where.statusText = StatusAccountEnum.UNLOCK;
+    await this.cleanWalletsWithTransfers(query, 'UNLOCK');
+    Logger.log('End', `Clean wallet`);
+    return {
+      statusCode: 200,
+      message: 'ok',
+    };
+  }
+  async cleanWalletsWithTransfers(query: QuerySearchAnyDto, msg?: string) {
+    const walletsCleanTotal = await this.lib.count(query);
+    query.page = 0;
+    query.take = query.take || 10;
+    const lastPage = Math.ceil(walletsCleanTotal / query.take);
+    const promises = [];
+    while (query.page < lastPage) {
+      ++query.page;
+      Logger.debug(`Start page ${query.page}`, `Clean wallet with transfers`);
+      promises.push(
+        this.cleanWalletsWithTx(
+          {
+            ...query,
+          },
+          msg,
+        ),
+      );
+      Logger.debug(`End page ${query.page}`, `Clean wallet with transfers`);
+    }
+    return Promise.all(promises);
+  }
+  async cleanWalletsWithTx(query: QuerySearchAnyDto, msg?: string) {
+    Logger.debug(`Start page ${query.page}`, `Clean wallet with tx`);
+    const promises = [];
+    const walletsClean = await this.lib.findAll(query);
+    const queryTx = {
+      where: {
+        account: {
+          $in: walletsClean.list.map((w) => w._id.toString()),
+        },
+      },
+    };
+    const transfersAccounts: ResponsePaginator<TransferEntity> =
+      await this.builder.getPromiseTransferEventClient(
+        EventsNamesTransferEnum.findAll,
+        queryTx,
+      );
+    if (transfersAccounts.totalElements) {
+      const accountWithTx = transfersAccounts.list.map((t) => t.account);
+      Logger.log(
+        `${accountWithTx.length}/${walletsClean.list.length}`,
+        `Filter wallets with transfers page ${query.page}`,
+      );
+      promises.push(
+        this.lib.updateMany(
+          accountWithTx.map((a) => a.toString()),
+          accountWithTx.map((a) => {
+            return {
+              id: a.toString(),
+              showToOwner: false,
+              statusText: StatusAccountEnum.LOCK,
+            };
+          }),
+        ),
+      );
+      walletsClean.list = walletsClean.list.filter(
+        (w) => !accountWithTx.includes(w._id.toString()),
+      );
+    } else {
+      Logger.log(
+        'Not found transfers',
+        `Filter wallets with transfers page ${query.page}`,
+      );
+    }
+    if (walletsClean.list.length) {
+      promises.push(
+        this.lib.removeMany(walletsClean.list.map((w) => w._id.toString())),
+      );
+    }
+    Logger.warn(
+      `Removed ${walletsClean.list.length} wallets`,
+      `Filter wallets with transfers page ${query.page}`,
+    );
+    Logger.log(
+      `${walletsClean.list.length}/${walletsClean.totalElements}`,
+      `Total ${msg} wallets to clean ${walletsClean.currentPage}/${walletsClean.lastPage}`,
+    );
+    return Promise.all(promises);
+  }
   constructor(
     private configService: ConfigService,
     @Inject(BuildersService)
@@ -56,15 +159,17 @@ export class AccountServiceService
     // Job to check fireblocks available wallets
     query = query || new QuerySearchAnyDto();
     query.where = query.where || {};
+    query.take = 10000;
+    query.where.accountType = WalletTypesAccountEnum.VAULT;
     query.where.owner = {
       $exists: false,
     };
-    const list = await this.lib.findAll(query);
+    const cryptoList = await this.lib.findAll(query);
     const fireblocksCrm = await this.builder.getPromiseCrmEventClient(
       EventsNamesCrmEnum.findOneByName,
       IntegrationCryptoEnum.FIREBLOCKS,
     );
-    if (!list.totalElements) {
+    if (!cryptoList.totalElements) {
       const cryptoType = await this.integration.getCryptoIntegration(
         null,
         IntegrationCryptoEnum.FIREBLOCKS,
@@ -73,13 +178,78 @@ export class AccountServiceService
       const tmp = await cryptoType.getAvailablerWallets();
       const promises = [];
       tmp.forEach((wallet: AccountCreateDto) => {
+        const exist = cryptoList.list.find(
+          (x) => x.accountId == wallet.accountId,
+        );
+        if (exist) {
+          return exist;
+        }
+        wallet.type = TypesAccountEnum.WALLET;
+        wallet.brand = query?.where?.brand;
         wallet.crm = fireblocksCrm._id;
         wallet.accountType = WalletTypesAccountEnum.VAULT;
         return promises.push(this.lib.create(wallet));
       });
-      list.list = await Promise.all(promises);
+      cryptoList.list = await Promise.all(promises);
     }
-    return list;
+    return cryptoList;
+  }
+
+  async checkAvailablesWalletsFireblocksAllBrands(query?: QuerySearchAnyDto) {
+    query = query || new QuerySearchAnyDto();
+    query.where = query.where || {};
+    query.take = 10000;
+    query.where.accountType = WalletTypesAccountEnum.VAULT;
+    query.where.owner = {
+      $exists: false,
+    };
+    let brandList: ResponsePaginator<BrandEntity> = null;
+    const promises = [];
+    do {
+      brandList = await this.builder.getPromiseBrandEventClient(
+        EventsNamesBrandEnum.findAll,
+        {},
+      );
+      for (const brand of brandList.list) {
+        query.where.brand = brand._id;
+        promises.push(
+          this.checkAvailablesWalletsFireblocksByBrand({
+            ...query,
+          }),
+        );
+      }
+    } while (brandList?.nextPage != 1);
+    return Promise.all(promises);
+  }
+  async checkAvailablesWalletsFireblocksByBrand(query?: QuerySearchAnyDto) {
+    const cryptoList = await this.lib.findAll(query);
+    const fireblocksCrm = await this.builder.getPromiseCrmEventClient(
+      EventsNamesCrmEnum.findOneByName,
+      IntegrationCryptoEnum.FIREBLOCKS,
+    );
+    const cryptoType = await this.integration.getCryptoIntegration(
+      null,
+      IntegrationCryptoEnum.FIREBLOCKS,
+      '',
+    );
+    const tmp = await cryptoType.getAvailablerWallets();
+    if (cryptoList.totalElements != tmp.length) {
+      const promises = [];
+      tmp.forEach((wallet: AccountCreateDto) => {
+        const exist = cryptoList.list.find(
+          (x) => x.accountId == wallet.accountId,
+        );
+        if (exist) {
+          return exist;
+        }
+        wallet.brand = query?.where?.brand;
+        wallet.crm = fireblocksCrm._id;
+        wallet.accountType = WalletTypesAccountEnum.VAULT;
+        return promises.push(this.lib.create(wallet));
+      });
+      cryptoList.list = await Promise.all(promises);
+    }
+    return cryptoList;
   }
   async getBalanceByAccountTypeCard(
     query: QuerySearchAnyDto,
