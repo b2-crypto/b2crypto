@@ -171,7 +171,116 @@ export class WalletServiceController extends AccountServiceController {
   @UseGuards(ApiKeyAuthGuard)
   @NoCache()
   availablesWallet(@Query() query: QuerySearchAnyDto, @Req() req?: any) {
+    query = query ?? {};
+    query.where = query.where ?? {};
+    query.where.type = TypesAccountEnum.WALLET;
+    query.where.brand = req.user.brand;
     return this.walletService.availableWalletsFireblocks(query);
+  }
+
+  @Get('clean')
+  @UseGuards(ApiKeyAuthGuard, JwtAuthGuard)
+  @NoCache()
+  cleanWallet(@Query() query: QuerySearchAnyDto, @Req() req?: any) {
+    return this.walletService.cleanWallet(query);
+  }
+
+  @Get('migrate-to-fireblocks')
+  @UseGuards(ApiKeyAuthGuard, JwtAuthGuard)
+  @NoCache()
+  async migrateFireblocks() {
+    Logger.log('Start', `Clean wallet`);
+    const query = new QuerySearchAnyDto();
+    query.where = query.where || {};
+    query.where.type = TypesAccountEnum.WALLET;
+    query.where.name = 'USDT';
+    //query.where.statusText = StatusAccountEnum.UNLOCK;
+    query.where.amount = {
+      $gt: 0,
+    };
+    const promises = [];
+    const wallestTotal = await this.walletService.count(query);
+    query.take = query.take || 10;
+    const lastPage = Math.ceil(wallestTotal / query.take);
+    query.page = 0;
+    while (query.page < lastPage) {
+      ++query.page;
+      promises.push(
+        this.migrateToFireblocksPage({
+          ...query,
+        }),
+      );
+    }
+    await Promise.all(promises);
+    Logger.log('End', `Clean wallet`);
+    return {
+      statusCode: 200,
+      message: 'ok',
+    };
+  }
+
+  private async migrateToFireblocksPage(query: QuerySearchAnyDto) {
+    query.relations = ['owner'];
+    const walletsClean = await this.walletService.findAll(query);
+    const promises = [];
+    for (const wallet of walletsClean.list) {
+      if (wallet.name === 'USDT') {
+        const newWalletDto = {
+          owner: wallet.owner._id.toString(),
+          name: 'USD Tether (Tron)',
+          brand: wallet.owner.brand,
+          accountType: WalletTypesAccountEnum.VAULT,
+          amount: 0,
+          type: wallet.type,
+          pin: Number(wallet.pin),
+        };
+        const list = await this.walletService.findAll({
+          where: newWalletDto,
+        });
+        if (list.totalElements) {
+          list.list[0].amount = wallet.amount;
+          await list.list[0].save();
+          Logger.log(
+            newWalletDto,
+            `Updated amount page ${query.page}->${wallet.id}`,
+          );
+        } else {
+          newWalletDto.amount = wallet.amount;
+          Logger.error(
+            newWalletDto,
+            `No updated amount page ${query.page}->${wallet.id}`,
+          );
+        }
+        // promises.push(
+        //   this.createWalletFireblocks(newWalletDto as WalletCreateDto, null)
+        //     .catch((error) => {
+        //       Logger.error(
+        //         error,
+        //         `Error migrating ${query.page}->${wallet.id}`,
+        //       );
+        //     })
+        //     .then((rta) => {
+        //       if (rta) {
+        //         Logger.log(
+        //           newWalletDto,
+        //           `Migrated page ${query.page}->${wallet.id}`,
+        //         );
+        //         wallet.statusText = StatusAccountEnum.LOCK;
+        //         wallet.showToOwner = false;
+        //         wallet.save();
+        //       }
+        //       return rta;
+        //     }),
+        // );
+      } else {
+        Logger.error(wallet, `Not USDT ${query.page}->${wallet.id}`);
+      }
+    }
+    Logger.log(
+      `${walletsClean.list.length}/${walletsClean.totalElements}`,
+      `Total elements to migrate ${walletsClean.currentPage}/${walletsClean.lastPage}`,
+    );
+    return Promise.all(promises);
   }
 
   @ApiTags(SwaggerSteakeyConfigEnum.TAG_WALLET)
