@@ -43,22 +43,23 @@ export class AccountServiceService
   implements BasicMicroserviceService<AccountDocument>
 {
   async cleanWallet(query: QuerySearchAnyDto) {
-    Logger.log('Start', `Clean wallet`);
-    query = query || new QuerySearchAnyDto();
-    query.where = query.where || {};
-    query.where.type = TypesAccountEnum.WALLET;
-    query.where.statusText = StatusAccountEnum.LOCK;
-    query.where.amount = {
-      $lte: 0,
-    };
-    await this.cleanWalletsWithTransfers(query, 'LOCK');
-    query.where.statusText = StatusAccountEnum.UNLOCK;
-    await this.cleanWalletsWithTransfers(query, 'UNLOCK');
-    Logger.log('End', `Clean wallet`);
-    return {
-      statusCode: 200,
-      message: 'ok',
-    };
+    throw new NotImplementedException();
+    // Logger.log('Start', `Clean wallet`);
+    // query = query || new QuerySearchAnyDto();
+    // query.where = query.where || {};
+    // query.where.type = TypesAccountEnum.WALLET;
+    // query.where.statusText = StatusAccountEnum.LOCK;
+    // query.where.amount = {
+    //   $lte: 0,
+    // };
+    // await this.cleanWalletsWithTransfers(query, 'LOCK');
+    // query.where.statusText = StatusAccountEnum.UNLOCK;
+    // await this.cleanWalletsWithTransfers(query, 'UNLOCK');
+    // Logger.log('End', `Clean wallet`);
+    // return {
+    //   statusCode: 200,
+    //   message: 'ok',
+    // };
   }
   async cleanWalletsWithTransfers(query: QuerySearchAnyDto, msg?: string) {
     const walletsCleanTotal = await this.lib.count(query);
