@@ -36,6 +36,7 @@ import { AccountInterface } from '@account/account/entities/account.interface';
 import { PspAccountInterface } from '@psp-account/psp-account/entities/psp-account.interface';
 import TagEnum from '@common/common/enums/TagEnum';
 import EventsNamesUserEnum from './enum/events.names.user.enum';
+import EventsNamesPersonEnum from 'apps/person-service/src/enum/events.names.person.enum';
 
 @Injectable()
 export class UserServiceService {
@@ -218,11 +219,12 @@ export class UserServiceService {
     return this.lib.createMany(createUsersDto);
   }
 
+  async applyAndGetRules(user: UserUpdateDto) {
+    return this.updateLevelUser(user.level, user.id.toString());
+  }
+
   async updateUser(user: UserUpdateDto) {
     const userUpdated = this.lib.update(user.id.toString(), user);
-    if (user.level) {
-      return this.updateLevelUser(user.level, user.id.toString());
-    }
     return userUpdated;
   }
 
@@ -314,6 +316,63 @@ export class UserServiceService {
     } catch (error) {
       throw new BadRequestException(error);
     }
+  }
+
+  async verifyUsersWithCard(id: string) {
+    const user = await this.getOne(id);
+    const promises = [];
+    const cardList = await this.builder.getPromiseAccountEventClient(
+      EventsNamesAccountEnum.findAll,
+      {
+        take: 1,
+        where: {
+          type: TypesAccountEnum.CARD,
+          owner: id,
+        },
+      },
+    );
+    if (cardList.totalElements > 0) {
+      const personList = await this.builder.getPromisePersonEventClient(
+        EventsNamesPersonEnum.findAll,
+        {
+          where: {
+            user: id,
+          },
+        },
+      );
+      if (personList.totalElements > 0) {
+        const updateDto = {
+          id: personList.list[0]._id,
+          user: user._id.toString(),
+          verifiedIdentity: true,
+        };
+        promises.push(
+          this.builder
+            .getPromisePersonEventClient(
+              EventsNamesPersonEnum.updateOne,
+              updateDto,
+            )
+            .then((rta) => Logger.log(rta, 'Verified person'))
+            .catch((err) => Logger.error(err, 'Error verified person')),
+        );
+      }
+      user.verifyIdentity = true;
+      promises.push(
+        user.save().then((rta) => {
+          Logger.log(rta, 'Verified user');
+          return {
+            id: user._id.toString(),
+            verifyIdentity: true,
+          };
+        }),
+      );
+    } else {
+      promises.push({
+        id: user._id.toString(),
+        verifyIdentity: user.verifyIdentity,
+      });
+    }
+    return Promise.all(promises).then((rta) => rta[promises.length - 1]);
   }
 
   async updateLevelUser(levelId: string, userId: string) {
