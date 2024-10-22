@@ -298,7 +298,7 @@ export class CategoryServiceController implements GenericServiceController {
     const rta = [];
     const levels = await this.categoryService.getAll({
       take: 1000,
-      where: { type: TagEnum.LEVEL },
+      where: { type: TagEnum.LEVEL, hidden: false },
     });
     for (const level of levels.list) {
       level['options'] = [];
@@ -325,6 +325,8 @@ export class CategoryServiceController implements GenericServiceController {
             description: rule.description,
             valueNumber: rule.valueNumber,
             valueText: rule.valueText,
+            next: rule.next,
+            previous: rule.previous,
           };
         });
         level['options'].push({
@@ -334,6 +336,8 @@ export class CategoryServiceController implements GenericServiceController {
           description: customLevel.description,
           valueNumber: customLevel.valueNumber,
           valueText: customLevel.valueText,
+          next: customLevel.next,
+          previous: customLevel.previous,
         });
       }
       rta.push({
@@ -343,6 +347,8 @@ export class CategoryServiceController implements GenericServiceController {
         description: level.description,
         valueNumber: level.valueNumber,
         valueText: level.valueText,
+        next: level.next,
+        previous: level.previous,
       });
     }
 
