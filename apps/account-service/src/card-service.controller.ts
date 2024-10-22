@@ -1506,7 +1506,10 @@ export class CardServiceController extends AccountServiceController {
             },
           );
         } catch (error) {
-          Logger.error(error, `LevelUpCard-${card._id.toString()}`);
+          Logger.error(
+            error.message || error,
+            `LevelUpCard-${card._id.toString()}`,
+          );
           throw new BadRequestException('Bad update card');
         }
       }
