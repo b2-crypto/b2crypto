@@ -156,11 +156,11 @@ export class WalletServiceController extends AccountServiceController {
           amount: 0,
           currency: CurrencyCodeB2cryptoEnum.USDT,
           amountCustodial: 0,
-          currencyCustodial: CurrencyCodeB2cryptoEnum.USD,
+          currencyCustodial: CurrencyCodeB2cryptoEnum.USDT,
           amountBlocked: 0,
-          currencyBlocked: CurrencyCodeB2cryptoEnum.USD,
+          currencyBlocked: CurrencyCodeB2cryptoEnum.USDT,
           amountBlockedCustodial: 0,
-          currencyBlockedCustodial: CurrencyCodeB2cryptoEnum.USD,
+          currencyBlockedCustodial: CurrencyCodeB2cryptoEnum.USDT,
         },
         req,
       );
@@ -277,7 +277,7 @@ export class WalletServiceController extends AccountServiceController {
     if (!createdWallet.crm) {
       const transferBtn: TransferCreateButtonDto = {
         amount: '999',
-        currency: 'USD',
+        currency: 'USDT',
         account: createdWallet.id ?? createdWallet._id,
         creator: createdWallet.owner,
         details: 'Deposit address',
@@ -456,13 +456,13 @@ export class WalletServiceController extends AccountServiceController {
         updatedAt: undefined,
         cardConfig: undefined,
         amount: 0,
-        currency: CurrencyCodeB2cryptoEnum.USD,
+        currency: CurrencyCodeB2cryptoEnum.USDT,
         amountCustodial: 0,
-        currencyCustodial: CurrencyCodeB2cryptoEnum.USD,
+        currencyCustodial: CurrencyCodeB2cryptoEnum.USDT,
         amountBlocked: 0,
-        currencyBlocked: CurrencyCodeB2cryptoEnum.USD,
+        currencyBlocked: CurrencyCodeB2cryptoEnum.USDT,
         amountBlockedCustodial: 0,
-        currencyBlockedCustodial: CurrencyCodeB2cryptoEnum.USD,
+        currencyBlockedCustodial: CurrencyCodeB2cryptoEnum.USDT,
       });
     }
 
@@ -531,13 +531,13 @@ export class WalletServiceController extends AccountServiceController {
         updatedAt: undefined,
         cardConfig: undefined,
         amount: 0,
-        currency: CurrencyCodeB2cryptoEnum.USD,
+        currency: CurrencyCodeB2cryptoEnum.USDT,
         amountCustodial: 0,
-        currencyCustodial: CurrencyCodeB2cryptoEnum.USD,
+        currencyCustodial: CurrencyCodeB2cryptoEnum.USDT,
         amountBlocked: 0,
-        currencyBlocked: CurrencyCodeB2cryptoEnum.USD,
+        currencyBlocked: CurrencyCodeB2cryptoEnum.USDT,
         amountBlockedCustodial: 0,
-        currencyBlockedCustodial: CurrencyCodeB2cryptoEnum.USD,
+        currencyBlockedCustodial: CurrencyCodeB2cryptoEnum.USDT,
       });
     }
 
@@ -623,7 +623,7 @@ export class WalletServiceController extends AccountServiceController {
 
     const transferBtn: TransferCreateButtonDto = {
       amount: '999',
-      currency: 'USD',
+      currency: 'USDT',
       account: createdWallet.id ?? createdWallet._id,
       creator: createDto.owner,
       details: 'Deposit address',
@@ -1056,7 +1056,7 @@ export class WalletServiceController extends AccountServiceController {
       }
       const transferBtn: TransferCreateButtonDto = {
         amount: createDto.amount.toString(),
-        currency: 'USD',
+        currency: 'USDT',
         account: to._id,
         creator: req?.user.id,
         details: 'Recharge in wallet',

@@ -6,6 +6,7 @@ import { CommonService } from '@common/common';
 import { NoCache } from '@common/common/decorators/no-cache.decorator';
 import CurrencyCodeB2cryptoEnum from '@common/common/enums/currency-code-b2crypto.enum';
 import { StatusCashierEnum } from '@common/common/enums/StatusCashierEnum';
+import { TransactionStateEnum } from '@fireblocks/ts-sdk';
 import { IntegrationService } from '@integration/integration';
 import IntegrationCryptoEnum from '@integration/integration/crypto/enums/IntegrationCryptoEnum';
 import { FireblocksIntegrationService } from '@integration/integration/crypto/fireblocks/fireblocks-integration.service';
@@ -203,10 +204,10 @@ export class FireBlocksNotificationsController {
     if (data.status === 'COMPLETED') {
       isApproved = true;
     } else if (
-      data.status === 'REJECTED' ||
-      data.status === 'FAILED' ||
-      data.status === 'CANCELED' ||
-      data.status === 'BLOCKED'
+      data.status === TransactionStateEnum.Rejected ||
+      data.status === TransactionStateEnum.Failed ||
+      data.status === TransactionStateEnum.Cancelled ||
+      data.status === TransactionStateEnum.Blocked
     ) {
       isApproved = false;
     }
@@ -246,8 +247,8 @@ export class FireBlocksNotificationsController {
       //! Check crypto currencies
       //currency: data.assetType,
       currency: CurrencyCodeB2cryptoEnum.USDT,
-      amountCustodial: data.amountUSD,
-      currencyCustodial: CurrencyCodeB2cryptoEnum.USD,
+      amountCustodial: data.amountUSDT,
+      currencyCustodial: CurrencyCodeB2cryptoEnum.USDT,
       operationType,
       typeTransaction: operation._id,
       typeAccount: wallet.accountType,
