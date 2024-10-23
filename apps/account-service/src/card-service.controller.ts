@@ -159,7 +159,7 @@ export class CardServiceController extends AccountServiceController {
     const rta = await this.cardService.findAll(query);
     rta.list.forEach(async (account) => {
       account.amount = await this.swapToCurrencyUser(req, account);
-      account.currency = req.user.currency ?? CurrencyCodeB2cryptoEnum.USD;
+      account.currency = req.user.currency ?? CurrencyCodeB2cryptoEnum.USDT;
     });
     return rta;
   }
@@ -1739,13 +1739,13 @@ export class CardServiceController extends AccountServiceController {
       owner: person?.user,
       statusText,
       amount: balance ?? 0,
-      currency: CurrencyCodeB2cryptoEnum.USD,
+      currency: CurrencyCodeB2cryptoEnum.USDT,
       amountCustodial: balance ?? 0,
-      currencyCustodial: CurrencyCodeB2cryptoEnum.USD,
+      currencyCustodial: CurrencyCodeB2cryptoEnum.USDT,
       amountBlocked: 0,
-      currencyBlocked: CurrencyCodeB2cryptoEnum.USD,
+      currencyBlocked: CurrencyCodeB2cryptoEnum.USDT,
       amountBlockedCustodial: 0,
-      currencyBlockedCustodial: CurrencyCodeB2cryptoEnum.USD,
+      currencyBlockedCustodial: CurrencyCodeB2cryptoEnum.USDT,
       cardConfig: {
         id: pomeloCard?.id,
         user_id: pomeloCard?.user_id,
