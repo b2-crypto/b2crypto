@@ -142,3 +142,11 @@ export const RABBIT_MQ_INSTANCE_TYPE = config.require(
   'RABBIT_MQ_INSTANCE_TYPE',
 );
 export const MQ_DEPLOYMENT_MODE = config.require('MQ_DEPLOYMENT_MODE');
+
+export const TESTING_MODE = config.require('TESTING_MODE');
+
+export const MONGOATLAS_INSTANCE = config.require('MONGOATLAS_INSTANCE');
+
+export const MONGOATLAS_CLUSTER_TYPE = config.require(
+  'MONGOATLAS_CLUSTER_TYPE',
+);

@@ -22,6 +22,8 @@ import {
   LOGO_URL,
   MAX_CAPACITY_AUTOSCALING,
   MIN_CAPACITY_AUTOSCALING,
+  MONGOATLAS_CLUSTER_TYPE,
+  MONGOATLAS_INSTANCE,
   MQ_DEPLOYMENT_MODE,
   POMELO_WHITELISTED_IPS_CHECK,
   PORT,
@@ -35,6 +37,7 @@ import {
   SOCIAL_MEDIA_LINKS,
   STACK,
   TESTING,
+  TESTING_MODE,
   TZ,
   URL_API_EMAIL_APP,
   VPC_CIDR_BLOCK,
@@ -47,50 +50,57 @@ const TAGS = {
   CreatedBy: CREATED_BY,
 };
 const TAG = process.env.COMMIT_SHA ?? randomBytes(4).toString('hex');
-const isTestingStress = () => STACK === 'testing-stress';
+const isProduction = () => ENVIRONMENT === 'PRODUCTION';
+const isStressTest = () => TESTING_MODE === 'STRESS_TEST';
 
-const mongoAtlasClusterStressTest = isTestingStress()
-  ? new mongodbatlas.Cluster(`${COMPANY_NAME}-${PROJECT_NAME}-${STACK}`, {
-      projectId: SECRETS.MONGOATLAS_PROJECT_ID,
-      name: `${COMPANY_NAME}-${PROJECT_NAME}-${STACK}`,
-      providerName: 'AWS',
-      providerInstanceSizeName: 'M10',
-      providerRegionName: 'US_EAST_2',
-      mongoDbMajorVersion: '7.0',
-      clusterType: 'REPLICASET',
-      replicationSpecs: [
-        {
-          numShards: 1,
-          regionsConfigs: [
-            {
-              regionName: 'US_EAST_2',
-              electableNodes: 3,
-              priority: 7,
-            },
-          ],
-        },
-      ],
-      tags: Object.entries(TAGS).map(([key, value]) => ({
-        key,
-        value,
-      })),
-    })
-  : {
-      id: '',
-      name: pulumi.output(''),
-      mongoUri: pulumi.output(''),
-      srvAddress: pulumi.output(''),
-      connectionStrings: {
-        apply: () => pulumi.output(''),
+const mongoAtlasCluster = new mongodbatlas.Cluster(
+  `${COMPANY_NAME}-${PROJECT_NAME}-${STACK}`,
+  {
+    projectId: SECRETS.MONGOATLAS_PROJECT_ID,
+    name: `${COMPANY_NAME}-${PROJECT_NAME}-${STACK}`,
+    providerName: 'AWS',
+    providerInstanceSizeName: isStressTest() ? 'M10' : MONGOATLAS_INSTANCE,
+    providerRegionName: 'US_EAST_1',
+    mongoDbMajorVersion: '7.0',
+    clusterType: isStressTest() ? 'REPLICASET' : MONGOATLAS_CLUSTER_TYPE,
+    autoScalingComputeEnabled:
+      isStressTest() || MONGOATLAS_CLUSTER_TYPE === 'REPLICASET',
+    autoScalingComputeScaleDownEnabled:
+      isStressTest() || MONGOATLAS_CLUSTER_TYPE === 'REPLICASET',
+    providerAutoScalingComputeMinInstanceSize: isStressTest()
+      ? 'M10'
+      : MONGOATLAS_INSTANCE,
+    providerAutoScalingComputeMaxInstanceSize: isStressTest()
+      ? 'M20'
+      : MONGOATLAS_INSTANCE,
+    replicationSpecs: [
+      {
+        numShards: 1,
+        regionsConfigs: [
+          {
+            regionName: 'US_EAST_1',
+            electableNodes: 3,
+            priority: 7,
+          },
+        ],
       },
-    };
+    ],
+    tags: Object.entries(TAGS).map(([key, value]) => ({
+      key,
+      value,
+    })),
+  },
+  {
+    protect: isProduction(),
+  },
+);
 
-export const mongoAtlasClusterStressTestData = {
-  id: mongoAtlasClusterStressTest.id,
-  name: mongoAtlasClusterStressTest.name,
-  mongoUri: mongoAtlasClusterStressTest.mongoUri,
-  srvAddress: mongoAtlasClusterStressTest.srvAddress,
-  connectionStrings: mongoAtlasClusterStressTest.connectionStrings,
+export const mongoAtlasClusterData = {
+  id: mongoAtlasCluster.id,
+  name: mongoAtlasCluster.name,
+  mongoUri: mongoAtlasCluster.mongoUri,
+  srvAddress: mongoAtlasCluster.srvAddress,
+  connectionStrings: mongoAtlasCluster.connectionStrings,
 };
 
 const acmCertificate = aws.acm.getCertificateOutput({
@@ -368,22 +378,21 @@ const ecsFargateService = new awsx.ecs.FargateService(
           { name: 'DATABASE_NAME', value: DATABASE_NAME },
           {
             name: 'DATABASE_URL',
-            value: isTestingStress()
-              ? pulumi
-                  .all([
-                    mongoAtlasClusterStressTest.name,
-                    mongoAtlasClusterStressTest.connectionStrings.apply(
-                      (connections) => connections[0].standardSrv,
-                    ),
-                    SECRETS.MONGOATLAS_USERNAME,
-                    SECRETS.MONGOATLAS_PASSWORD,
-                  ])
-                  .apply(([name, standardSrv, username, password]) => {
-                    const [protocol, domain] = standardSrv.split('//');
+            value: pulumi
+              .all([
+                mongoAtlasCluster.name,
+                mongoAtlasCluster.connectionStrings.apply(
+                  (connections) => connections[0].standardSrv,
+                ),
+                SECRETS.MONGOATLAS_USERNAME,
+                SECRETS.MONGOATLAS_PASSWORD,
+              ])
+              .apply(([name, standardSrv, username, password]) => {
+                const [protocol, domain] = standardSrv.split('//');
 
-                    return `${protocol}//${username}:${password}@${domain}/?retryWrites=true&w=majority&appName=${name}`;
-                  })
-              : SECRETS.DATABASE_URL,
+                return `${protocol}//${username}:${password}@${domain}/?retryWrites=true&w=majority&appName=${name}`;
+              }),
+            // value: SECRETS.DATABASE_URL,
           },
           {
             name: 'RABBIT_MQ_HOST',
@@ -561,7 +570,7 @@ const ecsFargateService = new awsx.ecs.FargateService(
         },
       },
     },
-    desiredCount: parseInt(DESIRED_COUNT_TASK),
+    desiredCount: isStressTest() ? 3 : parseInt(DESIRED_COUNT_TASK),
     deploymentMinimumHealthyPercent: 100,
     deploymentMaximumPercent: 200,
     enableEcsManagedTags: true,
@@ -628,8 +637,8 @@ export const cloudwatchDashboardData = {
 const appautoscalingTarget = new aws.appautoscaling.Target(
   `${COMPANY_NAME}-${PROJECT_NAME}-${STACK}`,
   {
-    maxCapacity: parseInt(MAX_CAPACITY_AUTOSCALING),
-    minCapacity: parseInt(MIN_CAPACITY_AUTOSCALING),
+    maxCapacity: isStressTest() ? 10 : parseInt(MAX_CAPACITY_AUTOSCALING),
+    minCapacity: isStressTest() ? 3 : parseInt(MIN_CAPACITY_AUTOSCALING),
     resourceId: pulumi.interpolate`service/${ecsCluster.name}/${ecsFargateService.service.name}`,
     scalableDimension: 'ecs:service:DesiredCount',
     serviceNamespace: 'ecs',

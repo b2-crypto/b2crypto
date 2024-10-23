@@ -103,7 +103,7 @@ config:
   b2crypto-iac:TESTING: 'false'
   b2crypto-iac:TZ: UTC
   b2crypto-iac:URL_API_EMAIL_APP: ''
-  b2crypto-iac:VPC_CIDR_BLOCK: 10.2.0.0/16
+  b2crypto-iac:VPC_CIDR_BLOCK: 10.20.0.0/16
   mongodbatlas:privateKey:
     secure: AAABAMTpY2FXz7/kGl5DNJuqS0a3syR6O9rcoGWYFHpEvxXrEMfQs5O0iMX12LsvkrJO2D9r9X3gZhYpte8/UBQNhuU=
   mongodbatlas:publicKey:
@@ -114,3 +114,4 @@ config:
     secure: AAABAHeIyvW8MztZuB7fi695QkwzRQNU2+ZEZOwQ4vQdLNTKyEZE/w==
   b2crypto-iac:MONGOATLAS_PASSWORD:
     secure: AAABAPCmgihjYQQgjsdwFA+tI9FO64gKwOfx3NhFkeAN72NjfL2nYmfDiepdmszi
+  b2crypto-iac:TESTING_MODE: STRESS_TEST

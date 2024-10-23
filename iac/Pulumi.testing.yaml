@@ -114,3 +114,6 @@ config:
     secure: AAABAM643C0SbTNVu6GPaHdKo22uMsZ6epLXC1a/hdbGfgoxnTy4V4mhkmSx527+
   b2crypto-iac:MONGOATLAS_USERNAME:
     secure: AAABALgLi9YtQ398jabB2HveaMWwjzG+OTFN40lEbIyo/dIIsnUMaw==
+  b2crypto-iac:TESTING_MODE: STRESS_TEST
+  b2crypto-iac:MONGOATLAS_INSTANCE: M2
+  b2crypto-iac:MONGOATLAS_CLUSTER_TYPE: SHARDED
