@@ -1497,7 +1497,7 @@ export class CardServiceController extends AccountServiceController {
             id: card.cardConfig.id,
             affinity_group_id: afg.valueGroup,
           });
-          Logger.log(rta, `Updated AFG Card-${card._id.toString()}`);
+          Logger.log(rta.data, `Updated AFG Card-${card._id.toString()}`);
           this.cardBuilder.emitAccountEventClient(
             EventsNamesAccountEnum.updateOne,
             {
