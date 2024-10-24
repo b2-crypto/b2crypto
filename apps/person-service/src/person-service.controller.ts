@@ -143,8 +143,9 @@ export class PersonServiceController implements GenericServiceController {
   @UseGuards(ApiKeyAuthGuard)
   // @CheckPoliciesAbility(new PolicyHandlerPersonUpdate())
   async updateOne(@Body() updatePersonDto: PersonUpdateDto, @Req() req?) {
-    const user = await this.userService.getOne(req.user.id);
-    if (!user._id) {
+    const userId = updatePersonDto.user.toString() || req.user.id;
+    const user = await this.userService.getOne(userId);
+    if (!user?._id) {
       throw new BadRequestError('User not found');
     }
     const personalData = await this.personService.getOne(
@@ -156,32 +157,32 @@ export class PersonServiceController implements GenericServiceController {
     updatePersonDto.id = personalData._id;
     updatePersonDto.location.address = {
       street_name:
-        updatePersonDto.location.address.street_name ??
-        personalData.location.address.street_name,
+        updatePersonDto?.location?.address?.street_name ??
+        personalData?.location?.address?.street_name,
       street_number:
-        updatePersonDto.location.address.street_number ??
-        personalData.location.address.street_number,
+        updatePersonDto?.location?.address?.street_number ??
+        updatePersonDto?.location?.address?.street_number,
       floor:
-        updatePersonDto.location.address.floor ??
-        personalData.location.address.floor,
+        updatePersonDto?.location?.address?.floor ??
+        updatePersonDto?.location?.address?.floor,
       city:
-        updatePersonDto.location.address.city ??
-        personalData.location.address.city,
+        updatePersonDto?.location?.address?.city ??
+        updatePersonDto?.location?.address?.city,
       region:
-        updatePersonDto.location.address.region ??
-        personalData.location.address.region,
+        updatePersonDto?.location?.address?.region ??
+        updatePersonDto?.location?.address?.region,
       neighborhood:
-        updatePersonDto.location.address.neighborhood ??
-        personalData.location.address.neighborhood,
+        updatePersonDto?.location?.address?.neighborhood ??
+        updatePersonDto?.location?.address?.neighborhood,
       country:
-        updatePersonDto.location.address.country ??
-        personalData.location.address.country,
+        updatePersonDto?.location?.address?.country ??
+        updatePersonDto?.location?.address?.country,
       zip_code:
-        updatePersonDto.location.address.zip_code ??
-        personalData.location.address.zip_code,
+        updatePersonDto?.location?.address?.zip_code ??
+        updatePersonDto?.location?.address?.zip_code,
       apartment:
-        updatePersonDto.location.address.apartment ??
-        personalData.location.address.apartment,
+        updatePersonDto?.location?.address?.apartment ??
+        updatePersonDto?.location?.address?.apartment,
     } as AddressSchema;
     return this.personService.updatePerson(updatePersonDto);
   }

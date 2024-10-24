@@ -159,7 +159,7 @@ export class CardServiceController extends AccountServiceController {
     const rta = await this.cardService.findAll(query);
     rta.list.forEach(async (account) => {
       account.amount = await this.swapToCurrencyUser(req, account);
-      account.currency = req.user.currency ?? CurrencyCodeB2cryptoEnum.USD;
+      account.currency = req.user.currency ?? CurrencyCodeB2cryptoEnum.USDT;
     });
     return rta;
   }
@@ -1222,6 +1222,9 @@ export class CardServiceController extends AccountServiceController {
     const physicalCardPending = await this.cardService.findAll({
       where: {
         owner: user._id,
+        responseShiping: {
+          $exists: true,
+        },
         cardConfig: {
           $exists: false,
         },
@@ -1301,6 +1304,9 @@ export class CardServiceController extends AccountServiceController {
     const to = await this.getAccountService().findOneById(
       createDto.to.toString(),
     );
+    if (!to) {
+      throw new BadRequestException('Card is not valid');
+    }
     if (to.type != TypesAccountEnum.CARD) {
       Logger.error(
         'Type not same',
@@ -1309,9 +1315,7 @@ export class CardServiceController extends AccountServiceController {
       );
       throw new BadRequestException('Card not found');
     }
-    if (!to) {
-      throw new BadRequestException('Card is not valid');
-    }
+    const valueToPay = to.type === TypesAccountEnum.CARD ? 0 : 5;
     const from = await this.getAccountService().findOneById(
       createDto.from.toString(),
     );
@@ -1354,26 +1358,15 @@ export class CardServiceController extends AccountServiceController {
         EventsNamesPspAccountEnum.findOneByName,
         'internal',
       );
-    // Create
-    const result = Promise.all([
-      this.cardService.customUpdateOne({
-        id: createDto.to,
-        $inc: {
-          amount: createDto.amount,
-        },
-      }),
-      this.cardService.customUpdateOne({
-        id: createDto.from.toString(),
-        $inc: {
-          amount: createDto.amount * -1,
-        },
-      }),
-    ]).then((list) => list[0]);
+    if (valueToPay > 0) {
+      // Pay transfer between cards
+      Logger.log('Pay transfer between cards', 'Make');
+    }
     this.cardBuilder.emitTransferEventClient(
       EventsNamesTransferEnum.createOne,
       {
-        name: `Recharge card ${to.name}`,
-        description: `Recharge from wallet ${from.name} to card ${to.name}`,
+        name: `Deposit card ${to.name}`,
+        description: `Deposit from wallet ${from.name} to card ${to.name}`,
         currency: to.currency,
         amount: createDto.amount,
         currencyCustodial: to.currencyCustodial,
@@ -1389,7 +1382,7 @@ export class CardServiceController extends AccountServiceController {
         operationType: OperationTransactionType.deposit,
         page: req.get('Host'),
         statusPayment: StatusCashierEnum.APPROVED,
-        approve: true,
+        isApprove: true,
         status: approvedStatus._id,
         brand: to.brand,
         crm: to.crm,
@@ -1401,7 +1394,7 @@ export class CardServiceController extends AccountServiceController {
       EventsNamesTransferEnum.createOne,
       {
         name: `Withdrawal wallet ${from.name}`,
-        description: `Recharge from wallet ${from.name} to card ${to.name}`,
+        description: `Withdrawal from wallet ${from.name} to card ${to.name}`,
         currency: from.currency,
         amount: createDto.amount,
         currencyCustodial: from.currencyCustodial,
@@ -1417,7 +1410,7 @@ export class CardServiceController extends AccountServiceController {
         operationType: OperationTransactionType.withdrawal,
         page: req.get('Host'),
         statusPayment: StatusCashierEnum.APPROVED,
-        approve: true,
+        isApprove: true,
         status: approvedStatus._id,
         brand: from.brand,
         crm: from.crm,
@@ -1425,7 +1418,8 @@ export class CardServiceController extends AccountServiceController {
         approvedAt: new Date(),
       } as unknown as TransferCreateDto,
     );
-    return result;
+    from.amount = from.amount - createDto.amount;
+    return from;
   }
 
   @Patch('lock/:cardId')
@@ -1546,6 +1540,7 @@ export class CardServiceController extends AccountServiceController {
             id: card.cardConfig.id,
             affinity_group_id: afg.valueGroup,
           });
+          Logger.log(rta.data, `Updated AFG Card-${card._id.toString()}`);
           this.cardBuilder.emitAccountEventClient(
             EventsNamesAccountEnum.updateOne,
             {
@@ -1554,7 +1549,10 @@ export class CardServiceController extends AccountServiceController {
             },
           );
         } catch (error) {
-          Logger.error(error, `LevelUpCard-${card._id.toString()}`);
+          Logger.error(
+            error.message || error,
+            `LevelUpCard-${card._id.toString()}`,
+          );
           throw new BadRequestException('Bad update card');
         }
       }
@@ -1590,7 +1588,7 @@ export class CardServiceController extends AccountServiceController {
     } else {
       if (level.name.indexOf(3) > -1 || level.name.indexOf(4) > -1) {
         // Si grupos 3 o 4 enviar mensaje a support@b2fintech.com
-      } else {
+      } else if (level.name.indexOf(1) > -1 || level.name.indexOf(2) > -1) {
         this.cardBuilder.emitAccountEventClient(
           EventsNamesAccountEnum.createOneCard,
           {
@@ -1784,13 +1782,13 @@ export class CardServiceController extends AccountServiceController {
       owner: person?.user,
       statusText,
       amount: balance ?? 0,
-      currency: CurrencyCodeB2cryptoEnum.USD,
+      currency: CurrencyCodeB2cryptoEnum.USDT,
       amountCustodial: balance ?? 0,
-      currencyCustodial: CurrencyCodeB2cryptoEnum.USD,
+      currencyCustodial: CurrencyCodeB2cryptoEnum.USDT,
       amountBlocked: 0,
-      currencyBlocked: CurrencyCodeB2cryptoEnum.USD,
+      currencyBlocked: CurrencyCodeB2cryptoEnum.USDT,
       amountBlockedCustodial: 0,
-      currencyBlockedCustodial: CurrencyCodeB2cryptoEnum.USD,
+      currencyBlockedCustodial: CurrencyCodeB2cryptoEnum.USDT,
       cardConfig: {
         id: pomeloCard?.id,
         user_id: pomeloCard?.user_id,

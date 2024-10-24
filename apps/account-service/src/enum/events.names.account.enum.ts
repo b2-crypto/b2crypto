@@ -42,6 +42,7 @@ enum EventsNamesAccountEnum {
 
   athorizationTx = 'CARD.AUTHORIZATION.TX',
   levelUpCards = 'CARD.LEVEL.UP',
+  sweepOmnibus = 'WALLET.SWEEP.OMNIBUS',
 }
 
 export default EventsNamesAccountEnum;
