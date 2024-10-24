@@ -147,6 +147,14 @@ export const TESTING_MODE = config.require('TESTING_MODE');
 
 export const MONGOATLAS_INSTANCE = config.require('MONGOATLAS_INSTANCE');
 
+export const MONGOATLAS_INSTANCE_MIN = config.require(
+  'MONGOATLAS_INSTANCE_MIN',
+);
+
+export const MONGOATLAS_INSTANCE_MAX = config.require(
+  'MONGOATLAS_INSTANCE_MAX',
+);
+
 export const MONGOATLAS_CLUSTER_TYPE = config.require(
   'MONGOATLAS_CLUSTER_TYPE',
 );

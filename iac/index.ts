@@ -24,6 +24,8 @@ import {
   MIN_CAPACITY_AUTOSCALING,
   MONGOATLAS_CLUSTER_TYPE,
   MONGOATLAS_INSTANCE,
+  MONGOATLAS_INSTANCE_MAX,
+  MONGOATLAS_INSTANCE_MIN,
   MQ_DEPLOYMENT_MODE,
   POMELO_WHITELISTED_IPS_CHECK,
   PORT,
@@ -50,58 +52,81 @@ const TAGS = {
   CreatedBy: CREATED_BY,
 };
 const TAG = process.env.COMMIT_SHA ?? randomBytes(4).toString('hex');
-const isProduction = () => ENVIRONMENT === 'PRODUCTION';
-const isStressTest = () => TESTING_MODE === 'STRESS_TEST';
+const isProduction = () => ENVIRONMENT === 'PROD';
+const isStressTest = () =>
+  TESTING_MODE === 'STRESS_TEST' && ENVIRONMENT === 'TEST';
 
-const mongoAtlasCluster = new mongodbatlas.Cluster(
-  `${COMPANY_NAME}-${PROJECT_NAME}-${STACK}`,
-  {
-    projectId: SECRETS.MONGOATLAS_PROJECT_ID,
-    name: `${COMPANY_NAME}-${PROJECT_NAME}-${STACK}`,
-    providerName: 'AWS',
-    providerInstanceSizeName: isStressTest() ? 'M10' : MONGOATLAS_INSTANCE,
-    providerRegionName: 'US_EAST_1',
-    mongoDbMajorVersion: '7.0',
-    clusterType: isStressTest() ? 'REPLICASET' : MONGOATLAS_CLUSTER_TYPE,
-    autoScalingComputeEnabled:
-      isStressTest() || MONGOATLAS_CLUSTER_TYPE === 'REPLICASET',
-    autoScalingComputeScaleDownEnabled:
-      isStressTest() || MONGOATLAS_CLUSTER_TYPE === 'REPLICASET',
-    providerAutoScalingComputeMinInstanceSize: isStressTest()
-      ? 'M10'
-      : MONGOATLAS_INSTANCE,
-    providerAutoScalingComputeMaxInstanceSize: isStressTest()
-      ? 'M20'
-      : MONGOATLAS_INSTANCE,
-    replicationSpecs: [
-      {
-        numShards: 1,
-        regionsConfigs: [
-          {
-            regionName: 'US_EAST_1',
-            electableNodes: 3,
-            priority: 7,
-          },
-        ],
-      },
-    ],
-    tags: Object.entries(TAGS).map(([key, value]) => ({
-      key,
-      value,
-    })),
-  },
-  {
-    protect: isProduction(),
-  },
-);
+const mongoAtlasClusterName = isStressTest()
+  ? `${COMPANY_NAME}-${PROJECT_NAME}-${STACK}-stress`
+  : `${COMPANY_NAME}-${PROJECT_NAME}-${STACK}`;
 
-export const mongoAtlasClusterData = {
-  id: mongoAtlasCluster.id,
-  name: mongoAtlasCluster.name,
-  mongoUri: mongoAtlasCluster.mongoUri,
-  srvAddress: mongoAtlasCluster.srvAddress,
-  connectionStrings: mongoAtlasCluster.connectionStrings,
-};
+const mongodbatlasServerlessInstance =
+  !isStressTest() && !isProduction()
+    ? new mongodbatlas.ServerlessInstance(mongoAtlasClusterName, {
+        name: mongoAtlasClusterName,
+        projectId: SECRETS.MONGOATLAS_PROJECT_ID,
+        providerSettingsRegionName: 'US_EAST_1',
+        providerSettingsProviderName: 'AWS',
+        terminationProtectionEnabled: true,
+        continuousBackupEnabled: false,
+        stateName: 'IDLE',
+        providerSettingsBackingProviderName: 'AWS',
+        tags: Object.entries(TAGS).map(([key, value]) => ({
+          key,
+          value,
+        })),
+      })
+    : null;
+
+export const mongodbatlasServerlessInstanceData =
+  mongodbatlasServerlessInstance;
+
+const mongoAtlasCluster =
+  isStressTest() || isProduction()
+    ? new mongodbatlas.Cluster(
+        mongoAtlasClusterName,
+        {
+          projectId: SECRETS.MONGOATLAS_PROJECT_ID,
+          name: mongoAtlasClusterName,
+          providerName: 'AWS',
+          providerInstanceSizeName: isStressTest()
+            ? 'M20'
+            : MONGOATLAS_INSTANCE,
+          providerRegionName: 'US_EAST_1',
+          mongoDbMajorVersion: '7.0',
+          clusterType: MONGOATLAS_CLUSTER_TYPE,
+          autoScalingComputeEnabled: true,
+          autoScalingComputeScaleDownEnabled: true,
+          providerAutoScalingComputeMinInstanceSize: isStressTest()
+            ? 'M10'
+            : MONGOATLAS_INSTANCE_MIN,
+          providerAutoScalingComputeMaxInstanceSize: isStressTest()
+            ? 'M30'
+            : MONGOATLAS_INSTANCE_MAX,
+          replicationSpecs: [
+            {
+              numShards: 1,
+              regionsConfigs: [
+                {
+                  regionName: 'US_EAST_1',
+                  electableNodes: 3,
+                  priority: 1,
+                },
+              ],
+            },
+          ],
+          tags: Object.entries(TAGS).map(([key, value]) => ({
+            key,
+            value,
+          })),
+        },
+        {
+          protect: isProduction(),
+        },
+      )
+    : null;
+
+export const mongoAtlasClusterData = mongoAtlasCluster;
 
 const acmCertificate = aws.acm.getCertificateOutput({
   domain: 'b2crypto.com',
@@ -380,17 +405,17 @@ const ecsFargateService = new awsx.ecs.FargateService(
             name: 'DATABASE_URL',
             value: pulumi
               .all([
-                mongoAtlasCluster.name,
-                mongoAtlasCluster.connectionStrings.apply(
+                mongoAtlasCluster?.connectionStrings.apply(
                   (connections) => connections[0].standardSrv,
-                ),
+                ) ??
+                  mongodbatlasServerlessInstance?.connectionStringsStandardSrv,
                 SECRETS.MONGOATLAS_USERNAME,
                 SECRETS.MONGOATLAS_PASSWORD,
               ])
-              .apply(([name, standardSrv, username, password]) => {
-                const [protocol, domain] = standardSrv.split('//');
+              .apply(([standardSrv, username, password]) => {
+                const [protocol, domain] = standardSrv?.split('//') ?? [];
 
-                return `${protocol}//${username}:${password}@${domain}/?retryWrites=true&w=majority&appName=${name}`;
+                return `${protocol}//${username}:${password}@${domain}/?retryWrites=true&w=majority&appName=${mongoAtlasClusterName}`;
               }),
             // value: SECRETS.DATABASE_URL,
           },
