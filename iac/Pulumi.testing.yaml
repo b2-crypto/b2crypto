@@ -108,3 +108,15 @@ config:
   b2crypto-iac:SOCIAL_MEDIA_ICONS: '{"facebook":"https://message-templates-resource.s3.eu-west-3.amazonaws.com/social/facebook.png","instagram":"https://message-templates-resource.s3.eu-west-3.amazonaws.com/social/instagram.png","linkedin":"https://message-templates-resource.s3.eu-west-3.amazonaws.com/social/linkedin.png","youtube":"https://message-templates-resource.s3.eu-west-3.amazonaws.com/social/youtube.png"}'
   b2crypto-iac:SOCIAL_MEDIA_LINKS: '{"facebook":"https://www.facebook.com/share/qT7RXDDgRqKigRnn/?mibextid=LQQJ4d","linkedin":"https://www.linkedin.com/company/b2fintech/?viewAsMember=true","instagram":"https://www.instagram.com/b2fintech/","youtube":"https://www.youtube.com"}'
   b2crypto-iac:MQ_DEPLOYMENT_MODE: SINGLE_INSTANCE
+  b2crypto-iac:MONGOATLAS_PROJECT_ID:
+    secure: AAABAJIBS3zsVaM7MczXsmWjux1GcK8wwKNBwqBmC3jQTsdQnjhSjAOJbNtI60PTU/I4gHAHhoM=
+  b2crypto-iac:MONGOATLAS_PASSWORD:
+    secure: AAABAM643C0SbTNVu6GPaHdKo22uMsZ6epLXC1a/hdbGfgoxnTy4V4mhkmSx527+
+  b2crypto-iac:MONGOATLAS_USERNAME:
+    secure: AAABALgLi9YtQ398jabB2HveaMWwjzG+OTFN40lEbIyo/dIIsnUMaw==
+  b2crypto-iac:TESTING_MODE: NORMAL
+  b2crypto-iac:MONGOATLAS_INSTANCE: M2
+  b2crypto-iac:MONGOATLAS_CLUSTER_TYPE: REPLICASET
+  b2crypto-iac:MONGOATLAS_INSTANCE_MIN: M2
+  b2crypto-iac:MONGOATLAS_INSTANCE_MAX: M5
+  b2crypto-iac:SUBDOMAIN_PREFIX: apitest

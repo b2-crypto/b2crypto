@@ -29,6 +29,9 @@ export const SECRETS = pulumi
     config.requireSecret('POMELO_SFTP_PORT'),
     config.requireSecret('POMELO_SFTP_USR'),
     config.requireSecret('POMELO_SFTP_PASSPHRASE'),
+    config.requireSecret('MONGOATLAS_PROJECT_ID'),
+    config.requireSecret('MONGOATLAS_USERNAME'),
+    config.requireSecret('MONGOATLAS_PASSWORD'),
   ])
   .apply(
     ([
@@ -57,6 +60,9 @@ export const SECRETS = pulumi
       POMELO_SFTP_PORT,
       POMELO_SFTP_USR,
       POMELO_SFTP_PASSPHRASE,
+      MONGOATLAS_PROJECT_ID,
+      MONGOATLAS_USERNAME,
+      MONGOATLAS_PASSWORD,
     ]) => ({
       DATABASE_URL,
       RABBIT_MQ_HOST,
@@ -83,6 +89,9 @@ export const SECRETS = pulumi
       POMELO_SFTP_PORT,
       POMELO_SFTP_USR,
       POMELO_SFTP_PASSPHRASE,
+      MONGOATLAS_PROJECT_ID,
+      MONGOATLAS_USERNAME,
+      MONGOATLAS_PASSWORD,
     }),
   );
 
@@ -133,3 +142,21 @@ export const RABBIT_MQ_INSTANCE_TYPE = config.require(
   'RABBIT_MQ_INSTANCE_TYPE',
 );
 export const MQ_DEPLOYMENT_MODE = config.require('MQ_DEPLOYMENT_MODE');
+
+export const TESTING_MODE = config.require('TESTING_MODE');
+
+export const MONGOATLAS_INSTANCE = config.require('MONGOATLAS_INSTANCE');
+
+export const MONGOATLAS_INSTANCE_MIN = config.require(
+  'MONGOATLAS_INSTANCE_MIN',
+);
+
+export const MONGOATLAS_INSTANCE_MAX = config.require(
+  'MONGOATLAS_INSTANCE_MAX',
+);
+
+export const MONGOATLAS_CLUSTER_TYPE = config.require(
+  'MONGOATLAS_CLUSTER_TYPE',
+);
+
+export const SUBDOMAIN_PREFIX = config.require('SUBDOMAIN_PREFIX');

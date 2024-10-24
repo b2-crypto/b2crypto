@@ -202,4 +202,7 @@ export class IntegrationCryptoService<
   async resendNotifications(): Promise<any> {
     throw new NotImplementedException('Method not implemented.');
   }
+  async validateAddress(assetId: string, address: string): Promise<any> {
+    throw new NotImplementedException('Method not implemented.');
+  }
 }

@@ -176,6 +176,7 @@
     "@nestjs/testing": "^9.0.0",
     "@pulumi/aws": "^6.52.0",
     "@pulumi/awsx": "^2.15.0",
+    "@pulumi/mongodbatlas": "^3.20.2",
     "@pulumi/pulumi": "^3.133.0",
     "@types/aws-lambda": "^8.10.108",
     "@types/bcrypt": "^5.0.0",

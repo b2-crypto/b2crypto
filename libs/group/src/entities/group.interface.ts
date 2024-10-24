@@ -1,5 +1,4 @@
 import { CategoryInterface } from '@category/category/entities/category.interface';
-import { UserInterface } from '@user/user/entities/user.interface';
 import { ObjectId } from 'mongoose';
 import { GroupTypeEnum } from '../enum/group.type.enum';
 import { UserEntity } from '@user/user/entities/user.entity';
@@ -9,6 +8,7 @@ export interface GroupInterface {
   id: string;
   name: string;
   slug: string;
+  hidden: boolean;
   valueGroup: string;
   description: string;
   type: GroupTypeEnum;

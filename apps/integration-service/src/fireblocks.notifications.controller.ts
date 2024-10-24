@@ -6,6 +6,7 @@ import { CommonService } from '@common/common';
 import { NoCache } from '@common/common/decorators/no-cache.decorator';
 import CurrencyCodeB2cryptoEnum from '@common/common/enums/currency-code-b2crypto.enum';
 import { StatusCashierEnum } from '@common/common/enums/StatusCashierEnum';
+import { TransactionStateEnum } from '@fireblocks/ts-sdk';
 import { IntegrationService } from '@integration/integration';
 import IntegrationCryptoEnum from '@integration/integration/crypto/enums/IntegrationCryptoEnum';
 import { FireblocksIntegrationService } from '@integration/integration/crypto/fireblocks/fireblocks-integration.service';
@@ -26,6 +27,7 @@ import EventsNamesCategoryEnum from 'apps/category-service/src/enum/events.names
 import EventsNamesCrmEnum from 'apps/crm-service/src/enum/events.names.crm.enum';
 import EventsNamesStatusEnum from 'apps/status-service/src/enum/events.names.status.enum';
 import EventsNamesTransferEnum from 'apps/transfer-service/src/enum/events.names.transfer.enum';
+import { isMongoId } from 'class-validator';
 import * as crypto from 'crypto';
 
 @Controller('fireblocks')
@@ -72,10 +74,11 @@ export class FireBlocksNotificationsController {
     //Logger.debug(isVerified, 'getTransferDto.isVerified');
     //if (isVerified) {
     const rta = data.data;
+    Logger.debug(rta, '-start');
     if (
-      rta?.source.type === 'UNKNOWN' ||
-      (rta?.source.type === 'VAULT_ACCOUNT' &&
-        rta?.destination.type === 'EXTERNAL_WALLET')
+      rta?.source?.type === 'UNKNOWN' ||
+      (rta?.source?.type === 'VAULT_ACCOUNT' &&
+        rta?.destination?.type === 'EXTERNAL_WALLET')
     ) {
       const txList = await this.builder.getPromiseTransferEventClient(
         EventsNamesTransferEnum.findAll,
@@ -174,6 +177,10 @@ export class FireBlocksNotificationsController {
     // }
     // const ownerId = brand.owner;
     const ownerId = ownerIdWallet.replace('-vault', '');
+    if (!isMongoId(ownerId)) {
+      Logger.debug(ownerId, `Invalid ownerId ${ownerIdWallet}`);
+      return null;
+    }
     const crm = await this.getFireblocksCrm();
     const queryWhereWallet = {
       owner: ownerId,
@@ -197,10 +204,10 @@ export class FireBlocksNotificationsController {
     if (data.status === 'COMPLETED') {
       isApproved = true;
     } else if (
-      data.status === 'REJECTED' ||
-      data.status === 'FAILED' ||
-      data.status === 'CANCELED' ||
-      data.status === 'BLOCKED'
+      data.status === TransactionStateEnum.Rejected ||
+      data.status === TransactionStateEnum.Failed ||
+      data.status === TransactionStateEnum.Cancelled ||
+      data.status === TransactionStateEnum.Blocked
     ) {
       isApproved = false;
     }
@@ -240,8 +247,8 @@ export class FireBlocksNotificationsController {
       //! Check crypto currencies
       //currency: data.assetType,
       currency: CurrencyCodeB2cryptoEnum.USDT,
-      amountCustodial: data.amountUSD,
-      currencyCustodial: CurrencyCodeB2cryptoEnum.USD,
+      amountCustodial: data.amountUSDT,
+      currencyCustodial: CurrencyCodeB2cryptoEnum.USDT,
       operationType,
       typeTransaction: operation._id,
       typeAccount: wallet.accountType,
@@ -249,8 +256,8 @@ export class FireBlocksNotificationsController {
       crm,
       userAccount: wallet.owner,
       isApprove: isApproved,
-      approvedAt: isApproved === true ? new Date() : null,
-      rejectedAt: isApproved === false ? null : new Date(),
+      ßapprovedAt: isApproved === null || !isApproved ? null : new Date(),
+      rejectedAt: isApproved === null || isApproved ? null : new Date(),
       userApprover: isApproved ? null : wallet.owner,
       userRejecter: isApproved ? null : wallet.owner,
       description: data.note,
