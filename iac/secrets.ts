@@ -158,3 +158,5 @@ export const MONGOATLAS_INSTANCE_MAX = config.require(
 export const MONGOATLAS_CLUSTER_TYPE = config.require(
   'MONGOATLAS_CLUSTER_TYPE',
 );
+
+export const SUBDOMAIN_PREFIX = config.require('SUBDOMAIN_PREFIX');

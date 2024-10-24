@@ -38,6 +38,7 @@ import {
   SOCIAL_MEDIA_ICONS,
   SOCIAL_MEDIA_LINKS,
   STACK,
+  SUBDOMAIN_PREFIX,
   TESTING,
   TESTING_MODE,
   TZ,
@@ -55,6 +56,64 @@ const TAG = process.env.COMMIT_SHA ?? randomBytes(4).toString('hex');
 const isProduction = () => ENVIRONMENT === 'PROD';
 const isStressTest = () =>
   TESTING_MODE === 'STRESS_TEST' && ENVIRONMENT === 'TEST';
+const DOMAIN = 'b2fintech.com';
+
+// const acmCertificate = new aws.acm.Certificate(
+//   `${COMPANY_NAME}-${PROJECT_NAME}-${STACK}`,
+//   {
+//     domainName: DOMAIN,
+//     subjectAlternativeNames: [`*.${DOMAIN}`],
+//     validationMethod: 'DNS',
+//     tags: TAGS,
+//   },
+// );
+
+const acmCertificate = aws.acm.getCertificateOutput({
+  domain: DOMAIN,
+});
+
+export const acmCertificateData = {
+  arn: acmCertificate.arn,
+  domain: acmCertificate.domain,
+};
+
+const route53Zone = aws.route53.getZoneOutput({ name: DOMAIN });
+
+export const route53ZoneData = {
+  id: route53Zone.id,
+  name: route53Zone.name,
+};
+
+// const route53RecordValidation = new aws.route53.Record(
+//   `${COMPANY_NAME}-${PROJECT_NAME}-${STACK}-validation`,
+//   {
+//     zoneId: route53Zone.zoneId,
+//     name: acmCertificate.domainValidationOptions[0].resourceRecordName,
+//     type: acmCertificate.domainValidationOptions[0].resourceRecordType,
+//     records: [acmCertificate.domainValidationOptions[0].resourceRecordValue],
+//     ttl: 300,
+//   },
+// );
+
+// export const route53RecordValidationData = {
+//   name: route53RecordValidation.name,
+//   type: route53RecordValidation.type,
+//   zoneId: route53RecordValidation.zoneId,
+//   fqdn: route53RecordValidation.fqdn,
+// };
+
+// const certificateValidation = new aws.acm.CertificateValidation(
+//   `${COMPANY_NAME}-${PROJECT_NAME}-${STACK}`,
+//   {
+//     certificateArn: acmCertificate.arn,
+//     validationRecordFqdns: [route53RecordValidation.fqdn],
+//   },
+// );
+
+// export const certificateValidationData = {
+//   certificateArn: certificateValidation.certificateArn,
+//   validationRecordFqdns: certificateValidation.validationRecordFqdns,
+// };
 
 const mongoAtlasClusterName = isStressTest()
   ? `${COMPANY_NAME}-${PROJECT_NAME}-${STACK}-stress`
@@ -127,15 +186,6 @@ const mongoAtlasCluster =
     : null;
 
 export const mongoAtlasClusterData = mongoAtlasCluster;
-
-const acmCertificate = aws.acm.getCertificateOutput({
-  domain: 'b2crypto.com',
-});
-
-export const acmCertificateData = {
-  arn: acmCertificate.arn,
-  domain: acmCertificate.domain,
-};
 
 const ecrRepository = new aws.ecr.Repository(
   `${COMPANY_NAME}/${PROJECT_NAME}-${STACK}`,
@@ -357,6 +407,28 @@ export const lbApplicationLoadBalancerData = {
   defaultTargetGroup: lbApplicationLoadBalancer.defaultTargetGroup,
   loadBalancer: lbApplicationLoadBalancer.loadBalancer,
   listeners: lbApplicationLoadBalancer.listeners,
+};
+
+const rouet53Record = new aws.route53.Record(
+  `${COMPANY_NAME}-${PROJECT_NAME}-${STACK}`,
+  {
+    zoneId: route53Zone.id,
+    name: SUBDOMAIN_PREFIX,
+    type: 'A',
+    aliases: [
+      {
+        name: lbApplicationLoadBalancer.loadBalancer.dnsName,
+        zoneId: lbApplicationLoadBalancer.loadBalancer.zoneId,
+        evaluateTargetHealth: true,
+      },
+    ],
+  },
+);
+
+export const rouet53RecordData = {
+  name: rouet53Record.name,
+  type: rouet53Record.type,
+  zoneId: rouet53Record.zoneId,
 };
 
 const cloudwatchLogGroup = new aws.cloudwatch.LogGroup(

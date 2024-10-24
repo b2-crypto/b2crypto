@@ -119,3 +119,4 @@ config:
   b2crypto-iac:MONGOATLAS_CLUSTER_TYPE: REPLICASET
   b2crypto-iac:MONGOATLAS_INSTANCE_MIN: M2
   b2crypto-iac:MONGOATLAS_INSTANCE_MAX: M5
+  b2crypto-iac:SUBDOMAIN_PREFIX: apitest
