@@ -30,7 +30,7 @@ config:
     secure: AAABADIXZfiAxtiASTFGNZLIhYYypTpSl07vW4R/W1eQ8fkN+DWS2w8+tDYzdrrCEUKBCW7pP6tyz62vlgZAog==
   b2crypto-iac:CURRENCY_CONVERSION_API_URL:
     secure: AAABALIY9swT1rccnRrVlt8ZFprM9Sqvn7zzSkrUyp1gObd5ECRLMbF/Tkrbwp0pdQPZe8AktKgKnbXXcVz5M40JWIzhsVUauaM=
-  b2crypto-iac:DATABASE_NAME: b2crypto
+  b2crypto-iac:DATABASE_NAME: b2fintech
   b2crypto-iac:DATABASE_URL:
     secure: AAABAMQsULCZcplyuHxDB76AyF1vwJI7dPri1hU+9THwunbLX67SOXQEvWNVANXXdvJ4oqm+nVnhkJgHYNEZXOLXXH+w0TiamkfHi+luevaulyPrEUGhIgjgKxirRGx3VWeCbdcspZsTUtFpc0sH5ESC0ZrikAvh+pUclH8SYbR5tkpwxyDB63CNNt6rENOFx50=
   b2crypto-iac:DEFAULT_CURRENCY_CONVERSION_COIN: USD
@@ -95,7 +95,7 @@ config:
   b2crypto-iac:TESTING: "false"
   b2crypto-iac:TZ: UTC
   b2crypto-iac:URL_API_EMAIL_APP: ""
-  b2crypto-iac:VPC_CIDR_BLOCK: 10.1.0.0/16
+  b2crypto-iac:VPC_CIDR_BLOCK: 10.3.0.0/16
   mongodbatlas:privateKey:
     secure: AAABAMJZ0+qVxLuwGcvwozo5VPgkpAkBcdm+bMxa0LuHaFt2DiM+kwgq7x43QD1Dv2CCnMv+tJsw5LpRQ1y5XvJP3cg=
   mongodbatlas:publicKey:
@@ -108,3 +108,14 @@ config:
   b2crypto-iac:MIN_CAPACITY_AUTOSCALING: "3"
   b2crypto-iac:MQ_DEPLOYMENT_MODE: CLUSTER_MULTI_AZ
   b2crypto-iac:RABBIT_MQ_INSTANCE_TYPE: mq.m5.large
+  b2crypto-iac:MONGOATLAS_PROJECT_ID:
+    secure: AAABAOYIvAA4GCpfe0N9ppuPW+FKKaEwgnocxMOQjtNIhZtzWwc7uopnwZQbluGlJUwzDxglsWM=
+  b2crypto-iac:MONGOATLAS_PASSWORD:
+    secure: AAABANeY1Q9rckEuCyze8rOdI+Si/0oFfPtkllGkwqHy+aGk1OR9g3BdrXfH4b/K
+  b2crypto-iac:MONGOATLAS_USERNAME:
+    secure: AAABAMI7Pubk5PswoFuoIvnGcgi18tHEIuAMq/J6r7TC2cFuA2xavg==
+  b2crypto-iac:TESTING_MODE: NORMAL
+  b2crypto-iac:MONGOATLAS_INSTANCE: M20
+  b2crypto-iac:MONGOATLAS_CLUSTER_TYPE: REPLICASET
+  b2crypto-iac:MONGOATLAS_INSTANCE_MIN: M10
+  b2crypto-iac:MONGOATLAS_INSTANCE_MAX: M30

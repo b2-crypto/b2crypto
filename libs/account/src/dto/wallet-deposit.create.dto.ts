@@ -1,17 +1,17 @@
 import { CreateAnyDto } from '@common/common/models/create-any.dto';
 import { ApiProperty } from '@nestjs/swagger';
-import { IsMongoId, IsNumber, IsOptional, IsString } from 'class-validator';
+import { IsNumber, IsOptional, IsString } from 'class-validator';
 import { ObjectId } from 'mongoose';
 
 export class WalletDepositCreateDto extends CreateAnyDto {
-  @IsMongoId()
+  @IsString()
   @ApiProperty({
     required: true,
     description: 'Wallet to which it arrives',
   })
   to: ObjectId;
 
-  @IsMongoId()
+  @IsString()
   @IsOptional()
   @ApiProperty({
     required: false,

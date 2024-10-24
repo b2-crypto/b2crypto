@@ -72,13 +72,13 @@ import { UserServiceService } from 'apps/user-service/src/user-service.service';
 import { isEmpty, isString } from 'class-validator';
 import { SwaggerSteakeyConfigEnum } from 'libs/config/enum/swagger.stakey.config.enum';
 
+import { AccountUpdateDto } from '@account/account/dto/account.update.dto';
+import WalletTypesAccountEnum from '@account/account/enum/wallet.types.account.enum';
 import { ResponsePaginator } from '../../../libs/common/src/interfaces/response-pagination.interface';
 import { AccountServiceController } from './account-service.controller';
 import { AccountServiceService } from './account-service.service';
 import { AfgNamesEnum } from './enum/afg.names.enum';
 import EventsNamesAccountEnum from './enum/events.names.account.enum';
-import { AccountUpdateDto } from '@account/account/dto/account.update.dto';
-import WalletTypesAccountEnum from '@account/account/enum/wallet.types.account.enum';
 
 @ApiTags(SwaggerSteakeyConfigEnum.TAG_CARD)
 @Controller('cards')
@@ -159,7 +159,7 @@ export class CardServiceController extends AccountServiceController {
     const rta = await this.cardService.findAll(query);
     rta.list.forEach(async (account) => {
       account.amount = await this.swapToCurrencyUser(req, account);
-      account.currency = req.user.currency ?? CurrencyCodeB2cryptoEnum.USD;
+      account.currency = req.user.currency ?? CurrencyCodeB2cryptoEnum.USDT;
     });
     return rta;
   }
@@ -169,6 +169,8 @@ export class CardServiceController extends AccountServiceController {
   @Post('create')
   @UseGuards(ApiKeyAuthGuard)
   async createOne(@Body() createDto: CardCreateDto, @Req() req?: any) {
+    const isNotStressTest = () => process.env.ENVIRONMENT !== 'TEST_STRESS';
+
     const userId = createDto.owner || req?.user?.id;
     const user: User = await this.getUser(userId);
     createDto.accountType =
@@ -270,17 +272,57 @@ export class CardServiceController extends AccountServiceController {
       //   }
       //   cardDataIntegration.previous_card_id = prevCard.cardConfig.id;
       // }
-      const card = await cardIntegration.createCard(cardDataIntegration);
+      const card = isNotStressTest()
+        ? await cardIntegration.createCard(cardDataIntegration)
+        : { error: false, data: {} };
       const error = card['error'];
       if (error) {
         // TODO[hender - 2024-08-12] If problems with data user in Pomelo, flag to update in pomelo when update profile user
         throw new BadRequestException(error);
       }
+
       account.cardConfig = card.data as unknown as Card;
       if (card.data['shipment_id']) {
-        const dataShipping = await cardIntegration.getShippingPhysicalCard(
-          card.data['shipment_id'],
-        );
+        const dataShipping = isNotStressTest()
+          ? await cardIntegration.getShippingPhysicalCard(
+              card.data['shipment_id'],
+            )
+          : {
+              data: {
+                id: '',
+                external_tracking_id: '',
+                status: StatusAccountEnum.VERIFIED,
+                status_detail: '',
+                shipment_type: '',
+                affinity_group_id: '',
+                affinity_group_name: '',
+                courier: { company: '', tracking_url: '' },
+                country_code: '',
+                created_at: '',
+                batch: { id: '', quantity: 0, has_stock: false, status: '' },
+                address: {
+                  street_name: '',
+                  street_number: '',
+                  floor: '',
+                  apartment: '',
+                  city: '',
+                  region: '',
+                  country: '',
+                  zip_code: '',
+                  neighborhood: '',
+                  additional_info: '',
+                },
+                receiver: {
+                  full_name: '',
+                  email: '',
+                  document_type: '',
+                  document_number: '',
+                  tax_identification_number: '',
+                  telephone_number: '',
+                },
+                user_id: '',
+              },
+            };
         account.responseShipping = dataShipping.data;
         if (
           dataShipping.data.status === StatusAccountEnum.REJECTED ||
@@ -289,7 +331,7 @@ export class CardServiceController extends AccountServiceController {
           account.statusText = StatusAccountEnum.CANCEL;
         }
       }
-      account.save();
+      if (isNotStressTest()) await account.save();
 
       const walletDTO = {
         owner: account.owner,
@@ -297,20 +339,22 @@ export class CardServiceController extends AccountServiceController {
         type: TypesAccountEnum.WALLET,
         accountType: WalletTypesAccountEnum.VAULT,
       };
-      const countWalletsUser =
-        await this.cardBuilder.getPromiseAccountEventClient(
-          EventsNamesAccountEnum.count,
-          {
-            take: 1,
-            where: walletDTO,
-          },
-        );
+      const countWalletsUser = isNotStressTest()
+        ? await this.cardBuilder.getPromiseAccountEventClient(
+            EventsNamesAccountEnum.count,
+            {
+              take: 1,
+              where: walletDTO,
+            },
+          )
+        : 1;
       if (countWalletsUser < 1) {
         this.cardBuilder.emitAccountEventClient(
           EventsNamesAccountEnum.createOneWallet,
           walletDTO,
         );
       }
+
       return account;
     } catch (err) {
       await this.getAccountService().deleteOneById(account._id);
@@ -1178,6 +1222,9 @@ export class CardServiceController extends AccountServiceController {
     const physicalCardPending = await this.cardService.findAll({
       where: {
         owner: user._id,
+        responseShiping: {
+          $exists: true,
+        },
         cardConfig: {
           $exists: false,
         },
@@ -1236,7 +1283,6 @@ export class CardServiceController extends AccountServiceController {
     throw new BadRequestException('Shipment was not created');
   }
 
-  @ApiExcludeEndpoint()
   @Post('recharge')
   @ApiSecurity('b2crypto-key')
   @ApiBearerAuth('bearerToken')
@@ -1258,6 +1304,9 @@ export class CardServiceController extends AccountServiceController {
     const to = await this.getAccountService().findOneById(
       createDto.to.toString(),
     );
+    if (!to) {
+      throw new BadRequestException('Card is not valid');
+    }
     if (to.type != TypesAccountEnum.CARD) {
       Logger.error(
         'Type not same',
@@ -1266,9 +1315,7 @@ export class CardServiceController extends AccountServiceController {
       );
       throw new BadRequestException('Card not found');
     }
-    if (!to) {
-      throw new BadRequestException('Card is not valid');
-    }
+    const valueToPay = to.type === TypesAccountEnum.CARD ? 0 : 5;
     const from = await this.getAccountService().findOneById(
       createDto.from.toString(),
     );
@@ -1311,26 +1358,15 @@ export class CardServiceController extends AccountServiceController {
         EventsNamesPspAccountEnum.findOneByName,
         'internal',
       );
-    // Create
-    const result = Promise.all([
-      this.cardService.customUpdateOne({
-        id: createDto.to,
-        $inc: {
-          amount: createDto.amount,
-        },
-      }),
-      this.cardService.customUpdateOne({
-        id: createDto.from.toString(),
-        $inc: {
-          amount: createDto.amount * -1,
-        },
-      }),
-    ]).then((list) => list[0]);
+    if (valueToPay > 0) {
+      // Pay transfer between cards
+      Logger.log('Pay transfer between cards', 'Make');
+    }
     this.cardBuilder.emitTransferEventClient(
       EventsNamesTransferEnum.createOne,
       {
-        name: `Recharge card ${to.name}`,
-        description: `Recharge from wallet ${from.name} to card ${to.name}`,
+        name: `Deposit card ${to.name}`,
+        description: `Deposit from wallet ${from.name} to card ${to.name}`,
         currency: to.currency,
         amount: createDto.amount,
         currencyCustodial: to.currencyCustodial,
@@ -1346,7 +1382,7 @@ export class CardServiceController extends AccountServiceController {
         operationType: OperationTransactionType.deposit,
         page: req.get('Host'),
         statusPayment: StatusCashierEnum.APPROVED,
-        approve: true,
+        isApprove: true,
         status: approvedStatus._id,
         brand: to.brand,
         crm: to.crm,
@@ -1358,7 +1394,7 @@ export class CardServiceController extends AccountServiceController {
       EventsNamesTransferEnum.createOne,
       {
         name: `Withdrawal wallet ${from.name}`,
-        description: `Recharge from wallet ${from.name} to card ${to.name}`,
+        description: `Withdrawal from wallet ${from.name} to card ${to.name}`,
         currency: from.currency,
         amount: createDto.amount,
         currencyCustodial: from.currencyCustodial,
@@ -1374,7 +1410,7 @@ export class CardServiceController extends AccountServiceController {
         operationType: OperationTransactionType.withdrawal,
         page: req.get('Host'),
         statusPayment: StatusCashierEnum.APPROVED,
-        approve: true,
+        isApprove: true,
         status: approvedStatus._id,
         brand: from.brand,
         crm: from.crm,
@@ -1382,7 +1418,8 @@ export class CardServiceController extends AccountServiceController {
         approvedAt: new Date(),
       } as unknown as TransferCreateDto,
     );
-    return result;
+    from.amount = from.amount - createDto.amount;
+    return from;
   }
 
   @Patch('lock/:cardId')
@@ -1503,6 +1540,7 @@ export class CardServiceController extends AccountServiceController {
             id: card.cardConfig.id,
             affinity_group_id: afg.valueGroup,
           });
+          Logger.log(rta.data, `Updated AFG Card-${card._id.toString()}`);
           this.cardBuilder.emitAccountEventClient(
             EventsNamesAccountEnum.updateOne,
             {
@@ -1511,7 +1549,10 @@ export class CardServiceController extends AccountServiceController {
             },
           );
         } catch (error) {
-          Logger.error(error, `LevelUpCard-${card._id.toString()}`);
+          Logger.error(
+            error.message || error,
+            `LevelUpCard-${card._id.toString()}`,
+          );
           throw new BadRequestException('Bad update card');
         }
       }
@@ -1547,7 +1588,7 @@ export class CardServiceController extends AccountServiceController {
     } else {
       if (level.name.indexOf(3) > -1 || level.name.indexOf(4) > -1) {
         // Si grupos 3 o 4 enviar mensaje a support@b2fintech.com
-      } else {
+      } else if (level.name.indexOf(1) > -1 || level.name.indexOf(2) > -1) {
         this.cardBuilder.emitAccountEventClient(
           EventsNamesAccountEnum.createOneCard,
           {
@@ -1741,13 +1782,13 @@ export class CardServiceController extends AccountServiceController {
       owner: person?.user,
       statusText,
       amount: balance ?? 0,
-      currency: CurrencyCodeB2cryptoEnum.USD,
+      currency: CurrencyCodeB2cryptoEnum.USDT,
       amountCustodial: balance ?? 0,
-      currencyCustodial: CurrencyCodeB2cryptoEnum.USD,
+      currencyCustodial: CurrencyCodeB2cryptoEnum.USDT,
       amountBlocked: 0,
-      currencyBlocked: CurrencyCodeB2cryptoEnum.USD,
+      currencyBlocked: CurrencyCodeB2cryptoEnum.USDT,
       amountBlockedCustodial: 0,
-      currencyBlockedCustodial: CurrencyCodeB2cryptoEnum.USD,
+      currencyBlockedCustodial: CurrencyCodeB2cryptoEnum.USDT,
       cardConfig: {
         id: pomeloCard?.id,
         user_id: pomeloCard?.user_id,

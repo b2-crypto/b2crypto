@@ -156,8 +156,27 @@ export class FireblocksIntegrationService extends IntegrationCryptoService<
     }
   }
 
+  async validateAddress(assetId: string, address: string) {
+    try {
+      const rta = await this.fireblocks.transactions.validateAddress({
+        assetId,
+        address,
+      });
+      Logger.debug(JSON.stringify(rta.data, null, 2));
+    } catch (e) {
+      Logger.debug(e);
+    }
+  }
+
   // create a transaction
-  async createTransaction(assetId, amount, srcId, destId) {
+  async createTransaction(
+    assetId: string,
+    amount: string,
+    srcId: string,
+    destId: string,
+    note?: string,
+    external = false,
+  ) {
     const payload = {
       assetId,
       amount,
@@ -168,13 +187,24 @@ export class FireblocksIntegrationService extends IntegrationCryptoService<
       destination: {
         type: TransferPeerPathType.VaultAccount,
         id: String(destId),
+        oneTimeAddress: undefined,
       },
-      note: 'Your first transaction!',
+      note: note,
     };
+    if (external) {
+      payload.destination = {
+        id: undefined,
+        type: TransferPeerPathType.OneTimeAddress as any,
+        oneTimeAddress: {
+          address: String(destId),
+        },
+      };
+    }
     const result = await this.fireblocks.transactions.createTransaction({
       transactionRequest: payload,
     });
     Logger.debug(JSON.stringify(result, null, 2));
+    return result;
   }
   async getTxStatus(txId: string): Promise<TransactionStateEnum | string> {
     try {

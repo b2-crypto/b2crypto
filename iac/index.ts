@@ -1,5 +1,6 @@
 import * as aws from '@pulumi/aws';
 import * as awsx from '@pulumi/awsx';
+import * as mongodbatlas from '@pulumi/mongodbatlas';
 import * as pulumi from '@pulumi/pulumi';
 import { randomBytes } from 'crypto';
 import {
@@ -21,6 +22,10 @@ import {
   LOGO_URL,
   MAX_CAPACITY_AUTOSCALING,
   MIN_CAPACITY_AUTOSCALING,
+  MONGOATLAS_CLUSTER_TYPE,
+  MONGOATLAS_INSTANCE,
+  MONGOATLAS_INSTANCE_MAX,
+  MONGOATLAS_INSTANCE_MIN,
   MQ_DEPLOYMENT_MODE,
   POMELO_WHITELISTED_IPS_CHECK,
   PORT,
@@ -33,7 +38,9 @@ import {
   SOCIAL_MEDIA_ICONS,
   SOCIAL_MEDIA_LINKS,
   STACK,
+  SUBDOMAIN_PREFIX,
   TESTING,
+  TESTING_MODE,
   TZ,
   URL_API_EMAIL_APP,
   VPC_CIDR_BLOCK,
@@ -46,15 +53,139 @@ const TAGS = {
   CreatedBy: CREATED_BY,
 };
 const TAG = process.env.COMMIT_SHA ?? randomBytes(4).toString('hex');
+const isProduction = () => ENVIRONMENT === 'PROD';
+const isStressTest = () =>
+  TESTING_MODE === 'STRESS_TEST' && ENVIRONMENT === 'TEST';
+const DOMAIN = 'b2fintech.com';
+
+// const acmCertificate = new aws.acm.Certificate(
+//   `${COMPANY_NAME}-${PROJECT_NAME}-${STACK}`,
+//   {
+//     domainName: DOMAIN,
+//     subjectAlternativeNames: [`*.${DOMAIN}`],
+//     validationMethod: 'DNS',
+//     tags: TAGS,
+//   },
+// );
 
 const acmCertificate = aws.acm.getCertificateOutput({
-  domain: 'b2crypto.com',
+  domain: DOMAIN,
 });
 
 export const acmCertificateData = {
   arn: acmCertificate.arn,
   domain: acmCertificate.domain,
 };
+
+const route53Zone = aws.route53.getZoneOutput({ name: DOMAIN });
+
+export const route53ZoneData = {
+  id: route53Zone.id,
+  name: route53Zone.name,
+};
+
+// const route53RecordValidation = new aws.route53.Record(
+//   `${COMPANY_NAME}-${PROJECT_NAME}-${STACK}-validation`,
+//   {
+//     zoneId: route53Zone.zoneId,
+//     name: acmCertificate.domainValidationOptions[0].resourceRecordName,
+//     type: acmCertificate.domainValidationOptions[0].resourceRecordType,
+//     records: [acmCertificate.domainValidationOptions[0].resourceRecordValue],
+//     ttl: 300,
+//   },
+// );
+
+// export const route53RecordValidationData = {
+//   name: route53RecordValidation.name,
+//   type: route53RecordValidation.type,
+//   zoneId: route53RecordValidation.zoneId,
+//   fqdn: route53RecordValidation.fqdn,
+// };
+
+// const certificateValidation = new aws.acm.CertificateValidation(
+//   `${COMPANY_NAME}-${PROJECT_NAME}-${STACK}`,
+//   {
+//     certificateArn: acmCertificate.arn,
+//     validationRecordFqdns: [route53RecordValidation.fqdn],
+//   },
+// );
+
+// export const certificateValidationData = {
+//   certificateArn: certificateValidation.certificateArn,
+//   validationRecordFqdns: certificateValidation.validationRecordFqdns,
+// };
+
+const mongoAtlasClusterName = isStressTest()
+  ? `${COMPANY_NAME}-${PROJECT_NAME}-${STACK}-stress`
+  : `${COMPANY_NAME}-${PROJECT_NAME}-${STACK}`;
+
+const mongodbatlasServerlessInstance =
+  !isStressTest() && !isProduction()
+    ? new mongodbatlas.ServerlessInstance(mongoAtlasClusterName, {
+        name: mongoAtlasClusterName,
+        projectId: SECRETS.MONGOATLAS_PROJECT_ID,
+        providerSettingsRegionName: 'US_EAST_1',
+        providerSettingsProviderName: 'AWS',
+        terminationProtectionEnabled: true,
+        continuousBackupEnabled: false,
+        stateName: 'IDLE',
+        providerSettingsBackingProviderName: 'AWS',
+        tags: Object.entries(TAGS).map(([key, value]) => ({
+          key,
+          value,
+        })),
+      })
+    : null;
+
+export const mongodbatlasServerlessInstanceData =
+  mongodbatlasServerlessInstance;
+
+const mongoAtlasCluster =
+  isStressTest() || isProduction()
+    ? new mongodbatlas.Cluster(
+        mongoAtlasClusterName,
+        {
+          projectId: SECRETS.MONGOATLAS_PROJECT_ID,
+          name: mongoAtlasClusterName,
+          providerName: 'AWS',
+          providerInstanceSizeName: isStressTest()
+            ? 'M20'
+            : MONGOATLAS_INSTANCE,
+          providerRegionName: 'US_EAST_1',
+          mongoDbMajorVersion: '7.0',
+          clusterType: MONGOATLAS_CLUSTER_TYPE,
+          autoScalingComputeEnabled: true,
+          autoScalingComputeScaleDownEnabled: true,
+          providerAutoScalingComputeMinInstanceSize: isStressTest()
+            ? 'M10'
+            : MONGOATLAS_INSTANCE_MIN,
+          providerAutoScalingComputeMaxInstanceSize: isStressTest()
+            ? 'M30'
+            : MONGOATLAS_INSTANCE_MAX,
+          replicationSpecs: [
+            {
+              numShards: 1,
+              regionsConfigs: [
+                {
+                  regionName: 'US_EAST_1',
+                  electableNodes: 3,
+                  priority: 1,
+                },
+              ],
+            },
+          ],
+          tags: Object.entries(TAGS).map(([key, value]) => ({
+            key,
+            value,
+          })),
+        },
+        {
+          protect: isProduction(),
+        },
+      )
+    : null;
+
+export const mongoAtlasClusterData = mongoAtlasCluster;
 
 const ecrRepository = new aws.ecr.Repository(
   `${COMPANY_NAME}/${PROJECT_NAME}-${STACK}`,
@@ -278,6 +409,28 @@ export const lbApplicationLoadBalancerData = {
   listeners: lbApplicationLoadBalancer.listeners,
 };
 
+const rouet53Record = new aws.route53.Record(
+  `${COMPANY_NAME}-${PROJECT_NAME}-${STACK}`,
+  {
+    zoneId: route53Zone.id,
+    name: SUBDOMAIN_PREFIX,
+    type: 'A',
+    aliases: [
+      {
+        name: lbApplicationLoadBalancer.loadBalancer.dnsName,
+        zoneId: lbApplicationLoadBalancer.loadBalancer.zoneId,
+        evaluateTargetHealth: true,
+      },
+    ],
+  },
+);
+
+export const rouet53RecordData = {
+  name: rouet53Record.name,
+  type: rouet53Record.type,
+  zoneId: rouet53Record.zoneId,
+};
+
 const cloudwatchLogGroup = new aws.cloudwatch.LogGroup(
   `${COMPANY_NAME}-${PROJECT_NAME}-${STACK}`,
   {
@@ -322,7 +475,21 @@ const ecsFargateService = new awsx.ecs.FargateService(
           { name: 'DATABASE_NAME', value: DATABASE_NAME },
           {
             name: 'DATABASE_URL',
-            value: SECRETS.DATABASE_URL,
+            value: pulumi
+              .all([
+                mongoAtlasCluster?.connectionStrings.apply(
+                  (connections) => connections[0].standardSrv,
+                ) ??
+                  mongodbatlasServerlessInstance?.connectionStringsStandardSrv,
+                SECRETS.MONGOATLAS_USERNAME,
+                SECRETS.MONGOATLAS_PASSWORD,
+              ])
+              .apply(([standardSrv, username, password]) => {
+                const [protocol, domain] = standardSrv?.split('//') ?? [];
+
+                return `${protocol}//${username}:${password}@${domain}/?retryWrites=true&w=majority&appName=${mongoAtlasClusterName}`;
+              }),
+            // value: SECRETS.DATABASE_URL,
           },
           {
             name: 'RABBIT_MQ_HOST',
@@ -500,7 +667,7 @@ const ecsFargateService = new awsx.ecs.FargateService(
         },
       },
     },
-    desiredCount: parseInt(DESIRED_COUNT_TASK),
+    desiredCount: isStressTest() ? 3 : parseInt(DESIRED_COUNT_TASK),
     deploymentMinimumHealthyPercent: 100,
     deploymentMaximumPercent: 200,
     enableEcsManagedTags: true,
@@ -567,8 +734,8 @@ export const cloudwatchDashboardData = {
 const appautoscalingTarget = new aws.appautoscaling.Target(
   `${COMPANY_NAME}-${PROJECT_NAME}-${STACK}`,
   {
-    maxCapacity: parseInt(MAX_CAPACITY_AUTOSCALING),
-    minCapacity: parseInt(MIN_CAPACITY_AUTOSCALING),
+    maxCapacity: isStressTest() ? 10 : parseInt(MAX_CAPACITY_AUTOSCALING),
+    minCapacity: isStressTest() ? 3 : parseInt(MIN_CAPACITY_AUTOSCALING),
     resourceId: pulumi.interpolate`service/${ecsCluster.name}/${ecsFargateService.service.name}`,
     scalableDimension: 'ecs:service:DesiredCount',
     serviceNamespace: 'ecs',

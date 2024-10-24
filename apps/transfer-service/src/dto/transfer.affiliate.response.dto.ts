@@ -101,7 +101,7 @@ export class TransferAffiliateResponseDto {
     enum: CurrencyCodeB2cryptoEnum,
     enumName: 'CurrencyCode',
     description: 'Currency of the transfer. Default USD',
-    example: 'USD',
+    example: 'USDT',
   })
   currency: CurrencyCodeB2cryptoEnum;
 

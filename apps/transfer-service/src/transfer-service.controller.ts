@@ -521,6 +521,63 @@ export class TransferServiceController implements GenericServiceController {
       message: 'Sended',
     };
   }
+
+  @ApiExcludeEndpoint()
+  @NoCache()
+  @Get('check/by-accounts')
+  // @CheckPoliciesAbility(new PolicyHandlerTransferCreate())
+  async checkAccounts(@Request() req) {
+    const query = new QuerySearchAnyDto();
+    query.where = query.where ?? {};
+    query.where.account = {
+      $exists: true,
+    };
+    query.relations = ['account'];
+    query.page = 1;
+    query.take = 10;
+    const transfersList = await this.transferService.getAll({
+      ...query,
+    });
+    const promises = [];
+    const transfersWithBadAccount = [];
+    do {
+      promises.push(
+        this.transferService
+          .getAll({
+            ...query,
+          })
+          .then(async (transfers) => {
+            Logger.log(
+              `page ${transfers.currentPage}/${transfers.lastPage}`,
+              'Check by accounts',
+            );
+            const list = [];
+            for (const transfer of transfers.list) {
+              if (!transfer.account) {
+                const tx = await this.transferService.getOne(transfer._id);
+                Logger.log(
+                  `${transfer.name}-${transfer.description}`,
+                  `${transfer.numericId} - Transfer: ${transfer._id}`,
+                );
+                list.push(`ObjectId("${tx.account}")`);
+              }
+            }
+            return list;
+          }),
+      );
+      ++query.page;
+    } while (query.page < transfersList.lastPage);
+    return Promise.all(promises).then((rta) => {
+      const flat = rta.flat();
+      return {
+        statusCode: 200,
+        data: {
+          count: flat.length,
+          list: flat,
+        },
+      };
+    });
+  }
   // ----------------------------
 
   @ApiExcludeEndpoint()
