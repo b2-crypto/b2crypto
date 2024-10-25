@@ -664,6 +664,8 @@ export class WalletServiceController extends AccountServiceController {
     @Body() createDto: WalletDepositCreateDto,
     @Req() req?: any,
   ) {
+    const isProd =
+      this.configService.get<string>('ENVIRONMENT') === EnvironmentEnum.prod;
     const user: User = (
       await this.userService.getAll({
         relations: ['personalData'],
@@ -777,18 +779,24 @@ export class WalletServiceController extends AccountServiceController {
           EventsNamesPspAccountEnum.findOneByName,
           'internal',
         );
-      const fireblocksCrm = await this.ewalletBuilder.getPromiseCrmEventClient(
-        EventsNamesCrmEnum.findOneByName,
-        IntegrationCryptoEnum.FIREBLOCKS,
-      );
-      const walletBase = await this.getWalletBase(fireblocksCrm._id, from.name);
-      const vaultFrom = await this.getVaultUser(
-        from.owner.toString(),
-        fireblocksCrm._id,
-        walletBase,
-        from.brand.toString(),
-      );
-      const cryptoType = await this.getFireblocksType();
+      let fireblocksCrm = null;
+      let walletBase = null;
+      let vaultFrom = null;
+      let cryptoType = null;
+      if (isProd) {
+        fireblocksCrm = await this.ewalletBuilder.getPromiseCrmEventClient(
+          EventsNamesCrmEnum.findOneByName,
+          IntegrationCryptoEnum.FIREBLOCKS,
+        );
+        walletBase = await this.getWalletBase(fireblocksCrm._id, from.name);
+        vaultFrom = await this.getVaultUser(
+          from.owner.toString(),
+          fireblocksCrm._id,
+          walletBase,
+          from.brand.toString(),
+        );
+        cryptoType = await this.getFireblocksType();
+      }
       let rta = null;
       try {
         const vaultBrandDeposit = await this.getVaultBrand(
@@ -816,18 +824,20 @@ export class WalletServiceController extends AccountServiceController {
         if (from.amountCustodial > createDto.amount) {
           const promisesTx = [];
           if (to?._id) {
-            const vaultTo = await this.getVaultUser(
-              to.owner.toString(),
-              fireblocksCrm._id,
-              walletBase,
-              to.brand.toString(),
-            );
-            rta = await cryptoType.createTransaction(
-              from.accountId,
-              String(createDto.amount),
-              vaultFrom.accountId,
-              vaultTo.accountId,
-            );
+            if (isProd) {
+              const vaultTo = await this.getVaultUser(
+                to.owner.toString(),
+                fireblocksCrm._id,
+                walletBase,
+                to.brand.toString(),
+              );
+              rta = await cryptoType.createTransaction(
+                from.accountId,
+                String(createDto.amount),
+                vaultFrom.accountId,
+                vaultTo.accountId,
+              );
+            }
             Logger.debug(JSON.stringify(rta.data, null, 2), 'rta from -> to');
             promisesTx.push(
               this.walletService.customUpdateOne({
@@ -838,14 +848,16 @@ export class WalletServiceController extends AccountServiceController {
               }),
             );
           } else {
-            rta = await cryptoType.createTransaction(
-              from.accountId,
-              String(createDto.amount),
-              vaultFrom.accountId,
-              createDto.to.toString(),
-              'Withdrawal',
-              true,
-            );
+            if (isProd) {
+              rta = await cryptoType.createTransaction(
+                from.accountId,
+                String(createDto.amount),
+                vaultFrom.accountId,
+                createDto.to.toString(),
+                'Withdrawal',
+                true,
+              );
+            }
             Logger.debug(JSON.stringify(rta.data, null, 2), 'rta from -> to?');
           }
           promisesTx.push(
@@ -871,117 +883,128 @@ export class WalletServiceController extends AccountServiceController {
             'Update amount custodial',
           );
         } else {
-          const vaultBrandWithdraw = await this.getVaultBrand(
-            fireblocksCrm._id,
-            walletBase,
-            to.brand.toString(),
-            WalletTypesAccountEnum.VAULT_W,
-          );
-          const dtoWallet = new WalletCreateDto();
-          dtoWallet.name = walletBase.name;
-          dtoWallet.type = TypesAccountEnum.WALLET;
-          dtoWallet.accountType = WalletTypesAccountEnum.VAULT_W;
-          dtoWallet.accountName = walletBase.accountName;
-          dtoWallet.nativeAccountName = walletBase.nativeAccountName;
-          dtoWallet.accountId = walletBase.accountId;
-          dtoWallet.crm = fireblocksCrm;
-          dtoWallet.owner = user.id ?? user._id;
-          const walletBrandWithdraw = await this.getWalletBrand(
-            dtoWallet,
-            fireblocksCrm._id,
-            vaultBrandWithdraw,
-            String(to.brand),
-            WalletTypesAccountEnum.VAULT_W,
-          );
-          if (
-            walletBrandWithdraw.amountCustodial + from.amountCustodial <
-            createDto.amount
-          ) {
-            throw new BadRequestException('Insufficient funds');
-          }
-          rta = await cryptoType.createTransaction(
-            from.accountId,
-            String(from.amountCustodial),
-            vaultFrom.accountId,
-            vaultBrandWithdraw.accountId,
-          );
-          Logger.debug(JSON.stringify(rta.data, null, 2), 'rta from -> brand');
-          const promisesTx = [];
-          promisesTx.push(
-            this.walletService.customUpdateOne({
-              id: from._id,
-              $inc: {
-                amountCustodial: from.amountCustodial * -1,
-              },
-            }),
-            this.walletService.customUpdateOne({
-              id: walletBrandWithdraw._id,
-              $inc: {
-                amountCustodial: from.amountCustodial,
-              },
-            }),
-          );
-          if (to?._id) {
-            const vaultTo = await this.getVaultUser(
-              String(to.owner),
+          if (isProd) {
+            const vaultBrandWithdraw = await this.getVaultBrand(
               fireblocksCrm._id,
               walletBase,
+              to.brand.toString(),
+              WalletTypesAccountEnum.VAULT_W,
+            );
+            const dtoWallet = new WalletCreateDto();
+            dtoWallet.name = walletBase.name;
+            dtoWallet.type = TypesAccountEnum.WALLET;
+            dtoWallet.accountType = WalletTypesAccountEnum.VAULT_W;
+            dtoWallet.accountName = walletBase.accountName;
+            dtoWallet.nativeAccountName = walletBase.nativeAccountName;
+            dtoWallet.accountId = walletBase.accountId;
+            dtoWallet.crm = fireblocksCrm;
+            dtoWallet.owner = user.id ?? user._id;
+            const walletBrandWithdraw = await this.getWalletBrand(
+              dtoWallet,
+              fireblocksCrm._id,
+              vaultBrandWithdraw,
               String(to.brand),
+              WalletTypesAccountEnum.VAULT_W,
             );
+            if (
+              walletBrandWithdraw.amountCustodial + from.amountCustodial <
+              createDto.amount
+            ) {
+              throw new BadRequestException('Insufficient funds');
+            }
             rta = await cryptoType.createTransaction(
               from.accountId,
-              String(createDto.amount),
+              String(from.amountCustodial),
+              vaultFrom.accountId,
               vaultBrandWithdraw.accountId,
-              vaultTo.accountId,
             );
+            Logger.debug(
+              JSON.stringify(rta.data, null, 2),
+              'rta from -> brand',
+            );
+            const promisesTx = [];
             promisesTx.push(
+              this.walletService.customUpdateOne({
+                id: from._id,
+                $inc: {
+                  amountCustodial: from.amountCustodial * -1,
+                },
+              }),
               this.walletService.customUpdateOne({
                 id: walletBrandWithdraw._id,
                 $inc: {
-                  amountCustodial: createDto.amount * -1,
+                  amountCustodial: from.amountCustodial,
                 },
               }),
             );
-            Logger.debug(JSON.stringify(rta.data, null, 2), 'rta brand -> to');
-          } else {
-            rta = await cryptoType.createTransaction(
-              from.accountId,
-              String(createDto.amount),
-              vaultBrandWithdraw.accountId,
-              createDto.to.toString(),
-              'Withdrawal',
-              true,
-            );
+            if (to?._id) {
+              const vaultTo = await this.getVaultUser(
+                String(to.owner),
+                fireblocksCrm._id,
+                walletBase,
+                String(to.brand),
+              );
+              rta = await cryptoType.createTransaction(
+                from.accountId,
+                String(createDto.amount),
+                vaultBrandWithdraw.accountId,
+                vaultTo.accountId,
+              );
+              promisesTx.push(
+                this.walletService.customUpdateOne({
+                  id: walletBrandWithdraw._id,
+                  $inc: {
+                    amountCustodial: createDto.amount * -1,
+                  },
+                }),
+              );
+              Logger.debug(
+                JSON.stringify(rta.data, null, 2),
+                'rta brand -> to',
+              );
+            } else {
+              rta = await cryptoType.createTransaction(
+                from.accountId,
+                String(createDto.amount),
+                vaultBrandWithdraw.accountId,
+                createDto.to.toString(),
+                'Withdrawal',
+                true,
+              );
+              promisesTx.push(
+                this.walletService.customUpdateOne({
+                  id: walletBrandWithdraw._id,
+                  $inc: {
+                    amountCustodial: createDto.amount * -1,
+                  },
+                }),
+              );
+              Logger.debug(
+                JSON.stringify(rta.data, null, 2),
+                'rta brand -> to?',
+              );
+            }
             promisesTx.push(
-              this.walletService.customUpdateOne({
-                id: walletBrandWithdraw._id,
-                $inc: {
-                  amountCustodial: createDto.amount * -1,
-                },
-              }),
+              this.payByServicesFromWallet(
+                from,
+                walletBrandDeposit,
+                valueToPay,
+                req?.user?.id,
+                rta.data,
+              ),
             );
-            Logger.debug(JSON.stringify(rta.data, null, 2), 'rta brand -> to?');
+            const rtaProm = await Promise.all(promisesTx);
+            Logger.debug(
+              JSON.stringify(rtaProm, null, 2),
+              'Update amount custodial to? -> brand',
+            );
           }
-          promisesTx.push(
-            this.payByServicesFromWallet(
-              from,
-              walletBrandDeposit,
-              valueToPay,
-              req?.user?.id,
-              rta.data,
-            ),
-          );
-          const rtaProm = await Promise.all(promisesTx);
-          Logger.debug(
-            JSON.stringify(rtaProm, null, 2),
-            'Update amount custodial to? -> brand',
-          );
         }
       } catch (error) {
         Logger.error(error.message, 'Error creating transaction on Fireblocks');
         throw new BadRequestException('Sorry, something went wrong');
       }
-      if (!rta) {
+      if (!rta && isProd) {
         Logger.error(JSON.stringify(rta, null, 2), 'Error rta on Fireblocks');
         throw new BadRequestException('Sorry, something went wrong');
       }
@@ -992,8 +1015,8 @@ export class WalletServiceController extends AccountServiceController {
             name: `Deposit wallet ${to.name}`,
             description: `Deposit from ${from.name} to ${to.name}`,
             currency: to.currency,
-            idPayment: rta.data?.id,
-            responsepayment: rta.data,
+            idPayment: rta?.data?.id,
+            responsepayment: rta?.data,
             amount: createDto.amount,
             currencyCustodial: to.currencyCustodial,
             amountCustodial: createDto.amount,
@@ -1023,8 +1046,8 @@ export class WalletServiceController extends AccountServiceController {
             to?.name ?? createDto.to
           }`,
           currency: from.currency,
-          idPayment: rta.data?.id,
-          responsepayment: rta.data,
+          idPayment: rta?.data?.id,
+          responsepayment: rta?.data,
           amount: createDto.amount,
           currencyCustodial: from.currencyCustodial,
           amountCustodial: createDto.amount,
