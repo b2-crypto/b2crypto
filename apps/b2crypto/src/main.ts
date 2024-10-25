@@ -49,7 +49,7 @@ async function bootstrap() {
   app.enableCors({
     origin: '*',
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
-    preflightContinue: false,
+    preflightContinue: true,
     optionsSuccessStatus: 204,
     credentials: true,
     allowedHeaders: 'b2crypto-affiliate-key b2crypto-key Content-Type Accept',

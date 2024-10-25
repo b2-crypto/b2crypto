@@ -397,6 +397,7 @@ const lbApplicationLoadBalancer = new awsx.lb.ApplicationLoadBalancer(
         tags: TAGS,
       },
     ],
+    preserveHostHeader: true,
     tags: TAGS,
   },
 );
