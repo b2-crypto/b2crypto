@@ -684,6 +684,8 @@ export class WalletServiceController extends AccountServiceController {
     let to = null;
     if (isMongoId(createDto.to.toString())) {
       to = await this.getAccountService().findOneById(createDto.to.toString());
+    } else {
+      throw new BadRequestException('Wallet are unsupported');
     }
     if (!createDto.from && to?.type != TypesAccountEnum.WALLET) {
       throw new BadRequestException('Wallet to not found');
@@ -1199,6 +1201,7 @@ export class WalletServiceController extends AccountServiceController {
   @ApiBearerAuth('bearerToken')
   @UseGuards(ApiKeyAuthGuard)
   async withdraw(@Body() createDto: WalletDepositCreateDto, @Req() req?: any) {
+    const userId = CommonService.getUserId(req);
     if (!createDto.from) {
       throw new BadRequestException('from is required');
     }
@@ -1209,6 +1212,9 @@ export class WalletServiceController extends AccountServiceController {
       throw new BadRequestException('from is invalid id');
     }
     const from = await this.findOneById(createDto.from.toString());
+    if (!from || from.owner.toString() != userId) {
+      throw new BadRequestException('from wallet is not found');
+    }
     if (isMongoId(createDto.to.toString())) {
       const to = await this.findOneById(createDto.to.toString());
       if (!to) {
@@ -1219,12 +1225,6 @@ export class WalletServiceController extends AccountServiceController {
       // if (cryptoType.validateAddress(from.accountId, createDto.to.toString())) {
       //   throw new BadRequestException('to wallet is not valid');
       // }
-      if (createDto.to.toString() != 'TSbjxJRBNG56AMFD8uweDJ9Gr7MzPscByL') {
-        throw new BadRequestException('to wallet is wrong address');
-      }
-    }
-    if (!from || createDto.from.toString() != '670c28fff74c423d633915a5') {
-      throw new BadRequestException('from wallet is not found');
     }
     return this.rechargeOne(createDto, req);
   }
