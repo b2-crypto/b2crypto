@@ -20,6 +20,7 @@ import { AccountServiceModule } from 'apps/account-service/src/account-service.m
 import { PersonServiceModule } from 'apps/person-service/src/person-service.module';
 import { TransferServiceModule } from 'apps/transfer-service/src/transfer-service.module';
 import { SwaggerSteakeyConfigEnum } from 'libs/config/enum/swagger.stakey.config.enum';
+import { tracerRun } from './tracer';
 
 async function bootstrap() {
   Logger.log(process.env.TZ, 'Timezone');
@@ -28,6 +29,8 @@ async function bootstrap() {
     cors: true,
   });
   const configService = app.get(ConfigService);
+
+  tracerRun(configService);
 
   const validationPipes = new ValidationPipe({
     whitelist: true,
