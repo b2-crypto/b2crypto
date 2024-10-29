@@ -275,9 +275,9 @@ export class BasicServiceModel<
       }
       let rta;
       if (this.nameOrm === dbIntegrationEnum.MONGOOSE) {
-        rta = await this.model.findOne({ _id: id });
+        rta = await this.model.findOne({ _id: id['_id'] || id });
       } else {
-        rta = await this.model.findOne({ id: id });
+        rta = await this.model.findOne({ id: id['_id'] || id });
       }
       if (!rta) rta = null;
       return rta;
