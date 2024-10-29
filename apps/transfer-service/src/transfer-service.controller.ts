@@ -1004,7 +1004,7 @@ export class TransferServiceController implements GenericServiceController {
         webhookTransferDto.descriptionStatusPayment;
       transferDto.confirmedAt = new Date();
 
-      Logger.debug(transferDto, 'Transfer DTO');
+      Logger.debug(JSON.stringify(transferDto), 'Transfer DTO');
       const tx = await this.transferService.newTransfer(transferDto);
       Logger.debug(tx, 'Transfer created');
       const promises = [];
@@ -1046,7 +1046,7 @@ export class TransferServiceController implements GenericServiceController {
             transferDtoBrand.operationType = OperationTransactionType.payment;
             transferDtoBrand.typeTransaction = paymentCard._id.toString();
             transferDtoBrand.page = webhookTransferDto.page;
-
+            Logger.debug(JSON.stringify(transferDto), 'Transfer DTO Brand');
             promises.push(this.transferService.newTransfer(transferDtoBrand));
           } else {
             Logger.error(
