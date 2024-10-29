@@ -74,7 +74,7 @@ export class PomeloIntegrationProcessService {
       const commision = 0.03;
       if (authorize && amount.amount * commision > 0) {
         Logger.log(
-          `Creating transfer: ${response?.message}`,
+          `${response?.message} - $${amount.amount * commision}`,
           'Commision to B2Fintech',
         );
         this.builder.emitTransferEventClient(
