@@ -986,11 +986,11 @@ export class TransferServiceController implements GenericServiceController {
       const transferDto: TransferCreateDto = new TransferCreateDto();
       transferDto.crm = crm;
       transferDto.status = status;
-      transferDto.account = account;
+      transferDto.account = account._id.toString();
       transferDto.typeAccount = account.type;
       transferDto.typeAccountType = account.accountType;
       transferDto.userAccount = account.owner;
-      transferDto.typeTransaction = category;
+      transferDto.typeTransaction = category._id.toString();
       transferDto.amount = webhookTransferDto.amount;
       transferDto.amountCustodial = webhookTransferDto.amountCustodial;
       transferDto.currency = webhookTransferDto.currency;
