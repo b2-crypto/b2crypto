@@ -1584,11 +1584,11 @@ export class CardServiceController extends AccountServiceController {
       if (!card) {
         return CardsEnum.CARD_PROCESS_CARD_NOT_FOUND;
       }
+      Logger.log(
+        `Card balance: ${card.amount} | Movement amount: ${data.amount}`,
+        `CardService.ProcessPomeloTransaction.Authorize: ${data.authorize}`,
+      );
       if (data.authorize) {
-        Logger.log(
-          `Card balance: ${card.amount} | Movement amount: ${data.amount}`,
-          CardServiceController.name,
-        );
         const allowedBalance =
           card.amount * (1.0 - this.BLOCK_BALANCE_PERCENTAGE);
         if (allowedBalance <= data.amount) {
