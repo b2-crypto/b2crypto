@@ -267,6 +267,10 @@ export class BasicServiceModel<
   async findOne(id: string): Promise<TBasicEntity> {
     try {
       if (!isMongoId(id)) {
+        Logger.error(
+          JSON.stringify(id),
+          'Id is not mongoDb id in BasicServiceModel.findOne',
+        );
         throw new BadRequestException('Id is not valid');
       }
       let rta;
