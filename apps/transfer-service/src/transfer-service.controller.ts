@@ -80,6 +80,8 @@ import { TransferCreateButtonDto } from './dto/transfer.create.button.dto';
 import { BoldStatusEnum } from './enum/bold.status.enum';
 import EventsNamesTransferEnum from './enum/events.names.transfer.enum';
 import { TransferServiceService } from './transfer-service.service';
+import WalletTypesAccountEnum from '@account/account/enum/wallet.types.account.enum';
+import TypesAccountEnum from '@account/account/enum/types.account.enum';
 
 @ApiTags('TRANSFERS')
 @Controller('transfers')
@@ -945,21 +947,8 @@ export class TransferServiceController implements GenericServiceController {
         );
         return;
       }
+
       const cardId = webhookTransferDto?.requestBodyJson?.card?.id ?? '';
-      // let accountBrand = null;
-      // if (webhookTransferDto.integration == 'Sales') {
-      //   const accountBrand = await this.builder.getPromiseAccountEventClient(
-      //     EventsNamesAccountEnum.findAll,
-      //     {
-      //       where: {
-      //         accountType: WalletTypesAccountEnum.VAULT,
-      //         type: TypesAccountEnum.WALLET,
-      //         owner: { $exists: false },
-      //         accountId: 'TRX_USDT_S2UZ',
-      //       },
-      //     },
-      //   );
-      // }
       const account = await this.builder.getPromiseAccountEventClient(
         EventsNamesAccountEnum.findOneByCardId,
         {
@@ -1015,7 +1004,62 @@ export class TransferServiceController implements GenericServiceController {
         webhookTransferDto.descriptionStatusPayment;
       transferDto.confirmedAt = new Date();
 
-      await this.transferService.newTransfer(transferDto);
+      const promises = [this.transferService.newTransfer(transferDto)];
+      const transferDtoBrand = {
+        ...transferDto,
+      };
+      let accountBrand = null;
+      if (webhookTransferDto.integration == 'Sales') {
+        const accountBrandList =
+          await this.builder.getPromiseAccountEventClient(
+            EventsNamesAccountEnum.findAll,
+            {
+              where: {
+                accountType: WalletTypesAccountEnum.VAULT,
+                type: TypesAccountEnum.WALLET,
+                owner: { $exists: false },
+                accountId: 'TRX_USDT_S2UZ',
+                brand: account.brand,
+                crm: crm._id,
+              },
+            },
+          );
+        accountBrand = accountBrandList?.list?.[0];
+        if (!accountBrand?._id) {
+          Logger.error(
+            `Account by brand ${account.brand} was not found`,
+            'WebhookTransfer Account Brand',
+          );
+          return;
+        }
+      }
+
+      const paymentCard = await this.builder.getPromiseCategoryEventClient(
+        EventsNamesCategoryEnum.findOneByNameType,
+        {
+          slug: CommonService.getSlug(
+            `${OperationTransactionType.payment}-card`,
+          ),
+          type: TagEnum.MONETARY_TRANSACTION_TYPE,
+        },
+      );
+      if (!category) {
+        Logger.error(
+          `Category by slug payment-card was not found`,
+          'WebhookTransfer Category payment',
+        );
+        return;
+      }
+      transferDtoBrand.account = accountBrand;
+      transferDtoBrand.typeAccount = accountBrand.type;
+      transferDtoBrand.typeAccountType = accountBrand.accountType;
+      transferDtoBrand.userAccount = accountBrand.owner;
+      transferDtoBrand.operationType = OperationTransactionType.payment;
+      transferDtoBrand.typeTransaction = paymentCard;
+
+      promises.push(this.transferService.newTransfer(transferDtoBrand));
+
+      await Promise.all(promises);
     } catch (error) {
       Logger.error(error, 'WebhookTransfer');
     }
