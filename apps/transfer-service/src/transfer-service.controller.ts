@@ -1036,12 +1036,12 @@ export class TransferServiceController implements GenericServiceController {
             },
           );
           if (paymentCard?._id) {
-            transferDtoBrand.account = accountBrand;
+            transferDtoBrand.account = accountBrand._id.toString();
             transferDtoBrand.typeAccount = accountBrand.type;
             transferDtoBrand.typeAccountType = accountBrand.accountType;
             transferDtoBrand.userAccount = accountBrand.owner;
             transferDtoBrand.operationType = OperationTransactionType.payment;
-            transferDtoBrand.typeTransaction = paymentCard;
+            transferDtoBrand.typeTransaction = paymentCard._id.toString();
             transferDtoBrand.page = webhookTransferDto.page;
 
             promises.push(this.transferService.newTransfer(transferDtoBrand));
