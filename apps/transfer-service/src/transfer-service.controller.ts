@@ -1008,8 +1008,8 @@ export class TransferServiceController implements GenericServiceController {
       const transferDtoBrand = {
         ...transferDto,
       };
-      let accountBrand = null;
       if (webhookTransferDto.integration == 'Sales') {
+        let accountBrand = null;
         const accountBrandList =
           await this.builder.getPromiseAccountEventClient(
             EventsNamesAccountEnum.findAll,
@@ -1025,39 +1025,38 @@ export class TransferServiceController implements GenericServiceController {
             },
           );
         accountBrand = accountBrandList?.list?.[0];
-        if (!accountBrand?._id) {
+        if (accountBrand?._id) {
+          const paymentCard = await this.builder.getPromiseCategoryEventClient(
+            EventsNamesCategoryEnum.findOneByNameType,
+            {
+              slug: CommonService.getSlug(
+                `${OperationTransactionType.payment}-card`,
+              ),
+              type: TagEnum.MONETARY_TRANSACTION_TYPE,
+            },
+          );
+          if (paymentCard?._id) {
+            transferDtoBrand.account = accountBrand;
+            transferDtoBrand.typeAccount = accountBrand.type;
+            transferDtoBrand.typeAccountType = accountBrand.accountType;
+            transferDtoBrand.userAccount = accountBrand.owner;
+            transferDtoBrand.operationType = OperationTransactionType.payment;
+            transferDtoBrand.typeTransaction = paymentCard;
+
+            promises.push(this.transferService.newTransfer(transferDtoBrand));
+          } else {
+            Logger.error(
+              `Category by slug payment-card was not found`,
+              'WebhookTransfer Category payment',
+            );
+          }
+        } else {
           Logger.error(
             `Account by brand ${account.brand} was not found`,
             'WebhookTransfer Account Brand',
           );
-          return;
         }
       }
-
-      const paymentCard = await this.builder.getPromiseCategoryEventClient(
-        EventsNamesCategoryEnum.findOneByNameType,
-        {
-          slug: CommonService.getSlug(
-            `${OperationTransactionType.payment}-card`,
-          ),
-          type: TagEnum.MONETARY_TRANSACTION_TYPE,
-        },
-      );
-      if (!category) {
-        Logger.error(
-          `Category by slug payment-card was not found`,
-          'WebhookTransfer Category payment',
-        );
-        return;
-      }
-      transferDtoBrand.account = accountBrand;
-      transferDtoBrand.typeAccount = accountBrand.type;
-      transferDtoBrand.typeAccountType = accountBrand.accountType;
-      transferDtoBrand.userAccount = accountBrand.owner;
-      transferDtoBrand.operationType = OperationTransactionType.payment;
-      transferDtoBrand.typeTransaction = paymentCard;
-
-      promises.push(this.transferService.newTransfer(transferDtoBrand));
 
       await Promise.all(promises);
     } catch (error) {
