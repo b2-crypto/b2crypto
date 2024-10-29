@@ -1004,7 +1004,10 @@ export class TransferServiceController implements GenericServiceController {
         webhookTransferDto.descriptionStatusPayment;
       transferDto.confirmedAt = new Date();
 
-      const promises = [this.transferService.newTransfer(transferDto)];
+      Logger.debug(transferDto, 'Transfer DTO');
+      const tx = await this.transferService.newTransfer(transferDto);
+      Logger.debug(tx, 'Transfer created');
+      const promises = [];
       const transferDtoBrand = {
         ...transferDto,
       };
@@ -1030,7 +1033,7 @@ export class TransferServiceController implements GenericServiceController {
             EventsNamesCategoryEnum.findOneByNameType,
             {
               slug: CommonService.getSlug(
-                `${OperationTransactionType.payment}-card`,
+                `${OperationTransactionType.payment} card`,
               ),
               type: TagEnum.MONETARY_TRANSACTION_TYPE,
             },
