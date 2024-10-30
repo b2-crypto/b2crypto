@@ -271,7 +271,7 @@ export class BasicServiceModel<
           id['_id'] || id,
           'Id is not mongoDb id in BasicServiceModel.findOne',
         );
-        throw new BadRequestException('Id is not valid');
+        //throw new BadRequestException('Id is not valid');
       }
       let rta;
       if (this.nameOrm === dbIntegrationEnum.MONGOOSE) {
