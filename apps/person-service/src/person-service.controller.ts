@@ -143,13 +143,16 @@ export class PersonServiceController implements GenericServiceController {
   @UseGuards(ApiKeyAuthGuard)
   // @CheckPoliciesAbility(new PolicyHandlerPersonUpdate())
   async updateOne(@Body() updatePersonDto: PersonUpdateDto, @Req() req?) {
-    const userId = updatePersonDto.user.toString() || req.user.id;
+    const userId = updatePersonDto.user?.toString() || req.user.id;
     const user = await this.userService.getOne(userId);
     if (!user?._id) {
       throw new BadRequestError('User not found');
     }
+    if (!user.personalData) {
+      throw new BadRequestError('User not have profile');
+    }
     const personalData = await this.personService.getOne(
-      user.personalData.toString(),
+      user.personalData?.toString(),
     );
     if (!personalData) {
       throw new BadRequestError('User not have personal data');
