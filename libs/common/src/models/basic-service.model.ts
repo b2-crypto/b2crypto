@@ -266,12 +266,12 @@ export class BasicServiceModel<
 
   async findOne(id: string): Promise<TBasicEntity> {
     try {
-      if (!isMongoId(id)) {
+      if (!isMongoId(id['_id'] || id)) {
         Logger.error(
-          JSON.stringify(id),
+          id['_id'] || id,
           'Id is not mongoDb id in BasicServiceModel.findOne',
         );
-        //throw new BadRequestException('Id is not valid');
+        throw new BadRequestException('Id is not valid');
       }
       let rta;
       if (this.nameOrm === dbIntegrationEnum.MONGOOSE) {
