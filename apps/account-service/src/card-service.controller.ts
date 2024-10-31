@@ -315,17 +315,24 @@ export class CardServiceController extends AccountServiceController {
     } catch (err) {
       await this.getAccountService().deleteOneById(account._id);
       Logger.error(err.response, `Account Card not created ${account._id}`);
-      err.response.details = err.response.details ?? [];
-      err.response.details.push({
-        detail: 'Card not created',
-      });
-      const desc = err.response.details.reduce(
-        (prev, current) => (current.detail += ', ' + prev.detail),
-      );
-      throw new BadRequestException({
-        statusCode: 400,
-        description: desc,
-      });
+      if (err.response) {
+        err.response.details = err.response.details ?? [];
+        err.response.details.push({
+          detail: 'Card not created',
+        });
+        const desc = err.response.details.reduce(
+          (prev, current) => (current.detail += ', ' + prev.detail),
+        );
+        throw new BadRequestException({
+          statusCode: 400,
+          description: desc,
+        });
+      } else {
+        throw new BadRequestException({
+          statusCode: 400,
+          description: err,
+        });
+      }
     }
   }
 
