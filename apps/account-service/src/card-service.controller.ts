@@ -182,7 +182,10 @@ export class CardServiceController extends AccountServiceController {
       createDto.accountType === CardTypesAccountEnum.PHYSICAL,
     );
     if (!cardAfg || cardAfg === AfgNamesEnum.NA) {
-      Logger.debug(`${cardAfg} - ${level.slug}`, 'AFG not found cardAfg');
+      Logger.debug(
+        `${cardAfg} - ${level.slug}`,
+        `'AFG not found for CARD-${createDto.accountType}`,
+      );
       throw new NotFoundException('Level AFG not found');
     }
     if (!user.personalData) {
