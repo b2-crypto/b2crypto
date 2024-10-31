@@ -32,6 +32,10 @@ export const SECRETS = pulumi
     config.requireSecret('MONGOATLAS_PROJECT_ID'),
     config.requireSecret('MONGOATLAS_USERNAME'),
     config.requireSecret('MONGOATLAS_PASSWORD'),
+    config.requireSecret('OPTL_API_URL'),
+    config.requireSecret('OPTL_SERVICE_NAME'),
+    config.requireSecret('OPTL_OPEN_SEARCH_USERNAME'),
+    config.requireSecret('OPTL_OPEN_SEARCH_PASSWORD'),
   ])
   .apply(
     ([
@@ -63,6 +67,10 @@ export const SECRETS = pulumi
       MONGOATLAS_PROJECT_ID,
       MONGOATLAS_USERNAME,
       MONGOATLAS_PASSWORD,
+      OPTL_API_URL,
+      OPTL_SERVICE_NAME,
+      OPTL_OPEN_SEARCH_USERNAME,
+      OPTL_OPEN_SEARCH_PASSWORD,
     ]) => ({
       DATABASE_URL,
       RABBIT_MQ_HOST,
@@ -92,11 +100,16 @@ export const SECRETS = pulumi
       MONGOATLAS_PROJECT_ID,
       MONGOATLAS_USERNAME,
       MONGOATLAS_PASSWORD,
+      OPTL_API_URL,
+      OPTL_SERVICE_NAME,
+      OPTL_OPEN_SEARCH_USERNAME,
+      OPTL_OPEN_SEARCH_PASSWORD,
     }),
   );
 
-export const COMPANY_NAME = 'b2crypto';
-export const PROJECT_NAME = 'monolith';
+export const COMPANY_NAME = 'b2fintech';
+export const PROJECT_NAME = 'b2crypto';
+export const DOMAIN = 'b2fintech.com';
 export const STACK = config.require('STACK');
 export const CREATED_BY = 'Pulumi IaC';
 export const ENVIRONMENT = config.require('ENVIRONMENT');
@@ -128,12 +141,14 @@ export const POMELO_WHITELISTED_IPS_CHECK = config.require(
   'POMELO_WHITELISTED_IPS_CHECK',
 );
 export const VPC_CIDR_BLOCK = config.require('VPC_CIDR_BLOCK');
-export const DESIRED_COUNT_TASK = config.require('DESIRED_COUNT_TASK');
-export const MAX_CAPACITY_AUTOSCALING = config.require(
-  'MAX_CAPACITY_AUTOSCALING',
+export const DESIRED_COUNT_TASK = parseInt(
+  config.require('DESIRED_COUNT_TASK'),
 );
-export const MIN_CAPACITY_AUTOSCALING = config.require(
-  'MIN_CAPACITY_AUTOSCALING',
+export const MAX_CAPACITY_AUTOSCALING = parseInt(
+  config.require('MAX_CAPACITY_AUTOSCALING'),
+);
+export const MIN_CAPACITY_AUTOSCALING = parseInt(
+  config.require('MIN_CAPACITY_AUTOSCALING'),
 );
 export const LOGO_URL = config.require('LOGO_URL');
 export const SOCIAL_MEDIA_ICONS = config.require('SOCIAL_MEDIA_ICONS');
@@ -160,3 +175,57 @@ export const MONGOATLAS_CLUSTER_TYPE = config.require(
 );
 
 export const SUBDOMAIN_PREFIX = config.require('SUBDOMAIN_PREFIX');
+
+export const SUBDOMAIN_PREFIX_OPTL_COLLECTOR = config.require(
+  'SUBDOMAIN_PREFIX_OPTL_COLLECTOR',
+);
+
+export const SUBDOMAIN_PREFIX_OPTL_UI = config.require(
+  'SUBDOMAIN_PREFIX_OPTL_UI',
+);
+
+export const OPTL_OPEN_SEARCH_INSTANCE_TYPE = config.require(
+  'OPTL_OPEN_SEARCH_INSTANCE_TYPE',
+);
+
+export const OPTL_OPEN_SEARCH_INSTANCE_COUNT = parseInt(
+  config.require('OPTL_OPEN_SEARCH_INSTANCE_COUNT'),
+);
+
+export const OPTL_OPEN_SEARCH_ZONE_AWARENESS_ENABLED =
+  config.require('OPTL_COLLECTOR_MAX_CAPACITY_AUTOSCALING') === 'true';
+
+export const OPTL_OPEN_SEARCH_ZONE_AWARENESS_AVAILABILITY_COUNT = parseInt(
+  config.require('OPTL_OPEN_SEARCH_ZONE_AWARENESS_AVAILABILITY_COUNT'),
+);
+
+export const OPTL_OPEN_SEARCH_EBS_VOLUME_SIZE = parseInt(
+  config.require('OPTL_OPEN_SEARCH_EBS_VOLUME_SIZE'),
+);
+
+export const OPTL_COLLECTOR_DESIRED_COUNT_TASK = parseInt(
+  config.require('OPTL_COLLECTOR_DESIRED_COUNT_TASK'),
+);
+
+export const OPTL_COLLECTOR_MIN_CAPACITY_AUTOSCALING = parseInt(
+  config.require('OPTL_COLLECTOR_MIN_CAPACITY_AUTOSCALING'),
+);
+
+export const OPTL_COLLECTOR_MAX_CAPACITY_AUTOSCALING = parseInt(
+  config.require('OPTL_COLLECTOR_MAX_CAPACITY_AUTOSCALING'),
+);
+
+export const TAGS = {
+  Company: COMPANY_NAME,
+  Projects: PROJECT_NAME,
+  Stack: STACK,
+  CreatedBy: CREATED_BY,
+};
+
+export const isProduction = () => ENVIRONMENT === 'PROD';
+export const isStressTest = () =>
+  TESTING_MODE === 'STRESS_TEST' && ENVIRONMENT === 'TEST';
+
+export const mongoAtlasClusterName = isStressTest()
+  ? `${PROJECT_NAME}-monolith-stress-${STACK}`
+  : `${PROJECT_NAME}-monolith-${STACK}`;

@@ -30,7 +30,7 @@ async function bootstrap() {
   });
   const configService = app.get(ConfigService);
 
-  tracerRun(configService);
+  await tracerRun(configService);
 
   const validationPipes = new ValidationPipe({
     whitelist: true,

@@ -24,11 +24,23 @@ export const tracerRun = async (configService: ConfigService) => {
 
   sdk.start();
 
+  console.log('=====================================');
+  console.log('Tracing started', configService.getOrThrow('OPTL_API_URL'));
+  console.log('=====================================');
+
   process.on('SIGTERM', () => {
     sdk
       .shutdown()
-      .then(() => console.log('Tracing terminated'))
-      .catch((error) => console.log('Error terminating tracing', error))
+      .then(() => {
+        console.log('=====================================');
+        console.log('Tracing terminated');
+        console.log('=====================================');
+      })
+      .catch((error) => {
+        console.log('=====================================');
+        console.log('Error terminating tracing', error);
+        console.log('=====================================');
+      })
       .finally(() => process.exit(0));
   });
 };
