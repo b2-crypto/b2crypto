@@ -314,7 +314,10 @@ export class CardServiceController extends AccountServiceController {
       return account;
     } catch (err) {
       await this.getAccountService().deleteOneById(account._id);
-      Logger.error(err.response, `Account Card not created ${account._id}`);
+      Logger.error(
+        JSON.stringify(err),
+        `Account Card not created ${account._id}`,
+      );
       if (err.response) {
         err.response.details = err.response.details ?? [];
         err.response.details.push({
