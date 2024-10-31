@@ -314,18 +314,28 @@ export class CardServiceController extends AccountServiceController {
       return account;
     } catch (err) {
       await this.getAccountService().deleteOneById(account._id);
-      Logger.error(err.response, `Account Card not created ${account._id}`);
-      err.response.details = err.response.details ?? [];
-      err.response.details.push({
-        detail: 'Card not created',
-      });
-      const desc = err.response.details.reduce(
-        (prev, current) => (current.detail += ', ' + prev.detail),
+      Logger.error(
+        JSON.stringify(err),
+        `Account Card not created ${account._id}`,
       );
-      throw new BadRequestException({
-        statusCode: 400,
-        description: desc,
-      });
+      if (err.response) {
+        err.response.details = err.response.details ?? [];
+        err.response.details.push({
+          detail: 'Card not created',
+        });
+        const desc = err.response.details.reduce(
+          (prev, current) => (current.detail += ', ' + prev.detail),
+        );
+        throw new BadRequestException({
+          statusCode: 400,
+          description: desc,
+        });
+      } else {
+        throw new BadRequestException({
+          statusCode: 400,
+          description: err,
+        });
+      }
     }
   }
 
@@ -1486,6 +1496,7 @@ export class CardServiceController extends AccountServiceController {
       const group = await this.buildAFG(null, cardAfg);
       const afg = group.list[0];
       if (!afg) {
+        Logger.debug(JSON.stringify(cardAfg), 'AFG not found group');
         throw new NotFoundException('AFG not found');
       }
       const cardIntegration = await this.integration.getCardIntegration(
