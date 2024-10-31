@@ -93,6 +93,8 @@ export class TransferEntity implements TransferInterface {
   responseAccount: any;
   lead: LeadEntity;
   account: AccountEntity;
+  accountResultBalance: number;
+  accountPrevBalance: number;
   typeAccount: TypesAccountEnum;
   typeAccountType: string;
   affiliate: AffiliateEntity;
