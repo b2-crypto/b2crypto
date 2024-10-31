@@ -1253,7 +1253,9 @@ export class CardServiceController extends AccountServiceController {
       throw new BadRequestException('The recharge not be 10 or less');
     }
     if (!createDto.from) {
-      throw new BadRequestException('I need a wallet to recharge card');
+      throw new BadRequestException(
+        'I need a wallet or card from recharge card',
+      );
     }
     if (!createDto.to) {
       throw new BadRequestException('I need a card to recharge');
@@ -1276,14 +1278,14 @@ export class CardServiceController extends AccountServiceController {
     const from = await this.getAccountService().findOneById(
       createDto.from.toString(),
     );
-    if (from.type != TypesAccountEnum.WALLET) {
-      Logger.error(
-        'Type not same',
-        CardServiceController.name,
-        'Card.rechargeOne.wallet',
-      );
-      throw new BadRequestException('Wallet not found');
-    }
+    // if (from.type != TypesAccountEnum.WALLET) {
+    //   Logger.error(
+    //     'Type not same',
+    //     CardServiceController.name,
+    //     'Card.rechargeOne.wallet',
+    //   );
+    //   throw new BadRequestException('Wallet not found');
+    // }
     if (!from) {
       throw new BadRequestException('Wallet is not valid');
     }
@@ -1298,11 +1300,12 @@ export class CardServiceController extends AccountServiceController {
           type: TagEnum.MONETARY_TRANSACTION_TYPE,
         },
       );
-    const withDrawalWalletCategory =
+    const withdrawSlug = `withdrawal-${from.type.toLowerCase()}`;
+    const withdrawalCategory =
       await this.cardBuilder.getPromiseCategoryEventClient(
         EventsNamesCategoryEnum.findOneByNameType,
         {
-          slug: 'withdrawal-wallet',
+          slug: withdrawSlug,
           type: TagEnum.MONETARY_TRANSACTION_TYPE,
         },
       );
@@ -1361,7 +1364,7 @@ export class CardServiceController extends AccountServiceController {
         userAccount: from.owner,
         typeAccount: from.type,
         typeAccountType: from.accountType,
-        typeTransaction: withDrawalWalletCategory._id,
+        typeTransaction: withdrawalCategory._id,
         psp: internalPspAccount.psp,
         pspAccount: internalPspAccount._id,
         operationType: OperationTransactionType.withdrawal,
