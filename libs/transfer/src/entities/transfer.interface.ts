@@ -48,6 +48,8 @@ export interface TransferInterface {
   responseAccount: any;
   lead: LeadEntity;
   account: AccountEntity;
+  accountResultBalance: number;
+  accountPrevBalance: number;
   typeAccount: TypesAccountEnum;
   typeAccountType: string;
   affiliate: AffiliateInterface;

@@ -144,6 +144,12 @@ export class Transfer extends TransferEntity {
   @Prop()
   typeAccountType: string;
 
+  @Prop()
+  accountResultBalance: number;
+
+  @Prop()
+  accountPrevBalance: number;
+
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'leads' })
   lead: Lead;
 
