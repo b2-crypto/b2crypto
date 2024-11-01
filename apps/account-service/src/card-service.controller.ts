@@ -23,6 +23,7 @@ import { IntegrationService } from '@integration/integration';
 import IntegrationCardEnum from '@integration/integration/card/enums/IntegrationCardEnum';
 import { UserCardDto } from '@integration/integration/card/generic/dto/user.card.dto';
 import { IntegrationCardService } from '@integration/integration/card/generic/integration.card.service';
+import * as pug from 'pug';
 import {
   BadRequestException,
   Body,
@@ -32,11 +33,13 @@ import {
   Inject,
   Logger,
   NotFoundException,
+  NotImplementedException,
   Param,
   Patch,
   Post,
   Query,
   Req,
+  Res,
   UnauthorizedException,
   UseGuards,
 } from '@nestjs/common';
@@ -79,6 +82,7 @@ import { AfgNamesEnum } from './enum/afg.names.enum';
 import EventsNamesAccountEnum from './enum/events.names.account.enum';
 import { AccountUpdateDto } from '@account/account/dto/account.update.dto';
 import WalletTypesAccountEnum from '@account/account/enum/wallet.types.account.enum';
+import { ConfigCardActivateDto } from '@account/account/dto/config.card.activate.dto';
 
 @ApiTags(SwaggerSteakeyConfigEnum.TAG_CARD)
 @Controller('cards')
@@ -1180,78 +1184,79 @@ export class CardServiceController extends AccountServiceController {
   @UseGuards(ApiKeyAuthGuard)
   @Post('shipping')
   async shippingPhysicalCard(@Req() req?: any) {
-    const user: User = await this.getUser(req?.user?.id);
-    if (!user) {
-      throw new NotFoundException('User not found');
-    }
-    if (!user.personalData) {
-      throw new BadRequestException('Profile of user not found');
-    }
-    if (!user.personalData.location?.address) {
-      throw new BadRequestException('Location address not found');
-    }
-    const physicalCardPending = await this.cardService.findAll({
-      where: {
-        owner: user._id,
-        responseShiping: {
-          $exists: true,
-        },
-        cardConfig: {
-          $exists: false,
-        },
-      },
-    });
-    if (physicalCardPending.totalElements > 0) {
-      throw new BadRequestException('Already physical card pending');
-    }
-    const cardIntegration = await this.integration.getCardIntegration(
-      IntegrationCardEnum.POMELO,
-    );
-    if (!cardIntegration) {
-      throw new BadRequestException('Bad integration card');
-    }
-    if (!user.userCard) {
-      user.userCard = await this.getUserCard(cardIntegration, user);
-    }
-    const rtaShippingCard = await cardIntegration.shippingPhysicalCard({
-      shipment_type: 'CARD_FROM_WAREHOUSE',
-      // TODo[hender-2024/08/02] Default because is available AFG
-      affinity_group_id: 'afg-2jc1143Egwfm4SUOaAwBz9IfZKb',
-      // TODo[hender-2024/08/02] Default because only COL is authorized
-      country: 'COL',
-      user_id: user.userCard.id,
-      address: {
-        street_name: user.personalData.location.address.street_name,
-        street_number: ' ',
-        city: user.personalData.location.address.city,
-        region: user.personalData.location.address.region,
-        country: user.personalData.location.address.country,
-        neighborhood: user.personalData.location.address.neighborhood,
-        apartment: user.personalData.location.address.apartment,
-      },
-      receiver: {
-        full_name: user.personalData.name,
-        email: user.email,
-        document_type: user.personalData.typeDocId,
-        document_number: user.personalData.numDocId,
-        telephone_number:
-          user.personalData.telephones[0]?.phoneNumber ??
-          user.personalData.phoneNumber,
-      },
-    });
+    // const user: User = await this.getUser(req?.user?.id);
+    // if (!user) {
+    //   throw new NotFoundException('User not found');
+    // }
+    // if (!user.personalData) {
+    //   throw new BadRequestException('Profile of user not found');
+    // }
+    // if (!user.personalData.location?.address) {
+    //   throw new BadRequestException('Location address not found');
+    // }
+    // const physicalCardPending = await this.cardService.findAll({
+    //   where: {
+    //     owner: user._id,
+    //     responseShiping: {
+    //       $exists: true,
+    //     },
+    //     cardConfig: {
+    //       $exists: false,
+    //     },
+    //   },
+    // });
+    // if (physicalCardPending.totalElements > 0) {
+    //   throw new BadRequestException('Already physical card pending');
+    // }
+    // const cardIntegration = await this.integration.getCardIntegration(
+    //   IntegrationCardEnum.POMELO,
+    // );
+    // if (!cardIntegration) {
+    //   throw new BadRequestException('Bad integration card');
+    // }
+    // if (!user.userCard) {
+    //   user.userCard = await this.getUserCard(cardIntegration, user);
+    // }
+    // const rtaShippingCard = await cardIntegration.shippingPhysicalCard({
+    //   shipment_type: 'CARD_FROM_WAREHOUSE',
+    //   // TODo[hender-2024/08/02] Default because is available AFG
+    //   affinity_group_id: 'afg-2jc1143Egwfm4SUOaAwBz9IfZKb',
+    //   // TODo[hender-2024/08/02] Default because only COL is authorized
+    //   country: 'COL',
+    //   user_id: user.userCard.id,
+    //   address: {
+    //     street_name: user.personalData.location.address.street_name,
+    //     street_number: ' ',
+    //     city: user.personalData.location.address.city,
+    //     region: user.personalData.location.address.region,
+    //     country: user.personalData.location.address.country,
+    //     neighborhood: user.personalData.location.address.neighborhood,
+    //     apartment: user.personalData.location.address.apartment,
+    //   },
+    //   receiver: {
+    //     full_name: user.personalData.name,
+    //     email: user.email,
+    //     document_type: user.personalData.typeDocId,
+    //     document_number: user.personalData.numDocId,
+    //     telephone_number:
+    //       user.personalData.telephones[0]?.phoneNumber ??
+    //       user.personalData.phoneNumber,
+    //   },
+    // });
 
-    if (rtaShippingCard.data.id) {
-      const account = await this.cardService.createOne({
-        type: TypesAccountEnum.CARD,
-        accountType: CardTypesAccountEnum.PHYSICAL,
-        responseShipping: rtaShippingCard.data,
-        address: rtaShippingCard.data.address as any,
-        personalData: user.personalData,
-        owner: user._id ?? user.id,
-      } as AccountCreateDto);
-      return account;
-    }
-    throw new BadRequestException('Shipment was not created');
+    // if (rtaShippingCard.data.id) {
+    //   const account = await this.cardService.createOne({
+    //     type: TypesAccountEnum.CARD,
+    //     accountType: CardTypesAccountEnum.PHYSICAL,
+    //     responseShipping: rtaShippingCard.data,
+    //     address: rtaShippingCard.data.address as any,
+    //     personalData: user.personalData,
+    //     owner: user._id ?? user.id,
+    //   } as AccountCreateDto);
+    //   return account;
+    // }
+    // throw new BadRequestException('Shipment was not created');
+    throw new NotImplementedException();
   }
 
   @ApiExcludeEndpoint()
@@ -1395,6 +1400,115 @@ export class CardServiceController extends AccountServiceController {
     );
     from.amount = from.amount - createDto.amount;
     return from;
+  }
+
+  @Patch('physical-active')
+  @ApiTags(SwaggerSteakeyConfigEnum.TAG_CARD)
+  @ApiSecurity('b2crypto-key')
+  @ApiBearerAuth('bearerToken')
+  @UseGuards(ApiKeyAuthGuard)
+  async physicalActive(
+    @Body() configActive: ConfigCardActivateDto,
+    @Req() req?: any,
+  ) {
+    return this.physicalActiveCard(configActive, this.getValidUserFromReq(req));
+  }
+
+  async getValidUserFromReq(@Req() req?: any) {
+    const user: User = await this.getUser(req?.user?.id);
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    if (!user.personalData) {
+      throw new BadRequestException('Profile of user not found');
+    }
+    if (!user.personalData.location?.address) {
+      throw new BadRequestException('Location address not found');
+    }
+    return user;
+  }
+
+  async physicalActiveCard(configActivate: ConfigCardActivateDto, user) {
+    if (!configActivate.pan) {
+      throw new BadRequestException('PAN code is necesary');
+    }
+    const cardIntegration = await this.integration.getCardIntegration(
+      IntegrationCardEnum.POMELO,
+    );
+    if (!cardIntegration) {
+      throw new BadRequestException('Bad integration card');
+    }
+    if (!user.userCard) {
+      user.userCard = await this.getUserCard(cardIntegration, user);
+    }
+
+    const request = {
+      user_id: user.userCard.id,
+      pin:
+        configActivate.pin ??
+        CommonService.getNumberDigits(CommonService.randomIntNumber(9999), 4),
+      previous_card_id: undefined,
+      pan: configActivate.pan,
+    };
+    if (configActivate.prevCardId) {
+      request.previous_card_id = configActivate.prevCardId;
+    }
+    const rta = cardIntegration.activateCard(user.userCard, configActivate);
+    return rta;
+  }
+
+  @Get('sensitive-info/:cardId')
+  @ApiTags(SwaggerSteakeyConfigEnum.TAG_CARD)
+  @ApiSecurity('b2crypto-key')
+  @ApiBearerAuth('bearerToken')
+  @UseGuards(ApiKeyAuthGuard)
+  async getSensitiveInfo(
+    @Param('cardId') cardId: string,
+    @Res() res,
+    @Req() req?: any,
+  ) {
+    if (!cardId) {
+      throw new BadRequestException('Need cardId to search');
+    }
+    // const card = this.cardService.findAll({
+    //   where: {
+    //     cardId
+    //   }
+    // })
+    const user = await this.getValidUserFromReq(req);
+    const cardIntegration = await this.integration.getCardIntegration(
+      IntegrationCardEnum.POMELO,
+    );
+    if (!cardIntegration) {
+      throw new BadRequestException('Bad integration card');
+    }
+    if (!user.userCard) {
+      user.userCard = await this.getUserCard(cardIntegration, user);
+    }
+    const token = await cardIntegration.getTokenCardSensitive(user.userCard.id);
+
+    const url = 'https://secure-data-web.pomelo.la';
+    const cardIdPomelo = cardId;
+    const width = 'width="100%"';
+    const height = 'height="270em"';
+    const locale = 'es';
+    const urlStyles =
+      'https://cardsstyles.s3.eu-west-3.amazonaws.com/cardsstyles2.css';
+    const html = pug.render(
+      '<iframe ' +
+        `${width}` +
+        `${height}` +
+        'allow="clipboard-write" ' +
+        'class="iframe-list" ' +
+        'scrolling="no" ' +
+        `src="${url}/v1/${cardIdPomelo}?auth=${token['access_token']}&styles=${urlStyles}&field_list=pan,code,pin,name,expiration&layout=card&locale=${locale}" ` +
+        'frameBorder="0">' +
+        '</iframe>',
+    );
+    return res
+      .setHeader('Content-Type', 'text/html; charset=utf-8')
+      .status(200)
+      .send(html);
   }
 
   @Patch('lock/:cardId')
