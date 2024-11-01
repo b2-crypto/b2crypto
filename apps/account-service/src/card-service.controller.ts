@@ -1555,6 +1555,7 @@ export class CardServiceController extends AccountServiceController {
           {
             force: true,
             owner: user._id,
+            type: TypesAccountEnum.CARD,
             prevAccount: card._id.toString(),
             statusText: StatusAccountEnum.ORDERED,
             accountType: CardTypesAccountEnum.PHYSICAL,
