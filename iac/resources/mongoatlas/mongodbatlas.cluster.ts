@@ -40,7 +40,7 @@ export const mongoAtlasCluster =
                 {
                   regionName: 'US_EAST_1',
                   electableNodes: 3,
-                  priority: 1,
+                  priority: isProduction() || isStressTest() ? 7 : 1,
                 },
               ],
             },

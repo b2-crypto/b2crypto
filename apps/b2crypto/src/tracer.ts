@@ -1,15 +1,25 @@
 'use strict';
 
-import { ConfigService } from '@nestjs/config';
 import { getNodeAutoInstrumentations } from '@opentelemetry/auto-instrumentations-node';
 import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-http';
 import { Resource } from '@opentelemetry/resources';
 import * as opentelemetry from '@opentelemetry/sdk-node';
 import { ATTR_SERVICE_NAME } from '@opentelemetry/semantic-conventions';
 
-export const tracerRun = async (configService: ConfigService) => {
+export const tracerRun = async () => {
+  const OPTL_API_URL = process.env['OPTL_API_URL'];
+  const OPTL_SERVICE_NAME = process.env['OPTL_SERVICE_NAME'];
+
+  if (typeof OPTL_API_URL !== 'string') {
+    throw new Error('Missing env OPTL_API_URL');
+  }
+
+  if (typeof OPTL_SERVICE_NAME !== 'string') {
+    throw new Error('Missing env OPTL_SERVICE_NAME');
+  }
+
   const exporterOptions = {
-    url: `${configService.getOrThrow('OPTL_API_URL')}/v1/traces`,
+    url: `${OPTL_API_URL}/v1/traces`,
   };
 
   const traceExporter = new OTLPTraceExporter(exporterOptions);
@@ -18,14 +28,14 @@ export const tracerRun = async (configService: ConfigService) => {
     traceExporter,
     instrumentations: [getNodeAutoInstrumentations()],
     resource: new Resource({
-      [ATTR_SERVICE_NAME]: configService.getOrThrow('OPTL_SERVICE_NAME'),
+      [ATTR_SERVICE_NAME]: OPTL_SERVICE_NAME,
     }),
   });
 
   sdk.start();
 
   console.log('=====================================');
-  console.log('Tracing started', configService.getOrThrow('OPTL_API_URL'));
+  console.log('Tracing started', OPTL_API_URL);
   console.log('=====================================');
 
   process.on('SIGTERM', () => {

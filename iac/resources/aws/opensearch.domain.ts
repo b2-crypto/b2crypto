@@ -1,7 +1,6 @@
 import * as aws from '@pulumi/aws';
 import * as pulumi from '@pulumi/pulumi';
 import {
-  isProduction,
   OPTL_OPEN_SEARCH_EBS_VOLUME_SIZE,
   OPTL_OPEN_SEARCH_INSTANCE_COUNT,
   OPTL_OPEN_SEARCH_INSTANCE_TYPE,
@@ -12,11 +11,13 @@ import {
   STACK,
   TAGS,
 } from '../../secrets';
+import { ec2SecurityGroupOptlOpensearch } from './ec2.security-group';
+import { ec2Vpc } from './ec2.vpc';
 
 export const opensearchDomainOptl = new aws.opensearch.Domain(
   `${PROJECT_NAME}-optl-${STACK}`,
   {
-    domainName: `${PROJECT_NAME}-optl-${STACK}`,
+    // domainName: `${PROJECT_NAME}-optl-${STACK}`,
     engineVersion: 'OpenSearch_2.15',
     clusterConfig: {
       instanceType: OPTL_OPEN_SEARCH_INSTANCE_TYPE,
@@ -44,17 +45,14 @@ export const opensearchDomainOptl = new aws.opensearch.Domain(
       enforceHttps: true,
       tlsSecurityPolicy: 'Policy-Min-TLS-1-2-2019-07',
     },
-    // vpcOptions: {
-    //   subnetIds: ec2Vpc.privateSubnetIds.apply((subnets) =>
-    //     subnets.slice(
-    //       0,
-    //       ELASTIC_SEARCH_INSTANCE_COUNT > subnets.length
-    //         ? subnets.length
-    //         : ELASTIC_SEARCH_INSTANCE_COUNT,
-    //     ),
-    //   ),
-    //   securityGroupIds: [ec2SecurityGroupOptlElasticsearch.id],
-    // },
+    vpcOptions: {
+      subnetIds: ec2Vpc.privateSubnetIds.apply((subnets) =>
+        OPTL_OPEN_SEARCH_INSTANCE_COUNT >= subnets.length
+          ? subnets
+          : subnets.slice(0, OPTL_OPEN_SEARCH_INSTANCE_COUNT),
+      ),
+      securityGroupIds: [ec2SecurityGroupOptlOpensearch.id],
+    },
     advancedSecurityOptions: {
       enabled: true,
       internalUserDatabaseEnabled: true,
@@ -84,6 +82,6 @@ export const opensearchDomainOptl = new aws.opensearch.Domain(
     tags: TAGS,
   },
   {
-    protect: isProduction(),
+    // protect: isProduction(),
   },
 );

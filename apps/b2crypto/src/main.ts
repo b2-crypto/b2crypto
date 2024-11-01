@@ -24,13 +24,13 @@ import { tracerRun } from './tracer';
 
 async function bootstrap() {
   Logger.log(process.env.TZ, 'Timezone');
+  await tracerRun();
+
   const app = await NestFactory.create(AppHttpModule, {
     // logger: false,
     cors: true,
   });
   const configService = app.get(ConfigService);
-
-  await tracerRun(configService);
 
   const validationPipes = new ValidationPipe({
     whitelist: true,
@@ -58,6 +58,7 @@ async function bootstrap() {
     allowedHeaders: 'b2crypto-affiliate-key b2crypto-key Content-Type Accept',
   });
   app.getHttpAdapter().getInstance().disable('x-powered-by');
+
   app.connectMicroservice(
     await QueueAdminModule.getClientProvider(
       configService,

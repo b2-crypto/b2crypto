@@ -104,8 +104,6 @@ config:
   b2crypto-iac:MONGOATLAS_INSTANCE_MIN: M2
   b2crypto-iac:MONGOATLAS_INSTANCE_MAX: M2
   b2crypto-iac:SUBDOMAIN_PREFIX: apistage
-  b2crypto-iac:OPTL_API_URL:
-    secure: AAABAORnxW1H32DJkdvmyUZ+A2yxfIC9Ipj7gLwFpANd1XVTGru+YQpSvFeqWMreIRLTR5k=
   b2crypto-iac:OPTL_SERVICE_NAME: b2crypto_monolith
   b2crypto-iac:OPTL_COLLECTOR_DESIRED_COUNT_TASK: "1"
   b2crypto-iac:OPTL_COLLECTOR_MIN_CAPACITY_AUTOSCALING: "1"

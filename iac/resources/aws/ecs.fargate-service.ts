@@ -13,6 +13,7 @@ import {
   DATABASE_NAME,
   DEFAULT_CURRENCY_CONVERSION_COIN,
   DESIRED_COUNT_TASK,
+  DOMAIN,
   ENVIRONMENT,
   GOOGLE_2FA,
   isStressTest,
@@ -28,6 +29,7 @@ import {
   SOCIAL_MEDIA_ICONS,
   SOCIAL_MEDIA_LINKS,
   STACK,
+  SUBDOMAIN_PREFIX_OPTL_COLLECTOR,
   TAGS,
   TESTING,
   TZ,
@@ -253,10 +255,7 @@ export const ecsFargateService = new awsx.ecs.FargateService(
           },
           {
             name: 'OPTL_API_URL',
-            value:
-              lbApplicationLoadBalancerOptlCollector.loadBalancer.dnsName.apply(
-                (value) => `https://${value}`,
-              ),
+            value: `https://${SUBDOMAIN_PREFIX_OPTL_COLLECTOR}.${DOMAIN}`,
           },
           {
             name: 'OPTL_SERVICE_NAME',

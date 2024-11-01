@@ -32,7 +32,6 @@ export const SECRETS = pulumi
     config.requireSecret('MONGOATLAS_PROJECT_ID'),
     config.requireSecret('MONGOATLAS_USERNAME'),
     config.requireSecret('MONGOATLAS_PASSWORD'),
-    config.requireSecret('OPTL_API_URL'),
     config.requireSecret('OPTL_SERVICE_NAME'),
     config.requireSecret('OPTL_OPEN_SEARCH_USERNAME'),
     config.requireSecret('OPTL_OPEN_SEARCH_PASSWORD'),
@@ -67,7 +66,6 @@ export const SECRETS = pulumi
       MONGOATLAS_PROJECT_ID,
       MONGOATLAS_USERNAME,
       MONGOATLAS_PASSWORD,
-      OPTL_API_URL,
       OPTL_SERVICE_NAME,
       OPTL_OPEN_SEARCH_USERNAME,
       OPTL_OPEN_SEARCH_PASSWORD,
@@ -100,7 +98,6 @@ export const SECRETS = pulumi
       MONGOATLAS_PROJECT_ID,
       MONGOATLAS_USERNAME,
       MONGOATLAS_PASSWORD,
-      OPTL_API_URL,
       OPTL_SERVICE_NAME,
       OPTL_OPEN_SEARCH_USERNAME,
       OPTL_OPEN_SEARCH_PASSWORD,
@@ -193,7 +190,7 @@ export const OPTL_OPEN_SEARCH_INSTANCE_COUNT = parseInt(
 );
 
 export const OPTL_OPEN_SEARCH_ZONE_AWARENESS_ENABLED =
-  config.require('OPTL_COLLECTOR_MAX_CAPACITY_AUTOSCALING') === 'true';
+  config.require('OPTL_OPEN_SEARCH_ZONE_AWARENESS_ENABLED') === 'true';
 
 export const OPTL_OPEN_SEARCH_ZONE_AWARENESS_AVAILABILITY_COUNT = parseInt(
   config.require('OPTL_OPEN_SEARCH_ZONE_AWARENESS_AVAILABILITY_COUNT'),

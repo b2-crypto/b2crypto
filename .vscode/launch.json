@@ -5,7 +5,7 @@
       "type": "node",
       "request": "launch",
       "name": "Local",
-      "runtimeExecutable": "/home/apoveda25/.local/share/mise/installs/node/22/bin/npm",
+      "runtimeExecutable": "npm",
       //"runtimeExecutable": "${env:HOME}/.nvm/versions/node/v18.18.0/bin/npm",
       "runtimeArgs": [
         "run",
