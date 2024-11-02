@@ -1426,6 +1426,7 @@ export class CardServiceController extends AccountServiceController {
     if (!user.personalData.location?.address) {
       throw new BadRequestException('Location address not found');
     }
+    Logger.debug(JSON.stringify(user), 'loggger user - getValidateUserFromReq');
     return user;
   }
 
