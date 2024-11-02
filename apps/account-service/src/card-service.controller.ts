@@ -1321,7 +1321,7 @@ export class CardServiceController extends AccountServiceController {
           type: TagEnum.MONETARY_TRANSACTION_TYPE,
         },
       );
-    const withdrawSlug = `withdrawal-${from.type.toLowerCase()}`;
+    const withdrawSlug = `withdrawal-${from.type?.toLowerCase()}`;
     const withdrawalCategory =
       await this.cardBuilder.getPromiseCategoryEventClient(
         EventsNamesCategoryEnum.findOneByNameType,
@@ -1439,8 +1439,13 @@ export class CardServiceController extends AccountServiceController {
     if (!cardIntegration) {
       throw new BadRequestException('Bad integration card');
     }
-    if (!user.userCard) {
-      user.userCard = await this.getUserCard(cardIntegration, user);
+    try {
+      if (!user.userCard) {
+        user.userCard = await this.getUserCard(cardIntegration, user);
+      }
+    } catch (err) {
+      Logger.error(err, 'Error in card profile creation');
+      throw new BadRequestException('Card profile not found');
     }
 
     const request = {
@@ -1937,6 +1942,9 @@ export class CardServiceController extends AccountServiceController {
     user: User,
     account?: AccountDocument,
   ) {
+    if (!user?.email) {
+      throw new BadRequestException('Email not found');
+    }
     // TODO[hender - 2024/08/12] Check the Surname, City, Region to remove special characters
     // TODO[hender - 2024/08/12] Check the Surname, City, Region to remove numbers
     const rtaUserCard = await cardIntegration.getUser({
