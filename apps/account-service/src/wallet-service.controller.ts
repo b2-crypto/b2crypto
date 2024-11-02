@@ -1219,7 +1219,8 @@ export class WalletServiceController extends AccountServiceController {
   }
 
   @Patch('withdraw')
-  @ApiTags(SwaggerSteakeyConfigEnum.TAG_WALLET)
+  @ApiExcludeEndpoint()
+  //@ApiTags(SwaggerSteakeyConfigEnum.TAG_WALLET)
   @ApiSecurity('b2crypto-key')
   @ApiBearerAuth('bearerToken')
   @UseGuards(ApiKeyAuthGuard)

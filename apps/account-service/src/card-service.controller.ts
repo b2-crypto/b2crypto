@@ -1259,8 +1259,9 @@ export class CardServiceController extends AccountServiceController {
     throw new NotImplementedException();
   }
 
-  @ApiExcludeEndpoint()
+  //@ApiExcludeEndpoint()
   @Post('recharge')
+  @ApiTags(SwaggerSteakeyConfigEnum.TAG_CARD)
   @ApiSecurity('b2crypto-key')
   @ApiBearerAuth('bearerToken')
   @UseGuards(ApiKeyAuthGuard)
@@ -1346,7 +1347,7 @@ export class CardServiceController extends AccountServiceController {
       EventsNamesTransferEnum.createOne,
       {
         name: `Deposit card ${to.name}`,
-        description: `Deposit from wallet ${from.name} to card ${to.name}`,
+        description: `Deposit from ${from.name} to ${to.name}`,
         currency: to.currency,
         amount: createDto.amount,
         currencyCustodial: to.currencyCustodial,
@@ -1374,7 +1375,7 @@ export class CardServiceController extends AccountServiceController {
       EventsNamesTransferEnum.createOne,
       {
         name: `Withdrawal wallet ${from.name}`,
-        description: `Withdrawal from wallet ${from.name} to card ${to.name}`,
+        description: `Withdrawal from ${from.name} to ${to.name}`,
         currency: from.currency,
         amount: createDto.amount,
         currencyCustodial: from.currencyCustodial,
