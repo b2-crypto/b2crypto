@@ -1477,11 +1477,15 @@ export class CardServiceController extends AccountServiceController {
     if (!cardId) {
       throw new BadRequestException('Need cardId to search');
     }
-    // const card = this.cardService.findAll({
-    //   where: {
-    //     cardId
-    //   }
-    // })
+    const cardList = await this.cardService.findAll({
+      where: {
+        _id: cardId,
+      },
+    });
+    if (!cardList?.totalElements || !cardList?.list[0]?.cardConfig) {
+      throw new BadRequestException('CardId is not valid');
+    }
+    cardId = cardList.list[0].cardConfig.id;
     const user = await this.getValidUserFromReq(req);
     const cardIntegration = await this.integration.getCardIntegration(
       IntegrationCardEnum.POMELO,

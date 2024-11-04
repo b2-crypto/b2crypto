@@ -22,6 +22,15 @@ export class ConfigCardActivateDto {
 
   @ApiProperty({
     required: false,
+    description: 'Promotional code',
+    example: '14A25F',
+  })
+  @IsString()
+  @IsOptional()
+  promoCode?: string;
+
+  @ApiProperty({
+    required: false,
     description: 'Prev card id',
     example: '664dcd1529dabb0380754c73',
   })
