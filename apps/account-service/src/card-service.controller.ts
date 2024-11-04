@@ -178,7 +178,7 @@ export class CardServiceController extends AccountServiceController {
     createDto.accountType =
       createDto.accountType ?? CardTypesAccountEnum.VIRTUAL;
     if (!createDto.force) {
-      await this.validateRuleLimitCards(user, createDto.accountType);
+      //await this.validateRuleLimitCards(user, createDto.accountType);
     }
     const level = await this.getCategoryById(user.level.toString());
     const cardAfg = this.getAfgByLevel(
