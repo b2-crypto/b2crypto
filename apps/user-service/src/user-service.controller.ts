@@ -212,7 +212,8 @@ export class UserServiceController implements GenericServiceController {
 
   @Patch()
   // @CheckPoliciesAbility(new PolicyHandlerUserUpdate())
-  async updateOne(@Body() updateUserDto: UserUpdateDto) {
+  async updateOne(@Body() updateUserDto: UserUpdateDto, @Req() req?: any) {
+    updateUserDto.id = updateUserDto.id || CommonService.getUserId(req);
     return this.userService.updateUser(updateUserDto);
   }
 

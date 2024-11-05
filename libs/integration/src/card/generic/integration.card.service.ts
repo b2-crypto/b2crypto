@@ -225,7 +225,7 @@ export class IntegrationCardService<
     if (configActivate.prevCardId) {
       request.previous_card_id = configActivate.prevCardId;
     }
-    return this.http.post(this.routesMap.activateCard, configActivate);
+    return this.http.post(this.routesMap.activateCard, request);
   }
 
   async getAffinityGroup(
