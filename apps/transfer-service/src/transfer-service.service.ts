@@ -289,6 +289,7 @@ export class TransferServiceService
       transfer.typeAccountType = account.accountType;
       transfer.userCreator = transfer.userCreator ?? account.owner;
       transfer.userAccount = account.owner ?? transfer.userCreator;
+      transfer.accountPrevBalance = account.amount;
       const transferSaved = await this.lib.create(transfer);
       if (
         transferSaved.typeTransaction?.toString() === depositLinkCategory._id
@@ -530,11 +531,13 @@ export class TransferServiceService
       }
       accountToUpdate.amount += transferSaved.amount * multiply;
     }
+    transferSaved.accountResultBalance = accountToUpdate.amount;
     const accountUpdated = await this.accountService.updateOne(accountToUpdate);
     this.builder.emitUserEventClient(
       EventsNamesUserEnum.checkBalanceUser,
       transferSaved.userAccount,
     );
+    await transferSaved.save();
     return accountUpdated;
   }
 

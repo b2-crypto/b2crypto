@@ -21,6 +21,7 @@ import { UserResponseDto } from './dto/user.response.dto';
 import { IntegrationCardInterface } from './integration.card.interface';
 import { CardRoutesInterface } from './interface/card.routes.interface';
 import { ShippingResultInterface } from './interface/shipping-result.interface';
+import { ConfigCardActivateDto } from '@account/account/dto/config.card.activate.dto';
 
 export class IntegrationCardService<
   // DTO
@@ -212,6 +213,21 @@ export class IntegrationCardService<
       card,
     );
   }
+  async activateCard(
+    userCard: TUserCardDto,
+    configActivate: ConfigCardActivateDto,
+  ): Promise<AxiosResponse<any[], any>> {
+    const request = {
+      user_id: userCard['id'],
+      pin: configActivate.pin,
+      previous_card_id: undefined,
+      pan: configActivate.pan,
+    };
+    if (configActivate.prevCardId) {
+      request.previous_card_id = configActivate.prevCardId;
+    }
+    return this.http.post(this.routesMap.activateCard, configActivate);
+  }
 
   async getAffinityGroup(
     userCard: TUserCardDto,
@@ -224,16 +240,29 @@ export class IntegrationCardService<
     card: TCardDto,
   ): Promise<AxiosResponse<any[], any>> {
     if (!this.tokenInformationCard) {
-      this.tokenInformationCard = await this.http.post(
-        this.routesMap.getTokenInformationCard,
-        {
-          user_id: userCard['id'],
-        },
+      this.tokenInformationCard = await this.getTokenCardSensitive(
+        userCard['id'],
       );
     }
     return this.http.get(
       this.routesMap.getInformationCard.replace('{id}', card['id']),
     );
+  }
+  async getTokenCardSensitive(userCardId: string) {
+    this.tokenInformationCard = await this.fetch(
+      'POST',
+      this.routesMap.getTokenInformationCard,
+      {
+        user_id: userCardId,
+      },
+    );
+    // this.tokenInformationCard = await this.http.post(
+    //   this.routesMap.getTokenInformationCard,
+    //   {
+    //     user_id: userCardId,
+    //   },
+    // );
+    return this.tokenInformationCard;
   }
   sendPhysicalCard(
     userCard: TUserCardDto,

@@ -32,11 +32,13 @@ import {
   Inject,
   Logger,
   NotFoundException,
+  NotImplementedException,
   Param,
   Patch,
   Post,
   Query,
   Req,
+  Res,
   UnauthorizedException,
   UseGuards,
 } from '@nestjs/common';
@@ -71,8 +73,10 @@ import EventsNamesUserEnum from 'apps/user-service/src/enum/events.names.user.en
 import { UserServiceService } from 'apps/user-service/src/user-service.service';
 import { isEmpty, isString } from 'class-validator';
 import { SwaggerSteakeyConfigEnum } from 'libs/config/enum/swagger.stakey.config.enum';
+import * as pug from 'pug';
 
 import { AccountUpdateDto } from '@account/account/dto/account.update.dto';
+import { ConfigCardActivateDto } from '@account/account/dto/config.card.activate.dto';
 import WalletTypesAccountEnum from '@account/account/enum/wallet.types.account.enum';
 import { ResponsePaginator } from '../../../libs/common/src/interfaces/response-pagination.interface';
 import { AccountServiceController } from './account-service.controller';
@@ -176,15 +180,20 @@ export class CardServiceController extends AccountServiceController {
     createDto.accountType =
       createDto.accountType ?? CardTypesAccountEnum.VIRTUAL;
     if (!createDto.force) {
-      await this.validateRuleLimitCards(user, createDto.accountType);
+      //await this.validateRuleLimitCards(user, createDto.accountType);
     }
     const level = await this.getCategoryById(user.level.toString());
     const cardAfg = this.getAfgByLevel(
       level.slug,
       createDto.accountType === CardTypesAccountEnum.PHYSICAL,
     );
-    if (!cardAfg || cardAfg === AfgNamesEnum.NA)
-      throw new NotFoundException('AFG not found');
+    if (!cardAfg || cardAfg === AfgNamesEnum.NA) {
+      Logger.debug(
+        `${cardAfg} - ${level.slug}`,
+        `'AFG not found for CARD-${createDto.accountType}`,
+      );
+      throw new NotFoundException('Level AFG not found');
+    }
     if (!user.personalData) {
       throw new BadRequestException('Need the personal data to continue');
     }
@@ -358,18 +367,28 @@ export class CardServiceController extends AccountServiceController {
       return account;
     } catch (err) {
       await this.getAccountService().deleteOneById(account._id);
-      Logger.error(err.response, `Account Card not created ${account._id}`);
-      err.response.details = err.response.details ?? [];
-      err.response.details.push({
-        detail: 'Card not created',
-      });
-      const desc = err.response.details.reduce(
-        (prev, current) => (current.detail += ', ' + prev.detail),
+      Logger.error(
+        JSON.stringify(err),
+        `Account Card not created ${account._id}`,
       );
-      throw new BadRequestException({
-        statusCode: 400,
-        description: desc,
-      });
+      if (err.response) {
+        err.response.details = err.response.details ?? [];
+        err.response.details.push({
+          detail: 'Card not created',
+        });
+        const desc = err.response.details.reduce(
+          (prev, current) => (current.detail += ', ' + prev.detail),
+        );
+        throw new BadRequestException({
+          statusCode: 400,
+          description: desc,
+        });
+      } else {
+        throw new BadRequestException({
+          statusCode: 400,
+          description: err,
+        });
+      }
     }
   }
 
@@ -1209,81 +1228,84 @@ export class CardServiceController extends AccountServiceController {
   @UseGuards(ApiKeyAuthGuard)
   @Post('shipping')
   async shippingPhysicalCard(@Req() req?: any) {
-    const user: User = await this.getUser(req?.user?.id);
-    if (!user) {
-      throw new NotFoundException('User not found');
-    }
-    if (!user.personalData) {
-      throw new BadRequestException('Profile of user not found');
-    }
-    if (!user.personalData.location?.address) {
-      throw new BadRequestException('Location address not found');
-    }
-    const physicalCardPending = await this.cardService.findAll({
-      where: {
-        owner: user._id,
-        responseShiping: {
-          $exists: true,
-        },
-        cardConfig: {
-          $exists: false,
-        },
-      },
-    });
-    if (physicalCardPending.totalElements > 0) {
-      throw new BadRequestException('Already physical card pending');
-    }
-    const cardIntegration = await this.integration.getCardIntegration(
-      IntegrationCardEnum.POMELO,
-    );
-    if (!cardIntegration) {
-      throw new BadRequestException('Bad integration card');
-    }
-    if (!user.userCard) {
-      user.userCard = await this.getUserCard(cardIntegration, user);
-    }
-    const rtaShippingCard = await cardIntegration.shippingPhysicalCard({
-      shipment_type: 'CARD_FROM_WAREHOUSE',
-      // TODo[hender-2024/08/02] Default because is available AFG
-      affinity_group_id: 'afg-2jc1143Egwfm4SUOaAwBz9IfZKb',
-      // TODo[hender-2024/08/02] Default because only COL is authorized
-      country: 'COL',
-      user_id: user.userCard.id,
-      address: {
-        street_name: user.personalData.location.address.street_name,
-        street_number: ' ',
-        city: user.personalData.location.address.city,
-        region: user.personalData.location.address.region,
-        country: user.personalData.location.address.country,
-        neighborhood: user.personalData.location.address.neighborhood,
-        apartment: user.personalData.location.address.apartment,
-      },
-      receiver: {
-        full_name: user.personalData.name,
-        email: user.email,
-        document_type: user.personalData.typeDocId,
-        document_number: user.personalData.numDocId,
-        telephone_number:
-          user.personalData.telephones[0]?.phoneNumber ??
-          user.personalData.phoneNumber,
-      },
-    });
+    // const user: User = await this.getUser(req?.user?.id);
+    // if (!user) {
+    //   throw new NotFoundException('User not found');
+    // }
+    // if (!user.personalData) {
+    //   throw new BadRequestException('Profile of user not found');
+    // }
+    // if (!user.personalData.location?.address) {
+    //   throw new BadRequestException('Location address not found');
+    // }
+    // const physicalCardPending = await this.cardService.findAll({
+    //   where: {
+    //     owner: user._id,
+    //     responseShiping: {
+    //       $exists: true,
+    //     },
+    //     cardConfig: {
+    //       $exists: false,
+    //     },
+    //   },
+    // });
+    // if (physicalCardPending.totalElements > 0) {
+    //   throw new BadRequestException('Already physical card pending');
+    // }
+    // const cardIntegration = await this.integration.getCardIntegration(
+    //   IntegrationCardEnum.POMELO,
+    // );
+    // if (!cardIntegration) {
+    //   throw new BadRequestException('Bad integration card');
+    // }
+    // if (!user.userCard) {
+    //   user.userCard = await this.getUserCard(cardIntegration, user);
+    // }
+    // const rtaShippingCard = await cardIntegration.shippingPhysicalCard({
+    //   shipment_type: 'CARD_FROM_WAREHOUSE',
+    //   // TODo[hender-2024/08/02] Default because is available AFG
+    //   affinity_group_id: 'afg-2jc1143Egwfm4SUOaAwBz9IfZKb',
+    //   // TODo[hender-2024/08/02] Default because only COL is authorized
+    //   country: 'COL',
+    //   user_id: user.userCard.id,
+    //   address: {
+    //     street_name: user.personalData.location.address.street_name,
+    //     street_number: ' ',
+    //     city: user.personalData.location.address.city,
+    //     region: user.personalData.location.address.region,
+    //     country: user.personalData.location.address.country,
+    //     neighborhood: user.personalData.location.address.neighborhood,
+    //     apartment: user.personalData.location.address.apartment,
+    //   },
+    //   receiver: {
+    //     full_name: user.personalData.name,
+    //     email: user.email,
+    //     document_type: user.personalData.typeDocId,
+    //     document_number: user.personalData.numDocId,
+    //     telephone_number:
+    //       user.personalData.telephones[0]?.phoneNumber ??
+    //       user.personalData.phoneNumber,
+    //   },
+    // });
 
-    if (rtaShippingCard.data.id) {
-      const account = await this.cardService.createOne({
-        type: TypesAccountEnum.CARD,
-        accountType: CardTypesAccountEnum.PHYSICAL,
-        responseShipping: rtaShippingCard.data,
-        address: rtaShippingCard.data.address as any,
-        personalData: user.personalData,
-        owner: user._id ?? user.id,
-      } as AccountCreateDto);
-      return account;
-    }
-    throw new BadRequestException('Shipment was not created');
+    // if (rtaShippingCard.data.id) {
+    //   const account = await this.cardService.createOne({
+    //     type: TypesAccountEnum.CARD,
+    //     accountType: CardTypesAccountEnum.PHYSICAL,
+    //     responseShipping: rtaShippingCard.data,
+    //     address: rtaShippingCard.data.address as any,
+    //     personalData: user.personalData,
+    //     owner: user._id ?? user.id,
+    //   } as AccountCreateDto);
+    //   return account;
+    // }
+    // throw new BadRequestException('Shipment was not created');
+    throw new NotImplementedException();
   }
 
+  //@ApiExcludeEndpoint()
   @Post('recharge')
+  @ApiTags(SwaggerSteakeyConfigEnum.TAG_CARD)
   @ApiSecurity('b2crypto-key')
   @ApiBearerAuth('bearerToken')
   @UseGuards(ApiKeyAuthGuard)
@@ -1296,7 +1318,9 @@ export class CardServiceController extends AccountServiceController {
       throw new BadRequestException('The recharge not be 10 or less');
     }
     if (!createDto.from) {
-      throw new BadRequestException('I need a wallet to recharge card');
+      throw new BadRequestException(
+        'I need a wallet or card from recharge card',
+      );
     }
     if (!createDto.to) {
       throw new BadRequestException('I need a card to recharge');
@@ -1319,14 +1343,14 @@ export class CardServiceController extends AccountServiceController {
     const from = await this.getAccountService().findOneById(
       createDto.from.toString(),
     );
-    if (from.type != TypesAccountEnum.WALLET) {
-      Logger.error(
-        'Type not same',
-        CardServiceController.name,
-        'Card.rechargeOne.wallet',
-      );
-      throw new BadRequestException('Wallet not found');
-    }
+    // if (from.type != TypesAccountEnum.WALLET) {
+    //   Logger.error(
+    //     'Type not same',
+    //     CardServiceController.name,
+    //     'Card.rechargeOne.wallet',
+    //   );
+    //   throw new BadRequestException('Wallet not found');
+    // }
     if (!from) {
       throw new BadRequestException('Wallet is not valid');
     }
@@ -1341,11 +1365,12 @@ export class CardServiceController extends AccountServiceController {
           type: TagEnum.MONETARY_TRANSACTION_TYPE,
         },
       );
-    const withDrawalWalletCategory =
+    const withdrawSlug = `withdrawal-${from.type?.toLowerCase()}`;
+    const withdrawalCategory =
       await this.cardBuilder.getPromiseCategoryEventClient(
         EventsNamesCategoryEnum.findOneByNameType,
         {
-          slug: 'withdrawal-wallet',
+          slug: withdrawSlug,
           type: TagEnum.MONETARY_TRANSACTION_TYPE,
         },
       );
@@ -1366,7 +1391,7 @@ export class CardServiceController extends AccountServiceController {
       EventsNamesTransferEnum.createOne,
       {
         name: `Deposit card ${to.name}`,
-        description: `Deposit from wallet ${from.name} to card ${to.name}`,
+        description: `Deposit from ${from.name} to ${to.name}`,
         currency: to.currency,
         amount: createDto.amount,
         currencyCustodial: to.currencyCustodial,
@@ -1394,7 +1419,7 @@ export class CardServiceController extends AccountServiceController {
       EventsNamesTransferEnum.createOne,
       {
         name: `Withdrawal wallet ${from.name}`,
-        description: `Withdrawal from wallet ${from.name} to card ${to.name}`,
+        description: `Withdrawal from ${from.name} to ${to.name}`,
         currency: from.currency,
         amount: createDto.amount,
         currencyCustodial: from.currencyCustodial,
@@ -1404,7 +1429,7 @@ export class CardServiceController extends AccountServiceController {
         userAccount: from.owner,
         typeAccount: from.type,
         typeAccountType: from.accountType,
-        typeTransaction: withDrawalWalletCategory._id,
+        typeTransaction: withdrawalCategory._id,
         psp: internalPspAccount.psp,
         pspAccount: internalPspAccount._id,
         operationType: OperationTransactionType.withdrawal,
@@ -1420,6 +1445,125 @@ export class CardServiceController extends AccountServiceController {
     );
     from.amount = from.amount - createDto.amount;
     return from;
+  }
+
+  @Patch('physical-active')
+  @ApiTags(SwaggerSteakeyConfigEnum.TAG_CARD)
+  @ApiSecurity('b2crypto-key')
+  @ApiBearerAuth('bearerToken')
+  @UseGuards(ApiKeyAuthGuard)
+  async physicalActive(
+    @Body() configActive: ConfigCardActivateDto,
+    @Req() req?: any,
+  ) {
+    return this.physicalActiveCard(configActive, this.getValidUserFromReq(req));
+  }
+
+  async getValidUserFromReq(@Req() req?: any) {
+    const user: User = await this.getUser(req?.user?.id);
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    if (!user.personalData) {
+      throw new BadRequestException('Profile of user not found');
+    }
+    if (!user.personalData.location?.address) {
+      throw new BadRequestException('Location address not found');
+    }
+    Logger.debug(JSON.stringify(user), 'loggger user - getValidateUserFromReq');
+    return user;
+  }
+
+  async physicalActiveCard(configActivate: ConfigCardActivateDto, user) {
+    if (!configActivate.pan) {
+      throw new BadRequestException('PAN code is necesary');
+    }
+    const cardIntegration = await this.integration.getCardIntegration(
+      IntegrationCardEnum.POMELO,
+    );
+    if (!cardIntegration) {
+      throw new BadRequestException('Bad integration card');
+    }
+    try {
+      if (!user.userCard) {
+        user.userCard = await this.getUserCard(cardIntegration, user);
+      }
+    } catch (err) {
+      Logger.error(err, 'Error in card profile creation');
+      throw new BadRequestException('Card profile not found');
+    }
+
+    const request = {
+      user_id: user.userCard.id,
+      pin:
+        configActivate.pin ??
+        CommonService.getNumberDigits(CommonService.randomIntNumber(9999), 4),
+      previous_card_id: undefined,
+      pan: configActivate.pan,
+    };
+    if (configActivate.prevCardId) {
+      request.previous_card_id = configActivate.prevCardId;
+    }
+    const rta = cardIntegration.activateCard(user.userCard, configActivate);
+    return rta;
+  }
+
+  @Get('sensitive-info/:cardId')
+  @ApiTags(SwaggerSteakeyConfigEnum.TAG_CARD)
+  @ApiSecurity('b2crypto-key')
+  @ApiBearerAuth('bearerToken')
+  @UseGuards(ApiKeyAuthGuard)
+  async getSensitiveInfo(
+    @Param('cardId') cardId: string,
+    @Res() res,
+    @Req() req?: any,
+  ) {
+    if (!cardId) {
+      throw new BadRequestException('Need cardId to search');
+    }
+    const cardList = await this.cardService.findAll({
+      where: {
+        _id: cardId,
+      },
+    });
+    if (!cardList?.totalElements || !cardList?.list[0]?.cardConfig) {
+      throw new BadRequestException('CardId is not valid');
+    }
+    cardId = cardList.list[0].cardConfig.id;
+    const user = await this.getValidUserFromReq(req);
+    const cardIntegration = await this.integration.getCardIntegration(
+      IntegrationCardEnum.POMELO,
+    );
+    if (!cardIntegration) {
+      throw new BadRequestException('Bad integration card');
+    }
+    if (!user.userCard) {
+      user.userCard = await this.getUserCard(cardIntegration, user);
+    }
+    const token = await cardIntegration.getTokenCardSensitive(user.userCard.id);
+
+    const url = 'https://secure-data-web.pomelo.la';
+    const cardIdPomelo = cardId;
+    const width = 'width="100%"';
+    const height = 'height="270em"';
+    const locale = 'es';
+    const urlStyles =
+      'https://cardsstyles.s3.eu-west-3.amazonaws.com/cardsstyles2.css';
+    const html = pug.render(
+      '<iframe ' +
+        `${width}` +
+        `${height}` +
+        'allow="clipboard-write" ' +
+        'class="iframe-list" ' +
+        'scrolling="no" ' +
+        `src="${url}/v1/${cardIdPomelo}?auth=${token['access_token']}&styles=${urlStyles}&field_list=pan,code,pin,name,expiration&layout=card&locale=${locale}" ` +
+        'frameBorder="0">' +
+        '</iframe>',
+    );
+    return res
+      .setHeader('Content-Type', 'text/html; charset=utf-8')
+      .status(200)
+      .send(html);
   }
 
   @Patch('lock/:cardId')
@@ -1526,6 +1670,7 @@ export class CardServiceController extends AccountServiceController {
       const group = await this.buildAFG(null, cardAfg);
       const afg = group.list[0];
       if (!afg) {
+        Logger.debug(JSON.stringify(cardAfg), 'AFG not found group');
         throw new NotFoundException('AFG not found');
       }
       const cardIntegration = await this.integration.getCardIntegration(
@@ -1579,6 +1724,7 @@ export class CardServiceController extends AccountServiceController {
           {
             force: true,
             owner: user._id,
+            type: TypesAccountEnum.CARD,
             prevAccount: card._id.toString(),
             statusText: StatusAccountEnum.ORDERED,
             accountType: CardTypesAccountEnum.PHYSICAL,
@@ -1627,11 +1773,11 @@ export class CardServiceController extends AccountServiceController {
       if (!card) {
         return CardsEnum.CARD_PROCESS_CARD_NOT_FOUND;
       }
+      Logger.log(
+        `Card balance: ${card.amount} | Movement amount: ${data.amount}`,
+        `CardService.ProcessPomeloTransaction.Authorize: ${data.authorize}`,
+      );
       if (data.authorize) {
-        Logger.log(
-          `Card balance: ${card.amount} | Movement amount: ${data.amount}`,
-          CardServiceController.name,
-        );
         const allowedBalance =
           card.amount * (1.0 - this.BLOCK_BALANCE_PERCENTAGE);
         if (allowedBalance <= data.amount) {
@@ -1845,6 +1991,9 @@ export class CardServiceController extends AccountServiceController {
     user: User,
     account?: AccountDocument,
   ) {
+    if (!user?.email) {
+      throw new BadRequestException('Email not found');
+    }
     // TODO[hender - 2024/08/12] Check the Surname, City, Region to remove special characters
     // TODO[hender - 2024/08/12] Check the Surname, City, Region to remove numbers
     const rtaUserCard = await cardIntegration.getUser({

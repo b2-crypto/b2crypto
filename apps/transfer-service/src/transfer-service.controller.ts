@@ -80,6 +80,8 @@ import { TransferCreateButtonDto } from './dto/transfer.create.button.dto';
 import { BoldStatusEnum } from './enum/bold.status.enum';
 import EventsNamesTransferEnum from './enum/events.names.transfer.enum';
 import { TransferServiceService } from './transfer-service.service';
+import WalletTypesAccountEnum from '@account/account/enum/wallet.types.account.enum';
+import TypesAccountEnum from '@account/account/enum/types.account.enum';
 
 @ApiTags('TRANSFERS')
 @Controller('transfers')
@@ -947,13 +949,13 @@ export class TransferServiceController implements GenericServiceController {
       }
 
       const cardId = webhookTransferDto?.requestBodyJson?.card?.id ?? '';
-
       const account = await this.builder.getPromiseAccountEventClient(
         EventsNamesAccountEnum.findOneByCardId,
         {
           id: cardId,
         },
       );
+
       if (!account) {
         Logger.error(
           `Account by card ${cardId} was not found`,
@@ -984,11 +986,11 @@ export class TransferServiceController implements GenericServiceController {
       const transferDto: TransferCreateDto = new TransferCreateDto();
       transferDto.crm = crm;
       transferDto.status = status;
-      transferDto.account = account;
+      transferDto.account = account._id.toString();
       transferDto.typeAccount = account.type;
       transferDto.typeAccountType = account.accountType;
       transferDto.userAccount = account.owner;
-      transferDto.typeTransaction = category;
+      transferDto.typeTransaction = category._id.toString();
       transferDto.amount = webhookTransferDto.amount;
       transferDto.amountCustodial = webhookTransferDto.amountCustodial;
       transferDto.currency = webhookTransferDto.currency;
@@ -1002,7 +1004,68 @@ export class TransferServiceController implements GenericServiceController {
         webhookTransferDto.descriptionStatusPayment;
       transferDto.confirmedAt = new Date();
 
-      await this.transferService.newTransfer(transferDto);
+      Logger.debug(JSON.stringify(transferDto), 'Transfer DTO');
+      const tx = await this.transferService.newTransfer(transferDto);
+      Logger.debug(tx, 'Transfer created');
+      const promises = [];
+      const transferDtoBrand = {
+        ...transferDto,
+      };
+      if (webhookTransferDto.integration == 'Sales') {
+        let accountBrand = null;
+        const accountBrandList =
+          await this.builder.getPromiseAccountEventClient(
+            EventsNamesAccountEnum.findAll,
+            {
+              where: {
+                accountType: WalletTypesAccountEnum.VAULT,
+                type: TypesAccountEnum.WALLET,
+                owner: { $exists: false },
+                accountId: 'TRX_USDT_S2UZ',
+                brand: account.brand,
+                crm: crm._id,
+              },
+            },
+          );
+        accountBrand = accountBrandList?.list?.[0];
+        if (accountBrand?._id) {
+          const paymentCard = await this.builder.getPromiseCategoryEventClient(
+            EventsNamesCategoryEnum.findOneByNameType,
+            {
+              slug: CommonService.getSlug(
+                `${OperationTransactionType.payment} card`,
+              ),
+              type: TagEnum.MONETARY_TRANSACTION_TYPE,
+            },
+          );
+          if (paymentCard?._id) {
+            transferDtoBrand.account = accountBrand._id.toString();
+            transferDtoBrand.typeAccount = accountBrand.type;
+            transferDtoBrand.typeAccountType = accountBrand.accountType;
+            transferDtoBrand.userAccount = accountBrand.owner;
+            transferDtoBrand.operationType = OperationTransactionType.payment;
+            transferDtoBrand.typeTransaction = paymentCard._id.toString();
+            transferDtoBrand.page = webhookTransferDto.page;
+            Logger.debug(
+              JSON.stringify(transferDtoBrand),
+              'Transfer DTO Brand',
+            );
+            promises.push(this.transferService.newTransfer(transferDtoBrand));
+          } else {
+            Logger.error(
+              `Category by slug payment-card was not found`,
+              'WebhookTransfer Category payment',
+            );
+          }
+        } else {
+          Logger.error(
+            `Account by brand ${account.brand} was not found`,
+            'WebhookTransfer Account Brand',
+          );
+        }
+      }
+
+      await Promise.all(promises);
     } catch (error) {
       Logger.error(error, 'WebhookTransfer');
     }

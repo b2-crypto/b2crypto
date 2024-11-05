@@ -294,29 +294,30 @@ export class CategoryServiceController implements GenericServiceController {
   @ApiKeyCheck()
   @Get('levels')
   // @CheckPoliciesAbility(new PolicyHandlerCategoryRead())
-  async listLevels() {
+  async listLevels(@Query() query: QuerySearchAnyDto) {
     const rta = [];
+    query = query ?? new QuerySearchAnyDto();
+    query.where = query.where ?? {};
+    query.take = 1000;
+    query.where.type = TagEnum.LEVEL;
+    query.where.hidden = false;
     const levels = await this.categoryService.getAll({
-      take: 1000,
-      where: { type: TagEnum.LEVEL, hidden: false },
+      ...query,
     });
+    delete query.where.hidden;
     for (const level of levels.list) {
       level['options'] = [];
+      query.where.categoryParent = level.id ?? level._id;
+      query.where.type = TagEnum.CUSTOM_LEVEL;
       const customLevels = await this.categoryService.getAll({
-        take: 1000,
-        where: {
-          categoryParent: level.id ?? level._id,
-          type: TagEnum.CUSTOM_LEVEL,
-        },
+        ...query,
       });
 
       for (const customLevel of customLevels.list) {
+        query.where.categoryParent = customLevel.id ?? customLevel._id;
+        query.where.type = TagEnum.CUSTOM_RULE;
         const customRules = await this.categoryService.getAll({
-          take: 1000,
-          where: {
-            categoryParent: customLevel.id ?? customLevel._id,
-            type: TagEnum.CUSTOM_RULE,
-          },
+          ...query,
         });
         customLevel['rules'] = customRules.list.map((rule) => {
           return {
