@@ -1412,7 +1412,10 @@ export class CardServiceController extends AccountServiceController {
     @Body() configActive: ConfigCardActivateDto,
     @Req() req?: any,
   ) {
-    return this.physicalActiveCard(configActive, this.getValidUserFromReq(req));
+    return this.physicalActiveCard(
+      configActive,
+      await this.getValidUserFromReq(req),
+    );
   }
 
   async getValidUserFromReq(@Req() req?: any) {

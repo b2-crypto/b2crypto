@@ -224,7 +224,13 @@ export class UserServiceService {
   }
 
   async updateUser(user: UserUpdateDto) {
-    const userUpdated = this.lib.update(user.id.toString(), user);
+    const userUpdated = await this.lib.update(user.id.toString(), user);
+    if (user.level) {
+      await this.updateLevelUser(
+        userUpdated.level.toString(),
+        userUpdated._id.toString(),
+      );
+    }
     return userUpdated;
   }
 
