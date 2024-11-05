@@ -216,6 +216,9 @@ export class IntegrationCardService<
     userCard: TUserCardDto,
     configActivate: ConfigCardActivateDto,
   ): Promise<AxiosResponse<any[], any>> {
+    if (!this.token) {
+      await this.generateHttp();
+    }
     const request = {
       user_id: userCard['id'],
       pin: configActivate.pin,
@@ -225,7 +228,8 @@ export class IntegrationCardService<
     if (configActivate.prevCardId) {
       request.previous_card_id = configActivate.prevCardId;
     }
-    return this.http.post(this.routesMap.activateCard, request);
+    //return this.http.post(this.routesMap.activateCard, request);
+    return this.fetch('POST', this.routesMap.activateCard, request);
   }
 
   async getAffinityGroup(
