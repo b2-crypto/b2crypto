@@ -1,7 +1,6 @@
 import {
   BadRequestException,
   Injectable,
-  Logger,
   UnauthorizedException,
 } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
@@ -23,25 +22,27 @@ export class LocalStrategy extends PassportStrategy(Strategy) {
           data = await this.authService.decodeToken(req.body.apiKey);
           // TODO[hender] Validate if data has expired
         }
-        const crmId = await this.getCrm(req.body.crmId);
         const user = await this.validate(username, password);
-        if (!user.active) {
-          return done(false);
-        }
         if (user.message) {
           return done(user);
         }
-        const affiliatesList = user.personalData?.affiliates;
-        let affiliates;
-        if (affiliatesList) {
-          affiliates = await this.authService.getAffiliates(
-            affiliatesList,
-            crmId,
-          );
+        if (!user.active) {
+          return done(false);
+        }
+        if (req.body.crmId) {
+          const crmId = await this.getCrm(req.body.crmId);
+          const affiliatesList = user.personalData?.affiliates;
+          let affiliates;
+          if (affiliatesList) {
+            affiliates = await this.authService.getAffiliates(
+              affiliatesList,
+              crmId,
+            );
+          }
+          user.affiliate =
+            affiliates?.list?.length > 0 ? affiliates?.list[0] : null;
         }
         user.apiData = data;
-        user.affiliate =
-          affiliates?.list?.length > 0 ? affiliates?.list[0] : null;
         if (configService.get<string>('GOOGLE_2FA') === 'true') {
           if (req.body.code) {
             // Validate code if 2Factor is'n active

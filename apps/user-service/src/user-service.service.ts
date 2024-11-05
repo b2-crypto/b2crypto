@@ -276,9 +276,10 @@ export class UserServiceService {
       (physicalCardList.totalElements || 1) * nextLevel.valueNumber;
     const totalPurchase = totalToPay - totalPayment;
     // check value to pay
-    if (totalPurchase > wallet.amount * 0.9) {
+    const leftAmount = wallet.amount * 0.9;
+    if (totalPurchase > leftAmount) {
       throw new BadRequestException(
-        'The user does not have enough money to level up',
+        `The user does not have enough money (${leftAmount}) to level up (${totalPurchase})`,
       );
     }
     user.level = userLevelUpDto.level;

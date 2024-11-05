@@ -40,7 +40,7 @@ export class PomeloIntegrationProcessService {
       const amount = await this.getAmount(process);
       response = await this.executeProcess(process, authorize, amount.usd);
       await this.cache.setResponse(idempotency, response);
-      this.createTransferRecord(process, headers, response, amount);
+      this.createTransferRecord(process, headers, response, amount, authorize);
     }
     return response;
   }
@@ -50,6 +50,7 @@ export class PomeloIntegrationProcessService {
     headers: any,
     response: any,
     amount: any,
+    authorize?: boolean,
   ) {
     try {
       this.builder.emitTransferEventClient(
@@ -66,10 +67,35 @@ export class PomeloIntegrationProcessService {
           description: response?.message ?? '',
           amount: amount.amount,
           amountCustodial: amount.usd,
-          currency: amount.from,
-          currencyCustodial: amount.to,
+          currency: amount.from === 'USD' ? 'USDT' : amount.from,
+          currencyCustodial: amount.to === 'USD' ? 'USDT' : amount.to,
         },
       );
+      const commision = 0.03;
+      if (authorize && amount.amount * commision > 0) {
+        Logger.log(
+          `${response?.message} - $${amount.amount * commision}`,
+          'Commision to B2Fintech',
+        );
+        this.builder.emitTransferEventClient(
+          EventsNamesTransferEnum.createOneWebhook,
+          {
+            integration: 'Sales',
+            requestBodyJson: process,
+            requestHeadersJson: headers,
+            operationType: OperationTransactionType.purchase,
+            status: response?.status ?? CardsEnum.CARD_PROCESS_OK,
+            descriptionStatusPayment:
+              response?.status_detail ?? CardsEnum.CARD_PROCESS_OK,
+            description: response?.message ?? '',
+            page: 'Commision to B2Fintech',
+            amount: amount.amount * commision,
+            amountCustodial: amount.usd * commision,
+            currency: amount.from === 'USD' ? 'USDT' : amount.from,
+            currencyCustodial: amount.to === 'USD' ? 'USDT' : amount.to,
+          },
+        );
+      }
     } catch (error) {
       Logger.log(
         `Error creatin transfer: ${error}`,
