@@ -1468,8 +1468,69 @@ export class CardServiceController extends AccountServiceController {
       configActivate,
     );
     Logger.debug(JSON.stringify(rta), 'rta actived card');
-    if (rta && ((rta?.data && rta?.data['id']) || rta['id'])) {
-      //TODO Load card from cardId
+    if (rta) {
+      if (!!rta['error']) {
+        const details: Array<string> = (rta['details'] || []).map(
+          (err) => err.detail,
+        );
+        Logger.error(details, 'activate card');
+        throw new BadRequestException(details.join(','));
+      }
+      const cardId = (rta.data && rta.data['id']) || rta['id'];
+
+      const cards = await cardIntegration.getCard(cardId);
+      if (!cards['error']) {
+        Logger.debug(cards, `Result pomelo active`);
+        for (const crd of cards.data) {
+          Logger.debug(crd.id, `Search card active`);
+          const card = await this.cardService.findAll({
+            where: {
+              'cardConfig.id': crd.id,
+            },
+          });
+          if (!card.totalElements) {
+            const cardDto = this.buildCardDto(
+              crd,
+              user.personalData,
+              user.email,
+            );
+            const n_card = await this.cardService.createOne(
+              cardDto as AccountCreateDto,
+            );
+            Logger.debug(n_card.id, `Card created for ${user.email}`);
+            let afgName = 'grupo - 1';
+            if (configActivate.promoCode == 'pm2413') {
+              afgName = 'grupo - 3';
+            }
+            const cardAfg = await this.getAfgByLevel(afgName, true);
+            const group = await this.buildAFG(null, cardAfg);
+            const afg = group.list[0];
+            try {
+              const rta = await cardIntegration.updateCard({
+                id: n_card?.id,
+                affinity_group_id: afg.valueGroup,
+              });
+              Logger.debug(
+                rta.data,
+                `Updated AFG Card-${n_card?.id.toString()}`,
+              );
+              this.cardBuilder.emitAccountEventClient(
+                EventsNamesAccountEnum.updateOne,
+                {
+                  id: n_card?.id.toString(),
+                  group: afg._id,
+                },
+              );
+            } catch (error) {
+              Logger.error(
+                error.message || error,
+                `Update AFG Card-${n_card?.id.toString()}-${user.email}`,
+              );
+              throw new BadRequestException('Bad update card');
+            }
+          }
+        }
+      }
       return {
         statusCode: 200,
         data: 'Card actived',
