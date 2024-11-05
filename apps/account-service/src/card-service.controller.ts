@@ -1463,7 +1463,16 @@ export class CardServiceController extends AccountServiceController {
     if (configActivate.prevCardId) {
       request.previous_card_id = configActivate.prevCardId;
     }
-    const rta = cardIntegration.activateCard(user.userCard, configActivate);
+    const rta = await cardIntegration.activateCard(
+      user.userCard,
+      configActivate,
+    );
+    if (rta.data['id']) {
+      return {
+        statusCode: 200,
+        data: 'Card actived',
+      };
+    }
     return rta;
   }
 
