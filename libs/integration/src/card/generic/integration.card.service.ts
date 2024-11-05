@@ -176,7 +176,7 @@ export class IntegrationCardService<
     return this.http.patch(this.routesMap.updateUser, userCard);
   }
 
-  async getCard(card: TCardDto): Promise<AxiosResponse<any[], any>> {
+  async getCard(card: TCardDto): Promise<AxiosResponse<any, any>> {
     return await this.fetch('GET', this.routesMap.searchCard, card);
   }
   async getCardByQuery(query: CardSearchDto) {
