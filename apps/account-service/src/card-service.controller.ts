@@ -1467,7 +1467,9 @@ export class CardServiceController extends AccountServiceController {
       user.userCard,
       configActivate,
     );
-    if (rta.data['id']) {
+    Logger.debug(JSON.stringify(rta), 'rta actived card');
+    if (rta && ((rta?.data && rta?.data['id']) || rta['id'])) {
+      //TODO Load card from cardId
       return {
         statusCode: 200,
         data: 'Card actived',
