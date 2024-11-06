@@ -83,6 +83,7 @@ import EventsNamesAccountEnum from './enum/events.names.account.enum';
 import { AccountUpdateDto } from '@account/account/dto/account.update.dto';
 import WalletTypesAccountEnum from '@account/account/enum/wallet.types.account.enum';
 import { ConfigCardActivateDto } from '@account/account/dto/config.card.activate.dto';
+import { PinUpdateDto } from '@account/account/dto/pin.update.dto';
 
 @ApiTags(SwaggerSteakeyConfigEnum.TAG_CARD)
 @Controller('cards')
@@ -108,6 +109,48 @@ export class CardServiceController extends AccountServiceController {
 
   private readonly BLOCK_BALANCE_PERCENTAGE: number =
     this.configService.get<number>('AUTHORIZATIONS_BLOCK_BALANCE_PERCENTAGE');
+
+  @Patch('pin')
+  @ApiTags(SwaggerSteakeyConfigEnum.TAG_CARD)
+  @ApiBearerAuth('bearerToken')
+  @ApiHeader({
+    name: 'b2crypto-key',
+    description: 'The apiKey',
+  })
+  async updateOnePin(@Body() pinUpdateDto: PinUpdateDto, req?: any) {
+    const userId = CommonService.getUserId(req);
+    if (pinUpdateDto.pin) {
+      const card = await this.findOneById(pinUpdateDto.id);
+      if (card.cardConfig) {
+        const cardIntegration = await this.integration.getCardIntegration(
+          IntegrationCardEnum.POMELO,
+        );
+        if (!cardIntegration) {
+          throw new BadRequestException('Bad integration card');
+        }
+        const user = await this.cardBuilder.getPromiseUserEventClient(
+          EventsNamesUserEnum.findOneById,
+          userId,
+        );
+        try {
+          if (!user.userCard) {
+            user.userCard = await this.getUserCard(cardIntegration, user);
+          }
+          const cardUpdate = await cardIntegration.updateCard({
+            id: card.cardConfig.id,
+            pin: pinUpdateDto.pin.toString(),
+          });
+          if (cardUpdate['error']) {
+            throw new BadRequestException('PIN not updated');
+          }
+        } catch (err) {
+          Logger.error(err, 'Error in card profile creation');
+          throw new BadRequestException('Card not updated');
+        }
+      }
+    }
+    return this.updateOne(pinUpdateDto);
+  }
 
   @ApiExcludeEndpoint()
   @Get('all')
@@ -151,7 +194,6 @@ export class CardServiceController extends AccountServiceController {
     }
   }
 
-  @ApiExcludeEndpoint()
   @Get('me')
   @NoCache()
   @ApiBearerAuth('bearerToken')
@@ -1494,6 +1536,7 @@ export class CardServiceController extends AccountServiceController {
       });
       if (!card.totalElements) {
         const cardDto = this.buildCardDto(crd, user.personalData, user.email);
+        cardDto.pin = configActivate.pin;
         const n_card = await this.cardService.createOne(
           cardDto as AccountCreateDto,
         );
@@ -1940,6 +1983,7 @@ export class CardServiceController extends AccountServiceController {
     }
     return {
       name: person?.firstName,
+      pin: undefined,
       type: TypesAccountEnum.CARD,
       accountType: CardTypesAccountEnum[pomeloCard.card_type],
       firstName: person?.firstName ?? person?.name,

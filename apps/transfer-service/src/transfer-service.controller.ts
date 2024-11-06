@@ -177,7 +177,6 @@ export class TransferServiceController implements GenericServiceController {
     return this.transferService.getAll(query);
   }
 
-  @ApiExcludeEndpoint()
   @NoCache()
   @Get('me')
   @ApiTags(SwaggerSteakeyConfigEnum.TAG_DEPOSIT)
