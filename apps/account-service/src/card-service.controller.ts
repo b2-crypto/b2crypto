@@ -1451,12 +1451,15 @@ export class CardServiceController extends AccountServiceController {
       Logger.error(err, 'Error in card profile creation');
       throw new BadRequestException('Card profile not found');
     }
-
+    if (!configActivate.pin && configActivate.pin.length !== 4) {
+      configActivate.pin = CommonService.getNumberDigits(
+        CommonService.randomIntNumber(9999),
+        4,
+      );
+    }
     const request = {
       user_id: user.userCard.id,
-      pin:
-        configActivate.pin ??
-        CommonService.getNumberDigits(CommonService.randomIntNumber(9999), 4),
+      pin: configActivate.pin,
       previous_card_id: undefined,
       pan: configActivate.pan,
     };
@@ -1477,11 +1480,12 @@ export class CardServiceController extends AccountServiceController {
         throw new BadRequestException(details.join(','));
       }
       const cardId = (rta.data && rta.data['id']) || rta['id'];
+      Logger.debug(cardId, `cardId actived`);
 
       const cards = await cardIntegration.getCard(cardId);
       Logger.debug(cards, `Result pomelo active`);
       const crd = cards.data;
-      Logger.debug(crd.id, `Search card active`);
+      Logger.debug(cardId, `Search card active`);
       const card = await this.cardService.findAll({
         where: {
           'cardConfig.id': crd.id,
