@@ -1,9 +1,8 @@
-import { ApiProperty, PartialType } from '@nestjs/swagger';
+import { ApiProperty } from '@nestjs/swagger';
 import { IsMongoId, IsNotEmpty, IsNumber } from 'class-validator';
 import { ObjectId } from 'mongodb';
-import { AccountCreateDto } from './account.create.dto';
 
-export class PinUpdateDto extends PartialType(AccountCreateDto) {
+export class PinUpdateDto {
   @IsNotEmpty()
   @IsMongoId()
   @ApiProperty({
