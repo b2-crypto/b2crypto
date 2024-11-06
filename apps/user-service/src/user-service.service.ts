@@ -326,6 +326,7 @@ export class UserServiceService {
         //   userLevelUpDto.user.toString(),
         // );
       }
+      Logger.debug('Create One Card', 'Level up');
       this.builder.emitAccountEventClient(
         EventsNamesAccountEnum.createOneCard,
         {
