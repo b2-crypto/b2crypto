@@ -106,7 +106,6 @@ export class WalletServiceController extends AccountServiceController {
     return this.walletService.findAll(query);
   }
 
-  @ApiExcludeEndpoint()
   @ApiTags(SwaggerSteakeyConfigEnum.TAG_WALLET)
   @ApiBearerAuth('bearerToken')
   @ApiSecurity('b2crypto-key')
@@ -179,6 +178,7 @@ export class WalletServiceController extends AccountServiceController {
     return this.walletService.availableWalletsFireblocks(query);
   }
 
+  @ApiExcludeEndpoint()
   @Get('clean')
   @UseGuards(ApiKeyAuthGuard, JwtAuthGuard)
   @NoCache()
