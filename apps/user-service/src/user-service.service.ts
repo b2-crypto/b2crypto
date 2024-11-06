@@ -37,6 +37,7 @@ import { PspAccountInterface } from '@psp-account/psp-account/entities/psp-accou
 import TagEnum from '@common/common/enums/TagEnum';
 import EventsNamesUserEnum from './enum/events.names.user.enum';
 import EventsNamesPersonEnum from 'apps/person-service/src/enum/events.names.person.enum';
+import StatusAccountEnum from '@account/account/enum/status.account.enum';
 
 @Injectable()
 export class UserServiceService {
@@ -266,21 +267,22 @@ export class UserServiceService {
     const nextLevel = await this.getCategoryById(userLevelUpDto.level);
     const wallet = await this.getAccountById(userLevelUpDto.wallet);
     // check to pay
-    const physicalCardList = await this.builder.getPromiseAccountEventClient(
-      EventsNamesAccountEnum.findAll,
-      {
-        where: {
-          type: TypesAccountEnum.CARD,
-          owner: userLevelUpDto.user,
-          accountType: CardTypesAccountEnum.PHYSICAL,
-        },
-      },
-    );
-    const totalPayment =
-      physicalCardList.totalElements * currentLevel.valueNumber;
-    const totalToPay =
-      (physicalCardList.totalElements || 1) * nextLevel.valueNumber;
-    const totalPurchase = totalToPay - totalPayment;
+    // const physicalCardList = await this.builder.getPromiseAccountEventClient(
+    //   EventsNamesAccountEnum.findAll,
+    //   {
+    //     where: {
+    //       type: TypesAccountEnum.CARD,
+    //       owner: userLevelUpDto.user,
+    //       accountType: CardTypesAccountEnum.PHYSICAL,
+    //     },
+    //   },
+    // );
+    // const totalPayment =
+    //   physicalCardList.totalElements * currentLevel.valueNumber;
+    // const totalToPay =
+    //   (physicalCardList.totalElements || 1) * nextLevel.valueNumber;
+    //const totalPurchase = totalToPay - totalPayment;
+    const totalPurchase = currentLevel.valueNumber;
     // check value to pay
     const leftAmount = wallet.amount * 0.9;
     if (totalPurchase > leftAmount) {
@@ -316,10 +318,25 @@ export class UserServiceService {
           isApprove: true,
         },
       );
-      return this.updateLevelUser(
-        userLevelUpDto.level.toString(),
-        userLevelUpDto.user.toString(),
+      const rta = user;
+      if (user.level !== userLevelUpDto.level) {
+        Logger.log('Update level all cards to selected level', 'UPDATE LEVEL');
+        // rta = await this.updateLevelUser(
+        //   userLevelUpDto.level.toString(),
+        //   userLevelUpDto.user.toString(),
+        // );
+      }
+      this.builder.emitAccountEventClient(
+        EventsNamesAccountEnum.createOneCard,
+        {
+          force: true,
+          owner: user._id,
+          type: TypesAccountEnum.CARD,
+          statusText: StatusAccountEnum.ORDERED,
+          accountType: CardTypesAccountEnum.PHYSICAL,
+        },
       );
+      return rta;
     } catch (error) {
       throw new BadRequestException(error);
     }
