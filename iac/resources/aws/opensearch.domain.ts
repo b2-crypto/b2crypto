@@ -1,6 +1,7 @@
 import * as aws from '@pulumi/aws';
 import * as pulumi from '@pulumi/pulumi';
 import {
+  isStressTest,
   OPTL_OPEN_SEARCH_EBS_VOLUME_SIZE,
   OPTL_OPEN_SEARCH_INSTANCE_COUNT,
   OPTL_OPEN_SEARCH_INSTANCE_TYPE,
@@ -19,17 +20,24 @@ export const opensearchDomainOptl = new aws.opensearch.Domain(
   {
     // domainName: `${PROJECT_NAME}-optl-${STACK}`,
     engineVersion: 'OpenSearch_2.15',
-    clusterConfig: {
-      instanceType: OPTL_OPEN_SEARCH_INSTANCE_TYPE,
-      instanceCount: OPTL_OPEN_SEARCH_INSTANCE_COUNT,
-      zoneAwarenessEnabled: OPTL_OPEN_SEARCH_ZONE_AWARENESS_ENABLED,
-      zoneAwarenessConfig: OPTL_OPEN_SEARCH_ZONE_AWARENESS_ENABLED
-        ? {
-            availabilityZoneCount:
-              OPTL_OPEN_SEARCH_ZONE_AWARENESS_AVAILABILITY_COUNT,
-          }
-        : undefined,
-    },
+    clusterConfig: isStressTest()
+      ? {
+          instanceType: 'm5.large.search',
+          instanceCount: 3,
+          zoneAwarenessEnabled: true,
+          zoneAwarenessConfig: { availabilityZoneCount: 3 },
+        }
+      : {
+          instanceType: OPTL_OPEN_SEARCH_INSTANCE_TYPE,
+          instanceCount: OPTL_OPEN_SEARCH_INSTANCE_COUNT,
+          zoneAwarenessEnabled: OPTL_OPEN_SEARCH_ZONE_AWARENESS_ENABLED,
+          zoneAwarenessConfig: OPTL_OPEN_SEARCH_ZONE_AWARENESS_ENABLED
+            ? {
+                availabilityZoneCount:
+                  OPTL_OPEN_SEARCH_ZONE_AWARENESS_AVAILABILITY_COUNT,
+              }
+            : undefined,
+        },
     ebsOptions: {
       ebsEnabled: true,
       volumeSize: OPTL_OPEN_SEARCH_EBS_VOLUME_SIZE,
@@ -46,11 +54,13 @@ export const opensearchDomainOptl = new aws.opensearch.Domain(
       tlsSecurityPolicy: 'Policy-Min-TLS-1-2-2019-07',
     },
     vpcOptions: {
-      subnetIds: ec2Vpc.privateSubnetIds.apply((subnets) =>
-        OPTL_OPEN_SEARCH_INSTANCE_COUNT >= subnets.length
-          ? subnets
-          : subnets.slice(0, OPTL_OPEN_SEARCH_INSTANCE_COUNT),
-      ),
+      subnetIds: isStressTest()
+        ? ec2Vpc.privateSubnetIds
+        : ec2Vpc.privateSubnetIds.apply((subnets) =>
+            OPTL_OPEN_SEARCH_INSTANCE_COUNT >= subnets.length
+              ? subnets
+              : subnets.slice(0, OPTL_OPEN_SEARCH_INSTANCE_COUNT),
+          ),
       securityGroupIds: [ec2SecurityGroupOptlOpensearch.id],
     },
     advancedSecurityOptions: {

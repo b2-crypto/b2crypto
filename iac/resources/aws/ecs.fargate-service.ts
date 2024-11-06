@@ -87,7 +87,10 @@ export const ecsFargateService = new awsx.ecs.FargateService(
           { name: 'APP_NAME', value: APP_NAME },
           { name: 'GOOGLE_2FA', value: GOOGLE_2FA },
           { name: 'PORT', value: PORT },
-          { name: 'DATABASE_NAME', value: DATABASE_NAME },
+          {
+            name: 'DATABASE_NAME',
+            value: isStressTest() ? 'b2crypto' : DATABASE_NAME,
+          },
           {
             name: 'DATABASE_URL',
             value: pulumi

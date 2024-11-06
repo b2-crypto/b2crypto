@@ -14,8 +14,7 @@ export const mongodbatlasServerlessInstance =
         projectId: SECRETS.MONGOATLAS_PROJECT_ID,
         providerSettingsRegionName: 'US_EAST_1',
         providerSettingsProviderName: 'AWS',
-        terminationProtectionEnabled: true,
-        continuousBackupEnabled: false,
+        terminationProtectionEnabled: isProduction(),
         stateName: 'IDLE',
         providerSettingsBackingProviderName: 'AWS',
         tags: Object.entries(TAGS).map(([key, value]) => ({

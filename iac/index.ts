@@ -100,10 +100,21 @@ export const route53ZoneData = {
 //   validationRecordFqdns: certificateValidation.validationRecordFqdns,
 // };
 
-export const mongodbatlasServerlessInstanceData =
-  mongodbatlasServerlessInstance;
+// export const mongodbatlasCloudBackupSnapshotData = {
+//   id: mongodbatlasCloudBackupSnapshot?.id,
+//   clusterName: mongodbatlasCloudBackupSnapshot?.clusterName,
+//   description: mongodbatlasCloudBackupSnapshot?.description,
+// };
 
-export const mongoAtlasClusterData = mongoAtlasCluster;
+export const mongodbatlasServerlessInstanceData = {
+  id: mongodbatlasServerlessInstance?.id,
+  name: mongodbatlasServerlessInstance?.name,
+};
+
+export const mongoAtlasClusterData = {
+  id: mongoAtlasCluster?.id,
+  name: mongoAtlasCluster?.name,
+};
 
 export const ecrRepositoryData = {
   id: ecrRepository.id,
