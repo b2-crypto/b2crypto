@@ -1451,7 +1451,8 @@ export class CardServiceController extends AccountServiceController {
       Logger.error(err, 'Error in card profile creation');
       throw new BadRequestException('Card profile not found');
     }
-    if (!configActivate.pin && configActivate.pin.length !== 4) {
+    Logger.debug(configActivate.pin, 'pin active card');
+    if (!configActivate.pin && configActivate.pin?.length !== 4) {
       configActivate.pin = CommonService.getNumberDigits(
         CommonService.randomIntNumber(9999),
         4,
