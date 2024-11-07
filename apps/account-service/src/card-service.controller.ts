@@ -241,7 +241,7 @@ export class CardServiceController extends AccountServiceController {
     if (!createDto.force) {
       //await this.validateRuleLimitCards(user, createDto.accountType);
     }
-    const level = await this.getCategoryById(user.level.toString());
+    const level = await this.getCategoryById(user.level?.toString());
     const cardAfg = this.getAfgByLevel(
       level.slug,
       createDto.accountType === CardTypesAccountEnum.PHYSICAL,
@@ -267,7 +267,7 @@ export class CardServiceController extends AccountServiceController {
       throw new BadRequestException('Already have 10 cards');
     }
     createDto.owner = user._id;
-    if (createDto.pin.toString().length != 4) {
+    if (createDto.pin && createDto.pin?.toString().length != 4) {
       throw new BadRequestException('The PIN must be 4 digits');
     }
     createDto.pin =
@@ -1561,9 +1561,9 @@ export class CardServiceController extends AccountServiceController {
           cardDto as AccountCreateDto,
         );
         Logger.debug(n_card.id, `Card created for ${user.email}`);
-        let afgName = 'grupo - 1';
+        let afgName = 'grupo-1';
         if (configActivate.promoCode == 'pm2413') {
-          afgName = 'grupo - 3';
+          afgName = 'grupo-3';
         }
         const cardAfg = await this.getAfgByLevel(afgName, true);
         const group = await this.buildAFG(null, cardAfg);
