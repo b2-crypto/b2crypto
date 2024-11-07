@@ -1,4 +1,4 @@
-import { IsEnum, IsOptional, IsString, Min } from 'class-validator';
+import { IsEnum, IsOptional, IsString } from 'class-validator';
 import TypesAccountEnum from '../enum/types.account.enum';
 import { AccountCreateDto } from './account.create.dto';
 import { ApiProperty } from '@nestjs/swagger';
@@ -27,7 +27,6 @@ export class WalletCreateDto extends AccountCreateDto {
   accountType: WalletTypesAccountEnum;
 
   @IsString()
-  @Min(0)
   @IsOptional()
   @ApiProperty({
     required: false,
