@@ -295,7 +295,7 @@ export class CardServiceController extends AccountServiceController {
     const levelCardGroup = await this.cardBuilder.getPromiseCategoryEventClient(
       EventsNamesCategoryEnum.findOneByNameType,
       {
-        slug: cardGroupName,
+        slug: `/${cardGroupName}/ig`,
       },
     );
     const cardGroupPrice = await this.cardBuilder.getPromiseCategoryEventClient(
