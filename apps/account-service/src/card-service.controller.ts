@@ -244,7 +244,13 @@ export class CardServiceController extends AccountServiceController {
     if (!createDto.force) {
       //await this.validateRuleLimitCards(user, createDto.accountType);
     }
-    let level = await this.getCategoryById(user.level?.toString());
+    //let level = await this.getCategoryById(user.level?.toString());
+    let level = await this.cardBuilder.getPromiseCategoryEventClient(
+      EventsNamesCategoryEnum.findOneByNameType,
+      {
+        slug: 'grupo-1',
+      },
+    );
     const cardAfg = this.getAfgByLevel(
       level.slug,
       createDto.accountType === CardTypesAccountEnum.PHYSICAL,
