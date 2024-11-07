@@ -13,10 +13,10 @@ import * as basicAuth from 'express-basic-auth';
 import { UserServiceModule } from '../../user-service/src/user-service.module';
 
 import { QueueAdminModule } from '@common/common/queue-admin-providers/queue.admin.provider.module';
-// import {
-//   FastifyAdapter,
-//   NestFastifyApplication,
-// } from '@nestjs/platform-fastify';
+import {
+  FastifyAdapter,
+  NestFastifyApplication,
+} from '@nestjs/platform-fastify';
 import { OpenAPIObject } from '@nestjs/swagger';
 import { PathsObject } from '@nestjs/swagger/dist/interfaces/open-api-spec.interface';
 import { AccountServiceModule } from 'apps/account-service/src/account-service.module';
@@ -30,15 +30,15 @@ async function bootstrap() {
   Logger.log(process.env.TZ, 'Timezone');
   await tracerRun();
 
-  const app = await NestFactory.create(AppHttpModule, {
-    // logger: false,
-    cors: true,
-  });
+  // const app = await NestFactory.create(AppHttpModule, {
+  //   // logger: false,
+  //   cors: true,
+  // });
 
-  // const app = await NestFactory.create<NestFastifyApplication>(
-  //   AppHttpModule,
-  //   new FastifyAdapter(),
-  // );
+  const app = await NestFactory.create<NestFastifyApplication>(
+    AppHttpModule,
+    new FastifyAdapter(),
+  );
 
   const configService = app.get(ConfigService);
 
@@ -67,7 +67,14 @@ async function bootstrap() {
     credentials: true,
     allowedHeaders: 'b2crypto-affiliate-key b2crypto-key Content-Type Accept',
   });
-  app.getHttpAdapter().getInstance().disable('x-powered-by');
+
+  app
+    .getHttpAdapter()
+    .getInstance()
+    .addHook('onSend', (request, reply, payload, done) => {
+      reply.header('x-powered-by', '');
+      done();
+    });
 
   app.connectMicroservice(
     await QueueAdminModule.getClientProvider(
