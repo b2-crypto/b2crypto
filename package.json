@@ -150,6 +150,7 @@
     "express-basic-auth": "^1.2.1",
     "ioredis": "^5.2.4",
     "ipaddr.js": "^2.2.0",
+    "jest-mock": "^29.7.0",
     "libphonenumber-js": "^1.11.13",
     "mongodb": "^3.6.0",
     "mongoose": "^6.7.0",
@@ -235,6 +236,7 @@
       "<rootDir>/libs/"
     ],
     "moduleNameMapper": {
+      "^apps/file-service/src/(.*)$": "<rootDir>/apps/file-service/src/$1",
       "^@config/config(|/.*)$": "<rootDir>/config/configuration",
       "^@builder/builders(|/.*)$": "<rootDir>/libs/builders/src/$1",
       "^@common/common(|/.*)$": "<rootDir>/libs/common/src/$1",
@@ -276,10 +278,13 @@
       "^apps/integration-service/src/(.*)$": "<rootDir>/apps/integration-service/src/$1",
       "^apps/affiliate-service/src/(.*)$": "<rootDir>/apps/affiliate-service/src/$1",
       "^apps/stats-service/src/(.*)$": "<rootDir>/apps/stats-service/src/$1",
+      "^@stats/stats(|/.*)$": "<rootDir>/libs/stats/src/$1",
       "^apps/brand-service/src/(.*)$": "<rootDir>/apps/brand-service/src/$1",
       "^apps/traffic-service/src/(.*)$": "<rootDir>/apps/traffic-service/src/$1",
       "^apps/person-service/src/(.*)$": "<rootDir>/apps/person-service/src/$1",
-      "^libs/stats/src/(.*)$": "<rootDir>/libs/stats/src/$1"
+      "^libs/stats/src/(.*)$": "<rootDir>/libs/stats/src/$1",
+      "^apps/(.*)$": "<rootDir>/apps/$1",
+      "^@common/(.*)$": "<rootDir>/libs/common/src/$1"
     }
   }
 }

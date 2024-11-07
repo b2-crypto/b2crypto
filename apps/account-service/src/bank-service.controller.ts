@@ -12,14 +12,8 @@ import {
   Req,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { User } from '@user/user/entities/mongoose/user.schema';
-import { CategoryServiceService } from 'apps/category-service/src/category-service.service';
-import { GroupServiceService } from 'apps/group-service/src/group-service.service';
-import { StatusServiceService } from 'apps/status-service/src/status-service.service';
-import { UserServiceService } from 'apps/user-service/src/user-service.service';
-import { AccountServiceController } from './account-service.controller';
-import { AccountServiceService } from './account-service.service';
 import { NoCache } from '@common/common/decorators/no-cache.decorator';
+import { BankServiceService } from './bank-service.service';
 
 @ApiTags('BANK')
 @Controller('bank')
