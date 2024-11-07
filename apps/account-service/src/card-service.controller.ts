@@ -72,7 +72,7 @@ import { StatusServiceService } from 'apps/status-service/src/status-service.ser
 import EventsNamesTransferEnum from 'apps/transfer-service/src/enum/events.names.transfer.enum';
 import EventsNamesUserEnum from 'apps/user-service/src/enum/events.names.user.enum';
 import { UserServiceService } from 'apps/user-service/src/user-service.service';
-import { isEmpty, isString } from 'class-validator';
+import { isEmpty, isString, isNumber } from 'class-validator';
 import { SwaggerSteakeyConfigEnum } from 'libs/config/enum/swagger.stakey.config.enum';
 
 import { ResponsePaginator } from '../../../libs/common/src/interfaces/response-pagination.interface';
@@ -119,11 +119,11 @@ export class CardServiceController extends AccountServiceController {
   })
   async updateOnePin(@Body() pinUpdateDto: PinUpdateDto, @Req() req?: any) {
     const userId = CommonService.getUserId(req);
-    if (pinUpdateDto.pin && pinUpdateDto.id) {
+    if (isNumber(pinUpdateDto.pin) && pinUpdateDto.id) {
       if (pinUpdateDto.pin.toString().length != 4) {
         throw new BadRequestException('PIN must be 4 digits');
       }
-      const pin = CommonService.getNumberDigits(pinUpdateDto.pin, 4);
+      const pin = CommonService.getNumberDigits(parseInt(pinUpdateDto.pin), 4);
       const card = await this.findOneById(pinUpdateDto.id);
       if (card.cardConfig) {
         const cardIntegration = await this.integration.getCardIntegration(
