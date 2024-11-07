@@ -315,16 +315,16 @@ export class CardServiceController extends AccountServiceController {
       CommonService.getNumberDigits(CommonService.randomIntNumber(9999), 4);
     const account = await this.cardService.createOne(createDto);
     let tx = null;
+    if (price > 0) {
+      tx = await this.txPurchaseCard(
+        price,
+        user,
+        `PURCHASE_${createDto.type}_${createDto.accountType}`,
+        null,
+        `Compra de ${createDto.type} ${createDto.accountType} ${level.name}`,
+      );
+    }
     try {
-      if (price > 0) {
-        tx = await this.txPurchaseCard(
-          price,
-          user,
-          `PURCHASE_${createDto.type}_${createDto.accountType}`,
-          null,
-          `Compra de ${createDto.type} ${createDto.accountType} ${level.name}`,
-        );
-      }
       const cardIntegration = await this.integration.getCardIntegration(
         IntegrationCardEnum.POMELO,
         account,
@@ -501,6 +501,9 @@ export class CardServiceController extends AccountServiceController {
         throw new BadRequestException('Need wallet to pay');
       }
       account = listAccount.list[0];
+    }
+    if (totalPurchase > account.amount * 0.9) {
+      throw new BadRequestException('Wallet with enough balance');
     }
     return this.cardBuilder.getPromiseTransferEventClient(
       EventsNamesTransferEnum.createOne,
