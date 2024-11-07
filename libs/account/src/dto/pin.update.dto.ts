@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsMongoId, IsNotEmpty, IsNumber } from 'class-validator';
+import { IsMongoId, IsNotEmpty, IsString } from 'class-validator';
 import { ObjectId } from 'mongodb';
 
 export class PinUpdateDto {
@@ -13,11 +13,11 @@ export class PinUpdateDto {
   id: ObjectId;
 
   @IsNotEmpty()
-  @IsNumber()
+  @IsString()
   @ApiProperty({
     required: true,
     description: 'PIN to update. No sequence or repeat numbers',
     example: ['1234'],
   })
-  pin?: number;
+  pin?: string;
 }
