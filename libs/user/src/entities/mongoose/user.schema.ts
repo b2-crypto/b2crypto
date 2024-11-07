@@ -15,6 +15,7 @@ import { UserVerifyIdentitySchema } from './user.verify.identity.schema';
 import { Affiliate } from '@affiliate/affiliate/infrastructure/mongoose/affiliate.schema';
 import { Brand } from '@brand/brand/entities/mongoose/brand.schema';
 import { Group } from '@group/group/entities/mongoose/group.schema';
+import { RulesUser } from './rules.user.schema';
 
 export type UserDocument = User & Document;
 

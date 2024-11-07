@@ -37,12 +37,6 @@ import EventsNamesStatusEnum from 'apps/status-service/src/enum/events.names.sta
 import EventsNamesUserEnum from 'apps/user-service/src/enum/events.names.user.enum';
 import { AccountServiceService } from './account-service.service';
 import EventsNamesAccountEnum from './enum/events.names.account.enum';
-import { ActivityCreateDto } from '@activity/activity/dto/activity.create.dto';
-import { CommonService } from '@common/common';
-import EventsNamesUserEnum from 'apps/user-service/src/enum/events.names.user.enum';
-import EventsNamesStatusEnum from 'apps/status-service/src/enum/events.names.status.enum';
-import StatusAccountEnum from '@account/account/enum/status.account.enum';
-import { NoCache } from '@common/common/decorators/no-cache.decorator';
 
 @ApiTags('ACCOUNT')
 @Controller('accounts')

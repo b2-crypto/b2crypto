@@ -40,10 +40,6 @@ import { SwaggerSteakeyConfigEnum } from 'libs/config/enum/swagger.stakey.config
 import { BadRequestError } from 'passport-headerapikey';
 import EventsNamesPersonEnum from './enum/events.names.person.enum';
 import { PersonServiceService } from './person-service.service';
-import { ApiKeyAuthGuard } from '@auth/auth/guards/api.key.guard';
-import { AddressSchema } from '@person/person/entities/mongoose/address.schema';
-import { SwaggerSteakeyConfigEnum } from 'libs/config/enum/swagger.stakey.config.enum';
-import { NoCache } from '@common/common/decorators/no-cache.decorator';
 
 @ApiTags(SwaggerSteakeyConfigEnum.TAG_PROFILE)
 @Controller('persons')

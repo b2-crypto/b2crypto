@@ -9,6 +9,7 @@ import { ObjectId } from 'mongoose';
 import UserVerifyIdentityDto from '../dto/user.verify.identity.dto';
 import { UserBalanceModel } from './user.balance.model';
 import { BrandInterface } from '@brand/brand/entities/brand.interface';
+import { GroupInterface } from '@group/group/entities/group.interface';
 
 export interface UserInterface {
   _id?: ObjectId;
@@ -45,7 +46,6 @@ export interface UserInterface {
   category: CategoryInterface;
   level: CategoryInterface;
   personalData: PersonInterface;
-  brand: BrandInterface;
   affiliate: AffiliateInterface;
   group: GroupInterface;
   userParent: UserInterface;

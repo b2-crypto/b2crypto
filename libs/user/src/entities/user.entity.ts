@@ -13,6 +13,7 @@ import UserVerifyIdentityDto from '../dto/user.verify.identity.dto';
 import { BrandEntity } from '@brand/brand/entities/brand.entity';
 import { AffiliateEntity } from '@affiliate/affiliate/domain/entities/affiliate.entity';
 import { GroupEntity } from '@group/group/entities/group.entity';
+import { UserBalanceModel } from './user.balance.model';
 
 export class UserEntity implements UserInterface {
   _id?: ObjectId;
@@ -49,7 +50,6 @@ export class UserEntity implements UserInterface {
   category: CategoryEntity;
   level: CategoryEntity;
   personalData: PersonEntity;
-  brand: BrandEntity;
   affiliate: AffiliateEntity;
   group: GroupEntity;
   userParent: UserEntity;

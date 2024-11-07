@@ -65,7 +65,6 @@ import { isBoolean } from 'class-validator';
 import { SwaggerSteakeyConfigEnum } from 'libs/config/enum/swagger.stakey.config.enum';
 import { BadRequestError } from 'passport-headerapikey';
 import EventsNamesUserEnum from './enum/events.names.user.enum';
-import { CACHE_MANAGER, Cache } from '@nestjs/cache-manager';
 
 @ApiTags('AUTHENTICATION')
 @Controller('auth')

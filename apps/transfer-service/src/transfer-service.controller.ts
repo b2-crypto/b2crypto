@@ -71,13 +71,11 @@ import { PomeloProcessEnum } from 'apps/integration-service/src/enums/pomelo.pro
 import EventsNamesPspAccountEnum from 'apps/psp-service/src/enum/events.names.psp.acount.enum';
 import EventsNamesStatsEnum from 'apps/stats-service/src/enum/events.names.stats.enum';
 import EventsNamesStatusEnum from 'apps/status-service/src/enum/events.names.status.enum';
-import { isMongoId } from 'class-validator';
 import { SwaggerSteakeyConfigEnum } from 'libs/config/enum/swagger.stakey.config.enum';
 import { ApproveOrRejectDepositDto } from '../../../libs/transfer/src/dto/approve.or.reject.deposit.dto';
 import { BoldTransferRequestDto } from './dto/bold.transfer.request.dto';
 import { TransferAffiliateResponseDto } from './dto/transfer.affiliate.response.dto';
 import { TransferCreateButtonDto } from './dto/transfer.create.button.dto';
-import { BoldStatusEnum } from './enum/bold.status.enum';
 import EventsNamesTransferEnum from './enum/events.names.transfer.enum';
 import { TransferServiceService } from './transfer-service.service';
 import WalletTypesAccountEnum from '@account/account/enum/wallet.types.account.enum';
@@ -636,7 +634,7 @@ export class TransferServiceController implements GenericServiceController {
     return this.transferService.deleteTransfer(id);
   }
 
-  @AllowAnon()
+ /*  @AllowAnon()
   @EventPattern(EventsNamesTransferEnum.sendLast6hHistoryCardPurchases)
   // @CheckPoliciesAbility(new PolicyHandlerTransferCreate())
   async sendLast6hHistoryCardPurchasesEvent(
@@ -646,9 +644,9 @@ export class TransferServiceController implements GenericServiceController {
     CommonService.ack(ctx);
     await this.transferService.sendLast6hHistoryCardPurchases(!!shortData);
     return true;
-  }
+  } */
 
-  @AllowAnon()
+/*   @AllowAnon()
   @EventPattern(EventsNamesTransferEnum.sendLast6hHistoryCardWalletDeposits)
   // @CheckPoliciesAbility(new PolicyHandlerTransferCreate())
   async sendLast6hHistoryCardWalletDepositsEvent(
@@ -658,9 +656,9 @@ export class TransferServiceController implements GenericServiceController {
     CommonService.ack(ctx);
     await this.transferService.sendLast6hHistoryCardWalletDeposits(!!shortData);
     return true;
-  }
+  } */ //TODO [Nestor]: errores no identificados
 
-  @AllowAnon()
+ /*  @AllowAnon()
   @EventPattern(EventsNamesTransferEnum.sendLast6hHistory)
   // @CheckPoliciesAbility(new PolicyHandlerTransferCreate())
   async sendLast6hHistory(
@@ -672,7 +670,7 @@ export class TransferServiceController implements GenericServiceController {
     await this.transferService.sendLast6hHistoryCardPurchases(!!shortData);
     return true;
   }
-
+ */
   @AllowAnon()
   @MessagePattern(EventsNamesTransferEnum.findAll)
   findAllEvent(@Payload() query: QuerySearchAnyDto, @Ctx() ctx?: RmqContext) {

@@ -68,6 +68,7 @@ import { PspAccountServiceService } from 'apps/psp-service/src/psp.account.servi
 import { StatusServiceService } from 'apps/status-service/src/status-service.service';
 import { BoldStatusEnum } from './enum/bold.status.enum';
 import { BoldTransferRequestDto } from './dto/bold.transfer.request.dto';
+import EventsNamesUserEnum from 'apps/user-service/src/enum/events.names.user.enum';
 
 @Injectable()
 export class TransferServiceService
@@ -569,7 +570,7 @@ export class TransferServiceService
       ) {
         amount *= -1;
       }
-      accountToUpdate.amount += transferSaved.amount * multiply;
+    /*   accountToUpdate.amount += transferSaved.amount * multiply; */  // TODO[Nestor] multiply no aparece
     }
     transferSaved.accountResultBalance = accountToUpdate.amount;
     const accountUpdated = await this.accountService.updateOne(accountToUpdate);

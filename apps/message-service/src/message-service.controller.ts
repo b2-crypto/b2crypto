@@ -13,11 +13,6 @@ import {
 import { ApiTags } from '@nestjs/swagger';
 
 import { AllowAnon } from '@auth/auth/decorators/allow-anon.decorator';
-import { PolicyHandlerMessageCreate } from '@auth/auth/policy/message/policity.handler.message.create';
-import { PolicyHandlerMessageDelete } from '@auth/auth/policy/message/policity.handler.message.delete';
-import { PolicyHandlerMessageRead } from '@auth/auth/policy/message/policity.handler.message.read';
-import { PolicyHandlerMessageUpdate } from '@auth/auth/policy/message/policity.handler.message.update';
-import { CheckPoliciesAbility } from '@auth/auth/policy/policy.handler.ability';
 import { CommonService } from '@common/common';
 import GenericServiceController from '@common/common/interfaces/controller.generic.interface';
 import { QuerySearchAnyDto } from '@common/common/models/query_search-any.dto';
@@ -208,131 +203,16 @@ export class MessageServiceController implements GenericServiceController {
   }
 
   @AllowAnon()
-  @EventPattern(EventsNamesMessageEnum.sendCardRequestConfirmationEmail)
-  async eventSendCardRequestConfirmationEmail(
+  @EventPattern(EventsNamesMessageEnum.sendEmailBalanceReport)
+  async eventSendEmailReport(
     @Payload() message: MessageCreateDto,
     @Ctx() ctx: RmqContext,
   ) {
     CommonService.ack(ctx);
     try {
-      await this.messageService.sendCardRequestConfirmationEmail(message);
+      await this.messageService.sendEmailBalanceReport(message);
     } catch (err) {
-      Logger.error(
-        err,
-        `${MessageServiceController.name}-sendCardRequestConfirmationEmail`,
-      );
-    }
-  }
-
-  @AllowAnon()
-  @EventPattern(EventsNamesMessageEnum.sendProfileRegistrationCreation)
-  async eventSendProfileRegistrationCreation(
-    @Payload() message: MessageCreateDto,
-    @Ctx() ctx: RmqContext,
-  ) {
-    CommonService.ack(ctx);
-    try {
-      await this.messageService.sendProfileRegistrationCreation(message);
-    } catch (err) {
-      Logger.error(
-        err,
-        `${MessageServiceController.name}-sendProfileRegistrationCreation`,
-      );
-    }
-  }
-
-  @AllowAnon()
-  @EventPattern(EventsNamesMessageEnum.sendVirtualPhysicalCards)
-  async eventSendVirtualPhysicalCards(
-    @Payload() message: MessageCreateDto,
-    @Ctx() ctx: RmqContext,
-  ) {
-    CommonService.ack(ctx);
-    try {
-      await this.messageService.sendVirtualPhysicalCards(message);
-    } catch (err) {
-      Logger.error(
-        err,
-        `${MessageServiceController.name}-sendVirtualPhysicalCards`,
-      );
-    }
-  }
-
-  @AllowAnon()
-  @EventPattern(EventsNamesMessageEnum.sendAdjustments)
-  async eventSendAdjustments(
-    @Payload() message: MessageCreateDto,
-    @Ctx() ctx: RmqContext,
-  ) {
-    CommonService.ack(ctx);
-    try {
-      await this.messageService.sendAdjustments(message);
-    } catch (err) {
-      Logger.error(err, `${MessageServiceController.name}-sendAdjustments`);
-    }
-  }
-
-  @AllowAnon()
-  @EventPattern(EventsNamesMessageEnum.sendCryptoWalletsManagement)
-  async eventSendCryptoWalletsManagement(
-    @Payload() message: MessageCreateDto,
-    @Ctx() ctx: RmqContext,
-  ) {
-    CommonService.ack(ctx);
-    try {
-      await this.messageService.sendCryptoWalletsManagement(message);
-    } catch (err) {
-      Logger.error(
-        err,
-        `${MessageServiceController.name}-sendCryptoWalletsManagement`,
-      );
-    }
-  }
-
-  @AllowAnon()
-  @EventPattern(EventsNamesMessageEnum.sendSecurityNotifications)
-  async eventSendSecurityNotifications(
-    @Payload() message: MessageCreateDto,
-    @Ctx() ctx: RmqContext,
-  ) {
-    CommonService.ack(ctx);
-    try {
-      await this.messageService.sendSecurityNotifications(message);
-    } catch (err) {
-      Logger.error(
-        err,
-        `${MessageServiceController.name}-sendSecurityNotifications`,
-      );
-    }
-  }
-
-  @AllowAnon()
-  @EventPattern(EventsNamesMessageEnum.sendPasswordRestoredEmail)
-  async eventSendPasswordRestoredEmail(
-    @Payload() message: MessageCreateDto,
-    @Ctx() ctx: RmqContext,
-  ) {
-    CommonService.ack(ctx);
-    try {
-      await this.messageService.sendPasswordRestoredEmail(message);
-    } catch (err) {
-      Logger.error(
-        err,
-        `${MessageServiceController.name}-sendPasswordRestoredEmail`,
-      );
-    }
-  }
-  @AllowAnon()
-  @EventPattern(EventsNamesMessageEnum.sendPurchases)
-  async eventSendPurchases(
-    @Payload() message: MessageCreateDto,
-    @Ctx() ctx: RmqContext,
-  ) {
-    CommonService.ack(ctx);
-    try {
-      await this.messageService.sendPurchases(message);
-    } catch (err) {
-      Logger.error(err, `${MessageServiceController.name}-sendPurchasesEmail`);
+      Logger.error(err, MessageServiceController.name);
     }
   }
 

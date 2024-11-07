@@ -2,25 +2,24 @@
 import { BuildersService } from '@builder/builders';
 import { EnvironmentEnum } from '@common/common/enums/environment.enum';
 import { QuerySearchAnyDto } from '@common/common/models/query_search-any.dto';
+import { CrmInterface } from '@crm/crm/entities/crm.interface';
+import { Crm } from '@crm/crm/entities/mongoose/crm.schema';
+import { LeadDocument } from '@lead/lead/entities/mongoose/lead.schema';
 import { MessageServiceMongooseService } from '@message/message';
 import { MessageCreateDto } from '@message/message/dto/message.create.dto';
 import { MessageUpdateDto } from '@message/message/dto/message.update.dto';
 import { MailerService } from '@nestjs-modules/mailer';
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { EmailMessageBuilder } from './email-message.builder';
-import TemplatesMessageEnum from './enum/templates.message.enum';
 import EventsNamesAccountEnum from 'apps/account-service/src/enum/events.names.account.enum';
-import EventsNamesUserEnum from 'apps/user-service/src/enum/events.names.user.enum';
-import { isEmail } from 'class-validator';
 import EventsNamesCrmEnum from 'apps/crm-service/src/enum/events.names.crm.enum';
-import { Crm } from '@crm/crm/entities/mongoose/crm.schema';
-import { CrmInterface } from '@crm/crm/entities/crm.interface';
 import EventsNamesLeadEnum from 'apps/lead-service/src/enum/events.names.lead.enum';
 import EventsNamesUserEnum from 'apps/user-service/src/enum/events.names.user.enum';
 import axios from 'axios';
-import { LeadDocument } from '@lead/lead/entities/mongoose/lead.schema';
+import { isEmail } from 'class-validator';
 import * as pug from 'pug';
+import { EmailMessageBuilder } from './email-message.builder';
+import TemplatesMessageEnum from './enum/templates.message.enum';
 
 @Injectable()
 export class MessageServiceService {
@@ -98,6 +97,19 @@ export class MessageServiceService {
     return this.sendEmail(emailMessage, TemplatesMessageEnum.otpNotification);
   }
 
+  async sendEmailBalanceReport(message: MessageCreateDto) {
+    //return this.sendEmail(message, TemplatesMessageEnum.report);
+    const emailMessage = new EmailMessageBuilder()
+      .setName(message.name ?? 'Balance Report')
+      .setBody(message.body ?? `Your balance is here.`)
+      .setOriginText(this.getOriginEmail())
+      .setDestinyText(message.destinyText)
+      .setVars(message.vars)
+      .setAttachments(message.attachments)
+      .build();
+    return this.sendEmail(emailMessage, TemplatesMessageEnum.report);
+  }
+
   async sendCardRequestConfirmationEmail(message: MessageCreateDto) {
     const emailMessage = new EmailMessageBuilder()
       .setName('Card Request Confirmation')
@@ -152,6 +164,17 @@ export class MessageServiceService {
       emailMessage,
       TemplatesMessageEnum.virtualPhysicalCards,
     );
+  }
+
+  async sendPreRegisterEmail(message: MessageCreateDto) {
+    const emailMessage = new EmailMessageBuilder()
+      .setName('Pre-registration Confirmation')
+      .setBody('Thank you for pre-registering with B2pay.')
+      .setOriginText(this.getOriginEmail())
+      .setDestinyText(message.destinyText)
+      .setVars(message.vars)
+      .build();
+    return this.sendEmail(emailMessage, TemplatesMessageEnum.preRegister);
   }
 
   async sendAdjustments(message: MessageCreateDto) {
@@ -243,6 +266,12 @@ export class MessageServiceService {
     template: TemplatesMessageEnum,
   ) {
     try {
+      if (
+        this.configService.get<string>('ENVIRONMENT') !== EnvironmentEnum.prod
+      ) {
+        Logger.debug(message.destinyText, 'Sended email');
+        return { success: true };
+      }
       const recipient = message.destinyText;
 
       if (!isEmail(recipient)) {
@@ -262,12 +291,13 @@ export class MessageServiceService {
         text: message.body,
         template: template,
         context: message.vars,
+        attachments: message.attachments,
         html,
       });
 
       return { success: true };
     } catch (error) {
-      console.error('Error sending email:', error);
+      Logger.error(error, 'Error sending email:');
       return { success: false, error: error.message };
     }
   }
@@ -276,7 +306,9 @@ export class MessageServiceService {
       pageTitle: vars.name,
       headerColor: this.getHeaderColorForTemplate(template),
       headerTitle: vars.name,
-      logoUrl: process.env.LOGO_URL,
+      logoUrl: this.configService.getOrThrow('LOGO_URL'),
+      socialMediaIcons: this.configService.getOrThrow('SOCIAL_MEDIA_ICONS'),
+      socialMediaLinks: this.configService.getOrThrow('SOCIAL_MEDIA_LINKS'),
       vars: vars,
     };
     const rta = pug.renderFile(template, templateVars);
