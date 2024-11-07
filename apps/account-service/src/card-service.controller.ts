@@ -316,13 +316,18 @@ export class CardServiceController extends AccountServiceController {
     const account = await this.cardService.createOne(createDto);
     let tx = null;
     if (price > 0) {
-      tx = await this.txPurchaseCard(
-        price,
-        user,
-        `PURCHASE_${createDto.type}_${createDto.accountType}`,
-        null,
-        `Compra de ${createDto.type} ${createDto.accountType} ${level.name}`,
-      );
+      try {
+        tx = await this.txPurchaseCard(
+          price,
+          user,
+          `PURCHASE_${createDto.type}_${createDto.accountType}`,
+          null,
+          `Compra de ${createDto.type} ${createDto.accountType} ${level.name}`,
+        );
+      } catch (err) {
+        await this.getAccountService().deleteOneById(account._id);
+        throw err;
+      }
     }
     try {
       const cardIntegration = await this.integration.getCardIntegration(
