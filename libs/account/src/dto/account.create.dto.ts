@@ -15,7 +15,6 @@ import {
   IsNotEmpty,
   IsOptional,
   IsString,
-  Min,
   ValidateNested,
 } from 'class-validator';
 import { ObjectId } from 'mongodb';
@@ -89,7 +88,6 @@ export class AccountCreateDto extends CreateAnyDto implements AccountInterface {
   secret: string;
 
   @IsString()
-  @Min(0)
   @ApiProperty({
     required: false,
     description: 'Account pin',
