@@ -120,6 +120,10 @@ export class CardServiceController extends AccountServiceController {
   async updateOnePin(@Body() pinUpdateDto: PinUpdateDto, @Req() req?: any) {
     const userId = CommonService.getUserId(req);
     if (pinUpdateDto.pin && pinUpdateDto.id) {
+      if (pinUpdateDto.pin.toString().length != 4) {
+        throw new BadRequestException('PIN must be 4 digits');
+      }
+      const pin = CommonService.getNumberDigits(pinUpdateDto.pin, 4);
       const card = await this.findOneById(pinUpdateDto.id);
       if (card.cardConfig) {
         const cardIntegration = await this.integration.getCardIntegration(
@@ -138,18 +142,33 @@ export class CardServiceController extends AccountServiceController {
           }
           const cardUpdate = await cardIntegration.updateCard({
             id: card.cardConfig.id,
-            pin: pinUpdateDto.pin.toString(),
+            pin,
           });
           if (cardUpdate['error']) {
             throw new BadRequestException('PIN not updated');
           }
         } catch (err) {
-          Logger.error(err, 'Error in card profile or update card');
+          if (err.response?.data) {
+            Logger.error(err.response?.data, 'Error HTTP request');
+            if (err.response?.data?.error?.details) {
+              throw new BadRequestException(
+                err.response?.data?.error?.details
+                  ?.map((e) => e.detail)
+                  .join(', '),
+              );
+            }
+          } else {
+            Logger.error(err, 'Error in card profile or update card');
+          }
           throw new BadRequestException('Card not updated');
         }
       }
+      return this.updateOne({
+        id: pinUpdateDto.id,
+        pin: pin,
+      });
     }
-    return this.updateOne(pinUpdateDto);
+    throw new BadRequestException('Not found id or PIN to update');
   }
 
   @ApiExcludeEndpoint()
@@ -248,11 +267,12 @@ export class CardServiceController extends AccountServiceController {
       throw new BadRequestException('Already have 10 cards');
     }
     createDto.owner = user._id;
+    if (createDto.pin.toString().length != 4) {
+      throw new BadRequestException('The PIN must be 4 digits');
+    }
     createDto.pin =
       createDto.pin ??
-      parseInt(
-        CommonService.getNumberDigits(CommonService.randomIntNumber(9999), 4),
-      );
+      CommonService.getNumberDigits(CommonService.randomIntNumber(9999), 4);
     const account = await this.cardService.createOne(createDto);
     try {
       const cardIntegration = await this.integration.getCardIntegration(

@@ -132,7 +132,10 @@ export class WalletServiceController extends AccountServiceController {
           name: 'USD Tether (Tron)',
           accountType: WalletTypesAccountEnum.VAULT,
           type: TypesAccountEnum.WALLET,
-          pin: 0,
+          pin: CommonService.getNumberDigits(
+            CommonService.randomIntNumber(9999),
+            4,
+          ),
           id: undefined,
           slug: '',
           searchText: '',
@@ -338,9 +341,7 @@ export class WalletServiceController extends AccountServiceController {
       dtoWallet.accountName = newWallet.address;
       dtoWallet.pin =
         dtoWallet.pin ??
-        parseInt(
-          CommonService.getNumberDigits(CommonService.randomIntNumber(9999), 4),
-        );
+        CommonService.getNumberDigits(CommonService.randomIntNumber(9999), 4);
       dtoWallet.accountType = WalletTypesAccountEnum.VAULT;
 
       walletUser = await this.walletService.createOne(dtoWallet);
@@ -388,9 +389,7 @@ export class WalletServiceController extends AccountServiceController {
       dtoWallet.accountName = newWallet.address;
       dtoWallet.pin =
         dtoWallet.pin ??
-        parseInt(
-          CommonService.getNumberDigits(CommonService.randomIntNumber(9999), 4),
-        );
+        CommonService.getNumberDigits(CommonService.randomIntNumber(9999), 4);
       dtoWallet.accountType = WalletTypesAccountEnum.VAULT;
 
       walletUser = await this.walletService.createOne(dtoWallet);
@@ -427,8 +426,9 @@ export class WalletServiceController extends AccountServiceController {
         accountId: newVault.id,
         accountName: walletBase.accountName,
         showToOwner: false,
-        pin: parseInt(
-          CommonService.getNumberDigits(CommonService.randomIntNumber(9999), 4),
+        pin: CommonService.getNumberDigits(
+          CommonService.randomIntNumber(9999),
+          4,
         ),
         responseCreation: newVault,
         id: undefined,
@@ -502,8 +502,9 @@ export class WalletServiceController extends AccountServiceController {
         accountId: newVault.id,
         accountName: walletBase.accountName,
         showToOwner: false,
-        pin: parseInt(
-          CommonService.getNumberDigits(CommonService.randomIntNumber(9999), 4),
+        pin: CommonService.getNumberDigits(
+          CommonService.randomIntNumber(9999),
+          4,
         ),
         responseCreation: newVault,
         id: undefined,
@@ -603,9 +604,7 @@ export class WalletServiceController extends AccountServiceController {
     createDto.owner = user.id ?? user._id;
     createDto.pin =
       createDto.pin ??
-      parseInt(
-        CommonService.getNumberDigits(CommonService.randomIntNumber(9999), 4),
-      );
+      CommonService.getNumberDigits(CommonService.randomIntNumber(9999), 4);
 
     const createdWallet = await this.walletService.createOne(createDto);
 

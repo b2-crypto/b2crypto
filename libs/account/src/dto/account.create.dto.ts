@@ -13,7 +13,6 @@ import {
   IsEnum,
   IsMongoId,
   IsNotEmpty,
-  IsNumber,
   IsOptional,
   IsString,
   Min,
@@ -89,13 +88,13 @@ export class AccountCreateDto extends CreateAnyDto implements AccountInterface {
   @IsOptional()
   secret: string;
 
-  @IsNumber({ maxDecimalPlaces: 0, allowNaN: false, allowInfinity: false })
+  @IsString()
   @Min(0)
   @ApiProperty({
     required: false,
     description: 'Account pin',
   })
-  pin: number;
+  pin: string;
 
   @ApiProperty({
     required: false,
