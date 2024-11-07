@@ -1,12 +1,11 @@
+import TypesAccountEnum from '@account/account/enum/types.account.enum';
 import CountryCodeEnum from '@common/common/enums/country.code.b2crypto.enum';
-import CurrencyCodeB2cryptoEnum from '@common/common/enums/currency-code-b2crypto.enum';
 import { CreateAnyDto } from '@common/common/models/create-any.dto';
 import { ApiProperty } from '@nestjs/swagger';
 import {
   IsBoolean,
   IsDate,
   IsEmpty,
-  IsEnum,
   IsMongoId,
   IsNotEmpty,
   IsNumber,
@@ -90,6 +89,20 @@ export class TransferCreateDto extends CreateAnyDto {
     examples: ['641a11cd77f0460f56d56beb'],
   })
   account: ObjectId;
+
+  @IsNumber()
+  @IsOptional()
+  accountResultBalance: number;
+
+  @IsNumber()
+  @IsOptional()
+  accountPrevBalance: number;
+
+  @IsEmpty()
+  typeAccount?: TypesAccountEnum;
+
+  @IsEmpty()
+  typeAccountType?: string;
 
   @IsEmpty()
   leadEmail: string;

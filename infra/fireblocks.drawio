@@ -1,0 +1,211 @@
+<mxfile host="65bd71144e">
+    <diagram id="111T_tgyLdepGgbF7fSM" name="Page-1">
+        <mxGraphModel dx="1359" dy="617" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="17" style="edgeStyle=orthogonalEdgeStyle;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=0;fontSize=20;fontColor=#DDE6ED;curved=1;" edge="1" parent="1" source="2" target="14">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="300.0000000000002" y="356" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="20" style="edgeStyle=orthogonalEdgeStyle;curved=1;html=1;fontSize=20;fontColor=#E9EDF5;entryX=0.01;entryY=0.202;entryDx=0;entryDy=0;entryPerimeter=0;exitX=0.25;exitY=0;exitDx=0;exitDy=0;exitPerimeter=0;fillColor=#dae8fc;strokeColor=#6c8ebf;" edge="1" parent="1" source="14" target="24">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="23" value="&lt;font style=&quot;font-size: 15px;&quot;&gt;req: new wallet&lt;/font&gt;" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=20;fontColor=#E9EDF5;" vertex="1" connectable="0" parent="20">
+                    <mxGeometry x="0.0629" y="1" relative="1" as="geometry">
+                        <mxPoint x="-42" y="66" as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="78" style="edgeStyle=orthogonalEdgeStyle;curved=1;html=1;entryX=-0.087;entryY=0.252;entryDx=0;entryDy=0;entryPerimeter=0;fontSize=15;fontColor=#E9EDF5;exitX=1;exitY=0.75;exitDx=0;exitDy=0;exitPerimeter=0;fillColor=#dae8fc;strokeColor=#6c8ebf;" edge="1" parent="1" source="14" target="75">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="430" y="392"/>
+                            <mxPoint x="430" y="576"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="79" value="req: withdraw" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=15;fontColor=#E9EDF5;" vertex="1" connectable="0" parent="78">
+                    <mxGeometry x="0.0759" y="1" relative="1" as="geometry">
+                        <mxPoint x="-21" y="-15" as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="14" value="&lt;font style=&quot;font-size: 15px;&quot;&gt;B2Fintech&lt;/font&gt;" style="sketch=0;points=[[0,0,0],[0.25,0,0],[0.5,0,0],[0.75,0,0],[1,0,0],[0,1,0],[0.25,1,0],[0.5,1,0],[0.75,1,0],[1,1,0],[0,0.25,0],[0,0.5,0],[0,0.75,0],[1,0.25,0],[1,0.5,0],[1,0.75,0]];outlineConnect=0;fontColor=#E9EDF5;gradientColor=#F78E04;gradientDirection=north;fillColor=none;strokeColor=#ffffff;dashed=0;verticalLabelPosition=bottom;verticalAlign=top;align=center;html=1;fontSize=12;fontStyle=0;aspect=fixed;shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.auto_scaling2;strokeWidth=1;" vertex="1" parent="1">
+                    <mxGeometry x="210" y="310" width="110" height="110" as="geometry"/>
+                </mxCell>
+                <mxCell id="31" style="edgeStyle=orthogonalEdgeStyle;curved=1;html=1;entryX=0.75;entryY=0;entryDx=0;entryDy=0;entryPerimeter=0;fontSize=15;fontColor=#E9EDF5;exitX=-0.069;exitY=0.83;exitDx=0;exitDy=0;exitPerimeter=0;fillColor=#d5e8d4;strokeColor=#82b366;" edge="1" parent="1" source="24" target="14">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="32" value="res: new wallet" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=15;fontColor=#E9EDF5;" vertex="1" connectable="0" parent="31">
+                    <mxGeometry x="0.5008" y="8" relative="1" as="geometry">
+                        <mxPoint x="30" y="17" as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="33" value="Create wallet user" style="points=[[0,0],[0.25,0],[0.5,0],[0.75,0],[1,0],[1,0.25],[1,0.5],[1,0.75],[1,1],[0.75,1],[0.5,1],[0.25,1],[0,1],[0,0.75],[0,0.5],[0,0.25]];outlineConnect=0;html=1;whiteSpace=wrap;fontSize=12;fontStyle=0;container=1;pointerEvents=0;collapsible=0;recursiveResize=0;shape=mxgraph.aws4.group;grIcon=mxgraph.aws4.group_aws_cloud;strokeColor=#E9EDF5;fillColor=none;verticalAlign=top;align=left;spacingLeft=30;dashed=0;labelBackgroundColor=none;strokeWidth=1;" vertex="1" parent="1">
+                    <mxGeometry x="459.61" y="20" width="390.39" height="210" as="geometry"/>
+                </mxCell>
+                <mxCell id="19" value="&lt;font style=&quot;font-size: 15px;&quot;&gt;Vault Fireblocks&lt;/font&gt;" style="perimeter=ellipsePerimeter;html=1;align=center;shadow=0;dashed=0;fontColor=#E9EDF5;labelBackgroundColor=none;fontSize=12;spacingTop=3;image;image=img/lib/ibm/blockchain/wallet.svg;strokeWidth=1;fillColor=none;imageBackground=none;imageAspect=1;imageBorder=none;aspect=fixed;" vertex="1" parent="33">
+                    <mxGeometry x="275.19000000000005" y="80" width="60" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="29" style="edgeStyle=orthogonalEdgeStyle;curved=1;html=1;fontSize=15;fontColor=#E9EDF5;fillColor=#dae8fc;strokeColor=#6c8ebf;" edge="1" parent="33" source="24" target="19">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="30" value="req: new asset" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=15;fontColor=#E9EDF5;" vertex="1" connectable="0" parent="29">
+                    <mxGeometry x="0.0229" y="2" relative="1" as="geometry">
+                        <mxPoint x="13" y="-11" as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="24" value="&lt;font style=&quot;font-size: 15px;&quot;&gt;E-Wallet&lt;/font&gt;" style="html=1;verticalLabelPosition=bottom;align=center;labelBackgroundColor=none;verticalAlign=top;strokeWidth=2;strokeColor=#36393d;shadow=0;dashed=0;shape=mxgraph.ios7.icons.wallet;fontSize=20;fillColor=#eeeeee;" vertex="1" parent="33">
+                    <mxGeometry x="55.190000000000055" y="80" width="30" height="24" as="geometry"/>
+                </mxCell>
+                <mxCell id="21" style="edgeStyle=orthogonalEdgeStyle;curved=1;html=1;fontSize=20;fontColor=#E9EDF5;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.554;entryY=-0.016;entryDx=0;entryDy=0;entryPerimeter=0;fillColor=#d5e8d4;strokeColor=#82b366;" edge="1" parent="33" source="19" target="24">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="305.19000000000005" y="50"/>
+                            <mxPoint x="72.19000000000005" y="50"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="22" value="&lt;font style=&quot;font-size: 15px;&quot;&gt;res: address new wallet&lt;/font&gt;" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=20;fontColor=#E9EDF5;" vertex="1" connectable="0" parent="21">
+                    <mxGeometry x="-0.2946" y="9" relative="1" as="geometry">
+                        <mxPoint x="-28" y="-19" as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="34" value="Deposit wallet user" style="points=[[0,0],[0.25,0],[0.5,0],[0.75,0],[1,0],[1,0.25],[1,0.5],[1,0.75],[1,1],[0.75,1],[0.5,1],[0.25,1],[0,1],[0,0.75],[0,0.5],[0,0.25]];outlineConnect=0;html=1;whiteSpace=wrap;fontSize=12;fontStyle=0;container=1;pointerEvents=0;collapsible=0;recursiveResize=0;shape=mxgraph.aws4.group;grIcon=mxgraph.aws4.group_aws_cloud;strokeColor=#E9EDF5;fillColor=none;verticalAlign=top;align=left;spacingLeft=30;dashed=0;labelBackgroundColor=none;strokeWidth=1;" vertex="1" parent="1">
+                    <mxGeometry x="459.61" y="240" width="390.39" height="270" as="geometry"/>
+                </mxCell>
+                <mxCell id="40" style="edgeStyle=orthogonalEdgeStyle;curved=1;html=1;entryX=0.457;entryY=0.029;entryDx=0;entryDy=0;entryPerimeter=0;fontSize=15;fontColor=#E9EDF5;fillColor=#dae8fc;strokeColor=#6c8ebf;" edge="1" parent="34" source="38" target="39">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="41" value="req: deposit" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=15;fontColor=#E9EDF5;" vertex="1" connectable="0" parent="40">
+                    <mxGeometry x="-0.2941" y="-2" relative="1" as="geometry">
+                        <mxPoint x="2" y="15" as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="38" value="&lt;font style=&quot;font-size: 15px;&quot;&gt;Vault Fireblocks&lt;/font&gt;" style="perimeter=ellipsePerimeter;html=1;align=center;shadow=0;dashed=0;fontColor=#E9EDF5;labelBackgroundColor=none;fontSize=12;spacingTop=3;image;image=img/lib/ibm/blockchain/wallet.svg;strokeWidth=1;fillColor=none;imageBackground=none;imageAspect=1;imageBorder=none;aspect=fixed;" vertex="1" parent="34">
+                    <mxGeometry x="45" y="40" width="60" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="45" style="edgeStyle=orthogonalEdgeStyle;curved=1;html=1;fontSize=15;fontColor=#E9EDF5;exitX=1.007;exitY=0.199;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0;entryY=0.25;entryDx=0;entryDy=0;entryPerimeter=0;fillColor=#dae8fc;strokeColor=#6c8ebf;" edge="1" parent="34" source="39" target="49">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="290.39" y="160" as="targetPoint"/>
+                        <Array as="points">
+                            <mxPoint x="170" y="207"/>
+                            <mxPoint x="170" y="150"/>
+                            <mxPoint x="290" y="150"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="46" value="req: deposit omnibus" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=15;fontColor=#E9EDF5;" vertex="1" connectable="0" parent="45">
+                    <mxGeometry x="0.0771" y="-3" relative="1" as="geometry">
+                        <mxPoint x="-6" y="23" as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="39" value="&lt;font style=&quot;font-size: 15px;&quot;&gt;E-Wallet&lt;/font&gt;" style="html=1;verticalLabelPosition=bottom;align=center;labelBackgroundColor=none;verticalAlign=top;strokeWidth=2;strokeColor=#36393d;shadow=0;dashed=0;shape=mxgraph.ios7.icons.wallet;fontSize=20;fillColor=#eeeeee;" vertex="1" parent="34">
+                    <mxGeometry x="60" y="200" width="40" height="34" as="geometry"/>
+                </mxCell>
+                <mxCell id="49" value="Webhook Omnibus" style="sketch=0;points=[[0,0,0],[0.25,0,0],[0.5,0,0],[0.75,0,0],[1,0,0],[0,1,0],[0.25,1,0],[0.5,1,0],[0.75,1,0],[1,1,0],[0,0.25,0],[0,0.5,0],[0,0.75,0],[1,0.25,0],[1,0.5,0],[1,0.75,0]];outlineConnect=0;fontColor=#E9EDF5;gradientColor=#F78E04;gradientDirection=north;fillColor=none;strokeColor=#ffffff;dashed=0;verticalLabelPosition=bottom;verticalAlign=top;align=center;html=1;fontSize=12;fontStyle=0;aspect=fixed;shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.lambda;labelBackgroundColor=none;strokeWidth=1;" vertex="1" parent="34">
+                    <mxGeometry x="290.39" y="136" width="58" height="58" as="geometry"/>
+                </mxCell>
+                <mxCell id="36" style="edgeStyle=orthogonalEdgeStyle;curved=1;html=1;entryX=0;entryY=0;entryDx=0;entryDy=0;fontSize=15;fontColor=#E9EDF5;exitX=1;exitY=0;exitDx=0;exitDy=0;exitPerimeter=0;fillColor=#dae8fc;strokeColor=#6c8ebf;" edge="1" parent="1" source="14" target="38">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="497.1500000000001" y="301.4559999999999" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="37" value="req: deposit" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=15;fontColor=#E9EDF5;" vertex="1" connectable="0" parent="36">
+                    <mxGeometry x="-0.5032" y="-2" relative="1" as="geometry">
+                        <mxPoint x="38" y="-1" as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="42" style="edgeStyle=orthogonalEdgeStyle;curved=1;html=1;entryX=1;entryY=0.25;entryDx=0;entryDy=0;entryPerimeter=0;fontSize=15;fontColor=#E9EDF5;fillColor=#d5e8d4;strokeColor=#82b366;" edge="1" parent="1" source="39" target="14">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="43" value="res: updated balance" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=15;fontColor=#E9EDF5;" vertex="1" connectable="0" parent="42">
+                    <mxGeometry x="0.1565" y="3" relative="1" as="geometry">
+                        <mxPoint x="-29" y="13" as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="62" value="" style="group" vertex="1" connectable="0" parent="1">
+                    <mxGeometry y="145" width="160" height="440" as="geometry"/>
+                </mxCell>
+                <mxCell id="2" value="" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="62">
+                    <mxGeometry width="160" height="440" as="geometry"/>
+                </mxCell>
+                <mxCell id="3" value="B2Fintech APP" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;strokeWidth=1;fontSize=30;" vertex="1" parent="62">
+                    <mxGeometry y="10" width="160" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="8" value="User" style="sketch=0;outlineConnect=0;fillColor=#eeeeee;strokeColor=#36393d;dashed=0;verticalLabelPosition=bottom;verticalAlign=top;align=center;html=1;fontSize=12;fontStyle=0;aspect=fixed;pointerEvents=1;shape=mxgraph.aws4.user;strokeWidth=1;" vertex="1" parent="62">
+                    <mxGeometry x="41" y="100" width="78" height="78" as="geometry"/>
+                </mxCell>
+                <mxCell id="10" value="&lt;font color=&quot;#dde6ed&quot;&gt;APP&lt;/font&gt;" style="sketch=0;points=[[0,0,0],[0.25,0,0],[0.5,0,0],[0.75,0,0],[1,0,0],[0,1,0],[0.25,1,0],[0.5,1,0],[0.75,1,0],[1,1,0],[0,0.25,0],[0,0.5,0],[0,0.75,0],[1,0.25,0],[1,0.5,0],[1,0.75,0]];outlineConnect=0;fontColor=#232F3E;gradientColor=#F54749;gradientDirection=north;fillColor=none;strokeColor=#ffffff;dashed=0;verticalLabelPosition=bottom;verticalAlign=top;align=center;html=1;fontSize=12;fontStyle=0;aspect=fixed;shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.mobile;strokeWidth=1;" vertex="1" parent="62">
+                    <mxGeometry x="41" y="220" width="78" height="78" as="geometry"/>
+                </mxCell>
+                <mxCell id="16" value="Web" style="sketch=0;outlineConnect=0;strokeColor=#36393d;fillColor=#eeeeee;dashed=0;verticalLabelPosition=bottom;verticalAlign=top;align=center;html=1;fontSize=12;fontStyle=0;aspect=fixed;shape=mxgraph.aws4.illustration_desktop;pointerEvents=1;strokeWidth=1;" vertex="1" parent="62">
+                    <mxGeometry x="46.480000000000004" y="340" width="67.03" height="61" as="geometry"/>
+                </mxCell>
+                <mxCell id="71" value="Withdraw wallet user" style="points=[[0,0],[0.25,0],[0.5,0],[0.75,0],[1,0],[1,0.25],[1,0.5],[1,0.75],[1,1],[0.75,1],[0.5,1],[0.25,1],[0,1],[0,0.75],[0,0.5],[0,0.25]];outlineConnect=0;html=1;whiteSpace=wrap;fontSize=12;fontStyle=0;container=1;pointerEvents=0;collapsible=0;recursiveResize=0;shape=mxgraph.aws4.group;grIcon=mxgraph.aws4.group_aws_cloud;strokeColor=#E9EDF5;fillColor=none;verticalAlign=top;align=left;spacingLeft=30;dashed=0;labelBackgroundColor=none;strokeWidth=1;" vertex="1" parent="1">
+                    <mxGeometry x="460" y="530" width="390.39" height="210" as="geometry"/>
+                </mxCell>
+                <mxCell id="72" value="&lt;font style=&quot;font-size: 15px;&quot;&gt;Vault Fireblocks&lt;/font&gt;" style="perimeter=ellipsePerimeter;html=1;align=center;shadow=0;dashed=0;fontColor=#E9EDF5;labelBackgroundColor=none;fontSize=12;spacingTop=3;image;image=img/lib/ibm/blockchain/wallet.svg;strokeWidth=1;fillColor=none;imageBackground=none;imageAspect=1;imageBorder=none;aspect=fixed;" vertex="1" parent="71">
+                    <mxGeometry x="275.19000000000005" y="80" width="60" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="73" style="edgeStyle=orthogonalEdgeStyle;curved=1;html=1;fontSize=15;fontColor=#E9EDF5;fillColor=#dae8fc;strokeColor=#6c8ebf;" edge="1" parent="71" target="72">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="80" y="100" as="sourcePoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="74" value="req: new tx" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=15;fontColor=#E9EDF5;" vertex="1" connectable="0" parent="73">
+                    <mxGeometry x="0.0229" y="2" relative="1" as="geometry">
+                        <mxPoint x="-1" y="2" as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="75" value="&lt;font style=&quot;font-size: 15px;&quot;&gt;E-Wallet&lt;/font&gt;" style="html=1;verticalLabelPosition=bottom;align=center;labelBackgroundColor=none;verticalAlign=top;strokeWidth=2;strokeColor=#36393d;shadow=0;dashed=0;shape=mxgraph.ios7.icons.wallet;fontSize=20;fillColor=#eeeeee;" vertex="1" parent="71">
+                    <mxGeometry x="55.190000000000055" y="80" width="30" height="24" as="geometry"/>
+                </mxCell>
+                <mxCell id="76" style="edgeStyle=orthogonalEdgeStyle;curved=1;html=1;fontSize=20;fontColor=#E9EDF5;exitX=0;exitY=0;exitDx=0;exitDy=0;entryX=0.985;entryY=0.216;entryDx=0;entryDy=0;entryPerimeter=0;fillColor=#d5e8d4;strokeColor=#82b366;" edge="1" parent="71" source="72" target="75">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="284" y="85"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="77" value="&lt;font style=&quot;font-size: 15px;&quot;&gt;res: txId new tx&lt;/font&gt;" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=20;fontColor=#E9EDF5;" vertex="1" connectable="0" parent="76">
+                    <mxGeometry x="-0.2946" y="9" relative="1" as="geometry">
+                        <mxPoint x="-28" y="-23" as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="81" style="edgeStyle=orthogonalEdgeStyle;curved=1;html=1;entryX=1;entryY=1;entryDx=0;entryDy=0;entryPerimeter=0;strokeColor=#E6FFCC;fontSize=15;fontColor=#E9EDF5;exitX=-0.059;exitY=0.795;exitDx=0;exitDy=0;exitPerimeter=0;" edge="1" parent="1" source="75" target="14">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="510" y="590" as="sourcePoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="82" value="res: updated balance" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=15;fontColor=#E9EDF5;" vertex="1" connectable="0" parent="81">
+                    <mxGeometry x="-0.2259" y="-33" relative="1" as="geometry">
+                        <mxPoint x="-10" as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="47" style="edgeStyle=orthogonalEdgeStyle;curved=1;html=1;fontSize=15;fontColor=#E9EDF5;exitX=0;exitY=1;exitDx=0;exitDy=0;exitPerimeter=0;fillColor=#dae8fc;strokeColor=#6c8ebf;entryX=0.405;entryY=0.143;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1" source="49" target="75">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="769" y="340.0000000000001" as="sourcePoint"/>
+                        <mxPoint x="547" y="430" as="targetPoint"/>
+                        <Array as="points">
+                            <mxPoint x="640" y="434"/>
+                            <mxPoint x="640" y="560"/>
+                            <mxPoint x="527" y="560"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="48" value="req: withdraw" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=15;fontColor=#E9EDF5;" vertex="1" connectable="0" parent="47">
+                    <mxGeometry x="0.125" y="5" relative="1" as="geometry">
+                        <mxPoint x="10" y="-65" as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="83" value="&lt;h1&gt;Questions&lt;/h1&gt;&lt;p&gt;&lt;/p&gt;&lt;ul&gt;&lt;li&gt;&lt;span style=&quot;background-color: initial;&quot;&gt;How to use off-exchange?&lt;/span&gt;&lt;br&gt;&lt;/li&gt;&lt;li&gt;How to use gas station?&lt;/li&gt;&lt;li&gt;How to use payments and payments workflow?&lt;/li&gt;&lt;li&gt;Estimate network fee estimates the cost of which operation?&lt;/li&gt;&lt;li&gt;Transactions execute the tx?&lt;/li&gt;&lt;li&gt;Assets prices update what price?&lt;/li&gt;&lt;li&gt;How to use external wallets?&lt;/li&gt;&lt;li&gt;How to use internal wallets?&lt;/li&gt;&lt;li&gt;How to use fiat accounts?&lt;/li&gt;&lt;li&gt;&lt;span style=&quot;background-color: initial;&quot;&gt;Is the deposit made with a transfer to the address or with payment?&lt;/span&gt;&lt;br&gt;&lt;/li&gt;&lt;li&gt;Is the withdrawal made with a transfer or with payment?&lt;/li&gt;&lt;li&gt;What are smart transfers used for?&lt;/li&gt;&lt;/ul&gt;&lt;p&gt;&lt;/p&gt;" style="text;html=1;strokeColor=none;fillColor=none;spacing=5;spacingTop=-20;whiteSpace=wrap;overflow=hidden;rounded=0;labelBackgroundColor=none;sketch=0;strokeWidth=1;fontSize=15;fontColor=#E9EDF5;" vertex="1" parent="1">
+                    <mxGeometry x="20" y="690" width="380" height="400" as="geometry"/>
+                </mxCell>
+                <mxCell id="85" value="&lt;br&gt;We generate the secret Key and CSR file, added the API user with role Non-signing Admin and CSR file, use the Api Key generated but the error persisting&lt;br&gt;&lt;span style=&quot;background-color: initial;&quot;&gt;&lt;br&gt;Error:&lt;/span&gt;&lt;br&gt;&lt;h1&gt;&lt;div style=&quot;font-weight: 400; color: rgb(248, 248, 242); background-color: rgb(33, 33, 33); font-family: IBMPlexMono, Monaco, &amp;quot;Courier New&amp;quot;, monospace, Menlo, Monaco, &amp;quot;Courier New&amp;quot;, monospace; font-size: 12px; line-height: 18px;&quot;&gt;&lt;div&gt;&lt;span style=&quot;color: rgb(220, 220, 220);&quot;&gt;{&lt;/span&gt;&lt;/div&gt;&lt;div&gt;&lt;span style=&quot;color: rgb(156, 220, 254);&quot;&gt;&quot;message&quot;&lt;/span&gt;&lt;span style=&quot;color: rgb(220, 220, 220);&quot;&gt;:&lt;/span&gt;&amp;nbsp;&lt;span style=&quot;color: rgb(206, 145, 120);&quot;&gt;&quot;Unauthorized: Error getting User certificate: User: arn:aws:sts::751886943440:assumed-role/sls-infra-apigw-lambda-function-sandbox-us-east-2-lambdaRole/sls-infra-apigw-lambda-function-sandbox-auth is not authorized to perform: s3:ListBucket on resource: &quot;&lt;/span&gt;arn&lt;span style=&quot;color: rgb(220, 220, 220);&quot;&gt;:&lt;/span&gt;aws&lt;span style=&quot;color: rgb(220, 220, 220);&quot;&gt;:&lt;/span&gt;s3&lt;span style=&quot;color: rgb(220, 220, 220);&quot;&gt;:&lt;/span&gt;&amp;nbsp;&lt;span style=&quot;color: rgb(220, 220, 220);&quot;&gt;:&lt;/span&gt;&amp;nbsp;&lt;span style=&quot;color: rgb(220, 220, 220);&quot;&gt;:&lt;/span&gt;fireblocks-sandbox-certificates&lt;span style=&quot;color: rgb(206, 145, 120);&quot;&gt;&quot; because no identity-based policy allows the s3:ListBucket action&quot;&lt;/span&gt;&lt;span style=&quot;color: rgb(220, 220, 220);&quot;&gt;,&lt;/span&gt;&lt;/div&gt;&lt;div&gt;&lt;span style=&quot;color: rgb(156, 220, 254);&quot;&gt;&quot;code&quot;&lt;/span&gt;&lt;span style=&quot;color: rgb(220, 220, 220);&quot;&gt;:&lt;/span&gt;&amp;nbsp;&lt;span style=&quot;color: rgb(181, 206, 168);&quot;&gt;-7&lt;/span&gt;&lt;/div&gt;&lt;div&gt;&lt;span style=&quot;color: rgb(220, 220, 220);&quot;&gt;}&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;&lt;/h1&gt;" style="text;html=1;strokeColor=none;fillColor=none;spacing=5;spacingTop=-20;whiteSpace=wrap;overflow=hidden;rounded=0;labelBackgroundColor=none;sketch=0;strokeWidth=1;fontSize=15;fontColor=#E9EDF5;align=left;" vertex="1" parent="1">
+                    <mxGeometry x="440" y="760" width="390" height="323" as="geometry"/>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+</mxfile>

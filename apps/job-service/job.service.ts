@@ -1,15 +1,8 @@
 import { BuildersService } from '@builder/builders';
-import EventClientEnum from '@common/common/enums/EventsNameEnum';
 import { EnvironmentEnum } from '@common/common/enums/environment.enum';
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { ClientProxy } from '@nestjs/microservices';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import EventsNamesAffiliateEnum from 'apps/affiliate-service/src/enum/events.names.affiliate.enum';
-import EventsNamesBrandEnum from 'apps/brand-service/src/enum/events.names.brand.enum';
-import EventsNamesFileEnum from 'apps/file-service/src/enum/events.names.file.enum';
-import EventsNamesLeadEnum from 'apps/lead-service/src/enum/events.names.lead.enum';
-import EventsNamesPspEnum from 'apps/psp-service/src/enum/events.names.psp.enum';
 import EventsNamesTransferEnum from 'apps/transfer-service/src/enum/events.names.transfer.enum';
 import EventsNamesAccountEnum from '../account-service/src/enum/events.names.account.enum';
 const time = '0 */20 * * * *';
@@ -86,81 +79,99 @@ export class JobService {
   @Cron(JobService.periodicTime.checkFilesDownloads, {
     timeZone: process.env.TZ,
   })
-  checkFilesDownloadsCron() {
-    Logger.log('Checking Files created to downloads', JobService.name);
+  async sendLast6hHistoryTransfer() {
+    Logger.log(
+      'Sended last 6h history transfer',
+      `${this.env} - ${JobService.name}`,
+    );
+    if (this.env == EnvironmentEnum.prod) {
+      this.builder.emitTransferEventClient(
+        EventsNamesTransferEnum.sendLast6hHistoryCardPurchases,
+        0,
+      );
+      this.builder.emitTransferEventClient(
+        EventsNamesTransferEnum.sendLast6hHistoryCardWalletDeposits,
+        0,
+      );
+    }
   }
 
-  @Cron(JobService.periodicTime.checkLeadCreated, {
+  @Cron(JobService.periodicTime.sendBalanceCardReports, {
     timeZone: process.env.TZ,
   })
-  checkLeadCreatedInCrmCron() {
-    Logger.log('Checking Lead created in CRM', JobService.name);
+  async sendBalanceCardReportsCron() {
+    Logger.log(
+      'Sended balance card report',
+      `${this.env} - ${JobService.name}`,
+    );
+    if (this.env == EnvironmentEnum.prod) {
+      await this.builder.getPromiseAccountEventClient(
+        EventsNamesAccountEnum.sendBalanceReport,
+        {
+          where: {
+            type: 'CARD',
+          },
+        },
+      );
+    }
   }
 
-  @Cron(JobService.periodicTime.checkLeadStatus, {
+  @Cron(JobService.periodicTime.checkBalanceUser, {
     timeZone: process.env.TZ,
   })
-  checkLeadStatusInCrmCron() {
-    Logger.log('Checking Lead status in CRM', JobService.name);
+  checkBalanceUserCron() {
+    Logger.log('Checked balance users', `${this.env} - ${JobService.name}`);
+    if (this.env == EnvironmentEnum.prod) {
+      this.builder.emitUserEventClient(
+        EventsNamesUserEnum.checkBalanceUser,
+        '0',
+      );
+    }
   }
 
-  @Cron(JobService.periodicTime.checkAffiliateLeadsStats, {
+  @Cron(JobService.periodicTime.checkCardsInPomelo, {
     timeZone: process.env.TZ,
   })
-  checkAffiliateLeadsStatsCron() {
-    Logger.log('Checking Affiliate leads stats', JobService.name);
+  checkCardsInPomelo() {
+    Logger.log('Checking Cards in pomelo', `${this.env} - ${JobService.name}`);
+    if (this.env === EnvironmentEnum.prod) {
+      this.builder.emitAccountEventClient(
+        EventsNamesAccountEnum.checkCardsCreatedInPomelo,
+        'pomelo',
+      );
+    }
   }
 
-  @Cron(JobService.periodicTime.checkAffiliateStats, {
+  @Cron(JobService.periodicTime.checkB2BinPayTransfers, {
     timeZone: process.env.TZ,
   })
-  checkAffiliateStatsCron() {
-    Logger.log('Checking Affiliate leads stats', JobService.name);
+  sweepOmibus() {
+    Logger.log('Job sweep omibus', `${this.env} - ${JobService.name}`);
+    if (this.env === EnvironmentEnum.prod) {
+      // this.builder.emitAccountEventClient(
+      //   EventsNamesAccountEnum.sweepOmnibus,
+      //   'omnibus',
+      // );
+    }
   }
 
-  @Cron(JobService.periodicTime.checkBrandLeadsStats, {
+  @Cron(JobService.periodicTime.checkB2BinPayTransfers, {
     timeZone: process.env.TZ,
   })
-  checkBrandStatsCron() {
-    Logger.log('Checking Brand leads stats', JobService.name);
-  }
-
-  @Cron(JobService.periodicTime.checkCrmLeadsStats, {
-    timeZone: process.env.TZ,
-  })
-  checkCrmStatsCron() {
-    Logger.log('Checking Crm leads stats', JobService.name);
-  }
-
-  @Cron(JobService.periodicTime.checkPspAccountLeadsStats, {
-    timeZone: process.env.TZ,
-  })
-  checkPspAccountStatsCron() {
-    Logger.log('Checking Psp Account leads stats', JobService.name);
-  }
-
-  @Cron(JobService.periodicTime.checkPspLeadsStats, {
-    timeZone: process.env.TZ,
-  })
-  checkPspStatsCron() {
-    Logger.log('Checking Psp leads stats', JobService.name);
-  }
-  @Cron(JobService.periodicTime.checkCashierStatus, {
-    timeZone: process.env.TZ,
-  })
-  checkCashierStatusCron() {
-    Logger.log('Checking cashier status', JobService.name);
-  }
-  @Cron(JobService.periodicTime.checkCashierBrands, {
-    timeZone: process.env.TZ,
-  })
-  checkCashierBrandsCron() {
-    Logger.log('Checking cashier brands', JobService.name);
-  }
-  @Cron(JobService.periodicTime.checkCashierPsps, {
-    timeZone: process.env.TZ,
-  })
-  checkCashierPspsCron() {
-    Logger.log('Checking cashier psps', JobService.name);
+  checkB2BinPayTransfers() {
+    Logger.warn(
+      'Disabled Job checkB2BinPayTransfers',
+      `${this.env} - ${JobService.name}`,
+    );
+    // Logger.log(
+    //   'Checking B2BinPay transfers',
+    //   `${this.env} - ${JobService.name}`,
+    // );
+    // if (this.env === EnvironmentEnum.prod) {
+    //   this.builder.emitTransferEventClient(
+    //     EventsNamesTransferEnum.checkTransferInB2BinPay,
+    //     'b2binpay',
+    //   );
+    // }
   }
 }

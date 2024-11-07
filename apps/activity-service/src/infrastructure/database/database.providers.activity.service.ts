@@ -1,24 +1,33 @@
-import * as mongoose from 'mongoose';
-import { ConfigModule, ConfigService } from '@nestjs/config';
 import DatabaseConnectionEnum from '@common/common/enums/DatabaseConnectionEnum';
+import { Logger } from '@nestjs/common';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import * as mongoose from 'mongoose';
 
 export const databaseProviders = [
   {
     provide: `MONGOOSE_CONNECTION${DatabaseConnectionEnum.Activity}`,
-    useFactory: (configService: ConfigService): Promise<typeof mongoose> => {
+    useFactory: async (
+      configService: ConfigService,
+    ): Promise<typeof mongoose> => {
       const dbName = configService.get('DATABASE_NAME');
       const dbUrl = configService.get('DATABASE_URL');
-      return mongoose
-        .connect(dbUrl, {
+
+      try {
+        const connection = await mongoose.connect(dbUrl, {
           w: 'majority',
           retryWrites: true,
           dbName: dbName,
           keepAlive: true,
           keepAliveInitialDelay: 300000,
-        })
-        .catch((reason) => {
-          return reason;
         });
+
+        Logger.log('Database activity connection open');
+
+        return connection;
+      } catch (error) {
+        Logger.error(error);
+        return error;
+      }
     },
     imports: [ConfigModule],
     inject: [ConfigService],

@@ -15,6 +15,9 @@ export class FileUpdateDto extends PartialType(FileCreateDto) {
   path?: string;
 
   @IsOptional()
+  encodeBase64?: string;
+
+  @IsOptional()
   description?: string;
 
   @IsOptional()

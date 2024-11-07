@@ -1,23 +1,23 @@
-import {
-  Injectable,
-  InternalServerErrorException,
-  Logger,
-} from '@nestjs/common';
-import { FiatIntegrationClient } from '../clients/fiat.integration.client';
 import { BuildersService } from '@builder/builders';
-import EventsNamesAccountEnum from 'apps/account-service/src/enum/events.names.account.enum';
+import { CardsEnum } from '@common/common/enums/messages.enum';
+import TransportEnum from '@common/common/enums/TransportEnum';
 import {
   Adjustment,
   Authorization,
   NotificationDto,
 } from '@integration/integration/dto/pomelo.process.body.dto';
 import { PomeloCache } from '@integration/integration/util/pomelo.integration.process.cache';
-import { PomeloProcessEnum } from '../enums/pomelo.process.enum';
-import { CardsEnum } from '@common/common/enums/messages.enum';
-import EventsNamesTransferEnum from 'apps/transfer-service/src/enum/events.names.transfer.enum';
+import {
+  Injectable,
+  InternalServerErrorException,
+  Logger,
+} from '@nestjs/common';
 import { OperationTransactionType } from '@transfer/transfer/enum/operation.transaction.type.enum';
+import EventsNamesAccountEnum from 'apps/account-service/src/enum/events.names.account.enum';
 import EventsNamesMessageEnum from 'apps/message-service/src/enum/events.names.message.enum';
-import TransportEnum from '@common/common/enums/TransportEnum';
+import EventsNamesTransferEnum from 'apps/transfer-service/src/enum/events.names.transfer.enum';
+import { FiatIntegrationClient } from '../clients/fiat.integration.client';
+import { PomeloProcessEnum } from '../enums/pomelo.process.enum';
 
 @Injectable()
 export class PomeloIntegrationProcessService {
@@ -40,7 +40,7 @@ export class PomeloIntegrationProcessService {
       const amount = await this.getAmount(process);
       response = await this.executeProcess(process, authorize, amount.usd);
       await this.cache.setResponse(idempotency, response);
-      this.createTransferRecord(process, headers, response, amount);
+      this.createTransferRecord(process, headers, response, amount, authorize);
     }
     return response;
   }
@@ -50,6 +50,7 @@ export class PomeloIntegrationProcessService {
     headers: any,
     response: any,
     amount: any,
+    authorize?: boolean,
   ) {
     try {
       this.builder.emitTransferEventClient(
@@ -66,10 +67,35 @@ export class PomeloIntegrationProcessService {
           description: response?.message ?? '',
           amount: amount.amount,
           amountCustodial: amount.usd,
-          currency: amount.from,
-          currencyCustodial: amount.to,
+          currency: amount.from === 'USD' ? 'USDT' : amount.from,
+          currencyCustodial: amount.to === 'USD' ? 'USDT' : amount.to,
         },
       );
+      const commision = 0.03;
+      if (authorize && amount.amount * commision > 0) {
+        Logger.log(
+          `${response?.message} - $${amount.amount * commision}`,
+          'Commision to B2Fintech',
+        );
+        this.builder.emitTransferEventClient(
+          EventsNamesTransferEnum.createOneWebhook,
+          {
+            integration: 'Sales',
+            requestBodyJson: process,
+            requestHeadersJson: headers,
+            operationType: OperationTransactionType.purchase,
+            status: response?.status ?? CardsEnum.CARD_PROCESS_OK,
+            descriptionStatusPayment:
+              response?.status_detail ?? CardsEnum.CARD_PROCESS_OK,
+            description: response?.message ?? '',
+            page: 'Commision to B2Fintech',
+            amount: amount.amount * commision,
+            amountCustodial: amount.usd * commision,
+            currency: amount.from === 'USD' ? 'USDT' : amount.from,
+            currencyCustodial: amount.to === 'USD' ? 'USDT' : amount.to,
+          },
+        );
+      }
     } catch (error) {
       Logger.log(
         `Error creatin transfer: ${error}`,
@@ -295,7 +321,6 @@ export class PomeloIntegrationProcessService {
     authorization: Authorization,
     headers: any,
   ): Promise<any> {
-
     const process = await this.process(
       authorization,
       authorization.idempotency,

@@ -1,2 +1,1 @@
-
-export interface GetSalesStatusesDto{}
+export interface GetSalesStatusesDto {}

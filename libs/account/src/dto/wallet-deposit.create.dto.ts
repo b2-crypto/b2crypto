@@ -17,6 +17,11 @@ export class WalletDepositCreateDto extends CreateAnyDto {
   })
   @IsMongoId()
   @IsOptional()
+  @ApiProperty({
+    required: false,
+    description:
+      'Wallet from which it comes. If not specified, assume that it comes from outside the system',
+  })
   from?: ObjectId;
 
   @ApiProperty({
@@ -34,6 +39,10 @@ export class WalletDepositCreateDto extends CreateAnyDto {
   @IsNumber({
     allowNaN: false,
     allowInfinity: false,
+  })
+  @ApiProperty({
+    required: true,
+    description: 'Amount to recharge. Must be a positive number',
   })
   amount: number;
 }

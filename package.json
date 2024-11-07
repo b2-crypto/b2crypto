@@ -113,6 +113,7 @@
   },
   "dependencies": {
     "@casl/ability": "^6.5.0",
+    "@fireblocks/ts-sdk": "^4.0.0",
     "@nestjs-modules/mailer": "^2.0.2",
     "@nestjs/axios": "^1.0.0",
     "@nestjs/cache-manager": "^2.2.2",
@@ -173,6 +174,9 @@
     "@nestjs/cli": "^9.0.0",
     "@nestjs/schematics": "^9.0.0",
     "@nestjs/testing": "^9.0.0",
+    "@pulumi/aws": "^6.52.0",
+    "@pulumi/awsx": "^2.15.0",
+    "@pulumi/pulumi": "^3.133.0",
     "@types/aws-lambda": "^8.10.108",
     "@types/bcrypt": "^5.0.0",
     "@types/cron": "^2.0.1",

@@ -3,7 +3,12 @@ import { CommonService } from '@common/common';
 import { EnvironmentEnum } from '@common/common/enums/environment.enum';
 import { FetchData } from '@common/common/models/fetch-data.model';
 import { Cache } from '@nestjs/cache-manager';
-import { BadRequestException, Logger, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Logger,
+  NotFoundException,
+  NotImplementedException,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import axios, {
   AxiosInstance,
@@ -189,5 +194,15 @@ export class IntegrationCryptoService<
     }
     const rta = await this.fetch('GET', query);
     return rta;
+  }
+
+  async getAvailablerWallets(): Promise<WalletDto[]> {
+    throw new NotImplementedException('Method not implemented.');
+  }
+  async resendNotifications(): Promise<any> {
+    throw new NotImplementedException('Method not implemented.');
+  }
+  async validateAddress(assetId: string, address: string): Promise<any> {
+    throw new NotImplementedException('Method not implemented.');
   }
 }

@@ -1,4 +1,3 @@
-import { PersonUpdateDto } from '@person/person/dto/person.update.dto';
 import { UserChangePasswordDto } from './user.change-password.dto';
 import { Type } from 'class-transformer';
 import { ObjectId } from 'mongodb';
@@ -15,6 +14,8 @@ import {
   IsString,
 } from 'class-validator';
 import { UserCardDto } from '@integration/integration/card/generic/dto/user.card.dto';
+import { UserBalanceDto } from './user.balance.dto';
+import { RulesUserDto } from './rules.user.dto';
 
 export class UserCreateDto extends UserChangePasswordDto {
   @IsString()
@@ -28,7 +29,7 @@ export class UserCreateDto extends UserChangePasswordDto {
   @IsEmail()
   email: string;
 
-  @IsEmail()
+  @IsString()
   slugEmail: string;
 
   @IsBoolean()
@@ -59,6 +60,10 @@ export class UserCreateDto extends UserChangePasswordDto {
   @IsOptional()
   personalData: ObjectId;
 
+  @IsMongoId()
+  @IsOptional()
+  level: ObjectId;
+
   @IsJSON()
   @IsOptional()
   configuration: JSON;
@@ -76,6 +81,11 @@ export class UserCreateDto extends UserChangePasswordDto {
   @IsOptional()
   userCard?: UserCardDto;
 
+  @IsObject()
+  @Type(() => UserBalanceDto)
+  @IsOptional()
+  balance?: UserBalanceDto;
+
   @IsBoolean()
   @IsOptional()
   twoFactorIsActive: boolean;
@@ -84,6 +94,15 @@ export class UserCreateDto extends UserChangePasswordDto {
   @IsOptional()
   @IsMongoId({ each: true })
   permissions: Array<ObjectId>;
+
+  @IsArray()
+  @IsOptional()
+  @IsMongoId({ each: true })
+  rules: Array<RulesUserDto>;
+
+  @IsOptional()
+  @IsMongoId()
+  brand: ObjectId;
 
   @IsBoolean()
   @IsOptional()

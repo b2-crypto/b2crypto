@@ -45,7 +45,7 @@ async function bootstrap() {
   addSwaggerIntegration(app);
   addSwaggerStakeyCard(app);
 
-  app.enableCors();
+  // app.enableCors();
   app.enableCors({
     origin: '*',
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
@@ -55,7 +55,6 @@ async function bootstrap() {
     allowedHeaders: 'b2crypto-affiliate-key b2crypto-key Content-Type Accept',
   });
   app.getHttpAdapter().getInstance().disable('x-powered-by');
-  app.listen(configService.get('PORT') ?? 3000);
   app.connectMicroservice(
     await QueueAdminModule.getClientProvider(
       configService,
@@ -63,6 +62,8 @@ async function bootstrap() {
     ),
   );
   await app.startAllMicroservices();
+  await app.listen(configService.get('PORT') ?? 3000);
+  Logger.log('Listening on port ' + configService.get('PORT'));
   if (typeof process.send === 'function') {
     process.send('ready');
   }
@@ -184,6 +185,9 @@ function addSwaggerGlobal(app: INestApplication) {
       StatusServiceModule,
       AffiliateServiceModule,
       PermissionServiceModule,
+      AccountServiceModule,
+      PersonServiceModule,
+      TransferServiceModule,
     ],
   });
 

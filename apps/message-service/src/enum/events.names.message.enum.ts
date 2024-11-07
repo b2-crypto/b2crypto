@@ -13,6 +13,7 @@ enum EventsNamesMessageEnum {
   deleteMany = 'MESSAGE.DELETE.MANY',
   deleteOneById = 'MESSAGE.DELETE.ONE.BY.ID',
 
+  sendEmailBalanceReport = 'MESSAGE.SEND.EMAIL.REPORT',
   sendEmailOtpNotification = 'MESSAGE.SEND.EMAIL.OTP.NOTIFICATION',
   sendEmailDisclaimer = 'MESSAGE.SEND.EMAIL.DISCLAIMER',
   sendCardRequestConfirmationEmail = 'MESSAGE.SEND.CARD.REQUEST.CONFIRMATION.EMAIL',
@@ -23,6 +24,7 @@ enum EventsNamesMessageEnum {
   sendCryptoWalletsManagement = 'MESSAGE.SEND.CRYPTO.WALLETS.MANAGEMENT',
   sendSecurityNotifications = 'MESSAGE.SEND.SECURITY.NOTIFICATIONS',
   sendPasswordRestoredEmail = 'MESSAGE.SEND.PASSWORD.RESTORED.EMAIL',
+  sendPreRegisterEmail = 'MESSAGE.SEND.PREREGISTER.EMAIL',
 }
 
 export default EventsNamesMessageEnum;

@@ -12,7 +12,7 @@ export class FileEntity implements FileInterface {
   searchText: string;
   uri: string;
   path: string;
-  encodeBase64: string;
+  encodeBase64?: string;
   mimetype: string;
   category: CategoryEntity;
   user: UserEntity;

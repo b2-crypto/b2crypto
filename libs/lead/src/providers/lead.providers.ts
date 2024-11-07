@@ -1,7 +1,7 @@
 import { LeadSchema } from '@lead/lead/entities/mongoose/lead.schema';
-import { LeadPspSchema } from '../entities/mongoose/lead-psp.schema';
 import { Connection } from 'mongoose';
 import * as mongooseSlugUpdater from 'mongoose-slug-updater';
+import { LeadPspSchema } from '../entities/mongoose/lead-psp.schema';
 
 export const leadProviders = [
   {

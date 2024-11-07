@@ -1,2 +1,17 @@
-.header(style="background-color: #1b1330; padding: 20px; text-align: left;")
-  img(src=logoUrl alt="Logo" style="width: 90px; height: auto; display: inline-block; vertical-align: middle;")
+- const parsedSocialIcons = typeof socialMediaIcons === 'string' ? JSON.parse(socialMediaIcons) : socialMediaIcons
+- const parsedSocialLinks = typeof socialMediaLinks === 'string' ? JSON.parse(socialMediaLinks) : socialMediaLinks
+- const socialOrder = ['facebook', 'instagram', 'linkedin', 'youtube']
+
+header.header
+  .logo-container
+    if logoUrl
+      img.logo(src=logoUrl alt="B2fintech Logo")
+  
+  .social-icons
+    if parsedSocialIcons && parsedSocialLinks
+      each name in socialOrder
+        - const iconUrl = parsedSocialIcons[name]
+        - const redirectUrl = parsedSocialLinks[name] || '#'
+        if iconUrl
+          a.social-icon(href=redirectUrl target="_blank" rel="noopener noreferrer")
+            img(src=iconUrl alt=name)

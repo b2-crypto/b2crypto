@@ -7,8 +7,11 @@ export interface CategoryInterface {
   id?: ObjectId;
   name: string;
   slug: string;
+  hidden: boolean;
   description: string;
   searchText: string;
+  next: CategoryInterface;
+  previous: CategoryInterface;
   type: TagEnum;
   categoryParent: CategoryInterface;
   resources: ResourcesEnum[];

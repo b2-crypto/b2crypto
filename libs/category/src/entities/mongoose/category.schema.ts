@@ -19,11 +19,20 @@ export class Category extends CategoryEntity implements CategoryInterface {
   @Prop()
   slug: string;
 
+  @Prop({ default: false })
+  hidden: boolean;
+
   @Prop()
   description: string; // name
 
   @Prop()
   searchText: string;
+
+  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'categories' })
+  next: Category;
+
+  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'categories' })
+  previous: Category;
 
   @Prop()
   valueNumber: number; // iso

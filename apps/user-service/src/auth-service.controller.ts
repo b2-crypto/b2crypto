@@ -12,8 +12,10 @@ import ActionsEnum from '@common/common/enums/ActionEnum';
 import ResourcesEnum from '@common/common/enums/ResourceEnum';
 import TransportEnum from '@common/common/enums/TransportEnum';
 import { IntegrationService } from '@integration/integration';
+import { IntegrationIdentityEnum } from '@integration/integration/identity/generic/domain/integration.identity.enum';
 import { SumsubApplicantLevels } from '@integration/integration/identity/generic/domain/sumsub.enum';
 import { SumsubIssueTokenDto } from '@integration/integration/identity/generic/domain/sumsub.issue.token.dto';
+import { CACHE_MANAGER, Cache } from '@nestjs/cache-manager';
 import {
   BadGatewayException,
   BadRequestException,
@@ -48,17 +50,20 @@ import {
   ApiSecurity,
   ApiTags,
 } from '@nestjs/swagger';
+import { PersonCreateDto } from '@person/person/dto/person.create.dto';
 import ResponseB2Crypto from '@response-b2crypto/response-b2crypto/models/ResponseB2Crypto';
+import { UserPreRegisterDto } from '@user/user/dto/user.pre.register.dto';
+import { UserRefreshTokenDto } from '@user/user/dto/user.refresh.token.dto';
 import { UserRegisterDto } from '@user/user/dto/user.register.dto';
 import { UserSignInDto } from '@user/user/dto/user.signin.dto';
 import { UserDocument } from '@user/user/entities/mongoose/user.schema';
 import { UserEntity } from '@user/user/entities/user.entity';
 import EventsNamesActivityEnum from 'apps/activity-service/src/enum/events.names.activity.enum';
 import EventsNamesMessageEnum from 'apps/message-service/src/enum/events.names.message.enum';
+import EventsNamesPersonEnum from 'apps/person-service/src/enum/events.names.person.enum';
 import { isBoolean } from 'class-validator';
 import { SwaggerSteakeyConfigEnum } from 'libs/config/enum/swagger.stakey.config.enum';
 import { BadRequestError } from 'passport-headerapikey';
-import { IntegrationIdentityEnum } from './../../../libs/integration/src/identity/generic/domain/integration.identity.enum';
 import EventsNamesUserEnum from './enum/events.names.user.enum';
 import { CACHE_MANAGER, Cache } from '@nestjs/cache-manager';
 
@@ -356,6 +361,9 @@ export class AuthServiceController {
     return {
       statusCode: 201,
       message: 'OTP Sended',
+      data: {
+        duration: 60000,
+      },
     };
   }
 
@@ -407,18 +415,18 @@ export class AuthServiceController {
   @ApiResponse(ResponseB2Crypto.getResponseSwagger(404, ActionsEnum.LOGIN))
   @ApiResponse(ResponseB2Crypto.getResponseSwagger(500, ActionsEnum.LOGIN)) */
   @Post('registry')
-  async registryUser(@Body() userDto: UserRegisterDto) {
+  async registryUser(@Body() userDto: UserRegisterDto, @Req() req) {
+    const client = await this.getClientFromPublicKey(req.clientApi, false);
     userDto.name =
       userDto.name ?? userDto.username ?? userDto.email.split('@')[0];
     userDto.slugEmail = CommonService.getSlug(userDto.email);
     userDto.username = userDto.username ?? userDto.name;
     userDto.slugUsername = CommonService.getSlug(userDto.username);
-
+    userDto.brand = client.brand;
     const createdUser = await this.builder.getPromiseUserEventClient(
       EventsNamesUserEnum.createOne,
       userDto,
     );
-
     const emailData = {
       destinyText: createdUser.email,
       vars: {
@@ -442,7 +450,85 @@ export class AuthServiceController {
     return createdUser;
   }
 
+  @NoCache()
+  @AllowAnon()
+  @ApiKeyCheck()
+  @UseGuards(ApiKeyAuthGuard)
+  @ApiSecurity('b2crypto-key')
+  @ApiTags(SwaggerSteakeyConfigEnum.TAG_SECURITY)
+  /* @ApiResponse({
+    status: 201,
+    description: 'was searched successfully',
+    type: LeadResponseDto,
+  })
+  @ApiResponse(ResponseB2Crypto.getResponseSwagger(401, ActionsEnum.LOGIN))
+  @ApiResponse(ResponseB2Crypto.getResponseSwagger(403, ActionsEnum.LOGIN))
+  @ApiResponse(ResponseB2Crypto.getResponseSwagger(404, ActionsEnum.LOGIN))
+  @ApiResponse(ResponseB2Crypto.getResponseSwagger(500, ActionsEnum.LOGIN)) */
+  @Post('pre-registry')
+  async preRegistryUser(@Body() userDto: UserPreRegisterDto, @Req() req) {
+    userDto.name =
+      userDto.name ?? userDto.username ?? userDto.email.split('@')[0];
+    userDto.slugEmail = CommonService.getSlug(userDto.email);
+    userDto.username = userDto.username ?? userDto.name;
+    userDto.slugUsername = CommonService.getSlug(userDto.username);
+    const client = await this.getClientFromPublicKey(req.clientApi, false);
+    userDto.description = userDto.campaign ?? client.name;
+    userDto.brand = client.brand;
+    const user = await this.builder.getPromiseUserEventClient(
+      EventsNamesUserEnum.createOne,
+      userDto,
+    );
+    if (!user._id) {
+      throw new BadRequestException('User already exists');
+    }
+    try {
+      user.personalData = await this.builder.getPromisePersonEventClient(
+        EventsNamesPersonEnum.createOne,
+        {
+          taxIdentificationValue: 0,
+          preRegistry: true,
+          name: userDto.name,
+          firstName: userDto.name,
+          slugName: CommonService.getSlug(userDto.name),
+          email: userDto.email,
+          emails: [userDto.email],
+          phoneNumber: userDto.phone,
+          user: user._id.toString(),
+        } as unknown as PersonCreateDto,
+      );
+
+      await this.builder.emitMessageEventClient(
+        EventsNamesMessageEnum.sendPreRegisterEmail,
+        {
+          destinyText: user.email,
+          vars: {
+            name: user.name,
+            email: user.email,
+            clientName: client.name,
+          },
+        },
+      );
+
+      // TODO[hender-20/09/2024] Check why the active data is not saved in creation
+      this.builder.emitUserEventClient(EventsNamesUserEnum.updateOne, {
+        id: user._id.toString(),
+        active: !!userDto.active,
+      });
+
+      return user;
+    } catch (error) {
+      await this.builder.getPromiseUserEventClient(
+        EventsNamesUserEnum.deleteOneById,
+        user._id.toString(),
+      );
+      //throw error;
+      throw new BadRequestException('Person already exists');
+    }
+  }
+
   @IsRefresh()
+  @NoCache()
   @ApiKeyCheck()
   @UseGuards(ApiKeyAuthGuard)
   @ApiSecurity('b2crypto-key')
@@ -451,7 +537,7 @@ export class AuthServiceController {
   @ApiResponse(ResponseB2Crypto.getResponseSwagger(200))
   @ApiResponse(ResponseB2Crypto.getResponseSwagger(400))
   @ApiResponse(ResponseB2Crypto.getResponseSwagger(403))
-  async refreshToken(@Body() data: { refresh: string }) {
+  async refreshToken(@Body() data: UserRefreshTokenDto) {
     if (!data || !data?.refresh) {
       throw new BadRequestException('Not found refresh token');
     }
@@ -463,6 +549,7 @@ export class AuthServiceController {
   }
 
   @ApiKeyCheck()
+  @NoCache()
   @Post('sign-in')
   @UseGuards(ApiKeyAuthGuard, LocalAuthGuard)
   @ApiSecurity('b2crypto-key')
@@ -485,6 +572,7 @@ export class AuthServiceController {
     });
   }
 
+  @NoCache()
   @AllowAnon()
   @MessagePattern(EventsNamesUserEnum.authorization)
   async authorizationEvent(
@@ -598,7 +686,12 @@ export class AuthServiceController {
     );
   }
 
-  private async generateOtp(user: UserDocument, msOTP = 60000) {
+  private async generateOtp(user: UserDocument, msOTP?: number) {
+    if (!msOTP) {
+      msOTP =
+        this.configService.get<number>('OTP_VALIDATION_TIME_SECONDS', 90) *
+        1000;
+    }
     let otpSended = await this.getOtpGenerated(user.email);
     if (!otpSended) {
       otpSended = CommonService.getNumberDigits(

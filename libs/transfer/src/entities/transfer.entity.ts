@@ -20,6 +20,7 @@ import {
   TransferRequestHeadersJsonDto,
 } from '../dto/transfer.request.dto';
 import { OperationTransactionType } from '../enum/operation.transaction.type.enum';
+import TypesAccountEnum from '@account/account/enum/types.account.enum';
 
 export class TransferEntity implements TransferInterface {
   @ApiProperty({
@@ -93,6 +94,10 @@ export class TransferEntity implements TransferInterface {
   responseAccount: any;
   lead: LeadEntity;
   account: AccountEntity;
+  accountResultBalance: number;
+  accountPrevBalance: number;
+  typeAccount: TypesAccountEnum;
+  typeAccountType: string;
   affiliate: AffiliateEntity;
   status: StatusEntity;
   bank: CategoryEntity;

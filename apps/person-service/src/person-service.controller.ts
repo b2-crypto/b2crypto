@@ -12,10 +12,17 @@ import {
   Req,
   UseGuards,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiSecurity, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiExcludeEndpoint,
+  ApiSecurity,
+  ApiTags,
+} from '@nestjs/swagger';
 
 import { AllowAnon } from '@auth/auth/decorators/allow-anon.decorator';
+import { ApiKeyAuthGuard } from '@auth/auth/guards/api.key.guard';
 import { CommonService } from '@common/common';
+import { NoCache } from '@common/common/decorators/no-cache.decorator';
 import GenericServiceController from '@common/common/interfaces/controller.generic.interface';
 import { QuerySearchAnyDto } from '@common/common/models/query_search-any.dto';
 import { UpdateAnyDto } from '@common/common/models/update-any.dto';
@@ -27,7 +34,9 @@ import {
 } from '@nestjs/microservices';
 import { PersonCreateDto } from '@person/person/dto/person.create.dto';
 import { PersonUpdateDto } from '@person/person/dto/person.update.dto';
+import { AddressSchema } from '@person/person/entities/mongoose/address.schema';
 import { UserServiceService } from 'apps/user-service/src/user-service.service';
+import { SwaggerSteakeyConfigEnum } from 'libs/config/enum/swagger.stakey.config.enum';
 import { BadRequestError } from 'passport-headerapikey';
 import EventsNamesPersonEnum from './enum/events.names.person.enum';
 import { PersonServiceService } from './person-service.service';
@@ -36,7 +45,7 @@ import { AddressSchema } from '@person/person/entities/mongoose/address.schema';
 import { SwaggerSteakeyConfigEnum } from 'libs/config/enum/swagger.stakey.config.enum';
 import { NoCache } from '@common/common/decorators/no-cache.decorator';
 
-@ApiTags('PERSON')
+@ApiTags(SwaggerSteakeyConfigEnum.TAG_PROFILE)
 @Controller('persons')
 export class PersonServiceController implements GenericServiceController {
   constructor(
@@ -61,7 +70,13 @@ export class PersonServiceController implements GenericServiceController {
   // @CheckPoliciesAbility(new PolicyHandlerPersonRead())
   async findAllMe(@Req() req, @Query() query: QuerySearchAnyDto) {
     query = CommonService.getQueryWithUserId(query, req);
-    return this.personService.getAll(query);
+    const verifiedIdentity = req?.user?.verifyIdentity;
+    const persons = await this.personService.getAll(query);
+    persons.list.forEach((person) => {
+      person.verifiedIdentity = person.verifiedIdentity ?? !!verifiedIdentity;
+      return person;
+    });
+    return persons;
   }
 
   @NoCache()
@@ -95,9 +110,12 @@ export class PersonServiceController implements GenericServiceController {
         throw new BadRequestError('User already has personal data');
       }
       createPersonDto.user = user._id;
-    } else if (createPersonDto.user !== req.user.id) {
+    } else if (
+      !createPersonDto.preRegistry &&
+      createPersonDto.user !== req?.user?.id
+    ) {
       throw new BadRequestError(
-        `Only have create to User user ${req.user.email}`,
+        `Only have create personal data to User ${createPersonDto.user}`,
       );
     }
     const personalData = await this.personService.newPerson(createPersonDto);
@@ -110,6 +128,7 @@ export class PersonServiceController implements GenericServiceController {
     return personalData;
   }
 
+  @ApiExcludeEndpoint()
   @Post('all')
   // @CheckPoliciesAbility(new PolicyHandlerPersonCreate())
   async createMany(
@@ -126,12 +145,16 @@ export class PersonServiceController implements GenericServiceController {
   @UseGuards(ApiKeyAuthGuard)
   // @CheckPoliciesAbility(new PolicyHandlerPersonUpdate())
   async updateOne(@Body() updatePersonDto: PersonUpdateDto, @Req() req?) {
-    const user = await this.userService.getOne(req.user.id);
-    if (!user._id) {
+    const userId = updatePersonDto.user?.toString() || req.user.id;
+    const user = await this.userService.getOne(userId);
+    if (!user?._id) {
       throw new BadRequestError('User not found');
     }
+    if (!user.personalData) {
+      throw new BadRequestError('User not have profile');
+    }
     const personalData = await this.personService.getOne(
-      user.personalData.toString(),
+      user.personalData?.toString(),
     );
     if (!personalData) {
       throw new BadRequestError('User not have personal data');
@@ -139,36 +162,39 @@ export class PersonServiceController implements GenericServiceController {
     updatePersonDto.id = personalData._id;
     updatePersonDto.location.address = {
       street_name:
-        updatePersonDto.location.address.street_name ??
-        personalData.location.address.street_name,
+        updatePersonDto?.location?.address?.street_name ??
+        personalData?.location?.address?.street_name,
       street_number:
-        updatePersonDto.location.address.street_number ??
-        personalData.location.address.street_number,
+        updatePersonDto?.location?.address?.street_number ??
+        personalData?.location?.address?.street_number,
       floor:
-        updatePersonDto.location.address.floor ??
-        personalData.location.address.floor,
+        updatePersonDto?.location?.address?.floor ??
+        personalData?.location?.address?.floor,
       city:
-        updatePersonDto.location.address.city ??
-        personalData.location.address.city,
+        updatePersonDto?.location?.address?.city ??
+        personalData?.location?.address?.city,
       region:
-        updatePersonDto.location.address.region ??
-        personalData.location.address.region,
+        updatePersonDto?.location?.address?.region ??
+        personalData?.location?.address?.region,
       neighborhood:
-        updatePersonDto.location.address.neighborhood ??
-        personalData.location.address.neighborhood,
+        updatePersonDto?.location?.address?.neighborhood ??
+        personalData?.location?.address?.neighborhood,
       country:
-        updatePersonDto.location.address.country ??
-        personalData.location.address.country,
+        updatePersonDto?.location?.address?.country ??
+        personalData?.location?.address?.country,
       zip_code:
-        updatePersonDto.location.address.zip_code ??
-        personalData.location.address.zip_code,
+        updatePersonDto?.location?.address?.zip_code ??
+        (updatePersonDto?.location?.address &&
+          updatePersonDto?.location?.address['zip_code']) ??
+        personalData?.location?.address?.zip_code,
       apartment:
-        updatePersonDto.location.address.apartment ??
-        personalData.location.address.apartment,
+        updatePersonDto?.location?.address?.apartment ??
+        personalData?.location?.address?.apartment,
     } as AddressSchema;
     return this.personService.updatePerson(updatePersonDto);
   }
 
+  @ApiExcludeEndpoint()
   @Patch('all')
   // @CheckPoliciesAbility(new PolicyHandlerPersonUpdate())
   async updateMany(
@@ -178,12 +204,14 @@ export class PersonServiceController implements GenericServiceController {
     return this.personService.updateManyPersons(updatePersonsDto);
   }
 
+  @ApiExcludeEndpoint()
   @Delete(':personID')
   // @CheckPoliciesAbility(new PolicyHandlerPersonDelete())
   async deleteOneById(@Param('personID') id: string) {
     return this.personService.deletePerson(id);
   }
 
+  @ApiExcludeEndpoint()
   @Delete('all')
   // @CheckPoliciesAbility(new PolicyHandlerPersonDelete())
   async deleteManyById(

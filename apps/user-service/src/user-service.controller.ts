@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -26,6 +27,7 @@ import { ApiKeyCheck } from '@auth/auth/decorators/api-key-check.decorator';
 import { ApiKeyAuthGuard } from '@auth/auth/guards/api.key.guard';
 import { BuildersService } from '@builder/builders';
 import { CommonService } from '@common/common';
+import { NoCache } from '@common/common/decorators/no-cache.decorator';
 import ActionsEnum from '@common/common/enums/ActionEnum';
 import TransportEnum from '@common/common/enums/TransportEnum';
 import GenericServiceController from '@common/common/interfaces/controller.generic.interface';
@@ -49,7 +51,6 @@ import { SwaggerSteakeyConfigEnum } from 'libs/config/enum/swagger.stakey.config
 import { ObjectId } from 'mongodb';
 import EventsNamesUserEnum from './enum/events.names.user.enum';
 import { UserServiceService } from './user-service.service';
-import { NoCache } from '@common/common/decorators/no-cache.decorator';
 
 @ApiTags('USER')
 @Controller('users')
@@ -101,6 +102,18 @@ export class UserServiceController implements GenericServiceController {
   // @CheckPoliciesAbility(new PolicyHandlerUserRead())
   async findOneById(@Param('userID') id: string) {
     return this.userService.getOne(id);
+  }
+
+  @Get('check-balance/:userID')
+  // @CheckPoliciesAbility(new PolicyHandlerUserRead())
+  async checkBalance(@Param('userID') id?: string) {
+    return this.userService.updateBalance(id);
+  }
+
+  @Get('check-slug-email/:userID')
+  // @CheckPoliciesAbility(new PolicyHandlerUserRead())
+  async checkSlugEmail(@Param('userID') id?: string) {
+    return this.userService.updateSlugEmail(id);
   }
 
   @Post()
@@ -168,7 +181,8 @@ export class UserServiceController implements GenericServiceController {
 
   @Patch()
   // @CheckPoliciesAbility(new PolicyHandlerUserUpdate())
-  async updateOne(@Body() updateUserDto: UserUpdateDto) {
+  async updateOne(@Body() updateUserDto: UserUpdateDto, @Req() req?: any) {
+    updateUserDto.id = updateUserDto.id || CommonService.getUserId(req);
     return this.userService.updateUser(updateUserDto);
   }
 
@@ -365,6 +379,12 @@ export class UserServiceController implements GenericServiceController {
       id: user.id,
       twoFactorIsActive: true,
     });
+  }
+
+  @AllowAnon()
+  @EventPattern(EventsNamesUserEnum.updateLeveluser)
+  async updateLevelUser(@Payload() data: { user: string; level: string }) {
+    await this.userService.updateLevelUser(data.level, data.user);
   }
 
   private async findOneByApiKey(publicKey: string) {

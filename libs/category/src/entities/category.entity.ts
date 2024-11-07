@@ -13,12 +13,15 @@ export class CategoryEntity implements CategoryInterface {
   })
   name: string;
   slug: string;
+  hidden: boolean;
   @ApiProperty({
     type: String,
     description: 'Description',
   })
   description: string;
   searchText: string;
+  next: CategoryEntity;
+  previous: CategoryEntity;
   type: TagEnum;
   categoryParent: CategoryEntity;
   resources: ResourcesEnum[];

@@ -33,7 +33,7 @@ export class File extends FileEntity {
   path: string;
 
   @Prop()
-  encodeBase64: string;
+  encodeBase64?: string;
 
   @Prop()
   mimetype: string;

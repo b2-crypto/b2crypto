@@ -14,6 +14,7 @@ import { AffiliateInterface } from '@affiliate/affiliate/domain/entities/affilia
 import { PspResponse } from '../dto/transfer.latamcashier.response.dto';
 import { UserInterface } from '@user/user/entities/user.interface';
 import { AccountEntity } from '@account/account/entities/account.entity';
+import TypesAccountEnum from '@account/account/enum/types.account.enum';
 
 export interface TransferInterface {
   _id: string;
@@ -23,11 +24,13 @@ export interface TransferInterface {
   slug: string;
   description: string;
   searchText: string;
-  currency: CurrencyCodeB2cryptoEnum;
   operationType: OperationTransactionType;
   country: CountryCodeEnum;
   // Amount in minimal units
   amount: number;
+  currency: CurrencyCodeB2cryptoEnum;
+  amountCustodial: number;
+  currencyCustodial: CurrencyCodeB2cryptoEnum;
   leadEmail: string;
   leadTpId: string;
   leadAccountId: string;
@@ -45,6 +48,10 @@ export interface TransferInterface {
   responseAccount: any;
   lead: LeadEntity;
   account: AccountEntity;
+  accountResultBalance: number;
+  accountPrevBalance: number;
+  typeAccount: TypesAccountEnum;
+  typeAccountType: string;
   affiliate: AffiliateInterface;
   status: StatusEntity;
   bank: CategoryEntity;

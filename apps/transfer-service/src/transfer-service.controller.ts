@@ -1,13 +1,10 @@
-import { Response } from 'express';
 import {
   BadRequestException,
   Body,
   Controller,
   Delete,
   Get,
-  HttpStatus,
   Inject,
-  InternalServerErrorException,
   Logger,
   NotFoundException,
   NotImplementedException,
@@ -16,7 +13,6 @@ import {
   Patch,
   Post,
   Query,
-  Redirect,
   Req,
   Request,
   Res,
@@ -24,23 +20,25 @@ import {
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
+  ApiExcludeEndpoint,
   ApiHeader,
   ApiQuery,
   ApiResponse,
   ApiSecurity,
   ApiTags,
 } from '@nestjs/swagger';
+import { Response } from 'express';
 
 import { AllowAnon } from '@auth/auth/decorators/allow-anon.decorator';
 import { ApiKeyCheck } from '@auth/auth/decorators/api-key-check.decorator';
 import { ApiKeyAffiliateAuthGuard } from '@auth/auth/guards/api.key.affiliate.guard';
-import { CheckPoliciesAbility } from '@auth/auth/policy/policy.handler.ability';
-import { PolicyHandlerTransferCreate } from '@auth/auth/policy/transfer/policity.handler.transfer.create';
-import { PolicyHandlerTransferDelete } from '@auth/auth/policy/transfer/policity.handler.transfer.delete';
-import { PolicyHandlerTransferRead } from '@auth/auth/policy/transfer/policity.handler.transfer.read';
-import { PolicyHandlerTransferUpdate } from '@auth/auth/policy/transfer/policity.handler.transfer.update';
+import { ApiKeyAuthGuard } from '@auth/auth/guards/api.key.guard';
 import { BuildersService } from '@builder/builders';
 import { CommonService } from '@common/common';
+import { NoCache } from '@common/common/decorators/no-cache.decorator';
+import ActionsEnum from '@common/common/enums/ActionEnum';
+import ResourcesEnum from '@common/common/enums/ResourceEnum';
+import TagEnum from '@common/common/enums/TagEnum';
 import GenericServiceController from '@common/common/interfaces/controller.generic.interface';
 import { ResponsePaginator } from '@common/common/interfaces/response-pagination.interface';
 import { CreateAnyDto } from '@common/common/models/create-any.dto';
@@ -55,39 +53,35 @@ import {
 } from '@nestjs/microservices';
 import { PspAccountInterface } from '@psp-account/psp-account/entities/psp-account.interface';
 import { PspInterface } from '@psp/psp/entities/psp.interface';
+import ResponseB2Crypto from '@response-b2crypto/response-b2crypto/models/ResponseB2Crypto';
 import { StatsDatePspAccountDocument } from '@stats/stats/entities/mongoose/stats.date.psp.account.schema';
 import { TransferCreateDto } from '@transfer/transfer/dto/transfer.create.dto';
-import { TransferUpdateDepositDto } from '@transfer/transfer/dto/transfer.update.deposit.dto';
 import { TransferUpdateDto } from '@transfer/transfer/dto/transfer.update.dto';
+import { TransferUpdateFromLatamCashierDto } from '@transfer/transfer/dto/transfer.update.from.latamcashier.dto';
 import { TransferUpdateWithdrawalDto } from '@transfer/transfer/dto/transfer.update.withdrawal.dto';
 import { TransferDocument } from '@transfer/transfer/entities/mongoose/transfer.schema';
 import { TransferEntity } from '@transfer/transfer/entities/transfer.entity';
 import { OperationTransactionType } from '@transfer/transfer/enum/operation.transaction.type.enum';
+import EventsNamesAccountEnum from 'apps/account-service/src/enum/events.names.account.enum';
+import { AffiliateServiceService } from 'apps/affiliate-service/src/affiliate-service.service';
+import EventsNamesAffiliateEnum from 'apps/affiliate-service/src/enum/events.names.affiliate.enum';
+import EventsNamesCategoryEnum from 'apps/category-service/src/enum/events.names.category.enum';
+import EventsNamesCrmEnum from 'apps/crm-service/src/enum/events.names.crm.enum';
+import { PomeloProcessEnum } from 'apps/integration-service/src/enums/pomelo.process.enum';
 import EventsNamesPspAccountEnum from 'apps/psp-service/src/enum/events.names.psp.acount.enum';
 import EventsNamesStatsEnum from 'apps/stats-service/src/enum/events.names.stats.enum';
+import EventsNamesStatusEnum from 'apps/status-service/src/enum/events.names.status.enum';
+import { isMongoId } from 'class-validator';
+import { SwaggerSteakeyConfigEnum } from 'libs/config/enum/swagger.stakey.config.enum';
 import { ApproveOrRejectDepositDto } from '../../../libs/transfer/src/dto/approve.or.reject.deposit.dto';
+import { BoldTransferRequestDto } from './dto/bold.transfer.request.dto';
 import { TransferAffiliateResponseDto } from './dto/transfer.affiliate.response.dto';
+import { TransferCreateButtonDto } from './dto/transfer.create.button.dto';
+import { BoldStatusEnum } from './enum/bold.status.enum';
 import EventsNamesTransferEnum from './enum/events.names.transfer.enum';
 import { TransferServiceService } from './transfer-service.service';
-import { TransferUpdateFromLatamCashierDto } from '@transfer/transfer/dto/transfer.update.from.latamcashier.dto';
-import { isMongoId } from 'class-validator';
-import ActionsEnum from '@common/common/enums/ActionEnum';
-import ResourcesEnum from '@common/common/enums/ResourceEnum';
-import EventsNamesAffiliateEnum from 'apps/affiliate-service/src/enum/events.names.affiliate.enum';
-import ResponseB2Crypto from '@response-b2crypto/response-b2crypto/models/ResponseB2Crypto';
-import { NoCache } from '@common/common/decorators/no-cache.decorator';
-import { TransferCreateButtonDto } from './dto/transfer.create.button.dto';
-import { AffiliateServiceService } from 'apps/affiliate-service/src/affiliate-service.service';
-import { BoldTransferRequestDto } from './dto/bold.transfer.request.dto';
-import { BoldStatusEnum } from './enum/bold.status.enum';
-import EventsNamesCrmEnum from 'apps/crm-service/src/enum/events.names.crm.enum';
-import EventsNamesStatusEnum from 'apps/status-service/src/enum/events.names.status.enum';
-import EventsNamesAccountEnum from 'apps/account-service/src/enum/events.names.account.enum';
-import EventsNamesCategoryEnum from 'apps/category-service/src/enum/events.names.category.enum';
-import { PomeloProcessEnum } from 'apps/integration-service/src/enums/pomelo.process.enum';
-import TagEnum from '@common/common/enums/TagEnum';
-import { ApiKeyAuthGuard } from '@auth/auth/guards/api.key.guard';
-import { SwaggerSteakeyConfigEnum } from 'libs/config/enum/swagger.stakey.config.enum';
+import WalletTypesAccountEnum from '@account/account/enum/wallet.types.account.enum';
+import TypesAccountEnum from '@account/account/enum/types.account.enum';
 
 @ApiTags('TRANSFERS')
 @Controller('transfers')
@@ -100,6 +94,7 @@ export class TransferServiceController implements GenericServiceController {
     private readonly builder: BuildersService,
   ) {}
 
+  @ApiExcludeEndpoint()
   @AllowAnon()
   @Post('bold/webhook')//se migro logica a transfer service
   async boldWebhook(@Body() transferBold: BoldTransferRequestDto) {
@@ -267,6 +262,7 @@ export class TransferServiceController implements GenericServiceController {
     return this.transferService.getOne(id);
   }
 
+  @ApiExcludeEndpoint()
   @Post()
   // @CheckPoliciesAbility(new PolicyHandlerTransferCreate())
   async createOne(@Body() createTransferDto: TransferCreateDto, @Req() req) {
@@ -277,6 +273,7 @@ export class TransferServiceController implements GenericServiceController {
     return this.transferService.newTransfer(createTransferDto);
   }
 
+  @ApiExcludeEndpoint()
   @AllowAnon()
   @Post('bold/status')
   // @CheckPoliciesAbility(new PolicyHandlerTransferRead())
@@ -299,7 +296,6 @@ export class TransferServiceController implements GenericServiceController {
   }
 
   @NoCache()
-  @ApiTags(SwaggerSteakeyConfigEnum.TAG_DEPOSIT)
   @ApiBearerAuth('bearerToken')
   @UseGuards(ApiKeyAuthGuard)
   @ApiHeader({
@@ -353,8 +349,123 @@ export class TransferServiceController implements GenericServiceController {
       transfer?.responseAccount?.data?.attributes?.payment_page,
     );
   }
+
+  @ApiExcludeEndpoint()
+  @NoCache()
+  @Get('send-last-6h-history/:shortData')
+  // @CheckPoliciesAbility(new PolicyHandlerTransferCreate())
+  async sendLast6hHistory_(
+    @Param('shortData') shortData = true,
+    @Request() req,
+  ) {
+    //await this.transferService.sendLast6hHistoryCardPurchases(!!shortData);
+    this.builder.emitTransferEventClient(
+      EventsNamesTransferEnum.sendLast6hHistory,
+      shortData,
+    );
+    return {
+      statusCode: 200,
+      message: 'Sended',
+    };
+  }
+
+  @ApiExcludeEndpoint()
+  @NoCache()
+  @Get('send-last-6h-history-card-purchases/:shortData')
+  // @CheckPoliciesAbility(new PolicyHandlerTransferCreate())
+  async sendLast6hHistoryCardPurchases(
+    @Param('shortData') shortData = true,
+    @Request() req,
+  ) {
+    //await this.transferService.sendLast6hHistoryCardPurchases(!!shortData);
+    this.builder.emitTransferEventClient(
+      EventsNamesTransferEnum.sendLast6hHistoryCardPurchases,
+      shortData,
+    );
+    return {
+      statusCode: 200,
+      message: 'Sended',
+    };
+  }
+
+  @ApiExcludeEndpoint()
+  @NoCache()
+  @Get('send-last-6h-history-card-wallet-deposits/:shortData')
+  // @CheckPoliciesAbility(new PolicyHandlerTransferCreate())
+  async sendLast6hHistoryCardWalletDeposits(
+    @Param('shortData') shortData = true,
+    @Request() req,
+  ) {
+    //await this.transferService.sendLast6hHistoryCardPurchases(!!shortData);
+    this.builder.emitTransferEventClient(
+      EventsNamesTransferEnum.sendLast6hHistoryCardWalletDeposits,
+      shortData,
+    );
+    return {
+      statusCode: 200,
+      message: 'Sended',
+    };
+  }
+
+  @ApiExcludeEndpoint()
+  @NoCache()
+  @Get('check/by-accounts')
+  // @CheckPoliciesAbility(new PolicyHandlerTransferCreate())
+  async checkAccounts(@Request() req) {
+    const query = new QuerySearchAnyDto();
+    query.where = query.where ?? {};
+    query.where.account = {
+      $exists: true,
+    };
+    query.relations = ['account'];
+    query.page = 1;
+    query.take = 10;
+    const transfersList = await this.transferService.getAll({
+      ...query,
+    });
+    const promises = [];
+    const transfersWithBadAccount = [];
+    do {
+      promises.push(
+        this.transferService
+          .getAll({
+            ...query,
+          })
+          .then(async (transfers) => {
+            Logger.log(
+              `page ${transfers.currentPage}/${transfers.lastPage}`,
+              'Check by accounts',
+            );
+            const list = [];
+            for (const transfer of transfers.list) {
+              if (!transfer.account) {
+                const tx = await this.transferService.getOne(transfer._id);
+                Logger.log(
+                  `${transfer.name}-${transfer.description}`,
+                  `${transfer.numericId} - Transfer: ${transfer._id}`,
+                );
+                list.push(`ObjectId("${tx.account}")`);
+              }
+            }
+            return list;
+          }),
+      );
+      ++query.page;
+    } while (query.page < transfersList.lastPage);
+    return Promise.all(promises).then((rta) => {
+      const flat = rta.flat();
+      return {
+        statusCode: 200,
+        data: {
+          count: flat.length,
+          list: flat,
+        },
+      };
+    });
+  }
   // ----------------------------
 
+  @ApiExcludeEndpoint()
   @Post('credit')
   // @CheckPoliciesAbility(new PolicyHandlerTransferCreate())
   async createOneCredit(
@@ -368,6 +479,7 @@ export class TransferServiceController implements GenericServiceController {
     createTransferDto.operationType = OperationTransactionType.credit;
     return this.transferService.newTransfer(createTransferDto);
   }
+
   @Post('withdrawal')
   // @CheckPoliciesAbility(new PolicyHandlerTransferCreate())
   async createOneWithdrawal(
@@ -381,6 +493,8 @@ export class TransferServiceController implements GenericServiceController {
     createTransferDto.operationType = OperationTransactionType.withdrawal;
     return this.transferService.newTransfer(createTransferDto);
   }
+
+  @ApiExcludeEndpoint()
   @Post('debit')
   // @CheckPoliciesAbility(new PolicyHandlerTransferCreate())
   async createOneDebit(
@@ -394,6 +508,8 @@ export class TransferServiceController implements GenericServiceController {
     createTransferDto.operationType = OperationTransactionType.debit;
     return this.transferService.newTransfer(createTransferDto);
   }
+
+  @ApiExcludeEndpoint()
   @Post('chargeback')
   // @CheckPoliciesAbility(new PolicyHandlerTransferCreate())
   async createOneChargeback(
@@ -408,6 +524,7 @@ export class TransferServiceController implements GenericServiceController {
     return this.transferService.newTransfer(createTransferDto);
   }
 
+  @ApiExcludeEndpoint()
   @Post('all')
   // @CheckPoliciesAbility(new PolicyHandlerTransferCreate())
   async createMany(
@@ -424,12 +541,14 @@ export class TransferServiceController implements GenericServiceController {
     return this.transferService.newManyTransfer(createTransfersDto);
   }
 
+  @ApiExcludeEndpoint()
   @Patch()
   // @CheckPoliciesAbility(new PolicyHandlerTransferUpdate())
   async updateOne(@Body() updateTransferDto: TransferUpdateDto) {
     return this.transferService.updateTransfer(updateTransferDto);
   }
 
+  @ApiExcludeEndpoint()
   @Post('latam-cashier')
   // @CheckPoliciesAbility(new PolicyHandlerTransferUpdate())
   @ApiTags('Integration Lead')
@@ -456,6 +575,7 @@ export class TransferServiceController implements GenericServiceController {
     );
   }
 
+  @ApiExcludeEndpoint()
   @Patch('approve')
   // @CheckPoliciesAbility(new PolicyHandlerTransferUpdate())
   async approveOne(
@@ -466,6 +586,7 @@ export class TransferServiceController implements GenericServiceController {
     return this.transferService.approveTransfer(approveOrRejectTransferDto);
   }
 
+  @ApiExcludeEndpoint()
   @Patch('send-to-crm')
   // @CheckPoliciesAbility(new PolicyHandlerTransferUpdate())
   async sendToCrm(
@@ -475,6 +596,7 @@ export class TransferServiceController implements GenericServiceController {
     return this.transferService.sendToCrm(approveOrRejectTransferDto);
   }
 
+  @ApiExcludeEndpoint()
   @Patch('reject')
   // @CheckPoliciesAbility(new PolicyHandlerTransferUpdate())
   async rejectOne(
@@ -485,6 +607,7 @@ export class TransferServiceController implements GenericServiceController {
     return this.transferService.rejectTransfer(approveOrRejectTransferDto);
   }
 
+  @ApiExcludeEndpoint()
   @Patch('all')
   // @CheckPoliciesAbility(new PolicyHandlerTransferUpdate())
   async updateMany(
@@ -494,6 +617,7 @@ export class TransferServiceController implements GenericServiceController {
     return this.transferService.updateManyTransfer(updateTransfersDto);
   }
 
+  @ApiExcludeEndpoint()
   @Delete('all')
   // @CheckPoliciesAbility(new PolicyHandlerTransferDelete())
   async deleteManyById(
@@ -505,6 +629,7 @@ export class TransferServiceController implements GenericServiceController {
     );
   }
 
+  @ApiExcludeEndpoint()
   @Delete(':transferID')
   // @CheckPoliciesAbility(new PolicyHandlerTransferDelete())
   async deleteOneById(@Param('transferID') id: string) {
@@ -512,8 +637,45 @@ export class TransferServiceController implements GenericServiceController {
   }
 
   @AllowAnon()
+  @EventPattern(EventsNamesTransferEnum.sendLast6hHistoryCardPurchases)
+  // @CheckPoliciesAbility(new PolicyHandlerTransferCreate())
+  async sendLast6hHistoryCardPurchasesEvent(
+    @Payload() shortData = true,
+    @Ctx() ctx?: RmqContext,
+  ) {
+    CommonService.ack(ctx);
+    await this.transferService.sendLast6hHistoryCardPurchases(!!shortData);
+    return true;
+  }
+
+  @AllowAnon()
+  @EventPattern(EventsNamesTransferEnum.sendLast6hHistoryCardWalletDeposits)
+  // @CheckPoliciesAbility(new PolicyHandlerTransferCreate())
+  async sendLast6hHistoryCardWalletDepositsEvent(
+    @Payload() shortData = true,
+    @Ctx() ctx?: RmqContext,
+  ) {
+    CommonService.ack(ctx);
+    await this.transferService.sendLast6hHistoryCardWalletDeposits(!!shortData);
+    return true;
+  }
+
+  @AllowAnon()
+  @EventPattern(EventsNamesTransferEnum.sendLast6hHistory)
+  // @CheckPoliciesAbility(new PolicyHandlerTransferCreate())
+  async sendLast6hHistory(
+    @Payload() shortData = true,
+    @Ctx() ctx?: RmqContext,
+  ) {
+    CommonService.ack(ctx);
+    await this.transferService.sendLast6hHistoryCardWalletDeposits(!!shortData);
+    await this.transferService.sendLast6hHistoryCardPurchases(!!shortData);
+    return true;
+  }
+
+  @AllowAnon()
   @MessagePattern(EventsNamesTransferEnum.findAll)
-  findAllEvent(query: QuerySearchAnyDto, ctx: RmqContext) {
+  findAllEvent(@Payload() query: QuerySearchAnyDto, @Ctx() ctx?: RmqContext) {
     CommonService.ack(ctx);
     return this.findAll(query);
   }
@@ -543,6 +705,8 @@ export class TransferServiceController implements GenericServiceController {
     createTransferDto.amount = parseFloat(createTransferButtonDto.amount);
     createTransferDto.currency = createTransferButtonDto.currency;
     createTransferDto.account = createTransferButtonDto.account;
+    createTransferDto.typeAccount = createTransferButtonDto.typeAccount;
+    createTransferDto.typeAccountType = createTransferButtonDto.typeAccountType;
     if (!createTransferButtonDto.account) {
       const list = await this.affliateService.getAll({
         where: {
@@ -669,13 +833,13 @@ export class TransferServiceController implements GenericServiceController {
       }
 
       const cardId = webhookTransferDto?.requestBodyJson?.card?.id ?? '';
-
       const account = await this.builder.getPromiseAccountEventClient(
         EventsNamesAccountEnum.findOneByCardId,
         {
           id: cardId,
         },
       );
+
       if (!account) {
         Logger.error(
           `Account by card ${cardId} was not found`,
@@ -706,9 +870,11 @@ export class TransferServiceController implements GenericServiceController {
       const transferDto: TransferCreateDto = new TransferCreateDto();
       transferDto.crm = crm;
       transferDto.status = status;
-      transferDto.account = account;
+      transferDto.account = account._id.toString();
+      transferDto.typeAccount = account.type;
+      transferDto.typeAccountType = account.accountType;
       transferDto.userAccount = account.owner;
-      transferDto.typeTransaction = category;
+      transferDto.typeTransaction = category._id.toString();
       transferDto.amount = webhookTransferDto.amount;
       transferDto.amountCustodial = webhookTransferDto.amountCustodial;
       transferDto.currency = webhookTransferDto.currency;
@@ -722,7 +888,68 @@ export class TransferServiceController implements GenericServiceController {
         webhookTransferDto.descriptionStatusPayment;
       transferDto.confirmedAt = new Date();
 
-      await this.transferService.newTransfer(transferDto);
+      Logger.debug(JSON.stringify(transferDto), 'Transfer DTO');
+      const tx = await this.transferService.newTransfer(transferDto);
+      Logger.debug(tx, 'Transfer created');
+      const promises = [];
+      const transferDtoBrand = {
+        ...transferDto,
+      };
+      if (webhookTransferDto.integration == 'Sales') {
+        let accountBrand = null;
+        const accountBrandList =
+          await this.builder.getPromiseAccountEventClient(
+            EventsNamesAccountEnum.findAll,
+            {
+              where: {
+                accountType: WalletTypesAccountEnum.VAULT,
+                type: TypesAccountEnum.WALLET,
+                owner: { $exists: false },
+                accountId: 'TRX_USDT_S2UZ',
+                brand: account.brand,
+                crm: crm._id,
+              },
+            },
+          );
+        accountBrand = accountBrandList?.list?.[0];
+        if (accountBrand?._id) {
+          const paymentCard = await this.builder.getPromiseCategoryEventClient(
+            EventsNamesCategoryEnum.findOneByNameType,
+            {
+              slug: CommonService.getSlug(
+                `${OperationTransactionType.payment} card`,
+              ),
+              type: TagEnum.MONETARY_TRANSACTION_TYPE,
+            },
+          );
+          if (paymentCard?._id) {
+            transferDtoBrand.account = accountBrand._id.toString();
+            transferDtoBrand.typeAccount = accountBrand.type;
+            transferDtoBrand.typeAccountType = accountBrand.accountType;
+            transferDtoBrand.userAccount = accountBrand.owner;
+            transferDtoBrand.operationType = OperationTransactionType.payment;
+            transferDtoBrand.typeTransaction = paymentCard._id.toString();
+            transferDtoBrand.page = webhookTransferDto.page;
+            Logger.debug(
+              JSON.stringify(transferDtoBrand),
+              'Transfer DTO Brand',
+            );
+            promises.push(this.transferService.newTransfer(transferDtoBrand));
+          } else {
+            Logger.error(
+              `Category by slug payment-card was not found`,
+              'WebhookTransfer Category payment',
+            );
+          }
+        } else {
+          Logger.error(
+            `Account by brand ${account.brand} was not found`,
+            'WebhookTransfer Account Brand',
+          );
+        }
+      }
+
+      await Promise.all(promises);
     } catch (error) {
       Logger.error(error, 'WebhookTransfer createOne');
     }

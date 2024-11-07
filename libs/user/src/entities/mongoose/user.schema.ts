@@ -8,9 +8,9 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Permission } from '@permission/permission/entities/mongoose/permission.schema';
 import { Person } from '@person/person/entities/mongoose/person.schema';
 import { Role } from '@role/role/entities/mongoose/role.schema';
-import UserVerifyIdentityDto from '@user/user/dto/user.verify.identity.dto';
 import { UserEntity } from '@user/user/entities/user.entity';
 import mongoose, { Document, ObjectId } from 'mongoose';
+import { UserBalance } from './user.balance.schema';
 import { UserVerifyIdentitySchema } from './user.verify.identity.schema';
 import { Affiliate } from '@affiliate/affiliate/infrastructure/mongoose/affiliate.schema';
 import { Brand } from '@brand/brand/entities/mongoose/brand.schema';
@@ -79,6 +79,9 @@ export class User extends UserEntity {
   @Prop({ default: null })
   maintenanceEndAt: Date;
 
+  @Prop({ type: UserBalance })
+  balance: UserBalance;
+
   @Prop()
   apiKey: string;
 
@@ -124,8 +127,14 @@ export class User extends UserEntity {
   @Prop({ type: [String] })
   authorizations: Array<string>;
 
+  @Prop({ type: () => Array<RulesUser> })
+  rules: Array<RulesUser>;
+
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'files' })
   image: FileInterface;
+
+  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'brands' })
+  brand: Brand;
 
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'roles' })
   role: Role;
@@ -137,9 +146,6 @@ export class User extends UserEntity {
 
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'persons' })
   personalData: Person;
-
-  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'brands' })
-  brand: Brand;
 
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'groups' })
   group: Group;

@@ -1,5 +1,6 @@
 /* eslint-disable prettier/prettier */
 import { BuildersService } from '@builder/builders';
+import { EnvironmentEnum } from '@common/common/enums/environment.enum';
 import { QuerySearchAnyDto } from '@common/common/models/query_search-any.dto';
 import { MessageServiceMongooseService } from '@message/message';
 import { MessageCreateDto } from '@message/message/dto/message.create.dto';
@@ -16,6 +17,7 @@ import EventsNamesCrmEnum from 'apps/crm-service/src/enum/events.names.crm.enum'
 import { Crm } from '@crm/crm/entities/mongoose/crm.schema';
 import { CrmInterface } from '@crm/crm/entities/crm.interface';
 import EventsNamesLeadEnum from 'apps/lead-service/src/enum/events.names.lead.enum';
+import EventsNamesUserEnum from 'apps/user-service/src/enum/events.names.user.enum';
 import axios from 'axios';
 import { LeadDocument } from '@lead/lead/entities/mongoose/lead.schema';
 import * as pug from 'pug';
@@ -277,7 +279,6 @@ export class MessageServiceService {
       logoUrl: process.env.LOGO_URL,
       vars: vars,
     };
-
     const rta = pug.renderFile(template, templateVars);
     return rta;
   }
@@ -331,4 +332,3 @@ export class MessageServiceService {
     return crm?.clientZone;
   }
 }
-

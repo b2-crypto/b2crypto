@@ -30,6 +30,12 @@ import { PomeloEnum } from '@integration/integration/enum/pomelo.enum';
 
 @Injectable()
 export class CommonService {
+  static getOTP() {
+    return CommonService.getNumberDigits(
+      CommonService.randomIntNumber(999999),
+      6,
+    );
+  }
   static getNumberDigits(number: number, digitsExpected = 2) {
     return number.toString().padStart(digitsExpected, '0');
   }

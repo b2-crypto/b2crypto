@@ -37,6 +37,7 @@ import configuration from 'config/configuration';
 import { RedisClientOptions } from 'redis';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { EnvironmentEnum } from '@common/common/enums/environment.enum';
 
 export const configApp = {
   imports: [
@@ -53,7 +54,9 @@ export const configApp = {
           max: parseInt(configService.get('CACHE_MAX_ITEMS') ?? '10'),
           isGlobal: true,
         } as RedisClientOptions;
-        Logger.log(config, 'Redis Config');
+        if (configService.get('ENVIRONMENT') !== EnvironmentEnum.prod) {
+          Logger.log(config, 'Redis Config');
+        }
         return config;
       },
       inject: [ConfigService],

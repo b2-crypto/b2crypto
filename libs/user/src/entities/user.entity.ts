@@ -33,6 +33,7 @@ export class UserEntity implements UserInterface {
   inMaintenance: boolean;
   maintenanceStartAt: Date;
   maintenanceEndAt: Date;
+  balance: UserBalanceModel;
   apiKey: string;
   configuration: JSON;
   twoFactorSecret: string;
@@ -41,10 +42,12 @@ export class UserEntity implements UserInterface {
   amountCustodial: number;
   currencyCustodial: CurrencyCodeB2cryptoEnum;
   image: FileEntity;
+  brand: BrandEntity;
   role: RoleEntity;
   permissions: Array<PermissionEntity>;
   authorizations: Array<string>;
   category: CategoryEntity;
+  level: CategoryEntity;
   personalData: PersonEntity;
   brand: BrandEntity;
   affiliate: AffiliateEntity;

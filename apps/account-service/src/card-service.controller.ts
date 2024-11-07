@@ -32,6 +32,7 @@ import {
   Inject,
   Logger,
   NotFoundException,
+  NotImplementedException,
   Param,
   Patch,
   Post,
@@ -76,7 +77,17 @@ import { AccountServiceService } from './account-service.service';
 import { AfgNamesEnum } from './enum/afg.names.enum';
 import EventsNamesAccountEnum from './enum/events.names.account.enum';
 
-@ApiTags('CARD')
+import { ResponsePaginator } from '../../../libs/common/src/interfaces/response-pagination.interface';
+import { AccountServiceController } from './account-service.controller';
+import { AccountServiceService } from './account-service.service';
+import { AfgNamesEnum } from './enum/afg.names.enum';
+import EventsNamesAccountEnum from './enum/events.names.account.enum';
+import { AccountUpdateDto } from '@account/account/dto/account.update.dto';
+import WalletTypesAccountEnum from '@account/account/enum/wallet.types.account.enum';
+import { ConfigCardActivateDto } from '@account/account/dto/config.card.activate.dto';
+import { PinUpdateDto } from '@account/account/dto/pin.update.dto';
+
+@ApiTags(SwaggerSteakeyConfigEnum.TAG_CARD)
 @Controller('cards')
 export class CardServiceController extends AccountServiceController {
   constructor(
@@ -101,6 +112,49 @@ export class CardServiceController extends AccountServiceController {
   private readonly BLOCK_BALANCE_PERCENTAGE: number =
     this.configService.get<number>('AUTHORIZATIONS_BLOCK_BALANCE_PERCENTAGE');
 
+  @Patch('pin')
+  @ApiTags(SwaggerSteakeyConfigEnum.TAG_CARD)
+  @ApiBearerAuth('bearerToken')
+  @ApiHeader({
+    name: 'b2crypto-key',
+    description: 'The apiKey',
+  })
+  async updateOnePin(@Body() pinUpdateDto: PinUpdateDto, req?: any) {
+    const userId = CommonService.getUserId(req);
+    if (pinUpdateDto.pin) {
+      const card = await this.findOneById(pinUpdateDto.id);
+      if (card.cardConfig) {
+        const cardIntegration = await this.integration.getCardIntegration(
+          IntegrationCardEnum.POMELO,
+        );
+        if (!cardIntegration) {
+          throw new BadRequestException('Bad integration card');
+        }
+        const user = await this.cardBuilder.getPromiseUserEventClient(
+          EventsNamesUserEnum.findOneById,
+          userId,
+        );
+        try {
+          if (!user.userCard) {
+            user.userCard = await this.getUserCard(cardIntegration, user);
+          }
+          const cardUpdate = await cardIntegration.updateCard({
+            id: card.cardConfig.id,
+            pin: pinUpdateDto.pin.toString(),
+          });
+          if (cardUpdate['error']) {
+            throw new BadRequestException('PIN not updated');
+          }
+        } catch (err) {
+          Logger.error(err, 'Error in card profile creation');
+          throw new BadRequestException('Card not updated');
+        }
+      }
+    }
+    return this.updateOne(pinUpdateDto);
+  }
+
+  @ApiExcludeEndpoint()
   @Get('all')
   @NoCache()
   @ApiTags(SwaggerSteakeyConfigEnum.TAG_CARD)
@@ -154,17 +208,18 @@ export class CardServiceController extends AccountServiceController {
     const rta = await this.cardService.findAll(query);
     rta.list.forEach(async (account) => {
       account.amount = await this.swapToCurrencyUser(req, account);
-      account.currency = req.user.currency ?? CurrencyCodeB2cryptoEnum.USD;
+      account.currency = req.user.currency ?? CurrencyCodeB2cryptoEnum.USDT;
     });
     return rta;
   }
 
-  @ApiTags(SwaggerSteakeyConfigEnum.TAG_CARD)
   @ApiSecurity('b2crypto-key')
   @ApiBearerAuth('bearerToken')
   @Post('create')
   @UseGuards(ApiKeyAuthGuard)
   async createOne(@Body() createDto: CardCreateDto, @Req() req?: any) {
+    const userId = createDto.owner || req?.user?.id;
+    const user: User = await this.getUser(userId);
     createDto.accountType =
       createDto.accountType ?? CardTypesAccountEnum.VIRTUAL;
     let cardAfg = AfgNamesEnum.CONSUMER_VIRTUAL_1K;
@@ -301,6 +356,7 @@ export class CardServiceController extends AccountServiceController {
         description: desc,
       });
     }
+    return afg;
   }
 
   private getAfgProd(cardAfg: AfgNamesEnum) {
@@ -1041,7 +1097,7 @@ export class CardServiceController extends AccountServiceController {
     return card.responseShipping;
   }
 
-  @ApiTags(SwaggerSteakeyConfigEnum.TAG_CARD)
+  @ApiExcludeEndpoint()
   @ApiSecurity('b2crypto-key')
   @ApiBearerAuth('bearerToken')
   @UseGuards(ApiKeyAuthGuard)
@@ -1118,6 +1174,7 @@ export class CardServiceController extends AccountServiceController {
     throw new BadRequestException('Shipment was not created');
   }
 
+  //@ApiExcludeEndpoint()
   @Post('recharge')
   @ApiTags(SwaggerSteakeyConfigEnum.TAG_CARD)
   @ApiSecurity('b2crypto-key')
@@ -1132,7 +1189,12 @@ export class CardServiceController extends AccountServiceController {
       throw new BadRequestException('The recharge not be 10 or less');
     }
     if (!createDto.from) {
-      throw new BadRequestException('I need a wallet to recharge card');
+      throw new BadRequestException(
+        'I need a wallet or card from recharge card',
+      );
+    }
+    if (!createDto.to) {
+      throw new BadRequestException('I need a card to recharge');
     }
     if (!createDto.to) {
       throw new BadRequestException('I need a card to recharge');
@@ -1140,6 +1202,9 @@ export class CardServiceController extends AccountServiceController {
     const to = await this.getAccountService().findOneById(
       createDto.to.toString(),
     );
+    if (!to) {
+      throw new BadRequestException('Card is not valid');
+    }
     if (to.type != TypesAccountEnum.CARD) {
       Logger.error(
         'Type not same',
@@ -1176,11 +1241,12 @@ export class CardServiceController extends AccountServiceController {
           type: TagEnum.MONETARY_TRANSACTION_TYPE,
         },
       );
-    const withDrawalWalletCategory =
+    const withdrawSlug = `withdrawal-${from.type?.toLowerCase()}`;
+    const withdrawalCategory =
       await this.cardBuilder.getPromiseCategoryEventClient(
         EventsNamesCategoryEnum.findOneByNameType,
         {
-          slug: 'withdrawal-wallet',
+          slug: withdrawSlug,
           type: TagEnum.MONETARY_TRANSACTION_TYPE,
         },
       );
@@ -1193,26 +1259,15 @@ export class CardServiceController extends AccountServiceController {
         EventsNamesPspAccountEnum.findOneByName,
         'internal',
       );
-    // Create
-    const result = Promise.all([
-      this.cardService.customUpdateOne({
-        id: createDto.to,
-        $inc: {
-          amount: createDto.amount,
-        },
-      }),
-      this.cardService.customUpdateOne({
-        id: createDto.from.toString(),
-        $inc: {
-          amount: createDto.amount * -1,
-        },
-      }),
-    ]).then((list) => list[0]);
+    if (valueToPay > 0) {
+      // Pay transfer between cards
+      Logger.log('Pay transfer between cards', 'Make');
+    }
     this.cardBuilder.emitTransferEventClient(
       EventsNamesTransferEnum.createOne,
       {
-        name: `Recharge card ${to.name}`,
-        description: `Recharge from wallet ${from.name} to card ${to.name}`,
+        name: `Deposit card ${to.name}`,
+        description: `Deposit from ${from.name} to ${to.name}`,
         currency: to.currency,
         amount: createDto.amount,
         currencyCustodial: to.currencyCustodial,
@@ -1220,13 +1275,15 @@ export class CardServiceController extends AccountServiceController {
         account: to._id,
         userCreator: req?.user?.id,
         userAccount: to.owner,
+        typeAccount: to.type,
+        typeAccountType: to.accountType,
         typeTransaction: depositCardCategory._id,
         psp: internalPspAccount.psp,
         pspAccount: internalPspAccount._id,
         operationType: OperationTransactionType.deposit,
         page: req.get('Host'),
         statusPayment: StatusCashierEnum.APPROVED,
-        approve: true,
+        isApprove: true,
         status: approvedStatus._id,
         brand: to.brand,
         crm: to.crm,
@@ -1238,7 +1295,7 @@ export class CardServiceController extends AccountServiceController {
       EventsNamesTransferEnum.createOne,
       {
         name: `Withdrawal wallet ${from.name}`,
-        description: `Recharge from wallet ${from.name} to card ${to.name}`,
+        description: `Withdrawal from ${from.name} to ${to.name}`,
         currency: from.currency,
         amount: createDto.amount,
         currencyCustodial: from.currencyCustodial,
@@ -1246,13 +1303,15 @@ export class CardServiceController extends AccountServiceController {
         account: from._id,
         userCreator: req?.user?.id,
         userAccount: from.owner,
-        typeTransaction: withDrawalWalletCategory._id,
+        typeAccount: from.type,
+        typeAccountType: from.accountType,
+        typeTransaction: withdrawalCategory._id,
         psp: internalPspAccount.psp,
         pspAccount: internalPspAccount._id,
         operationType: OperationTransactionType.withdrawal,
         page: req.get('Host'),
         statusPayment: StatusCashierEnum.APPROVED,
-        approve: true,
+        isApprove: true,
         status: approvedStatus._id,
         brand: from.brand,
         crm: from.crm,
@@ -1260,38 +1319,229 @@ export class CardServiceController extends AccountServiceController {
         approvedAt: new Date(),
       } as unknown as TransferCreateDto,
     );
-    return result;
+    from.amount = from.amount - createDto.amount;
+    return from;
+  }
+
+  @Patch('physical-active')
+  @ApiTags(SwaggerSteakeyConfigEnum.TAG_CARD)
+  @ApiSecurity('b2crypto-key')
+  @ApiBearerAuth('bearerToken')
+  @UseGuards(ApiKeyAuthGuard)
+  async physicalActive(
+    @Body() configActive: ConfigCardActivateDto,
+    @Req() req?: any,
+  ) {
+    return this.physicalActiveCard(
+      configActive,
+      await this.getValidUserFromReq(req),
+    );
+  }
+
+  async getValidUserFromReq(@Req() req?: any) {
+    const user: User = await this.getUser(req?.user?.id);
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    if (!user.personalData) {
+      throw new BadRequestException('Profile of user not found');
+    }
+    if (!user.personalData.location?.address) {
+      throw new BadRequestException('Location address not found');
+    }
+    Logger.debug(JSON.stringify(user), 'loggger user - getValidateUserFromReq');
+    return user;
+  }
+
+  async physicalActiveCard(configActivate: ConfigCardActivateDto, user) {
+    if (!configActivate.pan) {
+      throw new BadRequestException('PAN code is necesary');
+    }
+    const cardIntegration = await this.integration.getCardIntegration(
+      IntegrationCardEnum.POMELO,
+    );
+    if (!cardIntegration) {
+      throw new BadRequestException('Bad integration card');
+    }
+    try {
+      if (!user.userCard) {
+        user.userCard = await this.getUserCard(cardIntegration, user);
+      }
+    } catch (err) {
+      Logger.error(err, 'Error in card profile creation');
+      throw new BadRequestException('Card profile not found');
+    }
+    Logger.debug(configActivate.pin, 'pin active card');
+    if (!configActivate.pin && configActivate.pin?.length !== 4) {
+      configActivate.pin = CommonService.getNumberDigits(
+        CommonService.randomIntNumber(9999),
+        4,
+      );
+    }
+    const request = {
+      user_id: user.userCard.id,
+      pin: configActivate.pin,
+      previous_card_id: undefined,
+      pan: configActivate.pan,
+    };
+    if (configActivate.prevCardId) {
+      request.previous_card_id = configActivate.prevCardId;
+    }
+    const rta = await cardIntegration.activateCard(
+      user.userCard,
+      configActivate,
+    );
+    Logger.debug(JSON.stringify(rta), 'rta actived card');
+    if (rta) {
+      if (!!rta['error']) {
+        const details: Array<string> = (rta['details'] || []).map(
+          (err) => err.detail,
+        );
+        Logger.error(details, 'activate card');
+        throw new BadRequestException(details.join(','));
+      }
+      const cardId = (rta.data && rta.data['id']) || rta['id'];
+      Logger.debug(cardId, `cardId actived`);
+
+      const cards = await cardIntegration.getCard(cardId);
+      Logger.debug(cards, `Result pomelo active`);
+      const crd = cards.data;
+      Logger.debug(cardId, `Search card active`);
+      const card = await this.cardService.findAll({
+        where: {
+          'cardConfig.id': crd.id,
+        },
+      });
+      if (!card.totalElements) {
+        const cardDto = this.buildCardDto(crd, user.personalData, user.email);
+        cardDto.pin = configActivate.pin;
+        const n_card = await this.cardService.createOne(
+          cardDto as AccountCreateDto,
+        );
+        Logger.debug(n_card.id, `Card created for ${user.email}`);
+        let afgName = 'grupo - 1';
+        if (configActivate.promoCode == 'pm2413') {
+          afgName = 'grupo - 3';
+        }
+        const cardAfg = await this.getAfgByLevel(afgName, true);
+        const group = await this.buildAFG(null, cardAfg);
+        const afg = group.list[0];
+        try {
+          const rta = await cardIntegration.updateCard({
+            id: n_card?.id,
+            affinity_group_id: afg.valueGroup,
+          });
+          Logger.debug(rta.data, `Updated AFG Card-${n_card?.id.toString()}`);
+          this.cardBuilder.emitAccountEventClient(
+            EventsNamesAccountEnum.updateOne,
+            {
+              id: n_card?.id.toString(),
+              group: afg._id,
+            },
+          );
+        } catch (error) {
+          Logger.error(
+            error.message || error,
+            `Update AFG Card-${n_card?.id.toString()}-${user.email}`,
+          );
+          throw new BadRequestException('Bad update card');
+        }
+      }
+      return {
+        statusCode: 200,
+        data: 'Card actived',
+      };
+    }
+    return rta;
+  }
+
+  @Get('sensitive-info/:cardId')
+  @ApiTags(SwaggerSteakeyConfigEnum.TAG_CARD)
+  @ApiSecurity('b2crypto-key')
+  @ApiBearerAuth('bearerToken')
+  @UseGuards(ApiKeyAuthGuard)
+  async getSensitiveInfo(
+    @Param('cardId') cardId: string,
+    @Res() res,
+    @Req() req?: any,
+  ) {
+    if (!cardId) {
+      throw new BadRequestException('Need cardId to search');
+    }
+    const cardList = await this.cardService.findAll({
+      where: {
+        _id: cardId,
+      },
+    });
+    if (!cardList?.totalElements || !cardList?.list[0]?.cardConfig) {
+      throw new BadRequestException('CardId is not valid');
+    }
+    cardId = cardList.list[0].cardConfig.id;
+    const user = await this.getValidUserFromReq(req);
+    const cardIntegration = await this.integration.getCardIntegration(
+      IntegrationCardEnum.POMELO,
+    );
+    if (!cardIntegration) {
+      throw new BadRequestException('Bad integration card');
+    }
+    if (!user.userCard) {
+      user.userCard = await this.getUserCard(cardIntegration, user);
+    }
+    const token = await cardIntegration.getTokenCardSensitive(user.userCard.id);
+
+    const url = 'https://secure-data-web.pomelo.la';
+    const cardIdPomelo = cardId;
+    const width = 'width="100%"';
+    const height = 'height="270em"';
+    const locale = 'es';
+    const urlStyles =
+      'https://cardsstyles.s3.eu-west-3.amazonaws.com/cardsstyles2.css';
+    const html = pug.render(
+      '<iframe ' +
+        `${width}` +
+        `${height}` +
+        'allow="clipboard-write" ' +
+        'class="iframe-list" ' +
+        'scrolling="no" ' +
+        `src="${url}/v1/${cardIdPomelo}?auth=${token['access_token']}&styles=${urlStyles}&field_list=pan,code,pin,name,expiration&layout=card&locale=${locale}" ` +
+        'frameBorder="0">' +
+        '</iframe>',
+    );
+    return res
+      .setHeader('Content-Type', 'text/html; charset=utf-8')
+      .status(200)
+      .send(html);
   }
 
   @Patch('lock/:cardId')
-  @ApiTags(SwaggerSteakeyConfigEnum.TAG_CARD)
   @ApiSecurity('b2crypto-key')
   @ApiBearerAuth('bearerToken')
   @UseGuards(ApiKeyAuthGuard)
   async blockedOneById(@Param('cardId') id: string) {
+    // TODO: change status ON POMELO
     return this.updateStatusAccount(id, StatusAccountEnum.LOCK);
   }
 
   @Patch('unlock/:cardId')
-  @ApiTags(SwaggerSteakeyConfigEnum.TAG_CARD)
   @ApiSecurity('b2crypto-key')
   @ApiBearerAuth('bearerToken')
   @UseGuards(ApiKeyAuthGuard)
   async unblockedOneById(@Param('cardId') id: string) {
+    // TODO: change status ON POMELO
     return this.updateStatusAccount(id, StatusAccountEnum.UNLOCK);
   }
 
   @Patch('cancel/:cardId')
-  @ApiTags(SwaggerSteakeyConfigEnum.TAG_CARD)
   @ApiSecurity('b2crypto-key')
   @ApiBearerAuth('bearerToken')
   @UseGuards(ApiKeyAuthGuard)
   async cancelOneById(@Param('cardId') id: string) {
+    // TODO: change status ON POMELO
     return this.updateStatusAccount(id, StatusAccountEnum.CANCEL);
   }
 
+  @ApiExcludeEndpoint()
   @Patch('hidden/:cardId')
-  @ApiTags(SwaggerSteakeyConfigEnum.TAG_CARD)
   @ApiSecurity('b2crypto-key')
   @ApiBearerAuth('bearerToken')
   @UseGuards(ApiKeyAuthGuard)
@@ -1299,8 +1549,8 @@ export class CardServiceController extends AccountServiceController {
     return this.toggleVisibleToOwner(id, false);
   }
 
+  @ApiExcludeEndpoint()
   @Patch('visible/:cardId')
-  @ApiTags(SwaggerSteakeyConfigEnum.TAG_CARD)
   @ApiSecurity('b2crypto-key')
   @ApiBearerAuth('bearerToken')
   @UseGuards(ApiKeyAuthGuard)
@@ -1308,6 +1558,7 @@ export class CardServiceController extends AccountServiceController {
     return this.toggleVisibleToOwner(id, true);
   }
 
+  @ApiExcludeEndpoint()
   @Delete(':cardID')
   deleteOneById(@Param('cardID') id: string, req?: any) {
     throw new UnauthorizedException();
@@ -1343,6 +1594,10 @@ export class CardServiceController extends AccountServiceController {
       if (!card) {
         return CardsEnum.CARD_PROCESS_CARD_NOT_FOUND;
       }
+      Logger.log(
+        `Card balance: ${card.amount} | Movement amount: ${data.amount}`,
+        `CardService.ProcessPomeloTransaction.Authorize: ${data.authorize}`,
+      );
       if (data.authorize) {
         Logger.log(
           `Card balance: ${card.amount} | Movement amount: ${data.amount}`,
@@ -1636,6 +1891,9 @@ export class CardServiceController extends AccountServiceController {
     user: User,
     account?: AccountDocument,
   ) {
+    if (!user?.email) {
+      throw new BadRequestException('Email not found');
+    }
     // TODO[hender - 2024/08/12] Check the Surname, City, Region to remove special characters
     // TODO[hender - 2024/08/12] Check the Surname, City, Region to remove numbers
     const rtaUserCard = await cardIntegration.getUser({
