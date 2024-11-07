@@ -13,10 +13,8 @@ import {
   IsEnum,
   IsMongoId,
   IsNotEmpty,
-  IsNumber,
   IsOptional,
   IsString,
-  Min,
   ValidateNested,
 } from 'class-validator';
 import { ObjectId } from 'mongodb';
@@ -89,13 +87,12 @@ export class AccountCreateDto extends CreateAnyDto implements AccountInterface {
   @IsOptional()
   secret: string;
 
-  @IsNumber({ maxDecimalPlaces: 0, allowNaN: false, allowInfinity: false })
-  @Min(0)
+  @IsString()
   @ApiProperty({
     required: false,
     description: 'Account pin',
   })
-  pin: number;
+  pin: string;
 
   @ApiProperty({
     required: false,

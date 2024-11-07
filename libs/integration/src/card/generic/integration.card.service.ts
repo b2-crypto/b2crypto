@@ -177,7 +177,7 @@ export class IntegrationCardService<
     return this.http.patch(this.routesMap.updateUser, userCard);
   }
 
-  async getCard(card: TCardDto): Promise<AxiosResponse<any[], any>> {
+  async getCard(card: TCardDto): Promise<AxiosResponse<any, any>> {
     return await this.fetch('GET', this.routesMap.searchCard, card);
   }
   async getCardByQuery(query: CardSearchDto) {
@@ -217,6 +217,9 @@ export class IntegrationCardService<
     userCard: TUserCardDto,
     configActivate: ConfigCardActivateDto,
   ): Promise<AxiosResponse<any[], any>> {
+    if (!this.token) {
+      await this.generateHttp();
+    }
     const request = {
       user_id: userCard['id'],
       pin: configActivate.pin,
@@ -226,7 +229,8 @@ export class IntegrationCardService<
     if (configActivate.prevCardId) {
       request.previous_card_id = configActivate.prevCardId;
     }
-    return this.http.post(this.routesMap.activateCard, configActivate);
+    //return this.http.post(this.routesMap.activateCard, request);
+    return this.fetch('POST', this.routesMap.activateCard, request);
   }
 
   async getAffinityGroup(
