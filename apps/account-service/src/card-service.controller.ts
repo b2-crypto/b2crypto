@@ -119,7 +119,7 @@ export class CardServiceController extends AccountServiceController {
   })
   async updateOnePin(@Body() pinUpdateDto: PinUpdateDto, @Req() req?: any) {
     const userId = CommonService.getUserId(req);
-    if (isNumber(pinUpdateDto.pin) && pinUpdateDto.id) {
+    if (isNumber(parseInt(pinUpdateDto.pin)) && pinUpdateDto.id) {
       if (pinUpdateDto.pin.toString().length != 4) {
         throw new BadRequestException('PIN must be 4 digits');
       }
@@ -168,7 +168,7 @@ export class CardServiceController extends AccountServiceController {
         pin: pin,
       });
     }
-    throw new BadRequestException('Not found id or PIN to update');
+    throw new BadRequestException('Not found id or numeric PIN to update');
   }
 
   @ApiExcludeEndpoint()
