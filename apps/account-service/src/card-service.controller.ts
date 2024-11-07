@@ -191,11 +191,12 @@ export class CardServiceController extends AccountServiceController {
       throw new BadRequestException('Already have 10 cards');
     }
     createDto.owner = user._id;
+    if (createDto.pin && createDto.pin?.toString().length != 4) {
+      throw new BadRequestException('The PIN must be 4 digits');
+    }
     createDto.pin =
       createDto.pin ??
-      parseInt(
-        CommonService.getNumberDigits(CommonService.randomIntNumber(9999), 4),
-      );
+      CommonService.getNumberDigits(CommonService.randomIntNumber(9999), 4);
     const account = await this.cardService.createOne(createDto);
     try {
       const cardIntegration = await this.integration.getCardIntegration(
