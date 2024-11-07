@@ -11,15 +11,19 @@ import { RoleServiceModule } from 'apps/role-service/src/role-service.module';
 import { StatusServiceModule } from 'apps/status-service/src/status-service.module';
 import * as basicAuth from 'express-basic-auth';
 import { UserServiceModule } from '../../user-service/src/user-service.module';
-import { AppHttpModule } from './app.http.module';
 
 import { QueueAdminModule } from '@common/common/queue-admin-providers/queue.admin.provider.module';
+// import {
+//   FastifyAdapter,
+//   NestFastifyApplication,
+// } from '@nestjs/platform-fastify';
 import { OpenAPIObject } from '@nestjs/swagger';
 import { PathsObject } from '@nestjs/swagger/dist/interfaces/open-api-spec.interface';
 import { AccountServiceModule } from 'apps/account-service/src/account-service.module';
 import { PersonServiceModule } from 'apps/person-service/src/person-service.module';
 import { TransferServiceModule } from 'apps/transfer-service/src/transfer-service.module';
 import { SwaggerSteakeyConfigEnum } from 'libs/config/enum/swagger.stakey.config.enum';
+import { AppHttpModule } from './app.http.module';
 import { tracerRun } from './tracer';
 
 async function bootstrap() {
@@ -30,6 +34,12 @@ async function bootstrap() {
     // logger: false,
     cors: true,
   });
+
+  // const app = await NestFactory.create<NestFastifyApplication>(
+  //   AppHttpModule,
+  //   new FastifyAdapter(),
+  // );
+
   const configService = app.get(ConfigService);
 
   const validationPipes = new ValidationPipe({

@@ -51,6 +51,13 @@ export class AccountServiceController implements GenericServiceController {
     return this.accountService;
   }
 
+  /**
+   * REVIEW: Add response query
+   * @param query
+   * @param sort
+   * @param pagination
+   * @returns {Promise<ResponseQuery<CardDocument>>}
+   */
   @ApiExcludeEndpoint()
   @Get('all')
   @NoCache()
@@ -58,6 +65,11 @@ export class AccountServiceController implements GenericServiceController {
     return this.accountService.findAll(query);
   }
 
+  /**
+   * REVIEW: Add response query
+   * @param dto
+   * @returns {Promise<ResponseQuery<CardDocument>>}
+   */
   @ApiExcludeEndpoint()
   @Get('send-balance-card-reports')
   async sendBalanceCardReports(@Req() req?: any) {
@@ -81,6 +93,13 @@ export class AccountServiceController implements GenericServiceController {
     };
   }
 
+  /**
+   * REVIEW: Add response query
+   * @param query
+   * @param sort
+   * @param pagination
+   * @returns {Promise<ResponseQuery<CardDocument>>}
+   */
   @ApiExcludeEndpoint()
   @Get('me')
   @NoCache()
@@ -89,36 +108,66 @@ export class AccountServiceController implements GenericServiceController {
     return this.accountService.findAll(query);
   }
 
+  /**
+   * REVIEW: Add response mutation
+   * @param accountId
+   * @returns {Promise<ResponseMutation<CardDocument>>}
+   */
   @ApiExcludeEndpoint()
   @Patch('lock/:accountId')
   async blockedOneById(@Param('accountId') id: string) {
     return this.updateStatusAccount(id, StatusAccountEnum.LOCK);
   }
 
+  /**
+   * REVIEW: Add response mutation
+   * @param accountId
+   * @returns {Promise<ResponseMutation<CardDocument>>}
+   */
   @ApiExcludeEndpoint()
   @Patch('unlock/:accountId')
   async unblockedOneById(@Param('accountId') id: string) {
     return this.updateStatusAccount(id, StatusAccountEnum.UNLOCK);
   }
 
+  /**
+   * REVIEW: Add response mutation
+   * @param accountId
+   * @returns {Promise<ResponseMutation<CardDocument>>}
+   */
   @ApiExcludeEndpoint()
   @Patch('cancel/:accountId')
   async cancelOneById(@Param('accountId') id: string) {
     return this.updateStatusAccount(id, StatusAccountEnum.CANCEL);
   }
 
+  /**
+   * REVIEW: Add response mutation
+   * @param accountId
+   * @returns {Promise<ResponseMutation<CardDocument>>}
+   */
   @ApiExcludeEndpoint()
   @Patch('hidden/:accountId')
   async disableOneById(@Param('accountId') id: string) {
     return this.toggleVisibleToOwner(id, false);
   }
 
+  /**
+   * REVIEW: Add response mutation
+   * @param accountId
+   * @returns {Promise<ResponseMutation<CardDocument>>}
+   */
   @ApiExcludeEndpoint()
   @Patch('visible/:accountId')
   async enableOneById(@Param('accountId') id: string) {
     return this.toggleVisibleToOwner(id, true);
   }
 
+  /**
+   * REVIEW: Add response query
+   * @param accountId
+   * @returns {Promise<ResponseQuery<CardDocument>>}
+   */
   @ApiExcludeEndpoint()
   @Get(':accountId')
   @NoCache()
@@ -126,12 +175,22 @@ export class AccountServiceController implements GenericServiceController {
     return this.accountService.findOneById(id);
   }
 
+  /**
+   * REVIEW: Add response mutation
+   * @param dto
+   * @returns {Promise<ResponseMutation<CardDocument>>}
+   */
   @ApiExcludeEndpoint()
   @Post('create')
   createOne(@Body() createDto: AccountCreateDto, req?: any) {
     return this.accountService.createOne(createDto);
   }
 
+  /**
+   * REVIEW: Add response mutation
+   * @param dto
+   * @returns {Promise<ResponseMutation<CardDocument>>}
+   */
   @ApiExcludeEndpoint()
   @Post('all')
   createMany(
@@ -142,12 +201,22 @@ export class AccountServiceController implements GenericServiceController {
     return this.accountService.createMany(createsDto);
   }
 
+  /**
+   * REVIEW: Add response mutation
+   * @param dto
+   * @returns {Promise<ResponseMutation<CardDocument>>}
+   */
   @ApiExcludeEndpoint()
   @Patch()
   updateOne(@Body() updateDto: AccountUpdateDto, req?: any) {
     return this.accountService.updateOne(updateDto);
   }
 
+  /**
+   * REVIEW: Add response mutation
+   * @param dto
+   * @returns {Promise<ResponseMutation<CardDocument>>}
+   */
   @ApiExcludeEndpoint()
   @Patch('all')
   updateMany(
@@ -158,6 +227,11 @@ export class AccountServiceController implements GenericServiceController {
     return this.accountService.updateMany(updatesDto);
   }
 
+  /**
+   * REVIEW: Add response mutation
+   * @param dto
+   * @returns {Promise<ResponseMutation<CardDocument>>}
+   */
   @ApiExcludeEndpoint()
   @Delete('all')
   deleteManyById(
@@ -168,6 +242,11 @@ export class AccountServiceController implements GenericServiceController {
     throw new UnauthorizedException();
   }
 
+  /**
+   * REVIEW: Add response mutation
+   * @param accountId
+   * @returns {Promise<ResponseMutation<CardDocument>>}
+   */
   @ApiExcludeEndpoint()
   @Delete(':accountID')
   deleteOneById(@Param('accountID') id: string, req?: any) {

@@ -109,6 +109,13 @@ export class CardServiceController extends AccountServiceController {
   private readonly BLOCK_BALANCE_PERCENTAGE: number =
     this.configService.get<number>('AUTHORIZATIONS_BLOCK_BALANCE_PERCENTAGE');
 
+  /**
+   * REVIEW Add pagination from dto
+   * @param query
+   * @param sort
+   * @param pagination
+   * @returns {Promise<ResponseQuery<CardDocument[]>>}
+   */
   @ApiExcludeEndpoint()
   @Get('all')
   @NoCache()
@@ -151,6 +158,13 @@ export class CardServiceController extends AccountServiceController {
     }
   }
 
+  /**
+   * REVIEW: Add pagination from dto
+   * @param query
+   * @param sort
+   * @param pagination
+   * @returns {Promise<ResponseQuery<CardDocument[]>>}
+   */
   @ApiExcludeEndpoint()
   @Get('me')
   @NoCache()
@@ -168,6 +182,11 @@ export class CardServiceController extends AccountServiceController {
     return rta;
   }
 
+  /**
+   * REVIEW: Add response mutation
+   * @param dto
+   * @returns {Promise<ResponseMutation<CardDocument>>}
+   */
   @ApiSecurity('b2crypto-key')
   @ApiBearerAuth('bearerToken')
   @Post('create')
@@ -1187,6 +1206,11 @@ export class CardServiceController extends AccountServiceController {
     return group;
   }
 
+  /**
+   * REVIEW: Add response mutation
+   * @param cardId
+   * @returns {Promise<ResponseQuery<CardDocument>>}
+   */
   @ApiExcludeEndpoint()
   @ApiSecurity('b2crypto-key')
   @ApiBearerAuth('bearerToken')
@@ -1222,6 +1246,11 @@ export class CardServiceController extends AccountServiceController {
     return card.responseShipping;
   }
 
+  /**
+   * REVIEW: Add response mutation
+   * @param dto
+   * @returns {Promise<ResponseQuery<CardDocument>>}
+   */
   @ApiExcludeEndpoint()
   @ApiSecurity('b2crypto-key')
   @ApiBearerAuth('bearerToken')
@@ -1303,6 +1332,11 @@ export class CardServiceController extends AccountServiceController {
     throw new NotImplementedException();
   }
 
+  /**
+   * REVIEW: Add response mutation
+   * @param dto
+   * @returns {Promise<ResponseMutation<CardDocument>>}
+   */
   //@ApiExcludeEndpoint()
   @Post('recharge')
   @ApiTags(SwaggerSteakeyConfigEnum.TAG_CARD)
@@ -1447,6 +1481,11 @@ export class CardServiceController extends AccountServiceController {
     return from;
   }
 
+  /**
+   * REVIEW: Add response mutation
+   * @param dto
+   * @returns {Promise<ResponseMutation<CardDocument>>}
+   */
   @Patch('physical-active')
   @ApiTags(SwaggerSteakeyConfigEnum.TAG_CARD)
   @ApiSecurity('b2crypto-key')
@@ -1508,6 +1547,11 @@ export class CardServiceController extends AccountServiceController {
     return rta;
   }
 
+  /**
+   * REVIEW: Add response query
+   * @param dto
+   * @returns {Promise<ResponseQuery<CardDocument>>}
+   */
   @Get('sensitive-info/:cardId')
   @ApiTags(SwaggerSteakeyConfigEnum.TAG_CARD)
   @ApiSecurity('b2crypto-key')
@@ -1566,6 +1610,11 @@ export class CardServiceController extends AccountServiceController {
       .send(html);
   }
 
+  /**
+   * REVIEW: Add response mutation
+   * @param dto
+   * @returns {Promise<ResponseMutation<CardDocument>>}
+   */
   @Patch('lock/:cardId')
   @ApiSecurity('b2crypto-key')
   @ApiBearerAuth('bearerToken')
@@ -1575,6 +1624,11 @@ export class CardServiceController extends AccountServiceController {
     return this.updateStatusAccount(id, StatusAccountEnum.LOCK);
   }
 
+  /**
+   * REVIEW: Add response mutation
+   * @param cardId
+   * @returns {Promise<ResponseMutation<CardDocument>>}
+   */
   @Patch('unlock/:cardId')
   @ApiSecurity('b2crypto-key')
   @ApiBearerAuth('bearerToken')
@@ -1584,6 +1638,11 @@ export class CardServiceController extends AccountServiceController {
     return this.updateStatusAccount(id, StatusAccountEnum.UNLOCK);
   }
 
+  /**
+   * REVIEW: Add response mutation
+   * @param cardId
+   * @returns {Promise<ResponseMutation<CardDocument>>}
+   */
   @Patch('cancel/:cardId')
   @ApiSecurity('b2crypto-key')
   @ApiBearerAuth('bearerToken')
@@ -1593,6 +1652,11 @@ export class CardServiceController extends AccountServiceController {
     return this.updateStatusAccount(id, StatusAccountEnum.CANCEL);
   }
 
+  /**
+   * REVIEW: Add response mutation
+   * @param cardId
+   * @returns {Promise<ResponseMutation<CardDocument>>}
+   */
   @ApiExcludeEndpoint()
   @Patch('hidden/:cardId')
   @ApiSecurity('b2crypto-key')
@@ -1602,6 +1666,11 @@ export class CardServiceController extends AccountServiceController {
     return this.toggleVisibleToOwner(id, false);
   }
 
+  /**
+   * REVIEW: Add response mutation
+   * @param cardId
+   * @returns {Promise<ResponseMutation<CardDocument>>}
+   */
   @ApiExcludeEndpoint()
   @Patch('visible/:cardId')
   @ApiSecurity('b2crypto-key')
@@ -1611,6 +1680,11 @@ export class CardServiceController extends AccountServiceController {
     return this.toggleVisibleToOwner(id, true);
   }
 
+  /**
+   * REVIEW: Add response mutation
+   * @param cardId
+   * @returns {Promise<ResponseMutation<CardDocument>>}
+   */
   @ApiExcludeEndpoint()
   @Delete(':cardID')
   deleteOneById(@Param('cardID') id: string, req?: any) {
@@ -1618,6 +1692,11 @@ export class CardServiceController extends AccountServiceController {
     throw new UnauthorizedException();
   }
 
+  /**
+   * REVIEW: Add response query
+   * @param cardId
+   * @returns {Promise<ResponseQuery<CardDocument>>}
+   */
   @ApiExcludeEndpoint()
   @Get('pomelo/check')
   async checkCardsInPomelo() {

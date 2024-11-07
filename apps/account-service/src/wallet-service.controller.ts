@@ -1,5 +1,6 @@
 import { WalletDepositCreateDto } from '@account/account/dto/wallet-deposit.create.dto';
 import { WalletCreateDto } from '@account/account/dto/wallet.create.dto';
+import { AccountEntity } from '@account/account/entities/account.entity';
 import { AccountDocument } from '@account/account/entities/mongoose/account.schema';
 import StatusAccountEnum from '@account/account/enum/status.account.enum';
 import TypesAccountEnum from '@account/account/enum/types.account.enum';
@@ -7,6 +8,7 @@ import WalletTypesAccountEnum from '@account/account/enum/wallet.types.account.e
 import { ApiKeyAuthGuard } from '@auth/auth/guards/api.key.guard';
 import { JwtAuthGuard } from '@auth/auth/guards/jwt-auth.guard';
 import { BuildersService } from '@builder/builders';
+import { CategoryDocument } from '@category/category/entities/mongoose/category.schema';
 import { CommonService } from '@common/common';
 import { NoCache } from '@common/common/decorators/no-cache.decorator';
 import CountryCodeEnum from '@common/common/enums/country.code.b2crypto.enum';
@@ -14,6 +16,7 @@ import CurrencyCodeB2cryptoEnum from '@common/common/enums/currency-code-b2crypt
 import { EnvironmentEnum } from '@common/common/enums/environment.enum';
 import { StatusCashierEnum } from '@common/common/enums/StatusCashierEnum';
 import TagEnum from '@common/common/enums/TagEnum';
+import { ResponsePaginator } from '@common/common/interfaces/response-pagination.interface';
 import { QuerySearchAnyDto } from '@common/common/models/query_search-any.dto';
 import { IntegrationService } from '@integration/integration';
 import IntegrationCryptoEnum from '@integration/integration/crypto/enums/IntegrationCryptoEnum';
@@ -35,6 +38,7 @@ import {
   UnauthorizedException,
   UseGuards,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { Ctx, EventPattern, Payload, RmqContext } from '@nestjs/microservices';
 import {
   ApiBearerAuth,
@@ -53,15 +57,11 @@ import EventsNamesStatusEnum from 'apps/status-service/src/enum/events.names.sta
 import { TransferCreateButtonDto } from 'apps/transfer-service/src/dto/transfer.create.button.dto';
 import EventsNamesTransferEnum from 'apps/transfer-service/src/enum/events.names.transfer.enum';
 import { UserServiceService } from 'apps/user-service/src/user-service.service';
+import { isMongoId } from 'class-validator';
 import { SwaggerSteakeyConfigEnum } from 'libs/config/enum/swagger.stakey.config.enum';
 import { AccountServiceController } from './account-service.controller';
 import { AccountServiceService } from './account-service.service';
 import EventsNamesAccountEnum from './enum/events.names.account.enum';
-import { ConfigService } from '@nestjs/config';
-import { isMongoId } from 'class-validator';
-import { AccountEntity } from '@account/account/entities/account.entity';
-import { CategoryDocument } from '@category/category/entities/mongoose/category.schema';
-import { ResponsePaginator } from '@common/common/interfaces/response-pagination.interface';
 
 @ApiTags(SwaggerSteakeyConfigEnum.TAG_WALLET)
 @Controller('wallets')
@@ -91,6 +91,11 @@ export class WalletServiceController extends AccountServiceController {
     return this.cryptoType;
   }
 
+  /**
+   * REVIEW: Add response mutation
+   * @param accountId
+   * @returns {Promise<ResponseMutation<WalletDocument>>}
+   */
   @ApiExcludeEndpoint()
   @ApiTags(SwaggerSteakeyConfigEnum.TAG_WALLET)
   @ApiBearerAuth('bearerToken')
@@ -106,6 +111,13 @@ export class WalletServiceController extends AccountServiceController {
     return this.walletService.findAll(query);
   }
 
+  /**
+   * REVIEW: Add response query
+   * @param query
+   * @param sort
+   * @param pagination
+   * @returns {Promise<ResponseQuery<WalletDocument>>}
+   */
   @ApiExcludeEndpoint()
   @ApiTags(SwaggerSteakeyConfigEnum.TAG_WALLET)
   @ApiBearerAuth('bearerToken')
@@ -168,6 +180,13 @@ export class WalletServiceController extends AccountServiceController {
     return this.walletService.findAll(query);
   }
 
+  /**
+   * REVIEW: Add response query
+   * @param query
+   * @param sort
+   * @param pagination
+   * @returns {Promise<ResponseQuery<WalletDocument>>}
+   */
   @Get('availables')
   @UseGuards(ApiKeyAuthGuard)
   @NoCache()
@@ -179,6 +198,13 @@ export class WalletServiceController extends AccountServiceController {
     return this.walletService.availableWalletsFireblocks(query);
   }
 
+  /**
+   * REVIEW: Add response query
+   * @param query
+   * @param sort
+   * @param pagination
+   * @returns {Promise<ResponseQuery<WalletDocument>>}
+   */
   @Get('clean')
   @UseGuards(ApiKeyAuthGuard, JwtAuthGuard)
   @NoCache()
@@ -187,6 +213,11 @@ export class WalletServiceController extends AccountServiceController {
     //return this.walletService.cleanWallet(query);
   }
 
+  /**
+   * REVIEW: Add response mutation
+   * @param dto
+   * @returns {Promise<ResponseMutation<WalletDocument>>}
+   */
   @ApiTags(SwaggerSteakeyConfigEnum.TAG_WALLET)
   @ApiBearerAuth('bearerToken')
   @ApiSecurity('b2crypto-key')
