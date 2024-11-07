@@ -117,9 +117,9 @@ export class CardServiceController extends AccountServiceController {
     name: 'b2crypto-key',
     description: 'The apiKey',
   })
-  async updateOnePin(@Body() pinUpdateDto: PinUpdateDto, req?: any) {
+  async updateOnePin(@Body() pinUpdateDto: PinUpdateDto, @Req() req?: any) {
     const userId = CommonService.getUserId(req);
-    if (pinUpdateDto.pin) {
+    if (pinUpdateDto.pin && pinUpdateDto.id) {
       const card = await this.findOneById(pinUpdateDto.id);
       if (card.cardConfig) {
         const cardIntegration = await this.integration.getCardIntegration(
@@ -144,7 +144,7 @@ export class CardServiceController extends AccountServiceController {
             throw new BadRequestException('PIN not updated');
           }
         } catch (err) {
-          Logger.error(err, 'Error in card profile creation');
+          Logger.error(err, 'Error in card profile or update card');
           throw new BadRequestException('Card not updated');
         }
       }
