@@ -237,6 +237,7 @@ export class CardServiceController extends AccountServiceController {
   @Post('create')
   @UseGuards(ApiKeyAuthGuard)
   async createOne(@Body() createDto: CardCreateDto, @Req() req?: any) {
+    throw new BadRequestException('Temporarily unavailable');
     const userId = createDto.owner || req?.user?.id;
     const user: User = await this.getUser(userId);
     createDto.accountType =
@@ -489,7 +490,9 @@ export class CardServiceController extends AccountServiceController {
       CommonService.getSlug('b2fintech'),
     );
     const typeTransaction = await this.getCategoryBySlug(
-      CommonService.getSlug('Purchase wallet'),
+      reversal
+        ? CommonService.getSlug('Reversal purchase')
+        : CommonService.getSlug('Purchase wallet'),
     );
     if (!account) {
       const listAccount = await this.cardBuilder.getPromiseAccountEventClient(
