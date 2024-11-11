@@ -164,15 +164,15 @@ export class AccountServiceController implements GenericServiceController {
     @Body(new ParseArrayPipe({ items: UpdateAnyDto })) ids: AccountUpdateDto[],
     req?: any,
   ) {
-    //return this.accountService.deleteManyById(ids);
     throw new UnauthorizedException();
+    return this.accountService.deleteManyById(ids);
   }
 
   @ApiExcludeEndpoint()
   @Delete(':accountID')
   deleteOneById(@Param('accountID') id: string, req?: any) {
-    //return this.accountService.deleteOneById(id);
     throw new UnauthorizedException();
+    return this.accountService.deleteOneById(id);
   }
 
   @MessagePattern(EventsNamesAccountEnum.count)
@@ -211,15 +211,16 @@ export class AccountServiceController implements GenericServiceController {
   @MessagePattern(EventsNamesAccountEnum.updateOne)
   @EventPattern(EventsNamesAccountEnum.updateOne)
   updateOneEvent(
-    @Payload() updateDto: AccountUpdateDto,
+    @Payload() updateDto: AccountCreateDto,
     @Ctx() ctx: RmqContext,
   ) {
     CommonService.ack(ctx);
     return this.accountService.updateOneEvent(updateDto, ctx);
   }
   @MessagePattern(EventsNamesAccountEnum.customUpdateOne)
+  @EventPattern(EventsNamesAccountEnum.customUpdateOne)
   customUpdateOneEvent(
-    @Payload() updateDto: AccountUpdateDto,
+    @Payload() updateDto: AccountCreateDto,
     @Ctx() ctx: RmqContext,
   ) {
     CommonService.ack(ctx);
@@ -228,7 +229,7 @@ export class AccountServiceController implements GenericServiceController {
 
   @MessagePattern(EventsNamesAccountEnum.updateMany)
   updateManyEvent(
-    @Payload() updatesDto: AccountUpdateDto[],
+    @Payload() updatesDto: AccountCreateDto[],
     @Ctx() ctx: RmqContext,
   ) {
     CommonService.ack(ctx);

@@ -13,11 +13,6 @@ import {
 import { ApiTags } from '@nestjs/swagger';
 
 import { AllowAnon } from '@auth/auth/decorators/allow-anon.decorator';
-import { PolicyHandlerMessageCreate } from '@auth/auth/policy/message/policity.handler.message.create';
-import { PolicyHandlerMessageDelete } from '@auth/auth/policy/message/policity.handler.message.delete';
-import { PolicyHandlerMessageRead } from '@auth/auth/policy/message/policity.handler.message.read';
-import { PolicyHandlerMessageUpdate } from '@auth/auth/policy/message/policity.handler.message.update';
-import { CheckPoliciesAbility } from '@auth/auth/policy/policy.handler.ability';
 import { CommonService } from '@common/common';
 import GenericServiceController from '@common/common/interfaces/controller.generic.interface';
 import { QuerySearchAnyDto } from '@common/common/models/query_search-any.dto';

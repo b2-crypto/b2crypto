@@ -282,11 +282,8 @@ export class BasicServiceModel<
       if (!rta) rta = null;
       return rta;
     } catch (err) {
-      Logger.error(
-        `${id}`,
-        `${BasicServiceModel.name}-findOne.id-${this.model.name}`,
-      );
-      Logger.error(err, `${BasicServiceModel.name}-findOne-${this.model.name}`);
+      Logger.error(`${id}`, `${BasicServiceModel.name}-findOne.id`);
+      Logger.error(err, `${BasicServiceModel.name}-findOne`);
       return null;
     }
   }

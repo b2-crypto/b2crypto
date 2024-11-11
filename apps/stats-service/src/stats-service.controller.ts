@@ -69,12 +69,14 @@ export class StatsServiceController {
     return this.statsServiceService.getGlobalStatDailyDBPspAccount(query);
   }
 
+  @NoCache()
   @Get('retention')
   async getStatsDateRetention(@Query() query?: QuerySearchAnyDto, @Req() req?) {
     query = await this.filterFromUserPermissions(query, req);
     return this.statsServiceService.getStatsDateRetention(query);
   }
 
+  @NoCache()
   @Get('affiliates')
   async getStatsDateAffiliates(
     @Query() query?: QuerySearchAnyDto,
@@ -87,11 +89,13 @@ export class StatsServiceController {
     );
   }
 
+  @NoCache()
   @Get('affiliates/:affiliateId')
   async getStatsDateAffiliate(@Param('affiliateId') affiliateId: string) {
     return this.statsServiceService.getStatsDateAffiliate(affiliateId);
   }
 
+  @NoCache()
   @Get('psp-accounts')
   async getStatsDatePspAccounts(
     @Query() query?: QuerySearchAnyDto,
@@ -104,36 +108,43 @@ export class StatsServiceController {
     );
   }
 
+  @NoCache()
   @Get('psp-accounts/:pspAccountId')
   async getStatsDatePspAccount(@Param('pspAccountId') pspAccountId: string) {
     return this.statsServiceService.getStatsDatePspAccount(pspAccountId);
   }
 
+  @NoCache()
   @Get('brands')
   async getStatsDateBrands(@Query() query?: QuerySearchAnyDto) {
     throw new NotImplementedException();
   }
 
+  @NoCache()
   @Get('brands/:brandId')
   async getStatsDateBrand(@Param('brandId') brandId: string) {
     throw new NotImplementedException();
   }
 
+  @NoCache()
   @Get('crms')
   async getStatsDateCrms(@Query() query?: QuerySearchAnyDto) {
     throw new NotImplementedException();
   }
 
+  @NoCache()
   @Get('crms/:crmId')
   async getStatsDateCrm(@Param('crmId') crmId: string) {
     throw new NotImplementedException();
   }
 
+  @NoCache()
   @Get('psps')
   async getStatsDatePsps(@Query() query?: QuerySearchAnyDto) {
     throw new NotImplementedException();
   }
 
+  @NoCache()
   @Get('psps/:pspId')
   async getStatsDatePsp(@Param('pspId') pspId: string) {
     throw new NotImplementedException();
