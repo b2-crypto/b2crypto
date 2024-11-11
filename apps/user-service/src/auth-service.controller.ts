@@ -146,6 +146,7 @@ export class AuthServiceController {
     type: String,
     required: true,
   })
+  @NoCache()
   @Get('identity/page/:userId')
   async sumsubGetPage(
     @Param('userId') userId,
@@ -342,7 +343,7 @@ export class AuthServiceController {
         message: 'OTP generated',
       };
     } catch (error) {
-      Logger.error({ error }, 'Error restoring password');
+      console.log({ error });
       throw error;
     }
   }
@@ -437,7 +438,7 @@ export class AuthServiceController {
     };
 
     try {
-      this.builder.emitMessageEventClient(
+      await this.builder.emitMessageEventClient(
         EventsNamesMessageEnum.sendProfileRegistrationCreation,
         emailData,
       );
@@ -692,7 +693,10 @@ export class AuthServiceController {
     }
     let otpSended = await this.getOtpGenerated(user.email);
     if (!otpSended) {
-      otpSended = CommonService.getOTP();
+      otpSended = CommonService.getNumberDigits(
+        CommonService.randomIntNumber(999999),
+        6,
+      );
       await this.cacheManager.set(user.email, otpSended, msOTP);
     }
     const data = {

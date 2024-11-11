@@ -95,6 +95,8 @@ module.exports = {
         POMELO_WHITELISTED_IPS_CHECK: 'ON',
         POMELO_WHITELISTED_IPS:
           '34.206.159.176, 52.0.20.124, 35.84.78.117, 52.43.46.111',
+        POMELO_WHITELISTED_IPS_CHECK: 'ON',
+        AUTHORIZATIONS_BLOCK_BALANCE_PERCENTAGE: '0.1',
         POMELO_CLIENT_ID: 'f14SLpU9fV1k8WQDWZPueiQ2ON2e41nw',
         POMELO_SECRET_ID:
           'SOYRwbv8e6_T1tVlGSZ-j8RcyKD57Zk90T-wjIE5w8D_TRaXEYX3mxHKjsZsxdCl',
@@ -104,6 +106,13 @@ module.exports = {
         CURRENCY_CONVERSION_API_KEY: '79e1291da641abba50546e9f29986759',
         CURRENCY_CONVERSION_API_URL:
           'https://api.exchangeratesapi.io/v1/convert',
+        DEFAULT_CURRENCY_CONVERSION_COIN: 'USD',
+        V1_DB_USER: 'db_access_user1',
+        V1_DB_PWD: 'L@t!T@6oZxgXoqB',
+        V1_DB_HOST:
+          'database-credit-card-instance-1.c7omsscm6pul.eu-west-3.rds.amazonaws.com',
+        V1_DB_PORT: 5432,
+        V1_DB_NAME: 'carddb_production',
         POMELO_SFTP_HOST: 'sftp-dev.pomelo.la',
         POMELO_SFTP_PORT: '22',
         POMELO_SFTP_USR: 'b2crypt',
@@ -243,6 +252,7 @@ module.exports = {
         URL_API_EMAIL_APP: '',
         TESTING: false,
         TZ: 'UTC',
+        AWS_SES_FROM_DEFAULT: 'no-reply@b2crypto.com',
         AWS_SES_PORT: 587,
         AWS_SES_HOST: 'email-smtp.eu-west-3.amazonaws.com',
         AWS_SES_USERNAME: 'AKIA2YTTBOKD2OUQQSM3',
@@ -267,6 +277,12 @@ module.exports = {
         POMELO_SFTP_PORT: '22',
         POMELO_SFTP_USR: 'b2crypt',
         POMELO_SFTP_PASSPHRASE: 'b2crypto',
+        V1_DB_USER: 'db_access_user1',
+        V1_DB_PWD: 'L@t!T@6oZxgXoqB',
+        V1_DB_HOST:
+          'database-credit-card-instance-1.c7omsscm6pul.eu-west-3.rds.amazonaws.com',
+        V1_DB_PORT: '5432',
+        V1_DB_NAME: 'carddb_production',
       },
       env_stage: {
         ENVIRONMENT: 'STAGE',

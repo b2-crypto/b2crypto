@@ -1,4 +1,5 @@
 enum WalletTypesAccountEnum {
+  VIRTUAL = 'VIRTUAL',
   EWALLET = 'E-WALLET',
   VAULT = 'VAULT',
   VAULT_W = 'VAULT_W',

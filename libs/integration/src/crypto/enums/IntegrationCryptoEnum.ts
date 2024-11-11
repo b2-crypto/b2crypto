@@ -1,7 +1,7 @@
 enum IntegrationCryptoEnum {
   B2CORE = 'B2CORE',
   B2BINPAY = 'B2BINPAY',
-  FIREBLOCKS = 'FIREBLOCKS',
+  FIREBLOCKS = "FIREBLOCKS",
 }
 
 export default IntegrationCryptoEnum;

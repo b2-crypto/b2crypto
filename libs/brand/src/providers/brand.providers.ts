@@ -6,7 +6,7 @@ export const brandProviders = [
   {
     provide: 'BRAND_MODEL_MONGOOSE',
     useFactory: (connection: Connection) => {
-      connection.plugin(mongooseSlugUpdater);
+      //connection.plugin(mongooseSlugUpdater);
       return connection.model('brands', BrandSchema);
     },
     inject: ['MONGOOSE_CONNECTION'],

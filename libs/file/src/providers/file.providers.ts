@@ -6,7 +6,7 @@ export const fileProviders = [
   {
     provide: 'FILE_MODEL_MONGOOSE',
     useFactory: (connection: Connection) => {
-      connection.plugin(mongooseSlugUpdater);
+      //connection.plugin(mongooseSlugUpdater);
       return connection.model('files', FileSchema);
     },
     inject: ['MONGOOSE_CONNECTION'],

@@ -4,6 +4,7 @@ import {
   Controller,
   Delete,
   Get,
+  Inject,
   Logger,
   NotFoundException,
   Param,
@@ -24,9 +25,11 @@ import {
 import { AllowAnon } from '@auth/auth/decorators/allow-anon.decorator';
 import { ApiKeyCheck } from '@auth/auth/decorators/api-key-check.decorator';
 import { ApiKeyAuthGuard } from '@auth/auth/guards/api.key.guard';
+import { BuildersService } from '@builder/builders';
 import { CommonService } from '@common/common';
 import { NoCache } from '@common/common/decorators/no-cache.decorator';
 import ActionsEnum from '@common/common/enums/ActionEnum';
+import TransportEnum from '@common/common/enums/TransportEnum';
 import GenericServiceController from '@common/common/interfaces/controller.generic.interface';
 import { QuerySearchAnyDto } from '@common/common/models/query_search-any.dto';
 import { UpdateAnyDto } from '@common/common/models/update-any.dto';
@@ -42,18 +45,21 @@ import { UserChangePasswordDto } from '@user/user/dto/user.change-password.dto';
 import { UserRegisterDto } from '@user/user/dto/user.register.dto';
 import { UserUpdateDto } from '@user/user/dto/user.update.dto';
 import { UserEntity } from '@user/user/entities/user.entity';
+import EventsNamesMessageEnum from 'apps/message-service/src/enum/events.names.message.enum';
 import { isBoolean } from 'class-validator';
 import { SwaggerSteakeyConfigEnum } from 'libs/config/enum/swagger.stakey.config.enum';
 import { ObjectId } from 'mongodb';
 import EventsNamesUserEnum from './enum/events.names.user.enum';
 import { UserServiceService } from './user-service.service';
-import { UserLevelUpDto } from '@user/user/dto/user.level.up.dto';
-import { ResponsePaginator } from '@common/common/interfaces/response-pagination.interface';
 
 @ApiTags('USER')
 @Controller('users')
 export class UserServiceController implements GenericServiceController {
-  constructor(private readonly userService: UserServiceService) {}
+  constructor(
+    private readonly userService: UserServiceService,
+    @Inject(BuildersService)
+    readonly builder: BuildersService,
+  ) { }
 
   @NoCache()
   @Get('all')
@@ -127,92 +133,56 @@ export class UserServiceController implements GenericServiceController {
     return this.userService.newManyUser(createUsersDto);
   }
 
-  @Patch('level-up')
-  // @CheckPoliciesAbility(new PolicyHandlerUserUpdate())
-  async levelUp(@Body() userLevelUpDto: UserLevelUpDto, @Req() req?: any) {
-    try {
-      userLevelUpDto.user = req?.user.id;
-      return this.userService.levelUp(userLevelUpDto);
-    } catch (error) {
-      throw new BadRequestException(error);
-    }
-  }
-  @Patch('verify-by-card')
-  // @CheckPoliciesAbility(new PolicyHandlerUserUpdate())
-  async verifyUsersWithCard() {
-    const query = new QuerySearchAnyDto();
-    query.where = query.where ?? {};
-    query.where.verifyIdentity = false;
-    query.page = 0;
-    query.take = 10;
-    let users: ResponsePaginator<UserEntity> = null;
-    const promises = [];
+  @Post('massive-email')
+  @NoCache()
+  async generatePasswordEmail() {
+    let page = 1;
+    let totalPages = 0;
     do {
-      ++query.page;
-      users = await this.userService.getAll({
-        ...query,
-      });
-      for (const user of users.list) {
-        promises.push(
-          this.userService.verifyUsersWithCard(user._id.toString()),
+      const users = await this.findAll({ page });
+      if (users?.list?.length > 0) {
+        Logger.log(
+          `Users: ${users?.list?.length} & Page: ${page}`,
+          `MassiveEmail.${UserServiceController.name}`,
         );
+        page++;
+        totalPages = users?.lastPage ?? 0;
+        for (let i = 0; i < users?.list?.length; i++) {
+          const user = users.list[i];
+          if (user && user?.email) {
+            const pwd: string = CommonService.generatePassword(8);
+            const changePassword: UserChangePasswordDto = {
+              password: pwd,
+              confirmPassword: pwd,
+            };
+            await this.changePassword(user?.id, changePassword);
+            Logger.log(
+              `${user?.email}`,
+              `MassiveEmail.${UserServiceController.name}`,
+            );
+            const emailData = {
+              destinyText: user.email,
+              transport: TransportEnum.EMAIL,
+              vars: {
+                name: user.name,
+                username: user.username,
+                password: pwd,
+              },
+            };
+            this.builder.emitMessageEventClient(
+              EventsNamesMessageEnum.sendPasswordRestoredEmail,
+              emailData,
+            );
+          }
+        }
       }
-    } while (query.page < users.lastPage);
-    return Promise.all(promises);
-  }
-  @Patch('rules/me')
-  // @CheckPoliciesAbility(new PolicyHandlerUserUpdate())
-  async getRulesMe(@Req() req?: any) {
-    return this.getRules(req);
-  }
-
-  @Patch('rules')
-  // @CheckPoliciesAbility(new PolicyHandlerUserUpdate())
-  async getRules(@Req() req?: any) {
-    const user = req?.user;
-    const query = new QuerySearchAnyDto();
-    query.where = query.where ?? {};
-    query.page = 0;
-    query.take = 10;
-    query.relations = ['level'];
-    if (user.id) {
-      query.where._id = user.id;
-    }
-    let users: ResponsePaginator<UserEntity> = null;
-    const promises = [];
-    do {
-      ++query.page;
-      users = await this.userService.getAll({
-        ...query,
-      });
-      for (const user of users.list) {
-        promises.push(
-          this.userService
-            .applyAndGetRules({
-              id: user._id,
-              level: user.level,
-            } as unknown as UserUpdateDto)
-            .then((usr) => {
-              Logger.log(
-                `Apply level ${user.level?.name} to user ${user.email}`,
-                `page ${query.page}/${users.lastPage}`,
-              );
-              return {
-                user: usr._id,
-                level: usr.level._id,
-                email: usr.email,
-                rules: usr.rules,
-              };
-            }),
-        );
-      }
-    } while (query.page < users.lastPage);
-    return Promise.all(promises);
+    } while (page <= totalPages);
   }
 
   @Patch()
   // @CheckPoliciesAbility(new PolicyHandlerUserUpdate())
-  async updateOne(@Body() updateUserDto: UserUpdateDto) {
+  async updateOne(@Body() updateUserDto: UserUpdateDto, @Req() req?: any) {
+    updateUserDto.id = updateUserDto.id || CommonService.getUserId(req);
     return this.userService.updateUser(updateUserDto);
   }
 
@@ -276,14 +246,6 @@ export class UserServiceController implements GenericServiceController {
   }
 
   @AllowAnon()
-  @EventPattern(EventsNamesUserEnum.checkBalanceUser)
-  async checkBalanceEvent(@Payload() id: string, @Ctx() ctx: RmqContext) {
-    CommonService.ack(ctx);
-    id = id ?? '0';
-    await this.userService.updateBalance(id);
-  }
-
-  @AllowAnon()
   @MessagePattern(EventsNamesUserEnum.findOneByEmail)
   async findOneByEmailEvent(@Payload() email: string, @Ctx() ctx: RmqContext) {
     CommonService.ack(ctx);
@@ -295,7 +257,6 @@ export class UserServiceController implements GenericServiceController {
     return users.list[0];
   }
 
-  @AllowAnon()
   @EventPattern(EventsNamesUserEnum.verifyEmail)
   async verifyEmail(@Payload() email: string, @Ctx() ctx: RmqContext) {
     CommonService.ack(ctx);
@@ -320,6 +281,37 @@ export class UserServiceController implements GenericServiceController {
   ) {
     try {
       const user = await this.createOne(createDto);
+      CommonService.ack(ctx);
+      return user;
+    } catch (err) {
+      CommonService.ack(ctx);
+      //throw new RpcException(err);
+      return {
+        data: err,
+        message: err.errmsg,
+        statusCode: err.statusCode,
+      };
+    }
+  }
+
+  @AllowAnon()
+  @MessagePattern(EventsNamesUserEnum.migrateOne)
+  async migrateOne(@Payload() createDto: any, @Ctx() ctx: RmqContext) {
+    try {
+      let user: any;
+      const users = await this.findAll({
+        where: {
+          slugEmail: CommonService.getSlug(createDto.email),
+        },
+      });
+      if (users?.list?.length > 0) {
+        user = users.list[0];
+        /*user.verifyIdentity = createDto.verifyIdentity;
+        user.verifyIdentityLevelName = createDto.verifyIdentityLevelName;
+        user = await this.updateOne(user);*/
+      } else {
+        user = await this.createOne(createDto);
+      }
       CommonService.ack(ctx);
       return user;
     } catch (err) {
@@ -402,7 +394,7 @@ export class UserServiceController implements GenericServiceController {
       },
     });
     if (!users.totalElements) {
-      throw new NotFoundException(`Not found user ApiKey "${publicKey}"`);
+      throw new NotFoundException('Not found user');
     }
     return users.list[0];
   }

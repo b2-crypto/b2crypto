@@ -12,8 +12,9 @@ import { UserEntity } from '@user/user/entities/user.entity';
 import mongoose, { Document, ObjectId } from 'mongoose';
 import { UserBalance } from './user.balance.schema';
 import { UserVerifyIdentitySchema } from './user.verify.identity.schema';
+import { Affiliate } from '@affiliate/affiliate/infrastructure/mongoose/affiliate.schema';
 import { Brand } from '@brand/brand/entities/mongoose/brand.schema';
-import { Category } from '@category/category/entities/mongoose/category.schema';
+import { Group } from '@group/group/entities/mongoose/group.schema';
 import { RulesUser } from './rules.user.schema';
 
 export type UserDocument = User & Document;
@@ -147,13 +148,13 @@ export class User extends UserEntity {
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'persons' })
   personalData: Person;
 
-  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'categories' })
-  category: Category;
-
-  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'categories' })
-  level: Category;
+  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'groups' })
+  group: Group;
 
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'affiliates' })
+  affiliate: Affiliate;
+
+  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'users' })
   userParent: User;
 
   @Prop({ type: UserCardSchema })

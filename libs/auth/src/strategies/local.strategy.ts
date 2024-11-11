@@ -23,6 +23,9 @@ export class LocalStrategy extends PassportStrategy(Strategy) {
           // TODO[hender] Validate if data has expired
         }
         const user = await this.validate(username, password);
+        if (!user.active) {
+          return done(false);
+        }
         if (user.message) {
           return done(user);
         }
