@@ -5,6 +5,7 @@ import TypesAccountEnum from '@account/account/enum/types.account.enum';
 import { ApiKeyAuthGuard } from '@auth/auth/guards/api.key.guard';
 import { BuildersService } from '@builder/builders';
 import { CommonService } from '@common/common';
+import { NoCache } from '@common/common/decorators/no-cache.decorator';
 import { QuerySearchAnyDto } from '@common/common/models/query_search-any.dto';
 import {
   BadRequestException,
@@ -22,11 +23,6 @@ import {
   UnauthorizedException,
   UseGuards,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiSecurity, ApiTags } from '@nestjs/swagger';
-import { UserServiceService } from 'apps/user-service/src/user-service.service';
-import { AccountServiceController } from './account-service.controller';
-import { AccountServiceService } from './account-service.service';
-import { SwaggerSteakeyConfigEnum } from 'libs/config/enum/swagger.stakey.config.enum';
 import {
   Ctx,
   EventPattern,
@@ -34,8 +30,12 @@ import {
   Payload,
   RmqContext,
 } from '@nestjs/microservices';
+import { ApiBearerAuth, ApiSecurity, ApiTags } from '@nestjs/swagger';
+import { UserServiceService } from 'apps/user-service/src/user-service.service';
+import { SwaggerSteakeyConfigEnum } from 'libs/config/enum/swagger.stakey.config.enum';
+import { AccountServiceController } from './account-service.controller';
+import { AccountServiceService } from './account-service.service';
 import EventsNamesAccountEnum from './enum/events.names.account.enum';
-import { NoCache } from '@common/common/decorators/no-cache.decorator';
 import { WalletServiceService } from './wallet-service.service';
 
 @ApiTags('E-WALLET')
@@ -98,7 +98,11 @@ export class WalletServiceController extends AccountServiceController {
   ) {
     try {
       const host = req.get('Host');
-      return await this.walletServiceService.rechargeWallet(createDto, req?.user?.id, host);
+      return await this.walletServiceService.rechargeWallet(
+        createDto,
+        req?.user?.id,
+        host,
+      );
     } catch (error) {
       throw new BadRequestException(error.message);
     }

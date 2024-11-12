@@ -1,4 +1,3 @@
-
 import { ApiProperty } from '@nestjs/swagger';
 import { IsBoolean, IsEnum, IsOptional, IsString, Min } from 'class-validator';
 import CardTypesAccountEnum from '../enum/card.types.account.enum';
@@ -27,8 +26,9 @@ export class CardCreateDto extends AccountCreateDto {
     enum: CardTypesAccountEnum,
     enumName: 'CardTypes',
     description: 'Type of type card',
+    default: CardTypesAccountEnum.VIRTUAL,
   })
-  accountType: CardTypesAccountEnum;
+  accountType: CardTypesAccountEnum = CardTypesAccountEnum.VIRTUAL;
 
   @ApiProperty({
     required: true,

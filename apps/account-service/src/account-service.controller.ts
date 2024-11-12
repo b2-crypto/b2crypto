@@ -35,6 +35,7 @@ import {
 import { ApiExcludeEndpoint, ApiTags } from '@nestjs/swagger';
 import EventsNamesStatusEnum from 'apps/status-service/src/enum/events.names.status.enum';
 import EventsNamesUserEnum from 'apps/user-service/src/enum/events.names.user.enum';
+import { ObjectId } from 'mongoose';
 import { AccountServiceService } from './account-service.service';
 import EventsNamesAccountEnum from './enum/events.names.account.enum';
 
@@ -276,7 +277,9 @@ export class AccountServiceController implements GenericServiceController {
     return account.save();
   }
 
-  protected async getUser(userId) {
+  protected async getUser(userId: ObjectId) {
+    if (!userId) throw new BadRequestException('Need the user id to continue');
+
     return (
       await this.builder.getPromiseUserEventClient(
         EventsNamesUserEnum.findAll,

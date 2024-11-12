@@ -4,7 +4,6 @@ import { CardCreateDto } from '@account/account/dto/card.create.dto';
 import { AccountEntity } from '@account/account/entities/account.entity';
 import { AccountDocument } from '@account/account/entities/mongoose/account.schema';
 import { Card } from '@account/account/entities/mongoose/card.schema';
-import { UserCard } from '@account/account/entities/mongoose/user-card.schema';
 import CardTypesAccountEnum from '@account/account/enum/card.types.account.enum';
 import StatusAccountEnum from '@account/account/enum/status.account.enum';
 import TypesAccountEnum from '@account/account/enum/types.account.enum';
@@ -21,7 +20,6 @@ import TagEnum from '@common/common/enums/TagEnum';
 import { QuerySearchAnyDto } from '@common/common/models/query_search-any.dto';
 import { IntegrationService } from '@integration/integration';
 import IntegrationCardEnum from '@integration/integration/card/enums/IntegrationCardEnum';
-import { UserCardDto } from '@integration/integration/card/generic/dto/user.card.dto';
 import { IntegrationCardService } from '@integration/integration/card/generic/integration.card.service';
 import {
   BadRequestException,
@@ -70,6 +68,7 @@ import { UserServiceService } from 'apps/user-service/src/user-service.service';
 import { isEmpty, isString } from 'class-validator';
 import { SwaggerSteakeyConfigEnum } from 'libs/config/enum/swagger.stakey.config.enum';
 
+import { ObjectId } from 'mongodb';
 import { ResponsePaginator } from '../../../libs/common/src/interfaces/response-pagination.interface';
 import { AccountServiceController } from './account-service.controller';
 import { AccountServiceService } from './account-service.service';
@@ -165,17 +164,25 @@ export class CardServiceController extends AccountServiceController {
   @Post('create')
   @UseGuards(ApiKeyAuthGuard)
   async createOne(@Body() createDto: CardCreateDto, @Req() req?: any) {
-    const isNotStressTest = () => process.env.ENVIRONMENT !== 'TEST_STRESS';
+    // createDto.accountType =
+    //   createDto.accountType ?? CardTypesAccountEnum.VIRTUAL;
+    // let cardAfg = AfgNamesEnum.CONSUMER_VIRTUAL_1K;
+    // if (createDto.accountType === CardTypesAccountEnum.PHYSICAL) {
+    //   cardAfg = AfgNamesEnum.CONSUMER_NOMINADA_3K;
+    // }
+    const cardAfg =
+      createDto.accountType === CardTypesAccountEnum.PHYSICAL
+        ? AfgNamesEnum.CONSUMER_NOMINADA_3K
+        : AfgNamesEnum.CONSUMER_VIRTUAL_1K;
 
-    const userId = createDto.owner || req?.user?.id;
-    const user: User = await this.getUser(userId);
-    createDto.accountType =
-      createDto.accountType ?? CardTypesAccountEnum.VIRTUAL;
-    let cardAfg = AfgNamesEnum.CONSUMER_VIRTUAL_1K;
-
-    if (createDto.accountType === CardTypesAccountEnum.PHYSICAL) {
-      cardAfg = AfgNamesEnum.CONSUMER_NOMINADA_3K;
-    }
+    const user: User = await this.getUser(
+      createDto.owner ?? ObjectId(req?.user?.id),
+    );
+    // if (createDto.owner) {
+    //   user = await this.getUser(createDto.owner);
+    // } else {
+    //   user = await this.getUser(req?.user?.id);
+    // }
 
     if (!user.personalData) {
       throw new BadRequestException('Need the personal data to continue');
@@ -215,6 +222,8 @@ export class CardServiceController extends AccountServiceController {
           account,
         );
       } else {
+        console.log('user.userCard', user.userCard);
+        console.log('account.userCardConfig', account.userCardConfig);
         account.userCardConfig = user.userCard;
       }
       account.email = account.email ?? user.personalData.email[0] ?? user.email;
@@ -250,29 +259,18 @@ export class CardServiceController extends AccountServiceController {
           createDto?.address?.neighborhood ??
           user.personalData?.location?.address?.neighborhood,
       };
-      const card = isNotStressTest()
-        ? await cardIntegration.createCard({
-            user_id: account.userCardConfig.id,
-            affinity_group_id: account.group.valueGroup,
-            card_type: account.accountType,
-            address: address,
-            previous_card_id: null,
-          })
-        : { error: false, data: {} };
-
-      // if (createDto.prevAccount) {
-      //   const prevCard = await this.cardService.findOneById(
-      //     createDto.prevAccount.toString(),
-      //   );
-      //   if (!prevCard || !prevCard.cardConfig) {
-      //     throw new BadRequestException('Prev account not found');
-      //   }
-      //   cardDataIntegration.previous_card_id = prevCard.cardConfig.id;
-      // }
-      // const card = isNotStressTest()
-      //   ? await cardIntegration.createCard(cardDataIntegration)
-      //   : { error: false, data: {} };
-
+      console.log(
+        account.userCardConfig,
+        account.userCardConfig['_id'],
+        user._id,
+      );
+      const card = await cardIntegration.createCard({
+        // user_id: account.userCardConfig['_id'],
+        user_id: user._id,
+        affinity_group_id: account.group.valueGroup,
+        card_type: account.accountType,
+        address: address,
+      });
       const error = card['error'];
       if (error) {
         // TODO[hender - 2024-08-12] If problems with data user in Pomelo, flag to update in pomelo when update profile user
@@ -287,7 +285,7 @@ export class CardServiceController extends AccountServiceController {
           {
             where: {
               type: TypesAccountEnum.WALLET,
-              owner: account.owner,
+              owner: String(account.owner),
             },
           },
         );
@@ -295,7 +293,7 @@ export class CardServiceController extends AccountServiceController {
         this.cardBuilder.emitAccountEventClient(
           EventsNamesAccountEnum.createOneWallet,
           {
-            owner: account.owner,
+            owner: String(account.owner),
             name: 'USDT',
             pin: CommonService.getNumberDigits(
               CommonService.randomIntNumber(4),
@@ -1662,55 +1660,79 @@ export class CardServiceController extends AccountServiceController {
     const rtaUserCard = await cardIntegration.getUser({
       email: user.email.toLowerCase(),
     });
-    let userCardConfig: UserCard;
-    if (rtaUserCard.data.length > 0) {
-      userCardConfig = rtaUserCard.data[0];
-    } else {
-      let birthDate = account?.personalData?.birth ?? user.personalData.birth;
-      if (!birthDate) {
-        throw new BadRequestException('Birth not found');
-      }
-      birthDate = new Date(birthDate);
-      const legalAddress = this.getLegalAddress(
-        account?.personalData?.location.address ??
-          user.personalData.location.address,
-      );
-      const country = 'COL';
-      /* const country = countries.filter(
-        (country) =>
-          country.alpha2 ===
-          (account?.country ?? user.personalData.nationality),
-      )[0].alpha3; */
-      legalAddress.country = country;
-      const userCard = await cardIntegration.createUser({
-        name: account?.personalData?.name ?? user.personalData.name,
-        surname: account?.personalData?.lastName ?? user.personalData.lastName,
-        identification_type:
-          account?.personalData?.typeDocId ?? user.personalData.typeDocId,
-        identification_value:
-          account?.personalData?.numDocId ??
-          user.personalData.numDocId?.toString(),
-        birthdate: `${birthDate.getFullYear()}-${CommonService.getNumberDigits(
-          birthDate.getMonth() + 1,
-          2,
-        )}-${CommonService.getNumberDigits(birthDate.getDate(), 2)}`,
-        gender: account?.personalData?.gender ?? user.personalData.gender,
-        email: account?.email ?? user.personalData.email[0] ?? user.email,
-        phone:
-          account?.telephone ??
-          user.personalData.telephones[0]?.phoneNumber ??
-          user.personalData.phoneNumber,
-        nationality: country,
-        legal_address: legalAddress,
-        operation_country: country,
-        zip_code: legalAddress.zip_code,
-      } as unknown as UserCardDto);
-      const error = userCard['error'];
-      if (error) {
-        throw new BadRequestException(error);
-      }
-      userCardConfig = userCard.data as unknown as UserCard;
-    }
+
+    // const isBirthDateNotExist = () =>
+    //   !(account?.personalData?.birth || user.personalData.birth);
+
+    // if (isBirthDateNotExist()) throw new BadRequestException('Birth not found');
+
+    // const birthDate = new Date(
+    //   account?.personalData?.birth || user.personalData.birth,
+    // );
+
+    // const legalAddress = this.getLegalAddress(
+    //   account?.personalData?.location.address ??
+    //     user.personalData.location.address,
+    // );
+
+    // const country = 'COL';
+
+    // legalAddress.country = country;
+
+    const userCardConfig =
+      rtaUserCard.data[0] ??
+      (await this.createUserCard(cardIntegration, user, account));
+
+    // let userCardConfig: UserCard;
+    // if (rtaUserCard.data.length > 0) {
+    //   userCardConfig = rtaUserCard.data[0];
+    // } else {
+    //   let birthDate = account?.personalData?.birth ?? user.personalData.birth;
+    //   if (!birthDate) {
+    //     throw new BadRequestException('Birth not found');
+    //   }
+    //   birthDate = new Date(birthDate);
+    //   const legalAddress = this.getLegalAddress(
+    //     account?.personalData?.location.address ??
+    //       user.personalData.location.address,
+    //   );
+    //   const country = 'COL';
+    //   /* const country = countries.filter(
+    //     (country) =>
+    //       country.alpha2 ===
+    //       (account?.country ?? user.personalData.nationality),
+    //   )[0].alpha3; */
+    //   legalAddress.country = country;
+    //   const userCard = await cardIntegration.createUser({
+    //     name: account?.personalData?.name ?? user.personalData.name,
+    //     surname: account?.personalData?.lastName ?? user.personalData.lastName,
+    //     identification_type:
+    //       account?.personalData?.typeDocId ?? user.personalData.typeDocId,
+    //     identification_value:
+    //       account?.personalData?.numDocId ??
+    //       user.personalData.numDocId?.toString(),
+    //     birthdate: `${birthDate.getFullYear()}-${CommonService.getNumberDigits(
+    //       birthDate.getMonth() + 1,
+    //       2,
+    //     )}-${CommonService.getNumberDigits(birthDate.getDate(), 2)}`,
+    //     gender: account?.personalData?.gender ?? user.personalData.gender,
+    //     email: account?.email ?? user.personalData.email[0] ?? user.email,
+    //     phone:
+    //       account?.telephone ??
+    //       user.personalData.telephones[0]?.phoneNumber ??
+    //       user.personalData.phoneNumber,
+    //     nationality: country,
+    //     legal_address: legalAddress,
+    //     operation_country: country,
+    //     zip_code: legalAddress.zip_code,
+    //   } as unknown as UserCardDto);
+    //   const error = userCard['error'];
+    //   if (error) {
+    //     throw new BadRequestException(error);
+    //   }
+    //   userCardConfig = userCard.data as unknown as UserCard;
+    // }
+
     await this.cardBuilder.getPromiseUserEventClient(
       EventsNamesUserEnum.updateOne,
       {
@@ -1719,6 +1741,54 @@ export class CardServiceController extends AccountServiceController {
       },
     );
     return userCardConfig;
+  }
+
+  private async createUserCard(
+    cardIntegration: IntegrationCardService,
+    user: User,
+    account: AccountDocument,
+  ) {
+    const isBirthDateNotExist = () =>
+      !(account?.personalData?.birth || user.personalData.birth);
+
+    if (isBirthDateNotExist()) throw new BadRequestException('Birth not found');
+
+    const birthDate = new Date(
+      account?.personalData?.birth || user.personalData.birth,
+    );
+
+    const legalAddress = this.getLegalAddress(
+      account?.personalData?.location.address ??
+        user.personalData.location.address,
+    );
+
+    const country = 'COL';
+
+    legalAddress.country = country;
+
+    return await cardIntegration.createUser({
+      name: account?.personalData?.name ?? user.personalData.name,
+      surname: account?.personalData?.lastName ?? user.personalData.lastName,
+      identification_type:
+        account?.personalData?.typeDocId ?? user.personalData.typeDocId,
+      identification_value:
+        account?.personalData?.numDocId ??
+        user.personalData.numDocId?.toString(),
+      birthdate: `${birthDate.getFullYear()}-${CommonService.getNumberDigits(
+        birthDate.getMonth() + 1,
+        2,
+      )}-${CommonService.getNumberDigits(birthDate.getDate(), 2)}`,
+      gender: account?.personalData?.gender ?? user.personalData.gender,
+      email: account?.email ?? user.personalData.email[0] ?? user.email,
+      phone:
+        account?.telephone ??
+        user.personalData.telephones[0]?.phoneNumber ??
+        user.personalData.phoneNumber,
+      nationality: country,
+      legal_address: legalAddress,
+      operation_country: country,
+      zip_code: legalAddress.zip_code,
+    });
   }
 
   private getLegalAddress(address: AddressSchema): AddressSchema {
