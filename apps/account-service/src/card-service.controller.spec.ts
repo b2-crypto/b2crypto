@@ -1,27 +1,26 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { ConfigService } from '@nestjs/config';
-import { CardServiceController } from './card-service.controller';
-import { AccountServiceService } from './account-service.service';
-import { UserServiceService } from 'apps/user-service/src/user-service.service';
-import { StatusServiceService } from 'apps/status-service/src/status-service.service';
-import { GroupServiceService } from 'apps/group-service/src/group-service.service';
-import { BuildersService } from '@builder/builders';
-import { IntegrationService } from '@integration/integration';
-import { CategoryServiceService } from '../../category-service/src/category-service.service';
-import { FiatIntegrationClient } from 'apps/integration-service/src/clients/fiat.integration.client';
-import { AccountDocument } from '@account/account/entities/mongoose/account.schema';
-import { ResponsePaginator } from '@common/common/interfaces/response-pagination.interface';
-import { BadRequestException, NotFoundException, UnauthorizedException } from '@nestjs/common';
-import { User } from '@user/user/entities/mongoose/user.schema';
-import { CardCreateDto } from '@account/account/dto/card.create.dto';
 import { CardDepositCreateDto } from '@account/account/dto/card-deposit.create.dto';
+import { CardCreateDto } from '@account/account/dto/card.create.dto';
+import { AccountDocument } from '@account/account/entities/mongoose/account.schema';
 import CardTypesAccountEnum from '@account/account/enum/card.types.account.enum';
 import StatusAccountEnum from '@account/account/enum/status.account.enum';
 import TypesAccountEnum from '@account/account/enum/types.account.enum';
+import { BuildersService } from '@builder/builders';
 import { CardsEnum } from '@common/common/enums/messages.enum';
-import EventsNamesAccountEnum from './enum/events.names.account.enum';
-import mongoose from 'mongoose';
+import { ResponsePaginator } from '@common/common/interfaces/response-pagination.interface';
+import { IntegrationService } from '@integration/integration';
+import { BadRequestException, UnauthorizedException } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { RmqContext } from '@nestjs/microservices';
+import { Test, TestingModule } from '@nestjs/testing';
+import { User } from '@user/user/entities/mongoose/user.schema';
+import { GroupServiceService } from 'apps/group-service/src/group-service.service';
+import { FiatIntegrationClient } from 'apps/integration-service/src/clients/fiat.integration.client';
+import { StatusServiceService } from 'apps/status-service/src/status-service.service';
+import { UserServiceService } from 'apps/user-service/src/user-service.service';
+import mongoose from 'mongoose';
+import { CategoryServiceService } from '../../category-service/src/category-service.service';
+import { AccountServiceService } from './account-service.service';
+import { CardServiceController } from './card-service.controller';
 
 jest.mock('@common/common');
 
@@ -106,63 +105,68 @@ describe('CardServiceController', () => {
       const result = await controller.findAll({});
 
       expect(result).toEqual(mockCards);
-      expect(accountServiceMock.findAll).toHaveBeenCalledWith(expect.objectContaining({
-        where: { type: TypesAccountEnum.CARD }
-      }));
+      expect(accountServiceMock.findAll).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { type: TypesAccountEnum.CARD },
+        }),
+      );
     });
   });
   describe('findAllMe', () => {
     it('should return all cards for the user', async () => {
       const mockUserId = new mongoose.Types.ObjectId();
       const mockCards: ResponsePaginator<AccountDocument> = {
-        list: [{ 
-          type: TypesAccountEnum.CARD, 
-          owner: mockUserId, 
-          amount: 100, 
-          amountCustodial: 100,
-          currency: 'USD',
-          currencyCustodial: 'USD'
-        } as unknown as AccountDocument],
+        list: [
+          {
+            type: TypesAccountEnum.CARD,
+            owner: mockUserId,
+            amount: 100,
+            amountCustodial: 100,
+            currency: 'USD',
+            currencyCustodial: 'USD',
+          } as unknown as AccountDocument,
+        ],
         totalElements: 1,
       } as ResponsePaginator<AccountDocument>;
-      
+
       accountServiceMock.findAll.mockResolvedValue(mockCards);
-      
-      jest.spyOn(controller as any, 'swapToCurrencyUser').mockResolvedValue(100);
-  
+
+      jest
+        .spyOn(controller as any, 'swapToCurrencyUser')
+        .mockResolvedValue(100);
+
       const mockReq = { user: { id: mockUserId.toString(), currency: 'EUR' } };
       const result = await controller.findAllMe({}, mockReq);
-  
+
       expect(result.list[0].amount).toBe(100);
       expect(result.list[0].currency).toBe('USD');
-      
-     
+
       expect(accountServiceMock.findAll).toHaveBeenCalled();
-      
-    
-      console.log('All calls to findAll:', accountServiceMock.findAll.mock.calls);
-  
-    
+
+      console.log(
+        'All calls to findAll:',
+        accountServiceMock.findAll.mock.calls,
+      );
+
       accountServiceMock.findAll.mock.calls.forEach((call, index) => {
         console.log(`Call ${index} arguments:`, call);
       });
-  
-   
+
       if (accountServiceMock.findAll.mock.calls.length > 0) {
         const firstCallArgs = accountServiceMock.findAll.mock.calls[0];
         console.log('First call arguments:', firstCallArgs);
-  
-     
+
         if (typeof firstCallArgs[0] === 'object' && firstCallArgs[0] !== null) {
           console.log('First argument is an object:', firstCallArgs[0]);
-          
-         
+
           if ('where' in firstCallArgs[0]) {
             console.log('Where clause:', firstCallArgs[0].where);
-            expect(firstCallArgs[0].where).toEqual(expect.objectContaining({
-              type: TypesAccountEnum.CARD,
-              owner: mockUserId
-            }));
+            expect(firstCallArgs[0].where).toEqual(
+              expect.objectContaining({
+                type: TypesAccountEnum.CARD,
+                owner: mockUserId,
+              }),
+            );
           } else {
             console.log('No "where" property found in the first argument');
           }
@@ -172,33 +176,43 @@ describe('CardServiceController', () => {
       } else {
         console.log('No calls were made to findAll');
       }
-  
-      expect(controller['swapToCurrencyUser']).toHaveBeenCalledWith(mockReq, expect.anything());
+
+      expect(controller['swapToCurrencyUser']).toHaveBeenCalledWith(
+        mockReq,
+        expect.anything(),
+      );
     });
     it('should maintain original currency even if user currency is different', async () => {
       const mockUserId = new mongoose.Types.ObjectId();
       const mockCards: ResponsePaginator<AccountDocument> = {
-        list: [{ 
-          type: TypesAccountEnum.CARD, 
-          owner: mockUserId, 
-          amount: 100, 
-          amountCustodial: 100,
-          currency: 'USD',
-          currencyCustodial: 'USD'
-        } as unknown as AccountDocument],
+        list: [
+          {
+            type: TypesAccountEnum.CARD,
+            owner: mockUserId,
+            amount: 100,
+            amountCustodial: 100,
+            currency: 'USD',
+            currencyCustodial: 'USD',
+          } as unknown as AccountDocument,
+        ],
         totalElements: 1,
       } as ResponsePaginator<AccountDocument>;
-      
+
       accountServiceMock.findAll.mockResolvedValue(mockCards);
-      
-      jest.spyOn(controller as any, 'swapToCurrencyUser').mockResolvedValue(100);
-  
+
+      jest
+        .spyOn(controller as any, 'swapToCurrencyUser')
+        .mockResolvedValue(100);
+
       const mockReq = { user: { id: mockUserId.toString(), currency: 'EUR' } };
       const result = await controller.findAllMe({}, mockReq);
-  
+
       expect(result.list[0].amount).toBe(100);
       expect(result.list[0].currency).toBe('USD');
-      expect(controller['swapToCurrencyUser']).toHaveBeenCalledWith(mockReq, expect.anything());
+      expect(controller['swapToCurrencyUser']).toHaveBeenCalledWith(
+        mockReq,
+        expect.anything(),
+      );
     });
   });
 
@@ -213,18 +227,27 @@ describe('CardServiceController', () => {
         },
         email: 'user@example.com',
       } as unknown as User;
-      
+
       jest.spyOn(controller as any, 'getUser').mockResolvedValue(mockUser);
-      jest.spyOn(controller as any, 'buildAFG').mockResolvedValue({ list: [{ valueGroup: 'groupId' }] });
+      jest
+        .spyOn(controller as any, 'buildAFG')
+        .mockResolvedValue({ list: [{ valueGroup: 'groupId' }] });
       jest.spyOn(controller as any, 'getUserCard').mockResolvedValue({});
 
-      accountServiceMock.findAll.mockResolvedValue({ totalElements: 0 } as ResponsePaginator<AccountDocument>);
-      accountServiceMock.createOne.mockResolvedValue({ _id: new mongoose.Types.ObjectId(), save: jest.fn() } as any);
-      
+      accountServiceMock.findAll.mockResolvedValue({
+        totalElements: 0,
+      } as ResponsePaginator<AccountDocument>);
+      accountServiceMock.createOne.mockResolvedValue({
+        _id: new mongoose.Types.ObjectId(),
+        save: jest.fn(),
+      } as any);
+
       const mockCardIntegration = {
         createCard: jest.fn().mockResolvedValue({ data: {} }),
       };
-      integrationServiceMock.getCardIntegration.mockResolvedValue(mockCardIntegration as any);
+      integrationServiceMock.getCardIntegration.mockResolvedValue(
+        mockCardIntegration as any,
+      );
 
       const createDto = new CardCreateDto();
       createDto.accountType = CardTypesAccountEnum.VIRTUAL;
@@ -234,10 +257,12 @@ describe('CardServiceController', () => {
       const result = await controller.createOne(createDto, mockReq as any);
 
       expect(result).toBeDefined();
-      expect(accountServiceMock.createOne).toHaveBeenCalledWith(expect.objectContaining({
-        owner: expect.any(mongoose.Types.ObjectId),
-        accountType: CardTypesAccountEnum.VIRTUAL,
-      }));
+      expect(accountServiceMock.createOne).toHaveBeenCalledWith(
+        expect.objectContaining({
+          owner: expect.any(mongoose.Types.ObjectId),
+          accountType: CardTypesAccountEnum.VIRTUAL,
+        }),
+      );
     });
 
     it('should throw BadRequestException for physical card creation if user already has 10 virtual cards', async () => {
@@ -246,16 +271,20 @@ describe('CardServiceController', () => {
         _id: mockUserId,
         personalData: {},
       } as unknown as User;
-      
+
       jest.spyOn(controller as any, 'getUser').mockResolvedValue(mockUser);
-      accountServiceMock.findAll.mockResolvedValue({ totalElements: 10 } as ResponsePaginator<AccountDocument>);
+      accountServiceMock.findAll.mockResolvedValue({
+        totalElements: 10,
+      } as ResponsePaginator<AccountDocument>);
 
       const createDto = new CardCreateDto();
       createDto.accountType = CardTypesAccountEnum.VIRTUAL;
 
       const mockReq = { user: { id: mockUserId.toString() } };
 
-      await expect(controller.createOne(createDto, mockReq as any)).rejects.toThrow(BadRequestException);
+      await expect(
+        controller.createOne(createDto, mockReq as any),
+      ).rejects.toThrow(BadRequestException);
     });
   });
 
@@ -266,19 +295,33 @@ describe('CardServiceController', () => {
         _id: mockUserId,
         personalData: {},
       } as unknown as User;
-      
+
       jest.spyOn(controller as any, 'getUser').mockResolvedValue(mockUser);
-      
-      const mockCard = { _id: new mongoose.Types.ObjectId(), type: TypesAccountEnum.CARD } as AccountDocument;
-      const mockWallet = { _id: new mongoose.Types.ObjectId(), type: TypesAccountEnum.WALLET, amount: 100 } as AccountDocument;
-      
+
+      const mockCard = {
+        _id: new mongoose.Types.ObjectId(),
+        type: TypesAccountEnum.CARD,
+      } as AccountDocument;
+      const mockWallet = {
+        _id: new mongoose.Types.ObjectId(),
+        type: TypesAccountEnum.WALLET,
+        amount: 100,
+      } as AccountDocument;
+
       accountServiceMock.findOneById.mockResolvedValueOnce(mockCard);
       accountServiceMock.findOneById.mockResolvedValueOnce(mockWallet);
       accountServiceMock.customUpdateOne.mockResolvedValue({} as any);
-      
-      buildersServiceMock.getPromiseCategoryEventClient.mockResolvedValue({ _id: 'categoryId' });
-      buildersServiceMock.getPromiseStatusEventClient.mockResolvedValue({ _id: 'statusId' });
-      buildersServiceMock.getPromisePspAccountEventClient.mockResolvedValue({ _id: 'pspAccountId', psp: 'pspId' });
+
+      buildersServiceMock.getPromiseCategoryEventClient.mockResolvedValue({
+        _id: 'categoryId',
+      });
+      buildersServiceMock.getPromiseStatusEventClient.mockResolvedValue({
+        _id: 'statusId',
+      });
+      buildersServiceMock.getPromisePspAccountEventClient.mockResolvedValue({
+        _id: 'pspAccountId',
+        psp: 'pspId',
+      });
 
       const createDto = new CardDepositCreateDto();
       createDto.amount = 50;
@@ -290,24 +333,28 @@ describe('CardServiceController', () => {
       await controller.rechargeOne(createDto, mockReq as any);
 
       expect(accountServiceMock.customUpdateOne).toHaveBeenCalledTimes(2);
-      expect(buildersServiceMock.emitTransferEventClient).toHaveBeenCalledTimes(2);
+      expect(buildersServiceMock.emitTransferEventClient).toHaveBeenCalledTimes(
+        2,
+      );
     });
 
     it('should throw BadRequestException if amount is less than 10', async () => {
       const createDto = new CardDepositCreateDto();
       createDto.amount = 5;
-  
+
       const mockUserId = new mongoose.Types.ObjectId();
       const mockUser = {
         _id: mockUserId,
         personalData: {},
       } as unknown as User;
-  
+
       jest.spyOn(controller as any, 'getUser').mockResolvedValue(mockUser);
-  
+
       const mockReq = { user: { id: mockUserId.toString() } };
-  
-      await expect(controller.rechargeOne(createDto, mockReq as any)).rejects.toThrow(BadRequestException);
+
+      await expect(
+        controller.rechargeOne(createDto, mockReq as any),
+      ).rejects.toThrow(BadRequestException);
     });
   });
 
@@ -318,37 +365,45 @@ describe('CardServiceController', () => {
         personalData: {},
       } as unknown as User);
     });
-  
+
     it('should return shipping information for a physical card', async () => {
       const mockCardId = new mongoose.Types.ObjectId().toString();
-      const mockCard = { 
+      const mockCard = {
         responseShipping: { id: 'shippingId' },
         owner: new mongoose.Types.ObjectId(),
       } as unknown as AccountDocument;
-      
+
       accountServiceMock.findOneById.mockResolvedValue(mockCard);
-      
+
       const mockCardIntegration = {
-        getShippingPhysicalCard: jest.fn().mockResolvedValue({ data: { status: 'shipped' } }),
+        getShippingPhysicalCard: jest
+          .fn()
+          .mockResolvedValue({ data: { status: 'shipped' } }),
       };
-      integrationServiceMock.getCardIntegration.mockResolvedValue(mockCardIntegration as any);
-  
+      integrationServiceMock.getCardIntegration.mockResolvedValue(
+        mockCardIntegration as any,
+      );
+
       const result = await controller.getShippingPhysicalCard(mockCardId);
-  
+
       expect(result).toEqual({ id: 'shippingId' });
       expect(accountServiceMock.findOneById).toHaveBeenCalledWith(mockCardId);
-      expect(mockCardIntegration.getShippingPhysicalCard).toHaveBeenCalledWith('shippingId');
+      expect(mockCardIntegration.getShippingPhysicalCard).toHaveBeenCalledWith(
+        'shippingId',
+      );
     });
-  
+
     it('should throw BadRequestException if card has no shipping information', async () => {
       const mockCardId = new mongoose.Types.ObjectId().toString();
       const mockCard = {
         owner: new mongoose.Types.ObjectId(),
       } as unknown as AccountDocument;
-      
+
       accountServiceMock.findOneById.mockResolvedValue(mockCard);
-  
-      await expect(controller.getShippingPhysicalCard(mockCardId)).rejects.toThrow(BadRequestException);
+
+      await expect(
+        controller.getShippingPhysicalCard(mockCardId),
+      ).rejects.toThrow(BadRequestException);
     });
   });
 
@@ -369,16 +424,26 @@ describe('CardServiceController', () => {
       } as unknown as User;
 
       jest.spyOn(controller as any, 'getUser').mockResolvedValue(mockUser);
-      jest.spyOn(controller as any, 'getUserCard').mockResolvedValue({ id: 'userCardId' });
-      
-      accountServiceMock.findAll.mockResolvedValue({ totalElements: 0 } as ResponsePaginator<AccountDocument>);
-      
-      const mockCardIntegration = {
-        shippingPhysicalCard: jest.fn().mockResolvedValue({ data: { id: 'shippingId' } }),
-      };
-      integrationServiceMock.getCardIntegration.mockResolvedValue(mockCardIntegration as any);
+      jest
+        .spyOn(controller as any, 'getUserCard')
+        .mockResolvedValue({ id: 'userCardId' });
 
-      accountServiceMock.createOne.mockResolvedValue({ _id: new mongoose.Types.ObjectId() } as AccountDocument);
+      accountServiceMock.findAll.mockResolvedValue({
+        totalElements: 0,
+      } as ResponsePaginator<AccountDocument>);
+
+      const mockCardIntegration = {
+        shippingPhysicalCard: jest
+          .fn()
+          .mockResolvedValue({ data: { id: 'shippingId' } }),
+      };
+      integrationServiceMock.getCardIntegration.mockResolvedValue(
+        mockCardIntegration as any,
+      );
+
+      accountServiceMock.createOne.mockResolvedValue({
+        _id: new mongoose.Types.ObjectId(),
+      } as AccountDocument);
 
       const mockReq = { user: { id: mockUserId.toString() } };
       const result = await controller.shippingPhysicalCard(mockReq as any);
@@ -396,72 +461,101 @@ describe('CardServiceController', () => {
       } as unknown as User;
 
       jest.spyOn(controller as any, 'getUser').mockResolvedValue(mockUser);
-      accountServiceMock.findAll.mockResolvedValue({ totalElements: 1 } as ResponsePaginator<AccountDocument>);
+      accountServiceMock.findAll.mockResolvedValue({
+        totalElements: 1,
+      } as ResponsePaginator<AccountDocument>);
 
       const mockReq = { user: { id: mockUserId.toString() } };
-      await expect(controller.shippingPhysicalCard(mockReq as any)).rejects.toThrow(BadRequestException);
+      await expect(
+        controller.shippingPhysicalCard(mockReq as any),
+      ).rejects.toThrow(BadRequestException);
     });
   });
 
   describe('blockedOneById', () => {
     it('should block a card', async () => {
       const mockCardId = new mongoose.Types.ObjectId().toString();
-      jest.spyOn(controller as any, 'updateStatusAccount').mockResolvedValue({});
+      jest
+        .spyOn(controller as any, 'updateStatusAccount')
+        .mockResolvedValue({});
 
       await controller.blockedOneById(mockCardId);
 
-      expect(controller['updateStatusAccount']).toHaveBeenCalledWith(mockCardId, StatusAccountEnum.LOCK);
+      expect(controller['updateStatusAccount']).toHaveBeenCalledWith(
+        mockCardId,
+        StatusAccountEnum.LOCK,
+      );
     });
   });
 
   describe('unblockedOneById', () => {
     it('should unblock a card', async () => {
       const mockCardId = new mongoose.Types.ObjectId().toString();
-      jest.spyOn(controller as any, 'updateStatusAccount').mockResolvedValue({});
+      jest
+        .spyOn(controller as any, 'updateStatusAccount')
+        .mockResolvedValue({});
 
       await controller.unblockedOneById(mockCardId);
 
-      expect(controller['updateStatusAccount']).toHaveBeenCalledWith(mockCardId, StatusAccountEnum.UNLOCK);
+      expect(controller['updateStatusAccount']).toHaveBeenCalledWith(
+        mockCardId,
+        StatusAccountEnum.UNLOCK,
+      );
     });
   });
 
   describe('cancelOneById', () => {
     it('should cancel a card', async () => {
       const mockCardId = new mongoose.Types.ObjectId().toString();
-      jest.spyOn(controller as any, 'updateStatusAccount').mockResolvedValue({});
+      jest
+        .spyOn(controller as any, 'updateStatusAccount')
+        .mockResolvedValue({});
 
       await controller.cancelOneById(mockCardId);
 
-      expect(controller['updateStatusAccount']).toHaveBeenCalledWith(mockCardId, StatusAccountEnum.CANCEL);
+      expect(controller['updateStatusAccount']).toHaveBeenCalledWith(
+        mockCardId,
+        StatusAccountEnum.CANCEL,
+      );
     });
   });
 
   describe('disableOneById', () => {
     it('should disable a card', async () => {
       const mockCardId = new mongoose.Types.ObjectId().toString();
-      jest.spyOn(controller as any, 'toggleVisibleToOwner').mockResolvedValue({});
+      jest
+        .spyOn(controller as any, 'toggleVisibleToOwner')
+        .mockResolvedValue({});
 
       await controller.disableOneById(mockCardId);
 
-      expect(controller['toggleVisibleToOwner']).toHaveBeenCalledWith(mockCardId, false);
+      expect(controller['toggleVisibleToOwner']).toHaveBeenCalledWith(
+        mockCardId,
+        false,
+      );
     });
   });
 
   describe('enableOneById', () => {
     it('should enable a card', async () => {
       const mockCardId = new mongoose.Types.ObjectId().toString();
-      jest.spyOn(controller as any, 'toggleVisibleToOwner').mockResolvedValue({});
+      jest
+        .spyOn(controller as any, 'toggleVisibleToOwner')
+        .mockResolvedValue({});
 
       await controller.enableOneById(mockCardId);
 
-      expect(controller['toggleVisibleToOwner']).toHaveBeenCalledWith(mockCardId, true);
+      expect(controller['toggleVisibleToOwner']).toHaveBeenCalledWith(
+        mockCardId,
+        true,
+      );
     });
   });
 
   describe('deleteOneById', () => {
     it('should throw UnauthorizedException', async () => {
       const mockCardId = new mongoose.Types.ObjectId().toString();
-  
+
       try {
         await controller.deleteOneById(mockCardId);
         fail('Expected UnauthorizedException to be thrown');
@@ -471,14 +565,14 @@ describe('CardServiceController', () => {
     });
     it('should throw UnauthorizedException and not call accountServiceService.deleteOneById', async () => {
       const mockCardId = new mongoose.Types.ObjectId().toString();
-  
+
       let thrownError: Error | null = null;
       try {
         await controller.deleteOneById(mockCardId);
       } catch (error) {
         thrownError = error as Error;
       }
-  
+
       expect(thrownError).toBeInstanceOf(UnauthorizedException);
       expect(accountServiceMock.deleteOneById).not.toHaveBeenCalled();
     });
@@ -505,13 +599,18 @@ describe('CardServiceController', () => {
 
       configServiceMock.get.mockReturnValue(0.1); // BLOCK_BALANCE_PERCENTAGE
 
-      const result = await controller.processPomeloTransaction(mockCtx, mockData);
+      const result = await controller.processPomeloTransaction(
+        mockCtx,
+        mockData,
+      );
 
       expect(result).toBe(CardsEnum.CARD_PROCESS_OK);
-      expect(accountServiceMock.customUpdateOne).toHaveBeenCalledWith(expect.objectContaining({
-        id: mockCard._id,
-        $inc: { amount: -50 },
-      }));
+      expect(accountServiceMock.customUpdateOne).toHaveBeenCalledWith(
+        expect.objectContaining({
+          id: mockCard._id,
+          $inc: { amount: -50 },
+        }),
+      );
     });
 
     it('should return CARD_PROCESS_CARD_NOT_FOUND if card is not found', async () => {
@@ -523,7 +622,10 @@ describe('CardServiceController', () => {
         totalElements: 0,
       } as ResponsePaginator<AccountDocument>);
 
-      const result = await controller.processPomeloTransaction(mockCtx, mockData);
+      const result = await controller.processPomeloTransaction(
+        mockCtx,
+        mockData,
+      );
 
       expect(result).toBe(CardsEnum.CARD_PROCESS_CARD_NOT_FOUND);
     });
@@ -533,7 +635,10 @@ describe('CardServiceController', () => {
     it('should find a card by its ID', async () => {
       const mockCtx = { ack: jest.fn() } as unknown as RmqContext;
       const mockData = { id: 'cardId' };
-      const mockCard = { _id: new mongoose.Types.ObjectId(), cardConfig: { id: 'cardId' } } as AccountDocument;
+      const mockCard = {
+        _id: new mongoose.Types.ObjectId(),
+        cardConfig: { id: 'cardId' },
+      } as AccountDocument;
 
       accountServiceMock.findAll.mockResolvedValue({
         list: [mockCard],
@@ -544,7 +649,6 @@ describe('CardServiceController', () => {
 
       expect(result).toEqual(mockCard);
     });
-
   });
 
   describe('migrateCard', () => {
@@ -561,15 +665,19 @@ describe('CardServiceController', () => {
         totalElements: 0,
       } as ResponsePaginator<AccountDocument>);
 
-      const mockCreatedCard = { _id: new mongoose.Types.ObjectId() } as AccountDocument;
+      const mockCreatedCard = {
+        _id: new mongoose.Types.ObjectId(),
+      } as AccountDocument;
       accountServiceMock.createOne.mockResolvedValue(mockCreatedCard);
 
       const result = await controller.migrateCard(mockCtx, mockCardToMigrate);
 
       expect(result).toEqual(mockCreatedCard);
-      expect(accountServiceMock.createOne).toHaveBeenCalledWith(expect.objectContaining({
-        group: mockGroup.list[0],
-      }));
+      expect(accountServiceMock.createOne).toHaveBeenCalledWith(
+        expect.objectContaining({
+          group: mockGroup.list[0],
+        }),
+      );
     });
   });
 
@@ -588,15 +696,15 @@ describe('CardServiceController', () => {
 
       expect(result).toEqual(mockCards);
     });
-
-  
   });
 
   describe('setCardOwner', () => {
     it('should update the card owner', async () => {
       const mockCtx = { ack: jest.fn() } as unknown as RmqContext;
       const mockData = { id: 'cardId', owner: new mongoose.Types.ObjectId() };
-      const mockCard = { _id: new mongoose.Types.ObjectId() } as AccountDocument;
+      const mockCard = {
+        _id: new mongoose.Types.ObjectId(),
+      } as AccountDocument;
 
       accountServiceMock.findAll.mockResolvedValue({
         list: [mockCard],
@@ -605,19 +713,24 @@ describe('CardServiceController', () => {
 
       await controller.setCardOwner(mockCtx, mockData);
 
-      expect(accountServiceMock.customUpdateOne).toHaveBeenCalledWith(expect.objectContaining({
-        id: mockCard._id,
-        owner: mockData.owner,
-      }));
+      expect(accountServiceMock.customUpdateOne).toHaveBeenCalledWith(
+        expect.objectContaining({
+          id: mockCard._id,
+          owner: mockData.owner,
+        }),
+      );
     });
-
   });
 
   describe('setBalanceByCard', () => {
     it('should set the balance for a card', async () => {
       const mockCtx = { ack: jest.fn() } as unknown as RmqContext;
       const mockData = { id: 'cardId', amount: 100 };
-      const mockCard = { _id: new mongoose.Types.ObjectId(), amount: 0, amountCustodial: 0 } as AccountDocument;
+      const mockCard = {
+        _id: new mongoose.Types.ObjectId(),
+        amount: 0,
+        amountCustodial: 0,
+      } as AccountDocument;
 
       accountServiceMock.findAll.mockResolvedValue({
         list: [mockCard],
@@ -626,11 +739,12 @@ describe('CardServiceController', () => {
 
       await controller.setBalanceByCard(mockCtx, mockData);
 
-      expect(accountServiceMock.customUpdateOne).toHaveBeenCalledWith(expect.objectContaining({
-        id: mockCard._id,
-        $inc: { amount: 100, amountCustodial: 100 },
-      }));
+      expect(accountServiceMock.customUpdateOne).toHaveBeenCalledWith(
+        expect.objectContaining({
+          id: mockCard._id,
+          $inc: { amount: 100, amountCustodial: 100 },
+        }),
+      );
     });
-
   });
 });
