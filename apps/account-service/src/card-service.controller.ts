@@ -237,13 +237,21 @@ export class CardServiceController extends AccountServiceController {
   @Post('create')
   @UseGuards(ApiKeyAuthGuard)
   async createOne(@Body() createDto: CardCreateDto, @Req() req?: any) {
-    throw new BadRequestException('Temporarily unavailable');
     const userId = createDto.owner || req?.user?.id;
     const user: User = await this.getUser(userId);
     createDto.accountType =
       createDto.accountType ?? CardTypesAccountEnum.VIRTUAL;
     if (!createDto.force) {
       //await this.validateRuleLimitCards(user, createDto.accountType);
+    }
+    const physicalCards = await this.findAll({
+      take: 1,
+      where: {
+        statusText: StatusAccountEnum.ORDERED,
+      },
+    });
+    if (physicalCards.totalElements > 0) {
+      throw new BadRequestException('Already physical card ordered');
     }
     //let level = await this.getCategoryById(user.level?.toString());
     let level = await this.cardBuilder.getPromiseCategoryEventClient(
