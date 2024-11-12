@@ -244,14 +244,16 @@ export class CardServiceController extends AccountServiceController {
     if (!createDto.force) {
       //await this.validateRuleLimitCards(user, createDto.accountType);
     }
-    const physicalCards = await this.findAll({
-      take: 1,
-      where: {
-        statusText: StatusAccountEnum.ORDERED,
-      },
-    });
-    if (physicalCards.totalElements > 0) {
-      throw new BadRequestException('Already physical card ordered');
+    if (createDto.accountType == CardTypesAccountEnum.PHYSICAL) {
+      const physicalCards = await this.findAll({
+        take: 1,
+        where: {
+          statusText: StatusAccountEnum.ORDERED,
+        },
+      });
+      if (physicalCards.totalElements > 0) {
+        throw new BadRequestException('Already physical card ordered');
+      }
     }
     //let level = await this.getCategoryById(user.level?.toString());
     let level = await this.cardBuilder.getPromiseCategoryEventClient(
