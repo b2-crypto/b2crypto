@@ -1707,7 +1707,7 @@ export class CardServiceController extends AccountServiceController {
     Logger.debug(JSON.stringify(rta), 'rta actived card');
     if (rta) {
       if (!!rta['error']) {
-        const details: Array<string> = (rta['details'] || []).map(
+        const details: Array<string> = (rta['error']['details'] || []).map(
           (err) => err.detail,
         );
         Logger.error(details, 'activate card');
