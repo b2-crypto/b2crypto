@@ -484,7 +484,7 @@ export class AuthServiceController {
       user.personalData = await this.builder.getPromisePersonEventClient(
         EventsNamesPersonEnum.createOne,
         {
-          taxIdentificationValue: 0,
+          taxIdentificationValue: '',
           preRegistry: true,
           name: userDto.name,
           firstName: userDto.name,

@@ -86,7 +86,7 @@ export class PersonCreateDto extends CreateAnyDto {
 
   @IsOptional()
   @IsNumber()
-  taxIdentificationValue: number;
+  taxIdentificationValue: string;
 
   @IsDate()
   birth: Date;
