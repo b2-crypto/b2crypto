@@ -62,6 +62,8 @@ import { isMongoId } from 'class-validator';
 import { AccountEntity } from '@account/account/entities/account.entity';
 import { CategoryDocument } from '@category/category/entities/mongoose/category.schema';
 import { ResponsePaginator } from '@common/common/interfaces/response-pagination.interface';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import { Cache } from 'cache-manager';
 
 @ApiTags(SwaggerSteakeyConfigEnum.TAG_WALLET)
 @Controller('wallets')
@@ -75,6 +77,7 @@ export class WalletServiceController extends AccountServiceController {
     readonly ewalletBuilder: BuildersService,
     private readonly integration: IntegrationService,
     private readonly configService: ConfigService,
+    @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) {
     super(walletService, ewalletBuilder);
     this.getFireblocksType();
@@ -119,13 +122,20 @@ export class WalletServiceController extends AccountServiceController {
     query.where.showToOwner = true;
     query = CommonService.getQueryWithUserId(query, req, 'owner');
     const rta = await this.walletService.findAll({
+      take: 1,
       where: {
         owner: userId,
         type: TypesAccountEnum.WALLET,
+        accountType: WalletTypesAccountEnum.VAULT,
         showToOwner: true,
       },
     });
-    if (rta.totalElements == 0) {
+    const cacheNameWalletCreate = `create-wallet-${userId}`;
+    const creating = await this.cacheManager.get<boolean>(
+      cacheNameWalletCreate,
+    );
+    if (!creating && rta.totalElements == 0) {
+      await this.cacheManager.set(cacheNameWalletCreate, true, 6 * 1000);
       await this.createOne(
         {
           owner: query.where.owner,
