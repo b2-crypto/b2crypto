@@ -87,6 +87,7 @@ import { PinUpdateDto } from '@account/account/dto/pin.update.dto';
 import { AccountInterface } from '@account/account/entities/account.interface';
 import { PspAccountInterface } from '@psp-account/psp-account/entities/psp-account.interface';
 import { CategoryInterface } from '@category/category/entities/category.interface';
+import DocIdTypeEnum from '@common/common/enums/DocIdTypeEnum';
 
 @ApiTags(SwaggerSteakeyConfigEnum.TAG_CARD)
 @Controller('cards')
@@ -2280,11 +2281,20 @@ export class CardServiceController extends AccountServiceController {
           (account?.country ?? user.personalData.nationality),
       )[0].alpha3; */
       legalAddress.country = country;
+      let typeDocId: string =
+        account?.personalData?.typeDocId ?? user.personalData.typeDocId;
+      switch (typeDocId) {
+        case DocIdTypeEnum.PERMISO_PROTECCION_TEMPORAL:
+          typeDocId = 'PPT';
+          break;
+        case DocIdTypeEnum.PASSPORT:
+          typeDocId = 'PASSPORT';
+          break;
+      }
       const userCard = await cardIntegration.createUser({
         name: account?.personalData?.name ?? user.personalData.name,
         surname: account?.personalData?.lastName ?? user.personalData.lastName,
-        identification_type:
-          account?.personalData?.typeDocId ?? user.personalData.typeDocId,
+        identification_type: typeDocId,
         identification_value:
           account?.personalData?.numDocId ??
           user.personalData.numDocId?.toString(),
