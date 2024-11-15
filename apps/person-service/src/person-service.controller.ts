@@ -70,7 +70,7 @@ export class PersonServiceController implements GenericServiceController {
     const verifiedIdentity = req?.user?.verifyIdentity;
     const persons = await this.personService.getAll(query);
     persons.list.forEach((person) => {
-      person.verifiedIdentity = person.verifiedIdentity ?? !!verifiedIdentity;
+      person.verifiedIdentity = person.verifiedIdentity || !!verifiedIdentity;
       return person;
     });
     return persons;
