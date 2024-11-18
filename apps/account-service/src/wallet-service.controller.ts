@@ -35,8 +35,13 @@ import {
   RmqContext,
 } from '@nestjs/microservices';
 import EventsNamesAccountEnum from './enum/events.names.account.enum';
+import { ConfigService } from '@nestjs/config';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import { Cache } from 'cache-manager';
+import WalletTypesAccountEnum from '@account/account/enum/wallet.types.account.enum';
+import CurrencyCodeB2cryptoEnum from '@common/common/enums/currency-code-b2crypto.enum';
+import { IntegrationService } from '@integration/integration';
 import { NoCache } from '@common/common/decorators/no-cache.decorator';
-import { WalletServiceService } from './wallet-service.service';
 
 @ApiTags('E-WALLET')
 @Controller('wallets')
@@ -47,8 +52,9 @@ export class WalletServiceController extends AccountServiceController {
     private readonly userService: UserServiceService,
     @Inject(BuildersService)
     readonly ewalletBuilder: BuildersService,
-    @Inject(WalletServiceService)
-    private readonly walletServiceService: WalletServiceService,
+    private readonly integration: IntegrationService,
+    private readonly configService: ConfigService,
+    @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) {
     super(walletService, ewalletBuilder);
   }
@@ -76,6 +82,63 @@ export class WalletServiceController extends AccountServiceController {
     query.where = query.where ?? {};
     query.where.type = TypesAccountEnum.WALLET;
     query = CommonService.getQueryWithUserId(query, req, 'owner');
+    const rta = await this.walletService.findAll({
+      take: 1,
+      where: {
+        owner: userId,
+        type: TypesAccountEnum.WALLET,
+        accountType: WalletTypesAccountEnum.VAULT,
+        showToOwner: true,
+      },
+    });
+    const cacheNameWalletCreate = `create-wallet-${userId}`;
+    const creating = await this.cacheManager.get<boolean>(
+      cacheNameWalletCreate,
+    );
+    if (!creating && rta.totalElements == 0) {
+      await this.cacheManager.set(cacheNameWalletCreate, true, 6 * 1000);
+      await this.createOne(
+        {
+          owner: query.where.owner,
+          name: 'USD Tether (Tron)',
+          accountType: WalletTypesAccountEnum.VAULT,
+          type: TypesAccountEnum.WALLET,
+          pin: CommonService.getNumberDigits(
+            CommonService.randomIntNumber(9999),
+            4
+          ),
+          id: undefined,
+          slug: '',
+          searchText: '',
+          docId: '',
+          secret: '',
+          address: null,
+          email: '',
+          telephone: '',
+          description: '',
+          decimals: 0,
+          hasSendDisclaimer: false,
+          totalTransfer: 0,
+          quantityTransfer: 0,
+          showToOwner: false,
+          statusText: StatusAccountEnum.UNLOCK,
+          accountStatus: [],
+          createdAt: undefined,
+          updatedAt: undefined,
+          cardConfig: undefined,
+          amount: 0,
+          currency: CurrencyCodeB2cryptoEnum.USDT,
+          amountCustodial: 0,
+          currencyCustodial: CurrencyCodeB2cryptoEnum.USDT,
+          amountBlocked: 0,
+          currencyBlocked: CurrencyCodeB2cryptoEnum.USDT,
+          amountBlockedCustodial: 0,
+          currencyBlockedCustodial: CurrencyCodeB2cryptoEnum.USDT,
+          afgId: ''
+        },
+        req,
+      );
+    }
     return this.walletService.findAll(query);
   }
 
