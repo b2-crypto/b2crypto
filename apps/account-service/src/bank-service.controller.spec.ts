@@ -26,9 +26,7 @@ describe('BankServiceController', () => {
 
     const module: TestingModule = await Test.createTestingModule({
       controllers: [BankServiceController],
-      providers: [
-        { provide: BankServiceService, useValue: bankServiceMock },
-      ],
+      providers: [{ provide: BankServiceService, useValue: bankServiceMock }],
     }).compile();
 
     controller = module.get<BankServiceController>(BankServiceController);
@@ -38,7 +36,12 @@ describe('BankServiceController', () => {
     it('should return all bank accounts', async () => {
       const query: QuerySearchAnyDto = {};
       const mockBankAccounts: ResponsePaginator<AccountDocument> = {
-        list: [{ _id: new mongoose.Types.ObjectId(), type: 'BANK' } as AccountDocument],
+        list: [
+          {
+            _id: new mongoose.Types.ObjectId(),
+            type: 'BANK',
+          } as AccountDocument,
+        ],
         totalElements: 1,
         nextPage: 1,
         prevPage: 1,
@@ -46,7 +49,7 @@ describe('BankServiceController', () => {
         firstPage: 1,
         currentPage: 1,
         elementsPerPage: 10,
-        order: []
+        order: [],
       };
       bankServiceMock.findAll.mockResolvedValue(mockBankAccounts);
 
@@ -62,7 +65,13 @@ describe('BankServiceController', () => {
       const query: QuerySearchAnyDto = {};
       const mockReq = { user: { id: '123' } };
       const mockBankAccounts: ResponsePaginator<AccountDocument> = {
-        list: [{ _id: new mongoose.Types.ObjectId(), type: 'BANK', owner: '123' } as unknown as AccountDocument],
+        list: [
+          {
+            _id: new mongoose.Types.ObjectId(),
+            type: 'BANK',
+            owner: '123',
+          } as unknown as AccountDocument,
+        ],
         totalElements: 1,
         nextPage: 1,
         prevPage: 1,
@@ -70,7 +79,7 @@ describe('BankServiceController', () => {
         firstPage: 1,
         currentPage: 1,
         elementsPerPage: 10,
-        order: []
+        order: [],
       };
       bankServiceMock.findAllMe.mockResolvedValue(mockBankAccounts);
 
@@ -86,9 +95,9 @@ describe('BankServiceController', () => {
       const createDto = new BankCreateDto();
       const mockReq = { user: { id: '123' } };
       const mockCreatedAccount: AccountDocument = {
-          _id: new mongoose.Types.ObjectId(),
-          type: 'BANK',
-          owner: '123',
+        _id: new mongoose.Types.ObjectId(),
+        type: 'BANK',
+        owner: '123',
       } as unknown as AccountDocument;
 
       bankServiceMock.createOne.mockResolvedValue(mockCreatedAccount);
@@ -96,7 +105,10 @@ describe('BankServiceController', () => {
       const result = await controller.createOne(createDto, mockReq);
 
       expect(result).toEqual(mockCreatedAccount);
-      expect(bankServiceMock.createOne).toHaveBeenCalledWith(createDto, mockReq);
+      expect(bankServiceMock.createOne).toHaveBeenCalledWith(
+        createDto,
+        mockReq,
+      );
     });
   });
 
@@ -105,10 +117,10 @@ describe('BankServiceController', () => {
       const createDto = new BankDepositCreateDto();
       const mockReq = { user: { id: '123' } };
       const mockDepositResult: AccountDocument = {
-          _id: new mongoose.Types.ObjectId(),
-          type: 'BANK',
-          owner: '123',
-          balance: 1000, 
+        _id: new mongoose.Types.ObjectId(),
+        type: 'BANK',
+        owner: '123',
+        balance: 1000,
       } as unknown as AccountDocument;
 
       bankServiceMock.depositOne.mockResolvedValue(mockDepositResult);
@@ -116,7 +128,10 @@ describe('BankServiceController', () => {
       const result = await controller.depositOne(createDto, mockReq);
 
       expect(result).toEqual(mockDepositResult);
-      expect(bankServiceMock.depositOne).toHaveBeenCalledWith(createDto, mockReq);
+      expect(bankServiceMock.depositOne).toHaveBeenCalledWith(
+        createDto,
+        mockReq,
+      );
     });
   });
 
@@ -127,15 +142,18 @@ describe('BankServiceController', () => {
         _id: new mongoose.Types.ObjectId(),
         type: 'BANK',
         owner: '123',
-    } as unknown as AccountDocument;
-     
-        
-      bankServiceMock.deleteOneById.mockResolvedValue(mockDeletedAccount as AccountDocument);
+      } as unknown as AccountDocument;
+
+      bankServiceMock.deleteOneById.mockResolvedValue(
+        mockDeletedAccount as AccountDocument,
+      );
 
       const result = await controller.deleteOneById(mockBankAccountId);
 
       expect(result).toEqual(mockDeletedAccount);
-      expect(bankServiceMock.deleteOneById).toHaveBeenCalledWith(mockBankAccountId);
+      expect(bankServiceMock.deleteOneById).toHaveBeenCalledWith(
+        mockBankAccountId,
+      );
     });
   });
 });

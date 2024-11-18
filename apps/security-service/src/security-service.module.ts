@@ -7,11 +7,13 @@ import { AuthModule } from '@auth/auth'; // Asegúrate de que esta ruta de impor
 import { ConfigModule } from '@nestjs/config';
 import { CacheModule } from '@nestjs/cache-manager';
 @Module({
-  imports: [BuildersModule,
+  imports: [
+    BuildersModule,
     IntegrationModule,
     AuthModule,
     ConfigModule,
-    CacheModule.register(),],
+    CacheModule.register(),
+  ],
   controllers: [SecurityServiceController],
   providers: [SecurityServiceService],
 })

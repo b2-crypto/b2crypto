@@ -77,7 +77,9 @@ export class BankServiceService {
     if (to.type != TypesAccountEnum.BANK) {
       throw new BadRequestException('Bank account not found');
     }
-    const from = await this.accountService.findOneById(createDto.from.toString());
+    const from = await this.accountService.findOneById(
+      createDto.from.toString(),
+    );
     if (from.type != TypesAccountEnum.WALLET) {
       throw new BadRequestException('Wallet not found');
     }

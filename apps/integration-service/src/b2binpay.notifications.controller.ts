@@ -25,7 +25,6 @@ import EventsNamesPspAccountEnum from 'apps/psp-service/src/enum/events.names.ps
 import EventsNamesStatusEnum from 'apps/status-service/src/enum/events.names.status.enum';
 import EventsNamesTransferEnum from 'apps/transfer-service/src/enum/events.names.transfer.enum';
 
-
 @Controller('b2binpay')
 //@UseGuards(ApiKeyAuthGuard)
 export class B2BinPayNotificationsController {

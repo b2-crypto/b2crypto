@@ -10,10 +10,7 @@ class MockClientProxy extends ClientProxy {
   protected dispatchEvent<T = any>(packet: ReadPacket): Promise<T> {
     throw new Error('Method not implemented.');
   }
-  protected publish(
-    packet: any,
-    callback: (packet: any) => void
-  ): () => void {
+  protected publish(packet: any, callback: (packet: any) => void): () => void {
     return () => {};
   }
 
@@ -25,8 +22,12 @@ class MockClientProxy extends ClientProxy {
     return Promise.resolve({});
   }
 
-  public emit = jest.fn().mockImplementation((pattern: string, data: any) => of(true));
-  public send = jest.fn().mockImplementation((pattern: string, data: any) => of(true));
+  public emit = jest
+    .fn()
+    .mockImplementation((pattern: string, data: any) => of(true));
+  public send = jest
+    .fn()
+    .mockImplementation((pattern: string, data: any) => of(true));
 }
 
 describe('BuildersService', () => {
@@ -39,7 +40,7 @@ describe('BuildersService', () => {
 
   beforeEach(async () => {
     mockConfigGet = jest.fn().mockReturnValue('mock-value');
-    
+
     moduleRef = await Test.createTestingModule({
       imports: [ResponseB2CryptoModule],
       providers: [
@@ -47,93 +48,93 @@ describe('BuildersService', () => {
         {
           provide: ConfigService,
           useValue: {
-            get: mockConfigGet
-          }
+            get: mockConfigGet,
+          },
         },
         {
           provide: EventClientEnum.SERVICE_NAME,
-          useValue: mockEventClient
+          useValue: mockEventClient,
         },
         {
           provide: EventClientEnum.ACTIVITY,
-          useValue: mockEventClient
+          useValue: mockEventClient,
         },
         {
           provide: EventClientEnum.AFFILIATE,
-          useValue: mockEventClient
+          useValue: mockEventClient,
         },
         {
           provide: EventClientEnum.BRAND,
-          useValue: mockEventClient
+          useValue: mockEventClient,
         },
         {
           provide: EventClientEnum.LEAD,
-          useValue: mockEventClient
+          useValue: mockEventClient,
         },
         {
           provide: EventClientEnum.CRM,
-          useValue: mockEventClient
+          useValue: mockEventClient,
         },
         {
           provide: EventClientEnum.FILE,
-          useValue: mockEventClient
+          useValue: mockEventClient,
         },
         {
           provide: EventClientEnum.MESSAGE,
-          useValue: mockEventClient
+          useValue: mockEventClient,
         },
         {
           provide: EventClientEnum.CATEGORY,
-          useValue: mockEventClient
+          useValue: mockEventClient,
         },
         {
           provide: EventClientEnum.TRAFFIC,
-          useValue: mockEventClient
+          useValue: mockEventClient,
         },
         {
           provide: EventClientEnum.PERMISSION,
-          useValue: mockEventClient
+          useValue: mockEventClient,
         },
         {
           provide: EventClientEnum.PERSON,
-          useValue: mockEventClient
+          useValue: mockEventClient,
         },
         {
           provide: EventClientEnum.PSP,
-          useValue: mockEventClient
+          useValue: mockEventClient,
         },
         {
           provide: EventClientEnum.PSP_ACCOUNT,
-          useValue: mockEventClient
+          useValue: mockEventClient,
         },
         {
           provide: EventClientEnum.USER,
-          useValue: mockEventClient
+          useValue: mockEventClient,
         },
         {
           provide: EventClientEnum.ROLE,
-          useValue: mockEventClient
+          useValue: mockEventClient,
         },
         {
           provide: EventClientEnum.STATS,
-          useValue: mockEventClient
+          useValue: mockEventClient,
         },
         {
           provide: EventClientEnum.STATUS,
-          useValue: mockEventClient
+          useValue: mockEventClient,
         },
         {
           provide: EventClientEnum.TRANSFER,
-          useValue: mockEventClient
+          useValue: mockEventClient,
         },
         {
           provide: EventClientEnum.GROUP,
-          useValue: mockEventClient
+          useValue: mockEventClient,
         },
         {
           provide: EventClientEnum.ACCOUNT,
-          useValue: mockEventClient
-        }
+          useValue: mockEventClient,
+        },
       ],
     }).compile();
 
@@ -188,7 +189,9 @@ describe('BuildersService', () => {
     it('should be able to send messages', async () => {
       const client = moduleRef.get<ClientProxy>(EventClientEnum.SERVICE_NAME);
       await client.send('test-pattern', { data: 'test' }).toPromise();
-      expect(client.send).toHaveBeenCalledWith('test-pattern', { data: 'test' });
+      expect(client.send).toHaveBeenCalledWith('test-pattern', {
+        data: 'test',
+      });
     });
   });
 
@@ -198,7 +201,7 @@ describe('BuildersService', () => {
       jest.spyOn(client, 'emit').mockImplementationOnce(() => {
         throw new Error('Test error');
       });
-      
+
       try {
         await client.emit('test-event', { data: 'test' }).toPromise();
       } catch (error) {
@@ -212,7 +215,7 @@ describe('BuildersService', () => {
       jest.spyOn(client, 'send').mockImplementationOnce(() => {
         throw new Error('Test error');
       });
-      
+
       try {
         await client.send('test-pattern', { data: 'test' }).toPromise();
       } catch (error) {
@@ -221,6 +224,4 @@ describe('BuildersService', () => {
       }
     });
   });
-
-
 });

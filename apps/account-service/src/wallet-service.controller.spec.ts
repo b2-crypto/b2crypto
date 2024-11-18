@@ -78,7 +78,7 @@ describe('WalletServiceController', () => {
         firstPage: 1,
         currentPage: 1,
         elementsPerPage: 10,
-        order: []
+        order: [],
       };
       accountServiceMock.findAll.mockResolvedValue(mockWallets);
 
@@ -86,12 +86,13 @@ describe('WalletServiceController', () => {
       const result = await controller.findAll({}, mockReq);
 
       expect(result).toEqual(mockWallets);
-      expect(accountServiceMock.findAll).toHaveBeenCalledWith(expect.objectContaining({
-        where: { type: TypesAccountEnum.WALLET }
-      }));
+      expect(accountServiceMock.findAll).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { type: TypesAccountEnum.WALLET },
+        }),
+      );
     });
   });
-
 
   describe('createOne', () => {
     it('should create a wallet using walletServiceService', async () => {
@@ -105,7 +106,10 @@ describe('WalletServiceController', () => {
       const result = await controller.createOne(createDto, mockReq);
 
       expect(result).toEqual(mockCreatedWallet);
-      expect(walletServiceMock.createWallet).toHaveBeenCalledWith(createDto, mockUserId);
+      expect(walletServiceMock.createWallet).toHaveBeenCalledWith(
+        createDto,
+        mockUserId,
+      );
     });
   });
 
@@ -113,33 +117,39 @@ describe('WalletServiceController', () => {
     it('should throw BadRequestException if amount is less than or equal to 10', async () => {
       const createDto = new WalletDepositCreateDto();
       createDto.amount = 10;
-      createDto.from = new mongoose.Types.ObjectId() as unknown as mongoose.Schema.Types.ObjectId;
-      createDto.to = new mongoose.Types.ObjectId() as unknown as mongoose.Schema.Types.ObjectId;
-  
+      createDto.from =
+        new mongoose.Types.ObjectId() as unknown as mongoose.Schema.Types.ObjectId;
+      createDto.to =
+        new mongoose.Types.ObjectId() as unknown as mongoose.Schema.Types.ObjectId;
+
       const mockUserId = new mongoose.Types.ObjectId();
-      const mockReq = { 
-        user: { id: mockUserId.toString() }, 
-        get: jest.fn().mockReturnValue('test.com') 
+      const mockReq = {
+        user: { id: mockUserId.toString() },
+        get: jest.fn().mockReturnValue('test.com'),
       };
-  
-      await expect(controller.rechargeOne(createDto, mockReq as any)).rejects.toThrow(BadRequestException);
-      
+
+      await expect(
+        controller.rechargeOne(createDto, mockReq as any),
+      ).rejects.toThrow(BadRequestException);
+
       expect(userServiceMock.getAll).not.toHaveBeenCalled();
     });
-  
+
     it('should call walletServiceService.rechargeWallet if amount is greater than 10', async () => {
       const createDto = new WalletDepositCreateDto();
       createDto.amount = 11;
-      createDto.from = new mongoose.Types.ObjectId() as unknown as mongoose.Schema.Types.ObjectId;
-      createDto.to = new mongoose.Types.ObjectId() as unknown as mongoose.Schema.Types.ObjectId;
-  
+      createDto.from =
+        new mongoose.Types.ObjectId() as unknown as mongoose.Schema.Types.ObjectId;
+      createDto.to =
+        new mongoose.Types.ObjectId() as unknown as mongoose.Schema.Types.ObjectId;
+
       const mockUserId = new mongoose.Types.ObjectId();
       const mockUser: UserDocument = {
         _id: mockUserId,
         personalData: { firstName: 'John', lastName: 'Doe' },
-        email: 'test@example.com'
+        email: 'test@example.com',
       } as unknown as UserDocument;
-  
+
       const mockUserResponse: ResponsePaginator<UserDocument> = {
         list: [mockUser],
         totalElements: 1,
@@ -149,83 +159,111 @@ describe('WalletServiceController', () => {
         firstPage: 1,
         currentPage: 1,
         elementsPerPage: 10,
-        order: []
+        order: [],
       };
-  
+
       userServiceMock.getAll.mockResolvedValue(mockUserResponse);
-  
-      const mockReq = { 
-        user: { id: mockUserId.toString() }, 
-        get: jest.fn().mockReturnValue('test.com') 
+
+      const mockReq = {
+        user: { id: mockUserId.toString() },
+        get: jest.fn().mockReturnValue('test.com'),
       };
-  
+
       // Mock the rechargeWallet method
       const mockRechargeWallet = jest.fn().mockResolvedValue({ success: true });
       (controller as any).walletServiceService = {
-        rechargeWallet: mockRechargeWallet
+        rechargeWallet: mockRechargeWallet,
       };
-  
+
       await controller.rechargeOne(createDto, mockReq as any);
-  
-      expect(mockRechargeWallet).toHaveBeenCalledWith(createDto, mockUserId.toString(), 'test.com');
+
+      expect(mockRechargeWallet).toHaveBeenCalledWith(
+        createDto,
+        mockUserId.toString(),
+        'test.com',
+      );
     });
   });
 
   describe('blockedOneById', () => {
     it('should block a wallet', async () => {
       const mockWalletId = new mongoose.Types.ObjectId().toString();
-      jest.spyOn(controller as any, 'updateStatusAccount').mockResolvedValue({});
+      jest
+        .spyOn(controller as any, 'updateStatusAccount')
+        .mockResolvedValue({});
 
       await controller.blockedOneById(mockWalletId);
 
-      expect(controller['updateStatusAccount']).toHaveBeenCalledWith(mockWalletId, StatusAccountEnum.LOCK);
+      expect(controller['updateStatusAccount']).toHaveBeenCalledWith(
+        mockWalletId,
+        StatusAccountEnum.LOCK,
+      );
     });
   });
 
   describe('unblockedOneById', () => {
     it('should unblock a wallet', async () => {
       const mockWalletId = new mongoose.Types.ObjectId().toString();
-      jest.spyOn(controller as any, 'updateStatusAccount').mockResolvedValue({});
+      jest
+        .spyOn(controller as any, 'updateStatusAccount')
+        .mockResolvedValue({});
 
       await controller.unblockedOneById(mockWalletId);
 
-      expect(controller['updateStatusAccount']).toHaveBeenCalledWith(mockWalletId, StatusAccountEnum.UNLOCK);
+      expect(controller['updateStatusAccount']).toHaveBeenCalledWith(
+        mockWalletId,
+        StatusAccountEnum.UNLOCK,
+      );
     });
   });
 
   describe('cancelOneById', () => {
     it('should cancel a wallet', async () => {
       const mockWalletId = new mongoose.Types.ObjectId().toString();
-      jest.spyOn(controller as any, 'updateStatusAccount').mockResolvedValue({});
+      jest
+        .spyOn(controller as any, 'updateStatusAccount')
+        .mockResolvedValue({});
 
       await controller.cancelOneById(mockWalletId);
 
-      expect(controller['updateStatusAccount']).toHaveBeenCalledWith(mockWalletId, StatusAccountEnum.CANCEL);
+      expect(controller['updateStatusAccount']).toHaveBeenCalledWith(
+        mockWalletId,
+        StatusAccountEnum.CANCEL,
+      );
     });
   });
 
   describe('disableOneById', () => {
     it('should disable a wallet', async () => {
       const mockWalletId = new mongoose.Types.ObjectId().toString();
-      jest.spyOn(controller as any, 'toggleVisibleToOwner').mockResolvedValue({});
+      jest
+        .spyOn(controller as any, 'toggleVisibleToOwner')
+        .mockResolvedValue({});
 
       await controller.disableOneById(mockWalletId);
 
-      expect(controller['toggleVisibleToOwner']).toHaveBeenCalledWith(mockWalletId, false);
+      expect(controller['toggleVisibleToOwner']).toHaveBeenCalledWith(
+        mockWalletId,
+        false,
+      );
     });
   });
 
   describe('enableOneById', () => {
     it('should enable a wallet', async () => {
       const mockWalletId = new mongoose.Types.ObjectId().toString();
-      jest.spyOn(controller as any, 'toggleVisibleToOwner').mockResolvedValue({});
+      jest
+        .spyOn(controller as any, 'toggleVisibleToOwner')
+        .mockResolvedValue({});
 
       await controller.enableOneById(mockWalletId);
 
-      expect(controller['toggleVisibleToOwner']).toHaveBeenCalledWith(mockWalletId, true);
+      expect(controller['toggleVisibleToOwner']).toHaveBeenCalledWith(
+        mockWalletId,
+        true,
+      );
     });
   });
-
 
   describe('migrateWallet', () => {
     it('should migrate a wallet successfully', async () => {
@@ -244,16 +282,23 @@ describe('WalletServiceController', () => {
         firstPage: 1,
         currentPage: 1,
         elementsPerPage: 10,
-        order: []
+        order: [],
       } as ResponsePaginator<AccountDocument>);
 
-      const mockCreatedWallet = { _id: new mongoose.Types.ObjectId() } as AccountDocument;
+      const mockCreatedWallet = {
+        _id: new mongoose.Types.ObjectId(),
+      } as AccountDocument;
       accountServiceMock.createOne.mockResolvedValue(mockCreatedWallet);
 
-      const result = await controller.migrateWallet(mockCtx, mockWalletToMigrate);
+      const result = await controller.migrateWallet(
+        mockCtx,
+        mockWalletToMigrate,
+      );
 
       expect(result).toEqual(mockCreatedWallet);
-      expect(accountServiceMock.createOne).toHaveBeenCalledWith(mockWalletToMigrate);
+      expect(accountServiceMock.createOne).toHaveBeenCalledWith(
+        mockWalletToMigrate,
+      );
     });
 
     it('should update existing wallet if found', async () => {
@@ -264,7 +309,10 @@ describe('WalletServiceController', () => {
         owner: 'newOwnerId',
       };
 
-      const existingWallet = { _id: new mongoose.Types.ObjectId(), owner: 'oldOwnerId' } as unknown as AccountDocument;
+      const existingWallet = {
+        _id: new mongoose.Types.ObjectId(),
+        owner: 'oldOwnerId',
+      } as unknown as AccountDocument;
       accountServiceMock.findAll.mockResolvedValue({
         list: [existingWallet],
         totalElements: 1,
@@ -274,10 +322,13 @@ describe('WalletServiceController', () => {
         firstPage: 1,
         currentPage: 1,
         elementsPerPage: 10,
-        order: []
+        order: [],
       } as ResponsePaginator<AccountDocument>);
 
-      const result = await controller.migrateWallet(mockCtx, mockWalletToMigrate);
+      const result = await controller.migrateWallet(
+        mockCtx,
+        mockWalletToMigrate,
+      );
 
       expect(result).toEqual(expect.objectContaining({ owner: 'newOwnerId' }));
       expect(buildersServiceMock.emitAccountEventClient).toHaveBeenCalledWith(
@@ -285,7 +336,7 @@ describe('WalletServiceController', () => {
         expect.objectContaining({
           id: existingWallet._id,
           owner: 'newOwnerId',
-        })
+        }),
       );
     });
   });
@@ -296,7 +347,9 @@ describe('WalletServiceController', () => {
       const mockCtx = { ack: jest.fn() } as unknown as RmqContext;
       const mockCreatedWallet = { _id: new mongoose.Types.ObjectId() };
 
-      jest.spyOn(controller, 'createOne').mockResolvedValue(mockCreatedWallet as any);
+      jest
+        .spyOn(controller, 'createOne')
+        .mockResolvedValue(mockCreatedWallet as any);
       jest.spyOn(CommonService, 'ack').mockImplementation();
 
       const result = await controller.createOneWalletEvent(createDto, mockCtx);

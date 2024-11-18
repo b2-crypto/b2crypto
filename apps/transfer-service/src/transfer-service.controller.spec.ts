@@ -44,7 +44,7 @@ describe('TransferServiceController', () => {
     firstPage: 1,
     elementsPerPage: 10,
     totalElements: 1,
-    order: ['asc']
+    order: ['asc'],
   };
 
   const mockContext = {} as RmqContext;
@@ -91,16 +91,27 @@ describe('TransferServiceController', () => {
         {
           provide: AffiliateServiceService,
           useValue: {
-            getAll: jest.fn().mockResolvedValue({ list: [{ account: { id: '123' } as unknown as Account }], totalElements: 1 }),
+            getAll: jest
+              .fn()
+              .mockResolvedValue({
+                list: [{ account: { id: '123' } as unknown as Account }],
+                totalElements: 1,
+              }),
           },
         },
       ],
     }).compile();
 
-    controller = module.get<TransferServiceController>(TransferServiceController);
-    transferService = module.get<TransferServiceService>(TransferServiceService);
+    controller = module.get<TransferServiceController>(
+      TransferServiceController,
+    );
+    transferService = module.get<TransferServiceService>(
+      TransferServiceService,
+    );
     builderService = module.get<BuildersService>(BuildersService);
-    affiliateService = module.get<AffiliateServiceService>(AffiliateServiceService);
+    affiliateService = module.get<AffiliateServiceService>(
+      AffiliateServiceService,
+    );
   });
 
   it('should be defined', () => {
@@ -110,11 +121,15 @@ describe('TransferServiceController', () => {
   describe('boldWebhook', () => {
     it('should call handleBoldWebhook', async () => {
       const mockBoldTransferRequest = new BoldTransferRequestDto();
-      jest.spyOn(transferService, 'handleBoldWebhook').mockResolvedValue({} as any);
-      
+      jest
+        .spyOn(transferService, 'handleBoldWebhook')
+        .mockResolvedValue({} as any);
+
       await controller.boldWebhook(mockBoldTransferRequest);
-      
-      expect(transferService.handleBoldWebhook).toHaveBeenCalledWith(mockBoldTransferRequest);
+
+      expect(transferService.handleBoldWebhook).toHaveBeenCalledWith(
+        mockBoldTransferRequest,
+      );
     });
   });
 
@@ -122,9 +137,9 @@ describe('TransferServiceController', () => {
     it('should call getSearchText', async () => {
       const mockQuery = new QuerySearchAnyDto();
       jest.spyOn(transferService, 'getSearchText').mockResolvedValue({} as any);
-      
+
       await controller.searchText(mockQuery);
-      
+
       expect(transferService.getSearchText).toHaveBeenCalledWith(mockQuery);
     });
   });
@@ -132,9 +147,9 @@ describe('TransferServiceController', () => {
   describe('findAll', () => {
     it('should call getAll', async () => {
       const mockQuery = new QuerySearchAnyDto();
-      
+
       await controller.findAll(mockQuery);
-      
+
       expect(transferService.getAll).toHaveBeenCalledWith(mockQuery);
     });
   });

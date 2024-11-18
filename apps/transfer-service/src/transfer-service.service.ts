@@ -165,7 +165,8 @@ export class TransferServiceService
     return this.lib.findOne(id);
   }
 
-  async handleBoldWebhook(transferBold: BoldTransferRequestDto) {//migrado desde controller
+  async handleBoldWebhook(transferBold: BoldTransferRequestDto) {
+    //migrado desde controller
     if (
       !transferBold.link_id ||
       !transferBold.payment_status ||
@@ -570,7 +571,7 @@ export class TransferServiceService
       ) {
         amount *= -1;
       }
-    /*   accountToUpdate.amount += transferSaved.amount * multiply; */  // TODO[Nestor] multiply no aparece
+      /*   accountToUpdate.amount += transferSaved.amount * multiply; */ // TODO[Nestor] multiply no aparece
     }
     transferSaved.accountResultBalance = accountToUpdate.amount;
     const accountUpdated = await this.accountService.updateOne(accountToUpdate);
@@ -1506,5 +1507,4 @@ export class TransferServiceService
     const statDate = new StatsDateCreateDto();
     Logger.debug('checkStatsPspAccount', `${TransferServiceService.name}:902`);
   }
-  
 }

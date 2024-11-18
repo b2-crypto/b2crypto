@@ -68,7 +68,9 @@ describe('AccountServiceController', () => {
       const mockQuery: QuerySearchAnyDto = {};
       const mockReq = { user: { id: 'userId' } };
       const expectedQuery = { where: { owner: 'userId' } };
-      jest.spyOn(CommonService, 'getQueryWithUserId').mockReturnValue(expectedQuery);
+      jest
+        .spyOn(CommonService, 'getQueryWithUserId')
+        .mockReturnValue(expectedQuery);
       await controller.findAllMe(mockQuery, mockReq);
       expect(accountServiceMock.findAll).toHaveBeenCalledWith(expectedQuery);
     });
@@ -101,9 +103,11 @@ describe('AccountServiceController', () => {
   describe('deleteManyById', () => {
     it('should throw UnauthorizedException and not call the service', () => {
       const mockIds = [{ id: 'testId' }] as UpdateAnyDto[];
-      
-      expect(() => controller.deleteManyById(mockIds)).toThrow(UnauthorizedException);
-      
+
+      expect(() => controller.deleteManyById(mockIds)).toThrow(
+        UnauthorizedException,
+      );
+
       expect(accountServiceMock.deleteManyById).not.toHaveBeenCalled();
     });
   });
@@ -111,9 +115,11 @@ describe('AccountServiceController', () => {
   describe('deleteOneById', () => {
     it('should throw UnauthorizedException and not call the service', () => {
       const mockId = 'testId';
-      
-      expect(() => controller.deleteOneById(mockId)).toThrow(UnauthorizedException);
-      
+
+      expect(() => controller.deleteOneById(mockId)).toThrow(
+        UnauthorizedException,
+      );
+
       expect(accountServiceMock.deleteOneById).not.toHaveBeenCalled();
     });
   });
@@ -124,7 +130,10 @@ describe('AccountServiceController', () => {
       const mockContext: RmqContext = {} as RmqContext;
       await controller.countEvent(mockQuery, mockContext);
       expect(CommonService.ack).toHaveBeenCalledWith(mockContext);
-      expect(accountServiceMock.count).toHaveBeenCalledWith(mockQuery, mockContext);
+      expect(accountServiceMock.count).toHaveBeenCalledWith(
+        mockQuery,
+        mockContext,
+      );
     });
   });
 
@@ -134,7 +143,10 @@ describe('AccountServiceController', () => {
       const mockContext: RmqContext = {} as RmqContext;
       await controller.findAllEvent(mockQuery, mockContext);
       expect(CommonService.ack).toHaveBeenCalledWith(mockContext);
-      expect(accountServiceMock.findAll).toHaveBeenCalledWith(mockQuery, mockContext);
+      expect(accountServiceMock.findAll).toHaveBeenCalledWith(
+        mockQuery,
+        mockContext,
+      );
     });
   });
 
@@ -144,7 +156,10 @@ describe('AccountServiceController', () => {
       const mockContext: RmqContext = {} as RmqContext;
       await controller.createOneEvent(mockDto, mockContext);
       expect(CommonService.ack).toHaveBeenCalledWith(mockContext);
-      expect(accountServiceMock.createOneEvent).toHaveBeenCalledWith(mockDto, mockContext);
+      expect(accountServiceMock.createOneEvent).toHaveBeenCalledWith(
+        mockDto,
+        mockContext,
+      );
     });
   });
 
@@ -154,7 +169,10 @@ describe('AccountServiceController', () => {
       const mockContext: RmqContext = {} as RmqContext;
       await controller.updateOneEvent(mockDto, mockContext);
       expect(CommonService.ack).toHaveBeenCalledWith(mockContext);
-      expect(accountServiceMock.updateOneEvent).toHaveBeenCalledWith(mockDto, mockContext);
+      expect(accountServiceMock.updateOneEvent).toHaveBeenCalledWith(
+        mockDto,
+        mockContext,
+      );
     });
   });
 
@@ -173,9 +191,9 @@ describe('AccountServiceController', () => {
       const mockId = 'testId';
       const mockAccount = { showToOwner: false, save: jest.fn() };
       accountServiceMock.findOneById.mockResolvedValue(mockAccount as any);
-      
+
       await controller.toggleVisibleToOwner(mockId, true);
-      
+
       expect(accountServiceMock.findOneById).toHaveBeenCalledWith(mockId);
       expect(mockAccount.showToOwner).toBe(true);
       expect(mockAccount.save).toHaveBeenCalled();
@@ -188,17 +206,18 @@ describe('AccountServiceController', () => {
       const mockSlugName = StatusAccountEnum.LOCK;
       const mockAccount = { status: null, statusText: '', save: jest.fn() };
       const mockStatus = { _id: 'statusId' };
-      
+
       accountServiceMock.findOneById.mockResolvedValue(mockAccount as any);
-      buildersServiceMock.getPromiseStatusEventClient.mockResolvedValue(mockStatus);
-      
-      await controller.updateStatusAccount(mockId, mockSlugName);
-      
-      expect(accountServiceMock.findOneById).toHaveBeenCalledWith(mockId);
-      expect(buildersServiceMock.getPromiseStatusEventClient).toHaveBeenCalledWith(
-        expect.anything(),
-        mockSlugName
+      buildersServiceMock.getPromiseStatusEventClient.mockResolvedValue(
+        mockStatus,
       );
+
+      await controller.updateStatusAccount(mockId, mockSlugName);
+
+      expect(accountServiceMock.findOneById).toHaveBeenCalledWith(mockId);
+      expect(
+        buildersServiceMock.getPromiseStatusEventClient,
+      ).toHaveBeenCalledWith(expect.anything(), mockSlugName);
       expect(mockAccount.status).toBe(mockStatus);
       expect(mockAccount.statusText).toBe(mockSlugName);
       expect(mockAccount.save).toHaveBeenCalled();
