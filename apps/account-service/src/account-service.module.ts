@@ -94,4 +94,4 @@ import { WalletServiceService } from './wallet-service.service';
     CardIntegrationService,
   ] as IProvider[],
 })
-export class AccountServiceModule { }
+export class AccountServiceModule {}

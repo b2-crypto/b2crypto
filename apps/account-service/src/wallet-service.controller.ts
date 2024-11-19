@@ -1,3 +1,4 @@
+import { WalletDepositCreateDto } from '@account/account/dto/wallet-deposit.create.dto';
 import { WalletCreateDto } from '@account/account/dto/wallet.create.dto';
 import StatusAccountEnum from '@account/account/enum/status.account.enum';
 import TypesAccountEnum from '@account/account/enum/types.account.enum';
@@ -11,6 +12,8 @@ import { QuerySearchAnyDto } from '@common/common/models/query_search-any.dto';
 import { IntegrationService } from '@integration/integration';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import {
+  BadRequestException,
+  Body,
   Controller,
   Delete,
   Get,
@@ -18,10 +21,11 @@ import {
   Logger,
   Param,
   Patch,
+  Post,
   Query,
   Req,
   UnauthorizedException,
-  UseGuards
+  UseGuards,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import {
@@ -35,15 +39,15 @@ import { ApiBearerAuth, ApiSecurity, ApiTags } from '@nestjs/swagger';
 import { UserServiceService } from 'apps/user-service/src/user-service.service';
 import { Cache } from 'cache-manager';
 import { SwaggerSteakeyConfigEnum } from 'libs/config/enum/swagger.stakey.config.enum';
-import { AccountServiceController } from './account-service.controller';
 import { AccountServiceService } from './account-service.service';
 import EventsNamesAccountEnum from './enum/events.names.account.enum';
+import { WalletServiceService } from './wallet-service.service';
 
 @ApiTags('E-WALLET')
 @Controller('wallets')
-export class WalletServiceController extends AccountServiceController {
+export class WalletServiceController {
   constructor(
-    readonly walletServiceService: AccountServiceService,
+    readonly accountService: AccountServiceService,
     @Inject(UserServiceService)
     private readonly userService: UserServiceService,
     @Inject(BuildersService)
@@ -51,9 +55,9 @@ export class WalletServiceController extends AccountServiceController {
     private readonly integration: IntegrationService,
     private readonly configService: ConfigService,
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
-  ) {
-    super(walletServiceService, ewalletBuilder);
-  }
+    @Inject(WalletServiceService)
+    private readonly walletService: WalletServiceService,
+  ) {}
 
   @ApiTags(SwaggerSteakeyConfigEnum.TAG_WALLET)
   @ApiBearerAuth('bearerToken')
@@ -65,7 +69,7 @@ export class WalletServiceController extends AccountServiceController {
     query = query ?? {};
     query.where = query.where ?? {};
     query.where.type = TypesAccountEnum.WALLET;
-    return this.walletServiceService.findAll(query);
+    return this.accountService.findAll(query);
   }
 
   @ApiTags(SwaggerSteakeyConfigEnum.TAG_WALLET)
@@ -74,12 +78,12 @@ export class WalletServiceController extends AccountServiceController {
   @Get('me')
   @NoCache()
   async findAllMe(@Query() query: QuerySearchAnyDto, @Req() req?: any) {
-    const userId = req?.user?.id;
+    const userId = CommonService.getUserId(req);
     query = query ?? {};
     query.where = query.where ?? {};
     query.where.type = TypesAccountEnum.WALLET;
     query = CommonService.getQueryWithUserId(query, req, 'owner');
-    const rta = await this.walletServiceService.findAll({
+    const rta = await this.accountService.findAll({
       take: 1,
       where: {
         owner: userId,
@@ -136,37 +140,37 @@ export class WalletServiceController extends AccountServiceController {
         req,
       );
     }
-    return this.walletServiceService.findAll(query);
+    return this.accountService.findAll(query);
   }
 
-  // @ApiTags(SwaggerSteakeyConfigEnum.TAG_WALLET)
-  // @ApiBearerAuth('bearerToken')
-  // @ApiSecurity('b2crypto-key')
-  // @Post('create')
-  // async createOne(@Body() createDto: WalletCreateDto, @Req() req?: any) {
-  //   return this.walletServiceService.createWallet(createDto, req?.user?.id);
-  // }
+  @ApiTags(SwaggerSteakeyConfigEnum.TAG_WALLET)
+  @ApiBearerAuth('bearerToken')
+  @ApiSecurity('b2crypto-key')
+  @Post('create')
+  async createOne(@Body() createDto: WalletCreateDto, @Req() req?: any) {
+    return this.walletService.createWallet(createDto, req?.user?.id);
+  }
 
-  // @Post('recharge')
-  // @ApiTags(SwaggerSteakeyConfigEnum.TAG_WALLET)
-  // @ApiSecurity('b2crypto-key')
-  // @ApiBearerAuth('bearerToken')
-  // @UseGuards(ApiKeyAuthGuard)
-  // async rechargeOne(
-  //   @Body() createDto: WalletDepositCreateDto,
-  //   @Req() req?: any,
-  // ) {
-  //   try {
-  //     const host = req.get('Host');
-  //     return await this.walletServiceService.rechargeWallet(
-  //       createDto,
-  //       req?.user?.id,
-  //       host,
-  //     );
-  //   } catch (error) {
-  //     throw new BadRequestException(error.message);
-  //   }
-  // }
+  @Post('recharge')
+  @ApiTags(SwaggerSteakeyConfigEnum.TAG_WALLET)
+  @ApiSecurity('b2crypto-key')
+  @ApiBearerAuth('bearerToken')
+  @UseGuards(ApiKeyAuthGuard)
+  async rechargeOne(
+    @Body() createDto: WalletDepositCreateDto,
+    @Req() req?: any,
+  ) {
+    try {
+      const host = req.get('Host');
+      return await this.walletService.rechargeWallet(
+        createDto,
+        req?.user?.id,
+        host,
+      );
+    } catch (error) {
+      throw new BadRequestException(error.message);
+    }
+  }
 
   @Patch('lock/:walletId')
   @ApiTags(SwaggerSteakeyConfigEnum.TAG_WALLET)
@@ -174,7 +178,7 @@ export class WalletServiceController extends AccountServiceController {
   @ApiBearerAuth('bearerToken')
   @UseGuards(ApiKeyAuthGuard)
   async blockedOneById(@Param('walletId') id: string) {
-    return this.updateStatusAccount(id, StatusAccountEnum.LOCK);
+    return this.accountService.updateStatusAccount(id, StatusAccountEnum.LOCK);
   }
 
   @Patch('unlock/:walletId')
@@ -183,7 +187,10 @@ export class WalletServiceController extends AccountServiceController {
   @ApiBearerAuth('bearerToken')
   @UseGuards(ApiKeyAuthGuard)
   async unblockedOneById(@Param('walletId') id: string) {
-    return this.updateStatusAccount(id, StatusAccountEnum.UNLOCK);
+    return this.accountService.updateStatusAccount(
+      id,
+      StatusAccountEnum.UNLOCK,
+    );
   }
 
   @Patch('cancel/:walletId')
@@ -192,7 +199,10 @@ export class WalletServiceController extends AccountServiceController {
   @ApiBearerAuth('bearerToken')
   @UseGuards(ApiKeyAuthGuard)
   async cancelOneById(@Param('walletId') id: string) {
-    return this.updateStatusAccount(id, StatusAccountEnum.CANCEL);
+    return this.accountService.updateStatusAccount(
+      id,
+      StatusAccountEnum.CANCEL,
+    );
   }
 
   @Patch('hidden/:walletId')
@@ -201,7 +211,7 @@ export class WalletServiceController extends AccountServiceController {
   @ApiBearerAuth('bearerToken')
   @UseGuards(ApiKeyAuthGuard)
   async disableOneById(@Param('walletId') id: string) {
-    return this.toggleVisibleToOwner(id, false);
+    return this.accountService.toggleVisibleToOwner(id, false);
   }
 
   @Patch('visible/:walletId')
@@ -210,13 +220,13 @@ export class WalletServiceController extends AccountServiceController {
   @ApiBearerAuth('bearerToken')
   @UseGuards(ApiKeyAuthGuard)
   async enableOneById(@Param('walletId') id: string) {
-    return this.toggleVisibleToOwner(id, true);
+    return this.accountService.toggleVisibleToOwner(id, true);
   }
 
   @Delete(':walletID')
   deleteOneById(@Param('walletID') id: string, req?: any) {
     throw new UnauthorizedException();
-    return this.getAccountService().deleteOneById(id);
+    return this.accountService.deleteOneById(id);
   }
 
   @MessagePattern(EventsNamesAccountEnum.migrateOneWallet)
@@ -227,14 +237,14 @@ export class WalletServiceController extends AccountServiceController {
         `Migrating wallet ${walletToMigrate.accountId}`,
         WalletServiceController.name,
       );
-      const walletList = await this.walletServiceService.findAll({
+      const walletList = await this.accountService.findAll({
         where: {
           accountId: walletToMigrate.accountId,
           type: TypesAccountEnum.WALLET,
         },
       });
       if (!walletList || !walletList.list[0]) {
-        return await this.walletServiceService.createOne(walletToMigrate);
+        return await this.accountService.createOne(walletToMigrate);
       } else {
         this.ewalletBuilder.emitAccountEventClient(
           EventsNamesAccountEnum.updateOne,

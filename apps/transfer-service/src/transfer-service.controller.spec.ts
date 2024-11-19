@@ -91,12 +91,10 @@ describe('TransferServiceController', () => {
         {
           provide: AffiliateServiceService,
           useValue: {
-            getAll: jest
-              .fn()
-              .mockResolvedValue({
-                list: [{ account: { id: '123' } as unknown as Account }],
-                totalElements: 1,
-              }),
+            getAll: jest.fn().mockResolvedValue({
+              list: [{ account: { id: '123' } as unknown as Account }],
+              totalElements: 1,
+            }),
           },
         },
       ],

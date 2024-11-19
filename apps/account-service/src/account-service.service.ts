@@ -42,6 +42,23 @@ import * as fs from 'fs';
 export class AccountServiceService
   implements BasicMicroserviceService<AccountDocument>
 {
+  async updateStatusAccount(id: string, slugName: StatusAccountEnum) {
+    const account = await this.findOneById(id);
+    const status = await this.builder.getPromiseStatusEventClient(
+      EventsNamesStatusEnum.findOneByName,
+      slugName,
+    );
+    account.status = status;
+    account.statusText = slugName;
+    return account.save();
+  }
+
+  async toggleVisibleToOwner(id: string, visible?: boolean) {
+    const account = await this.findOneById(id);
+    account.showToOwner = visible ?? !account.showToOwner;
+    return account.save();
+  }
+
   async cleanWallet(query: QuerySearchAnyDto) {
     throw new NotImplementedException();
     // Logger.log('Start', `Clean wallet`);
