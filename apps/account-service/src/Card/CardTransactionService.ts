@@ -1,24 +1,24 @@
-import { BadRequestException, Injectable, Logger } from '@nestjs/common';
-import { AccountServiceService } from '../account-service.service';
-import { User } from '@user/user/entities/mongoose/user.schema';
-import { AccountDocument } from '@account/account/entities/mongoose/account.schema';
 import { CardDepositCreateDto } from '@account/account/dto/card-deposit.create.dto';
-import TypesAccountEnum from '@account/account/enum/types.account.enum';
-import { BuildersService } from '@builder/builders';
-import EventsNamesTransferEnum from 'apps/transfer-service/src/enum/events.names.transfer.enum';
-import EventsNamesCategoryEnum from 'apps/category-service/src/enum/events.names.category.enum';
-import { CommonService } from '@common/common';
-import { CardsEnum } from '@common/common/enums/messages.enum';
-import { ConfigService } from '@nestjs/config';
-import { Types } from 'mongoose';
-import StatusAccountEnum from '@account/account/enum/status.account.enum';
-import { Brand } from '@brand/brand/entities/mongoose/brand.schema';
-import { Crm } from '@crm/crm/entities/mongoose/crm.schema';
-import CurrencyCodeB2cryptoEnum from '@common/common/enums/currency-code-b2crypto.enum';
-import CardTypesAccountEnum from '@account/account/enum/card.types.account.enum';
 import { CardCreateDto } from '@account/account/dto/card.create.dto';
+import { AccountDocument } from '@account/account/entities/mongoose/account.schema';
+import CardTypesAccountEnum from '@account/account/enum/card.types.account.enum';
+import StatusAccountEnum from '@account/account/enum/status.account.enum';
+import TypesAccountEnum from '@account/account/enum/types.account.enum';
+import { Brand } from '@brand/brand/entities/mongoose/brand.schema';
+import { BuildersService } from '@builder/builders';
+import { CommonService } from '@common/common';
+import CurrencyCodeB2cryptoEnum from '@common/common/enums/currency-code-b2crypto.enum';
+import { CardsEnum } from '@common/common/enums/messages.enum';
 import { QuerySearchAnyDto } from '@common/common/models/query_search-any.dto';
+import { Crm } from '@crm/crm/entities/mongoose/crm.schema';
+import { BadRequestException, Injectable, Logger } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import { User } from '@user/user/entities/mongoose/user.schema';
+import EventsNamesCategoryEnum from 'apps/category-service/src/enum/events.names.category.enum';
 import { FiatIntegrationClient } from 'apps/integration-service/src/clients/fiat.integration.client';
+import EventsNamesTransferEnum from 'apps/transfer-service/src/enum/events.names.transfer.enum';
+import { Types } from 'mongoose';
+import { AccountServiceService } from '../account-service.service';
 
 interface TransferRecordParams {
   name: string;
@@ -262,15 +262,23 @@ export class CardTransactionService {
   }
 
   async findAllMe(query: QuerySearchAnyDto, req: any) {
-    query = query ?? {};
     query.where = query.where ?? {};
     query.where.type = TypesAccountEnum.CARD;
-    query = CommonService.getQueryWithUserId(query, req, 'owner');
+    query.where.showToOwner = query.where.showToOwner ?? true;
+
     const rta = await this.accountService.findAll(query);
-    rta.list.forEach(async (account) => {
-      account.amount = await this.swapToCurrencyUser(req, account);
+
+    const amounts = await Promise.all(
+      rta.list.map((account) => this.swapToCurrencyUser(req, account)),
+    );
+
+    rta.list = rta.list.map((account, index) => {
+      account.amount = amounts[index];
       account.currency = req.user.currency ?? CurrencyCodeB2cryptoEnum.USD;
+
+      return account;
     });
+
     return rta;
   }
 
