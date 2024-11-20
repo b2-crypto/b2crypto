@@ -2160,7 +2160,7 @@ export class CardServiceController extends AccountServiceController {
               ) {
                 card.list[0].statusText = StatusAccountEnum.UNLOCK;
                 card.list[0].save();
-                Logger.debug(card.list[0].id, `Card updated for ${usr.email}`);
+                Logger.debug(card.list[0]?.id, `Card updated for ${usr.email}`);
               }
             }
           }
