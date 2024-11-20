@@ -249,6 +249,7 @@ export class CardServiceController extends AccountServiceController {
       const physicalCards = await this.findAll({
         take: 1,
         where: {
+          owner: userId,
           statusText: StatusAccountEnum.ORDERED,
         },
       });
@@ -465,7 +466,7 @@ export class CardServiceController extends AccountServiceController {
       }
       Logger.error(
         JSON.stringify(err),
-        `Account Card not created ${account._id}`,
+        `Account Card not created ${account.owner}`,
       );
       if (err.response) {
         err.response.details = err.response.details ?? [];
