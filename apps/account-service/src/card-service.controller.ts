@@ -2155,7 +2155,8 @@ export class CardServiceController extends AccountServiceController {
                 Logger.debug(n_card.id, `Card created for ${usr.email}`);
               } else if (
                 card.totalElements === 1 &&
-                card.list[0].statusText === StatusAccountEnum.ORDERED
+                card.list[0].statusText === StatusAccountEnum.ORDERED &&
+                crd.status === StatusAccountEnum.ACTIVE
               ) {
                 card.list[0].statusText = StatusAccountEnum.UNLOCK;
                 card.list[0].save();
