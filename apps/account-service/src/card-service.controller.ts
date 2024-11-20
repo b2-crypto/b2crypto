@@ -129,6 +129,9 @@ export class CardServiceController extends AccountServiceController {
       }
       const pin = CommonService.getNumberDigits(parseInt(pinUpdateDto.pin), 4);
       const card = await this.findOneById(pinUpdateDto.id);
+      /*if(card.pin != pinUpdateDto.oldPin) {
+        throw new BadRequestException('PIN not updated');
+      }*/
       if (card.cardConfig) {
         const cardIntegration = await this.integration.getCardIntegration(
           IntegrationCardEnum.POMELO,
@@ -256,6 +259,7 @@ export class CardServiceController extends AccountServiceController {
       if (physicalCards.totalElements > 0) {
         throw new BadRequestException('Already physical card ordered');
       }
+      createDto.statusText = StatusAccountEnum.ORDERED;
     }
     //let level = await this.getCategoryById(user.level?.toString());
     let level = await this.cardBuilder.getPromiseCategoryEventClient(
