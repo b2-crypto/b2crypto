@@ -25,14 +25,19 @@ import { StatusServiceService } from 'apps/status-service/src/status-service.ser
 import { UserServiceService } from 'apps/user-service/src/user-service.service';
 import { AccountServiceController } from './account-service.controller';
 import { AccountServiceService } from './account-service.service';
+import { CardIntegrationService } from './card-integration-service';
+import { CardServiceController } from './card-service.controller';
+import { CardAfgService } from './Card/card-afg.service';
+import { CardValidationService } from './Card/card-validation.service';
+import { CardShippingService } from './Card/CardShippingService';
+import { CardTransactionService } from './Card/CardTransactionService';
 import { WalletServiceController } from './wallet-service.controller';
 import { WalletServiceService } from './wallet-service.service';
-import { CardServiceController } from './card-service.controller';
-import { CardIntegrationService } from './card-integration-service';
-import { CardTransactionService } from './Card/CardTransactionService';
-import { CardShippingService } from './Card/CardShippingService';
-import { CardValidationService } from './Card/card-validation.service';
-import { CardAfgService } from './Card/card-afg.service';
+import { WalletB2BinPayService } from './Wallet/WalletB2BinPayService';
+import { WalletBaseService } from './Wallet/WalletBaseService';
+import { WalletFireblocksService } from './Wallet/WalletFireblocksService';
+import { WalletNotificationService } from './Wallet/WalletNotificationService';
+import { WalletTransactionService } from './Wallet/WalletTransactionService';
 
 @Module({
   imports: [
@@ -64,7 +69,6 @@ import { CardAfgService } from './Card/card-afg.service';
     WalletServiceController,
   ],
   providers: [
-    WalletServiceService,
     StatusServiceService,
     CategoryServiceService,
     GroupServiceService,
@@ -85,7 +89,13 @@ import { CardAfgService } from './Card/card-afg.service';
       provide: APP_FILTER,
       useClass: ResponseHttpExceptionFilter,
     },
+
     WalletServiceService,
+    WalletBaseService,
+    WalletB2BinPayService,
+    WalletFireblocksService,
+    WalletTransactionService,
+    WalletNotificationService,
 
     CardAfgService,
     CardValidationService,
@@ -94,4 +104,4 @@ import { CardAfgService } from './Card/card-afg.service';
     CardIntegrationService,
   ] as IProvider[],
 })
-export class AccountServiceModule { }
+export class AccountServiceModule {}

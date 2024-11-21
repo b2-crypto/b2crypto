@@ -1,5 +1,4 @@
 import {
-  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -232,7 +231,7 @@ export class UserServiceController implements GenericServiceController {
   @MessagePattern(EventsNamesUserEnum.findOneById)
   findOneByIdEvent(@Payload() id: string, @Ctx() ctx: RmqContext) {
     CommonService.ack(ctx);
-    return this.findOneById(id);
+    return this.userService.getOne(id);
   }
 
   @AllowAnon()

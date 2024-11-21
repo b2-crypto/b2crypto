@@ -1,4 +1,9 @@
-import { Injectable, Inject, BadRequestException, Logger } from '@nestjs/common';
+import {
+  Injectable,
+  Inject,
+  BadRequestException,
+  Logger,
+} from '@nestjs/common';
 import { WalletCreateDto } from '@account/account/dto/wallet.create.dto';
 import { WalletDepositCreateDto } from '@account/account/dto/wallet-deposit.create.dto';
 import { AccountDocument } from '@account/account/entities/mongoose/account.schema';
@@ -49,9 +54,12 @@ export class WalletServiceService {
     @Inject(WalletNotificationService)
     private readonly notificationService: WalletNotificationService,
     private readonly integration: IntegrationService,
-  ) { }
+  ) {}
 
-  async createWallet(createDto: WalletCreateDto, userId?: string): Promise<AccountDocument> {
+  async createWallet(
+    createDto: WalletCreateDto,
+    userId?: string,
+  ): Promise<AccountDocument> {
     switch (createDto.accountType) {
       case WalletTypesAccountEnum.EWALLET:
         return this.b2binpayService.createWalletB2BinPay(createDto, userId);
@@ -78,7 +86,11 @@ export class WalletServiceService {
     return this.baseService.getWalletByIdAndValidate(id);
   }
 
-  async rechargeWallet(createDto: WalletDepositCreateDto, userId: string, host: string) {
+  async rechargeWallet(
+    createDto: WalletDepositCreateDto,
+    userId: string,
+    host: string,
+  ) {
     try {
       const user = await this.baseService.getUser(userId);
 
@@ -86,7 +98,9 @@ export class WalletServiceService {
         throw new BadRequestException('The recharge must be greater than 10');
       }
 
-      const to = await this.baseService.getWalletByIdAndValidate(createDto.to.toString());
+      const to = await this.baseService.getWalletByIdAndValidate(
+        createDto.to.toString(),
+      );
 
       if (createDto.from) {
         return this.handleInternalTransfer(createDto, to, user, host);
@@ -98,8 +112,15 @@ export class WalletServiceService {
     }
   }
 
-  private async handleInternalTransfer(createDto: WalletDepositCreateDto, to: any, user: User, host: string) {
-    const from = await this.baseService.getWalletByIdAndValidate(createDto.from.toString());
+  private async handleInternalTransfer(
+    createDto: WalletDepositCreateDto,
+    to: any,
+    user: User,
+    host: string,
+  ) {
+    const from = await this.baseService.getWalletByIdAndValidate(
+      createDto.from.toString(),
+    );
 
     const [
       depositWalletCategory,
@@ -142,7 +163,17 @@ export class WalletServiceService {
       }),
     ]).then((list) => list[0]);
 
-    await this.createTransferEvents(to, from, createDto, user, depositWalletCategory, withDrawalWalletCategory, approvedStatus, internalPspAccount, host);
+    await this.createTransferEvents(
+      to,
+      from,
+      createDto,
+      user,
+      depositWalletCategory,
+      withDrawalWalletCategory,
+      approvedStatus,
+      internalPspAccount,
+      host,
+    );
 
     return result;
   }
@@ -185,7 +216,7 @@ export class WalletServiceService {
           {
             id: to._id,
             responseCreation: depositAddress,
-          }
+          },
         );
       }
 
@@ -214,7 +245,7 @@ export class WalletServiceService {
     withDrawalWalletCategory: any,
     approvedStatus: any,
     internalPspAccount: any,
-    host: string
+    host: string,
   ) {
     const commonTransferData = {
       currency: to.currency,
@@ -245,7 +276,7 @@ export class WalletServiceService {
           operationType: OperationTransactionType.deposit,
           brand: to.brand,
           crm: to.crm,
-        } as unknown as TransferCreateDto
+        } as unknown as TransferCreateDto,
       ),
       this.ewalletBuilder.emitTransferEventClient(
         EventsNamesTransferEnum.createOne,
@@ -259,8 +290,8 @@ export class WalletServiceService {
           operationType: OperationTransactionType.withdrawal,
           brand: from.brand,
           crm: from.crm,
-        } as unknown as TransferCreateDto
-      )
+        } as unknown as TransferCreateDto,
+      ),
     ]);
   }
 
@@ -268,11 +299,17 @@ export class WalletServiceService {
     return this.transactionService.sweepOmnibus(data);
   }
 
-  async updateStatusAccount(id: string, slugName: StatusAccountEnum): Promise<AccountDocument> {
+  async updateStatusAccount(
+    id: string,
+    slugName: StatusAccountEnum,
+  ): Promise<AccountDocument> {
     return this.baseService.updateStatusAccount(id, slugName);
   }
 
-  async toggleVisibleToOwner(id: string, visible?: boolean): Promise<AccountDocument> {
+  async toggleVisibleToOwner(
+    id: string,
+    visible?: boolean,
+  ): Promise<AccountDocument> {
     return this.baseService.toggleVisibleToOwner(id, visible);
   }
 
@@ -288,8 +325,14 @@ export class WalletServiceService {
     return this.updateStatusAccount(id, StatusAccountEnum.CANCEL);
   }
 
-  async validateWalletAccess(walletId: string, userId: string): Promise<boolean> {
-    const wallet = await this.baseService.getWalletByIdAndValidate(walletId, userId);
+  async validateWalletAccess(
+    walletId: string,
+    userId: string,
+  ): Promise<boolean> {
+    const wallet = await this.baseService.getWalletByIdAndValidate(
+      walletId,
+      userId,
+    );
     return wallet !== null;
   }
 
@@ -308,7 +351,7 @@ export class WalletServiceService {
       await this.notificationService.sendBalanceUpdateNotification(
         wallet,
         previousBalance,
-        wallet.amount
+        wallet.amount,
       );
     }
   }
@@ -320,10 +363,12 @@ export class WalletServiceService {
   ): Promise<{ wallet: AccountDocument; user: User }> {
     const [wallet, user] = await Promise.all([
       this.baseService.getWalletByIdAndValidate(walletId, userId),
-      this.userService.getAll({
-        relations: ['personalData'],
-        where: { _id: userId },
-      }).then(response => response.list[0]),
+      this.userService
+        .getAll({
+          relations: ['personalData'],
+          where: { _id: userId },
+        })
+        .then((response) => response.list[0]),
     ]);
 
     if (!user?.personalData) {
@@ -365,11 +410,20 @@ export class WalletServiceService {
       lastUpdated: wallet.updatedAt,
     };
   }
-  async createWalletB2BinPay(createDto: WalletCreateDto, userId?: string): Promise<any> {
+  async createWalletB2BinPay(
+    createDto: WalletCreateDto,
+    userId?: string,
+  ): Promise<any> {
     return await this.b2binpayService.createWalletB2BinPay(createDto, userId);
   }
 
-  async createWalletFireblocks(createDto: WalletCreateDto, userId: string): Promise<any> {
-    return await this.fireblocksService.createWalletFireblocks(createDto, userId);
+  async createWalletFireblocks(
+    createDto: WalletCreateDto,
+    userId: string,
+  ): Promise<any> {
+    return await this.fireblocksService.createWalletFireblocks(
+      createDto,
+      userId,
+    );
   }
 }

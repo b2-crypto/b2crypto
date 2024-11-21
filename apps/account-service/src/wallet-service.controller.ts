@@ -28,15 +28,16 @@ import {
   UnauthorizedException,
   UseGuards,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiExcludeEndpoint, ApiSecurity, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiExcludeEndpoint,
+  ApiSecurity,
+  ApiTags,
+} from '@nestjs/swagger';
 import { UserServiceService } from 'apps/user-service/src/user-service.service';
 import { AccountServiceService } from './account-service.service';
 import { SwaggerSteakeyConfigEnum } from 'libs/config/enum/swagger.stakey.config.enum';
-import {
-  Ctx,
-  EventPattern, Payload,
-  RmqContext
-} from '@nestjs/microservices';
+import { Ctx, EventPattern, Payload, RmqContext } from '@nestjs/microservices';
 import { Cache } from 'cache-manager';
 import { WalletServiceService } from './wallet-service.service';
 import { isMongoId } from 'class-validator';
@@ -59,7 +60,7 @@ export class WalletServiceController {
     private readonly integration: IntegrationService,
     private readonly configService: ConfigService,
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
-  ) { }
+  ) {}
 
   @ApiTags(SwaggerSteakeyConfigEnum.TAG_WALLET)
   @ApiBearerAuth('bearerToken')
@@ -98,7 +99,9 @@ export class WalletServiceController {
     });
 
     const cacheNameWalletCreate = `create-wallet-${userId}`;
-    const creating = await this.cacheManager.get<boolean>(cacheNameWalletCreate);
+    const creating = await this.cacheManager.get<boolean>(
+      cacheNameWalletCreate,
+    );
 
     if (!creating && rta.totalElements === 0) {
       await this.cacheManager.set(cacheNameWalletCreate, true, 6 * 1000);
@@ -108,7 +111,10 @@ export class WalletServiceController {
         name: 'USD Tether (Tron)',
         accountType: WalletTypesAccountEnum.VAULT,
         type: TypesAccountEnum.WALLET,
-        pin: CommonService.getNumberDigits(CommonService.randomIntNumber(9999), 4),
+        pin: CommonService.getNumberDigits(
+          CommonService.randomIntNumber(9999),
+          4,
+        ),
         id: undefined,
         slug: '',
         searchText: '',
@@ -175,10 +181,16 @@ export class WalletServiceController {
 
     switch (createDto.accountType) {
       case WalletTypesAccountEnum.EWALLET:
-        rta = this.walletServiceService.createWalletB2BinPay(createDto, req?.user?.id);
+        rta = this.walletServiceService.createWalletB2BinPay(
+          createDto,
+          req?.user?.id,
+        );
         break;
       case WalletTypesAccountEnum.VAULT:
-        rta = this.walletServiceService.createWalletFireblocks(createDto, req?.user?.id);
+        rta = this.walletServiceService.createWalletFireblocks(
+          createDto,
+          req?.user?.id,
+        );
         break;
       default:
         throw new BadRequestException(
@@ -226,7 +238,9 @@ export class WalletServiceController {
       throw new BadRequestException('from is invalid id');
     }
 
-    const from = await this.accountService.findOneById(createDto.from.toString());
+    const from = await this.accountService.findOneById(
+      createDto.from.toString(),
+    );
     if (!from || from.owner.toString() != userId) {
       throw new BadRequestException('from wallet is not found');
     }
@@ -247,7 +261,10 @@ export class WalletServiceController {
   @ApiBearerAuth('bearerToken')
   @UseGuards(ApiKeyAuthGuard)
   async blockedOneById(@Param('walletId') id: string) {
-    return this.walletServiceService.updateStatusAccount(id, StatusAccountEnum.LOCK);
+    return this.walletServiceService.updateStatusAccount(
+      id,
+      StatusAccountEnum.LOCK,
+    );
   }
 
   @Patch('unlock/:walletId')
@@ -256,7 +273,10 @@ export class WalletServiceController {
   @ApiBearerAuth('bearerToken')
   @UseGuards(ApiKeyAuthGuard)
   async unblockedOneById(@Param('walletId') id: string) {
-    return this.walletServiceService.updateStatusAccount(id, StatusAccountEnum.UNLOCK);
+    return this.walletServiceService.updateStatusAccount(
+      id,
+      StatusAccountEnum.UNLOCK,
+    );
   }
 
   @Patch('cancel/:walletId')
@@ -265,7 +285,10 @@ export class WalletServiceController {
   @ApiBearerAuth('bearerToken')
   @UseGuards(ApiKeyAuthGuard)
   async cancelOneById(@Param('walletId') id: string) {
-    return this.walletServiceService.updateStatusAccount(id, StatusAccountEnum.CANCEL);
+    return this.walletServiceService.updateStatusAccount(
+      id,
+      StatusAccountEnum.CANCEL,
+    );
   }
 
   @Patch('hidden/:walletId')
@@ -331,7 +354,6 @@ export class WalletServiceController {
     await this.walletServiceService.sweepOmnibus(data);
     Logger.log('Finish sweep omnibus');
   }
-
 
   @EventPattern(EventsNamesAccountEnum.createOneWallet)
   async createOneWalletEvent(

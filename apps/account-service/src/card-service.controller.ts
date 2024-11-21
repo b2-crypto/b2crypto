@@ -37,7 +37,7 @@ export class CardServiceController {
     private readonly cardIntegrationService: CardIntegrationService,
     private readonly cardTransactionService: CardTransactionService,
     private readonly cardShippingService: CardShippingService,
-  ) { }
+  ) {}
 
   @Get('all')
   @NoCache()
@@ -56,7 +56,6 @@ export class CardServiceController {
   @ApiTags(SwaggerSteakeyConfigEnum.TAG_CARD)
   @ApiBearerAuth('bearerToken')
   async findAllMe(@Query() query: QuerySearchAnyDto, @Req() req?: any) {
-    console.log('findAllMe', query);
     return this.cardTransactionService.findAllMe(query, req);
   }
 

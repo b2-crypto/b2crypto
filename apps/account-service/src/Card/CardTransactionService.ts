@@ -6,17 +6,28 @@ import StatusAccountEnum from '@account/account/enum/status.account.enum';
 import TypesAccountEnum from '@account/account/enum/types.account.enum';
 import { Brand } from '@brand/brand/entities/mongoose/brand.schema';
 import { BuildersService } from '@builder/builders';
-import { CommonService } from '@common/common';
+import { CategoryDocument } from '@category/category/entities/mongoose/category.schema';
 import CurrencyCodeB2cryptoEnum from '@common/common/enums/currency-code-b2crypto.enum';
 import { CardsEnum } from '@common/common/enums/messages.enum';
 import { QuerySearchAnyDto } from '@common/common/models/query_search-any.dto';
 import { Crm } from '@crm/crm/entities/mongoose/crm.schema';
-import { BadRequestException, Injectable, Logger } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { User } from '@user/user/entities/mongoose/user.schema';
+import { PspAccountDocument } from '@psp-account/psp-account/entities/mongoose/psp-account.schema';
+import { StatusDocument } from '@status/status/entities/mongoose/status.schema';
+import { OperationTransactionType } from '@transfer/transfer/enum/operation.transaction.type.enum';
+import { User, UserDocument } from '@user/user/entities/mongoose/user.schema';
 import EventsNamesCategoryEnum from 'apps/category-service/src/enum/events.names.category.enum';
 import { FiatIntegrationClient } from 'apps/integration-service/src/clients/fiat.integration.client';
+import EventsNamesPspAccountEnum from 'apps/psp-service/src/enum/events.names.psp.acount.enum';
+import EventsNamesStatusEnum from 'apps/status-service/src/enum/events.names.status.enum';
 import EventsNamesTransferEnum from 'apps/transfer-service/src/enum/events.names.transfer.enum';
+import EventsNamesUserEnum from 'apps/user-service/src/enum/events.names.user.enum';
 import { Types } from 'mongoose';
 import { AccountServiceService } from '../account-service.service';
 
@@ -31,7 +42,7 @@ interface TransferRecordParams {
   userCreator: string;
   userAccount: string;
   typeTransaction: string;
-  operationType: 'deposit' | 'withdrawal';
+  operationType: OperationTransactionType;
   brand?: Brand;
   crm?: Crm;
   page?: string;
@@ -40,6 +51,8 @@ interface TransferRecordParams {
   status?: string;
   confirmedAt?: Date;
   approvedAt?: Date;
+  psp: string;
+  pspAccount: string;
 }
 
 interface PomeloTransactionData {
@@ -70,6 +83,16 @@ export class CardTransactionService {
   }
 
   async rechargeCard(rechargeDto: CardDepositCreateDto, user: User) {
+    const userFoundById =
+      await this.cardBuilder.getPromiseUserEventClient<UserDocument>(
+        EventsNamesUserEnum.findOneById,
+        user.id,
+      );
+
+    if (!userFoundById) {
+      throw new NotFoundException('User not found');
+    }
+
     if (rechargeDto.amount < 10) {
       throw new BadRequestException('The recharge must be greater than 10');
     }
@@ -91,6 +114,18 @@ export class CardTransactionService {
       this.getCategoryBySlug('withdrawal-wallet'),
     ]);
 
+    const approvedStatus =
+      await this.cardBuilder.getPromiseStatusEventClient<StatusDocument>(
+        EventsNamesStatusEnum.findOneByName,
+        'approved',
+      );
+
+    const internalPspAccount =
+      await this.cardBuilder.getPromisePspAccountEventClient<PspAccountDocument>(
+        EventsNamesPspAccountEnum.findOneByName,
+        'internal',
+      );
+
     await Promise.all([
       this.updateAccountBalance(toAccount._id, rechargeDto.amount),
       this.updateAccountBalance(fromAccount._id, -rechargeDto.amount),
@@ -100,10 +135,15 @@ export class CardTransactionService {
         rechargeDto.amount,
         depositCardCategory,
         withdrawalWalletCategory,
+        approvedStatus,
+        internalPspAccount,
       ),
     ]);
 
-    return { ...fromAccount, amount: fromAccount.amount - rechargeDto.amount };
+    return {
+      ...fromAccount.toObject(),
+      amount: fromAccount.amount - rechargeDto.amount,
+    };
   }
 
   async processPomeloTransaction(
@@ -179,12 +219,12 @@ export class CardTransactionService {
     return this.accountService.customUpdateOne(update);
   }
 
-  private async getCategoryBySlug(slug: string) {
+  private async getCategoryBySlug(slug: string): Promise<CategoryDocument> {
     const categories = await this.cardBuilder.getPromiseCategoryEventClient(
       EventsNamesCategoryEnum.findAll,
       {
         where: {
-          slug: CommonService.getSlug(slug),
+          slug,
         },
       },
     );
@@ -200,8 +240,10 @@ export class CardTransactionService {
     toAccount: AccountDocument,
     fromAccount: AccountDocument,
     amount: number,
-    depositCategory: any,
-    withdrawalCategory: any,
+    depositCategory: CategoryDocument,
+    withdrawalCategory: CategoryDocument,
+    status: StatusDocument,
+    pspAccount: PspAccountDocument,
   ) {
     const baseTransferRecord = {
       amount,
@@ -224,9 +266,12 @@ export class CardTransactionService {
       userCreator: fromAccount.owner.toString(),
       userAccount: toAccount.owner.toString(),
       typeTransaction: depositCategory._id.toString(),
-      operationType: 'deposit',
+      operationType: OperationTransactionType.deposit,
       brand: toAccount.brand,
       crm: toAccount.crm,
+      psp: String(pspAccount.psp),
+      pspAccount: pspAccount._id,
+      status: status._id,
     };
 
     const withdrawalRecord: TransferRecordParams = {
@@ -237,9 +282,12 @@ export class CardTransactionService {
       userCreator: fromAccount.owner.toString(),
       userAccount: fromAccount.owner.toString(),
       typeTransaction: withdrawalCategory._id.toString(),
-      operationType: 'withdrawal',
+      operationType: OperationTransactionType.withdrawal,
       brand: fromAccount.brand,
       crm: fromAccount.crm,
+      psp: String(pspAccount.psp),
+      pspAccount: pspAccount._id,
+      status: status._id,
     };
 
     await Promise.all([

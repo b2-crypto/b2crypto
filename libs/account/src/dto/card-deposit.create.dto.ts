@@ -16,8 +16,7 @@ export class CardDepositCreateDto extends CreateAnyDto {
     description: 'Wallet to comes from',
   })
   @IsMongoId()
-  @IsOptional()
-  from?: ObjectId;
+  from: ObjectId;
 
   @ApiProperty({
     required: false,

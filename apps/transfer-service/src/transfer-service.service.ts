@@ -1,3 +1,5 @@
+import { AccountUpdateDto } from '@account/account/dto/account.update.dto';
+import { AccountInterface } from '@account/account/entities/account.interface';
 import { AccountDocument } from '@account/account/entities/mongoose/account.schema';
 import { AffiliateDocument } from '@affiliate/affiliate/infrastructure/mongoose/affiliate.schema';
 import { BuildersService } from '@builder/builders';
@@ -33,7 +35,6 @@ import {
 } from '@psp-account/psp-account/entities/mongoose/psp-account.schema';
 import { PspAccountInterface } from '@psp-account/psp-account/entities/psp-account.interface';
 import { PspInterface } from '@psp/psp/entities/psp.interface';
-import { StatsDateCreateDto } from '../../../libs/stats/src/dto/stats.date.create.dto';
 import { StatusDocument } from '@status/status/entities/mongoose/status.schema';
 import { StatusInterface } from '@status/status/entities/status.interface';
 import { TransferServiceMongooseService } from '@transfer/transfer';
@@ -47,28 +48,26 @@ import { OperationTransactionType } from '@transfer/transfer/enum/operation.tran
 import { AccountServiceService } from 'apps/account-service/src/account-service.service';
 import EventsNamesAffiliateEnum from 'apps/affiliate-service/src/enum/events.names.affiliate.enum';
 import EventsNamesBrandEnum from 'apps/brand-service/src/enum/events.names.brand.enum';
+import { CategoryServiceService } from 'apps/category-service/src/category-service.service';
 import EventsNamesCategoryEnum from 'apps/category-service/src/enum/events.names.category.enum';
 import EventsNamesCrmEnum from 'apps/crm-service/src/enum/events.names.crm.enum';
 import EventsNamesLeadEnum from 'apps/lead-service/src/enum/events.names.lead.enum';
 import EventsNamesPersonEnum from 'apps/person-service/src/enum/events.names.person.enum';
 import EventsNamesPspAccountEnum from 'apps/psp-service/src/enum/events.names.psp.acount.enum';
 import EventsNamesPspEnum from 'apps/psp-service/src/enum/events.names.psp.enum';
+import { PspAccountServiceService } from 'apps/psp-service/src/psp.account.service.service';
 import EventsNamesStatsEnum from 'apps/stats-service/src/enum/events.names.stats.enum';
 import EventsNamesStatusEnum from 'apps/status-service/src/enum/events.names.status.enum';
+import { StatusServiceService } from 'apps/status-service/src/status-service.service';
 import { isArray, isMongoId } from 'class-validator';
 import { BrandInterface } from 'libs/brand/src/entities/brand.interface';
 import { ObjectId } from 'mongodb';
+import { StatsDateCreateDto } from '../../../libs/stats/src/dto/stats.date.create.dto';
 import { ApproveOrRejectDepositDto } from '../../../libs/transfer/src/dto/approve.or.reject.deposit.dto';
-import { TransferLeadStatsDto } from './dto/transfer.lead.stat.dto';
-import EventsNamesTransferEnum from './enum/events.names.transfer.enum';
-import { AccountInterface } from '@account/account/entities/account.interface';
-import { AccountUpdateDto } from '@account/account/dto/account.update.dto';
-import { CategoryServiceService } from 'apps/category-service/src/category-service.service';
-import { PspAccountServiceService } from 'apps/psp-service/src/psp.account.service.service';
-import { StatusServiceService } from 'apps/status-service/src/status-service.service';
-import { BoldStatusEnum } from './enum/bold.status.enum';
 import { BoldTransferRequestDto } from './dto/bold.transfer.request.dto';
-import EventsNamesUserEnum from 'apps/user-service/src/enum/events.names.user.enum';
+import { TransferLeadStatsDto } from './dto/transfer.lead.stat.dto';
+import { BoldStatusEnum } from './enum/bold.status.enum';
+import EventsNamesTransferEnum from './enum/events.names.transfer.enum';
 
 @Injectable()
 export class TransferServiceService
@@ -282,111 +281,154 @@ export class TransferServiceService
 
   async newTransfer(transfer: TransferCreateDto) {
     const data = await this.queryDataAccount(transfer);
-    if (data.account && data.pspAccount && data.typeTransaction) {
-      this.checkCountryAccount(transfer, data);
-      /* if (!data.crm) {
-        data.crm = (await this.getCrmById(
-          data.account.crm.toString(),
-        )) as any as CrmInterface;
-      } */
-      if (!transfer.userCreator && !transfer.userAccount) {
-        throw new BadRequestException('Unknown user account or user creator');
-      }
-      await this.checkTransferAccount(transfer, data);
-      if (transfer.isManualTx) {
-        transfer.isApprove = true;
-        transfer.approvedAt = new Date();
-        transfer.rejectedAt = null;
-      }
-      if (!transfer.account) {
-        throw new BadRequestException('Account is mandatory');
-      }
-      const account: AccountDocument = await this.accountService.findOneById(
-        transfer.account,
+
+    if (!data.account || !data.pspAccount || !data.typeTransaction) {
+      throw new BadRequestException(this.getMessageError(data));
+    }
+
+    const { leadCountry } = this.checkCountryAccount(transfer, data.account);
+
+    transfer.leadCountry = leadCountry;
+
+    /* if (!data.crm) {
+      data.crm = (await this.getCrmById(
+        data.account.crm.toString(),
+      )) as any as CrmInterface;
+    } */
+    if (!transfer.userCreator && !transfer.userAccount) {
+      throw new BadRequestException('Unknown user account or user creator');
+    }
+
+    const {
+      leadCrmName,
+      psp,
+      affiliate,
+      status,
+      approvedAt,
+      rejectedAt,
+      bank,
+      brand,
+      crm,
+      account,
+    } = await this.checkTransferAccount(transfer, data);
+
+    transfer.leadCrmName = leadCrmName;
+    transfer.psp = psp;
+    transfer.affiliate = affiliate;
+    transfer.status = status;
+    transfer.account = account;
+    transfer.approvedAt = approvedAt ?? transfer.approvedAt;
+    transfer.rejectedAt = rejectedAt ?? transfer.rejectedAt;
+    transfer.bank = bank;
+    transfer.brand = brand;
+    transfer.crm = crm;
+    transfer.account = account;
+
+    if (transfer.isManualTx) {
+      transfer.isApprove = true;
+      transfer.approvedAt = new Date();
+      transfer.rejectedAt = null;
+    }
+
+    if (!transfer.account) {
+      throw new BadRequestException('Account is mandatory');
+    }
+
+    const accountFoundById: AccountDocument =
+      await this.accountService.findOneById(transfer.account);
+
+    if (!accountFoundById) {
+      throw new BadRequestException('Not found account');
+    }
+
+    const depositLinkCategory =
+      await this.builder.getPromiseCategoryEventClient(
+        EventsNamesCategoryEnum.findOneByNameType,
+        {
+          slug: 'deposit-link',
+          type: TagEnum.MONETARY_TRANSACTION_TYPE,
+        },
       );
-      if (!account) {
-        throw new BadRequestException('Not found account');
-      }
-      const depositLinkCategory =
-        await this.builder.getPromiseCategoryEventClient(
-          EventsNamesCategoryEnum.findOneByNameType,
-          {
-            slug: 'deposit-link',
-            type: TagEnum.MONETARY_TRANSACTION_TYPE,
-          },
+
+    if (!depositLinkCategory) {
+      throw new BadRequestException(
+        'Not found deposit link monetary transaction type',
+      );
+    }
+
+    if (
+      transfer.typeTransaction === depositLinkCategory._id &&
+      !account.accountId
+    ) {
+      throw new BadRequestException('AccountId not found');
+    }
+
+    transfer.account = account._id;
+    transfer.typeAccount = account.type;
+    transfer.typeAccountType = account.accountType;
+    transfer.userCreator = transfer.userCreator ?? account.owner;
+    transfer.userAccount = account.owner ?? transfer.userCreator;
+    transfer.accountPrevBalance = account.amount;
+
+    const transferSaved = await this.lib.create(transfer);
+
+    if (transferSaved.typeTransaction?.toString() === depositLinkCategory._id) {
+      try {
+        const url = transfer.account.url ?? 'https://api.b2binpay.com';
+
+        Logger.log(url, 'URL B2BinPay');
+
+        const integration = await this.integrationService.getCryptoIntegration(
+          account,
+          IntegrationCryptoEnum.B2BINPAY,
+          url,
         );
-      if (!depositLinkCategory) {
-        throw new BadRequestException(
-          'Not found deposit link monetary transaction type',
-        );
-      }
-      if (
-        transfer.typeTransaction === depositLinkCategory._id &&
-        !account.accountId
-      ) {
-        throw new BadRequestException('AccountId not found');
-      }
-      transfer.account = account._id;
-      transfer.typeAccount = account.type;
-      transfer.typeAccountType = account.accountType;
-      transfer.userCreator = transfer.userCreator ?? account.owner;
-      transfer.userAccount = account.owner ?? transfer.userCreator;
-      transfer.accountPrevBalance = account.amount;
-      const transferSaved = await this.lib.create(transfer);
-      if (
-        transferSaved.typeTransaction?.toString() === depositLinkCategory._id
-      ) {
-        try {
-          const url = transfer.account.url ?? 'https://api.b2binpay.com';
-          Logger.log(url, 'URL B2BinPay');
-          const integration =
-            await this.integrationService.getCryptoIntegration(
-              account,
-              IntegrationCryptoEnum.B2BINPAY,
-              url,
-            );
-          const deposit = await integration.createDeposit({
-            data: {
-              type: 'deposit',
-              attributes: {
-                target_amount_requested: transferSaved.amount.toString(),
-                label: transferSaved.name,
-                tracking_id: transferSaved._id,
-                confirmations_needed: 2,
-                // TODO[hender-2024/05/30] Change callback_url to environment params
-                callback_url:
-                  process.env.ENVIRONMENT === 'PROD'
-                    ? 'https://api.b2fintech.com/b2binpay/status'
-                    : 'https://stage.b2fintech.com/b2binpay/status',
-              },
-              relationships: {
-                wallet: {
-                  data: {
-                    type: 'wallet',
-                    id: account.accountId,
-                  },
+
+        const deposit = await integration.createDeposit({
+          data: {
+            type: 'deposit',
+            attributes: {
+              target_amount_requested: transferSaved.amount.toString(),
+              label: transferSaved.name,
+              tracking_id: transferSaved._id,
+              confirmations_needed: 2,
+              // TODO[hender-2024/05/30] Change callback_url to environment params
+              callback_url:
+                process.env.ENVIRONMENT === 'PROD'
+                  ? 'https://api.b2fintech.com/b2binpay/status'
+                  : 'https://stage.b2fintech.com/b2binpay/status',
+            },
+            relationships: {
+              wallet: {
+                data: {
+                  type: 'wallet',
+                  id: account.accountId,
                 },
               },
             },
-          });
-          if (!deposit.data) {
-            Logger.error(deposit, 'Error B2BinPay Deposit');
-            throw new BadRequestException(deposit['errors']);
-          }
-          transferSaved.responseAccount = {
-            data: deposit.data as unknown as DataTransferAccountResponse,
-          };
-          await this.updateTransfer(transferSaved);
-        } catch (err) {
-          await this.lib.remove(transferSaved._id);
-          Logger.error(err, 'Error Transfer creation');
-          throw new BadRequestException(err);
+          },
+        });
+
+        if (!deposit.data) {
+          Logger.error(deposit, 'Error B2BinPay Deposit');
+          throw new BadRequestException(deposit['errors']);
         }
+
+        transferSaved.responseAccount = {
+          data: deposit.data as unknown as DataTransferAccountResponse,
+        };
+
+        await this.updateTransfer(transferSaved);
+      } catch (err) {
+        await this.lib.remove(transferSaved._id);
+        Logger.error(err, 'Error Transfer creation');
+        throw new BadRequestException(err);
       }
-      await this.updateAccount(data.account, transferSaved);
-      return transferSaved;
     }
-    throw new BadRequestException(this.getMessageError(data));
+
+    await this.updateAccount(data.account, transferSaved);
+
+    return transferSaved;
   }
 
   async newDepositFromAffiliate(
@@ -531,24 +573,35 @@ export class TransferServiceService
     isNew = true,
   ) {
     // TODO[hender-2023-09-6] If the lead's country has a custom rule, take it, if not, take the general rule
-    const ruleCftd = await this.getCategoryByName(
-      'Money to CFTD from lead',
-      TagEnum.RULE,
-    );
-    if (!account.email) {
-      const tmpAccount = await this.getAccountById(account._id);
-      if (!tmpAccount) {
-        throw new BadRequestException(
-          `Account ${account._id ?? account} not found `,
-        );
-      }
-      account = tmpAccount as unknown as AccountInterface;
+    // const ruleCftd = await this.getCategoryByName(
+    //   'Money to CFTD from lead',
+    //   TagEnum.RULE,
+    // );
+    const acountInDatabase = account.email
+      ? account
+      : await this.getAccountById(account._id);
+
+    if (!acountInDatabase) {
+      throw new BadRequestException(
+        `Account ${account._id ?? account} not found `,
+      );
     }
+
+    // if (!account.email) {
+    //   const tmpAccount = await this.getAccountById(account._id);
+    //   if (!tmpAccount) {
+    //     throw new BadRequestException(
+    //       `Account ${account._id ?? account} not found `,
+    //     );
+    //   }
+    //   account = tmpAccount as unknown as AccountInterface;
+    // }
+
     const accountToUpdate: AccountUpdateDto = {
-      id: account._id,
-      amount: account.amount,
-      quantityTransfer: account.quantityTransfer,
-      affiliate: account.affiliate,
+      id: acountInDatabase._id,
+      amount: acountInDatabase.amount,
+      quantityTransfer: acountInDatabase.quantityTransfer,
+      affiliate: acountInDatabase.affiliate,
     };
 
     if (transferSaved.isApprove) {
@@ -573,12 +626,16 @@ export class TransferServiceService
       }
       /*   accountToUpdate.amount += transferSaved.amount * multiply; */ // TODO[Nestor] multiply no aparece
     }
+
     transferSaved.accountResultBalance = accountToUpdate.amount;
+
     const accountUpdated = await this.accountService.updateOne(accountToUpdate);
-    this.builder.emitUserEventClient(
-      EventsNamesUserEnum.checkBalanceUser,
-      transferSaved.userAccount,
-    );
+
+    // this.builder.emitUserEventClient(
+    //   EventsNamesUserEnum.checkBalanceUser,
+    //   transferSaved.userAccount,
+    // );
+
     await transferSaved.save();
     return accountUpdated;
   }
@@ -691,35 +748,36 @@ export class TransferServiceService
     brand: BrandInterface;
     crm: CrmInterface;
   }> {
-    const promisesByIds = {
-      account: this.getAccountById(transfer.account),
-      pspAccount: this.getPspAccountById(transfer.pspAccount),
-      // TODO[hender] Buscar agregando el tipo de category
-      typeTransaction: this.getCategoryById(transfer.typeTransaction),
-      status: this.getStatusById(transfer.status),
-      department:
-        transfer.department && this.getCategoryById(transfer.department),
-      bank: transfer.bank && this.getCategoryById(transfer.bank),
-      brand: transfer.brand && this.getBrandById(transfer.brand),
-      crm: transfer.crm && this.getCrmById(transfer.crm),
-    };
-    const data = {
-      account: null as AccountInterface,
-      pspAccount: null as PspAccountInterface,
-      typeTransaction: null as CategoryInterface,
-      status: null as StatusInterface,
-      department: null as CategoryInterface,
-      bank: null as CategoryInterface,
-      brand: null as BrandInterface,
-      crm: null as CrmInterface,
-    };
-    const keys = Object.keys(data);
+    const [
+      account,
+      pspAccount,
+      typeTransaction,
+      status,
+      department,
+      bank,
+      brand,
+      crm,
+    ] = await Promise.all([
+      this.getAccountById(transfer.account),
+      this.getPspAccountById(transfer.pspAccount),
+      this.getCategoryById(transfer.typeTransaction),
+      this.getStatusById(transfer.status),
+      transfer.department && this.getCategoryById(transfer.department),
+      transfer.bank && this.getCategoryById(transfer.bank),
+      transfer.brand && this.getBrandById(transfer.brand),
+      transfer.crm && this.getCrmById(transfer.crm),
+    ]);
 
-    const valuesIds = await Promise.all(Object.values(promisesByIds));
-    valuesIds.forEach((entry, idx) => {
-      data[keys[idx]] = entry;
-    });
-    return data;
+    return {
+      account: account as unknown as AccountInterface,
+      pspAccount: pspAccount as unknown as PspAccountInterface,
+      typeTransaction: typeTransaction as CategoryInterface,
+      status: status as StatusInterface,
+      department: department as CategoryInterface,
+      bank: bank as CategoryInterface,
+      brand: brand as BrandInterface,
+      crm: crm as unknown as CrmInterface,
+    };
   }
 
   private async queryData(transfer: TransferCreateDto): Promise<{
@@ -770,27 +828,22 @@ export class TransferServiceService
   }
 
   private async checkTransferAccount(transfer: TransferCreateDto, data) {
-    transfer.leadCrmName = transfer.leadCrmName ?? data.crm?.name;
-    transfer.psp = data.pspAccount?.psp;
-    transfer.affiliate = data.account.affiliate;
-    // Fill status
-    transfer.status = data.status?.name
-      ? data.status
+    const { status, rejectedAt, approvedAt } = data.status?.name
+      ? { status: data.status, rejectedAt: null, approvedAt: null }
       : await this.checkStatus(transfer, data.status);
-    // Fill department
-    if (!data.department) {
-      /* transfer.department = data.crm.department
-        ? data.crm.department
-        : await this.getCategoryDepartmentSales();
-      transfer.department = transfer.department?._id || transfer.department; */
-    }
-    // Fill bank
-    transfer.bank = data.bank || data.pspAccount.bank;
-    // Fill brand
-    transfer.brand = data.account.brand;
-    // Fill crm
-    transfer.crm = data.crm?.id || data.account.crm;
-    transfer.account = data.account?._id;
+
+    return {
+      leadCrmName: transfer.leadCrmName ?? data.crm?.name,
+      psp: data.pspAccount?.psp ?? transfer.psp,
+      affiliate: data.account.affiliate ?? transfer.affiliate,
+      status,
+      approvedAt,
+      rejectedAt,
+      bank: data.bank ?? data.pspAccount.bank,
+      brand: data.account.brand,
+      crm: data.crm?.id ?? data.account.crm,
+      account: data.account?._id,
+    };
   }
 
   private async checkTransfer(transfer: TransferCreateDto, data) {
@@ -801,9 +854,14 @@ export class TransferServiceService
     transfer.psp = data.pspAccount?.psp;
     transfer.affiliate = data.lead.affiliate;
     // Fill status
-    transfer.status = data.status?.name
-      ? data.status
+    const { status, rejectedAt, approvedAt } = data.status?.name
+      ? { status: data.status, rejectedAt: null, approvedAt: null }
       : await this.checkStatus(transfer, data.status);
+
+    transfer.status = status;
+    transfer.approvedAt = approvedAt ?? transfer.approvedAt;
+    transfer.rejectedAt = rejectedAt ?? transfer.rejectedAt;
+
     // Fill department
     if (!data.department) {
       transfer.department = data.crm.department
@@ -820,10 +878,16 @@ export class TransferServiceService
     transfer.lead = data.lead?._id;
   }
 
-  private async checkCountryAccount(transfer: TransferCreateDto, data) {
-    if (!transfer.leadCountry && data.account?.country) {
-      transfer.leadCountry = data.account?.country;
-    }
+  private checkCountryAccount(
+    transfer: TransferCreateDto,
+    account: AccountInterface,
+  ) {
+    return {
+      leadCountry:
+        !transfer.leadCountry && account?.country
+          ? account?.country
+          : transfer.leadCountry,
+    };
   }
 
   private async checkCountry(transfer: TransferCreateDto, data) {
@@ -852,20 +916,35 @@ export class TransferServiceService
     status: StatusInterface,
   ) {
     if (!status) {
-      const _status = await this.getStatusSended();
-      return _status?._id || _status;
-    } else {
-      const statusApproved = await this.getStatusApproved();
-      if (transfer.status === statusApproved.id) {
-        transfer.approvedAt = new Date();
-      } else {
-        const statusRejected = await this.getStatusRejected();
-        if (transfer.status === statusRejected.id) {
-          transfer.rejectedAt = new Date();
-        }
-      }
+      const statusSended = await this.getStatusSended();
+
+      return {
+        status: statusSended?._id || statusSended,
+        approvedAt: null,
+        rejectedAt: null,
+      };
     }
-    return transfer.status;
+
+    const [statusApproved, statusRejected] = await Promise.all([
+      this.getStatusApproved(),
+      this.getStatusRejected(),
+    ]);
+
+    const transferStatusId = String(transfer.status);
+    const statusApprovedId = String(statusApproved.id);
+    const statusRejectedId = String(statusRejected.id);
+
+    return {
+      status: transfer.status,
+      approvedAt:
+        transferStatusId === statusApprovedId
+          ? new Date()
+          : transfer.approvedAt,
+      rejectedAt:
+        transferStatusId === statusRejectedId
+          ? new Date()
+          : transfer.rejectedAt,
+    };
   }
 
   async newManyTransfer(createTransfersDto: TransferCreateDto[]) {
@@ -874,6 +953,7 @@ export class TransferServiceService
 
   async updateTransfer(transfer: TransferUpdateDto) {
     const rta = await this.lib.update(transfer.id, transfer);
+
     if (transfer.approvedAt || transfer.isApprove) {
       this.updateAccount(
         rta.account as unknown as AccountInterface,
@@ -1123,19 +1203,17 @@ export class TransferServiceService
   }
 
   private async getStatusById(id: string): Promise<StatusDocument> {
-    if (!id) {
-      const listStatusPending = await this.statusService.getAll({
-        where: {
-          slug: CommonService.getSlug(StatusCashierEnum.PENDING),
-        },
-      });
-      return listStatusPending.list[0];
-    }
-    return this.statusService.getOne(id);
-    /* return this.builder.getPromiseStatusEventClient(
-      EventsNamesStatusEnum.findOneById,
-      id,
-    ); */
+    const idStatusInDatabase =
+      id ??
+      (
+        await this.statusService.getAll({
+          where: {
+            slug: CommonService.getSlug(StatusCashierEnum.PENDING),
+          },
+        })
+      ).list[0]?._id.toString();
+
+    return this.statusService.getOne(idStatusInDatabase);
   }
 
   private async getStatusByName(id: string): Promise<StatusDocument> {
@@ -1170,23 +1248,45 @@ export class TransferServiceService
   }
 
   private async getCategoryById(id: string): Promise<CategoryInterface> {
-    if (!id) {
-      const listTxCrypto = await this.categoryService.getAll({
-        where: {
-          type: TagEnum.MONETARY_TRANSACTION_TYPE,
-          slug: CommonService.getSlug('Crypto'),
-        },
-      });
-      let typeTxDefault = listTxCrypto.list[0];
-      if (!typeTxDefault) {
-        typeTxDefault = await this.categoryService.newCategory({
+    const idTxCryptoInDatabase =
+      id ??
+      (
+        await this.categoryService.getAll({
+          where: {
+            type: TagEnum.MONETARY_TRANSACTION_TYPE,
+            slug: CommonService.getSlug('Crypto'),
+          },
+        })
+      ).list[0]?._id.toString();
+
+    const idTxCrypto =
+      idTxCryptoInDatabase ??
+      (
+        await this.categoryService.newCategory({
           type: TagEnum.MONETARY_TRANSACTION_TYPE,
           name: 'Crypto',
-        });
-      }
-      id = typeTxDefault._id.toString();
-    }
-    return this.categoryService.getOne(id);
+        })
+      )?._id.toString();
+
+    return this.categoryService.getOne(idTxCrypto);
+
+    // if (!id) {
+    //   const listTxCrypto = await this.categoryService.getAll({
+    //     where: {
+    //       type: TagEnum.MONETARY_TRANSACTION_TYPE,
+    //       slug: CommonService.getSlug('Crypto'),
+    //     },
+    //   });
+    //   let typeTxDefault = listTxCrypto.list[0];
+    //   if (!typeTxDefault) {
+    //     typeTxDefault = await this.categoryService.newCategory({
+    //       type: TagEnum.MONETARY_TRANSACTION_TYPE,
+    //       name: 'Crypto',
+    //     });
+    //   }
+    //   id = typeTxDefault._id.toString();
+    // }
+    // return this.categoryService.getOne(id);
     /* return this.builder.getPromiseCategoryEventClient(
       EventsNamesCategoryEnum.findOneById,
       id,
@@ -1194,11 +1294,10 @@ export class TransferServiceService
   }
 
   private async getPspAccountById(id?: string): Promise<PspAccountDocument> {
-    if (!id) {
-      const pspAccountDefault = await this.pspAccountService.getPspB2BinPay();
-      id = pspAccountDefault._id.toString();
-    }
-    return this.pspAccountService.getOne(id);
+    const pspAccountId =
+      id ?? (await this.pspAccountService.getPspB2BinPay())._id.toString();
+
+    return this.pspAccountService.getOne(pspAccountId);
     /* if (isMongoId(id)) {
       return this.builder.getPromisePspAccountEventClient(
         EventsNamesPspAccountEnum.findOneById,

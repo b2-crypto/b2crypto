@@ -1,3 +1,4 @@
+import { ConfigCardActivateDto } from '@account/account/dto/config.card.activate.dto';
 import { AccountDocument } from '@account/account/entities/mongoose/account.schema';
 import { CommonService } from '@common/common';
 import { EnvironmentEnum } from '@common/common/enums/environment.enum';
@@ -20,7 +21,6 @@ import { UserResponseDto } from './dto/user.response.dto';
 import { IntegrationCardInterface } from './integration.card.interface';
 import { CardRoutesInterface } from './interface/card.routes.interface';
 import { ShippingResultInterface } from './interface/shipping-result.interface';
-import { ConfigCardActivateDto } from '@account/account/dto/config.card.activate.dto';
 
 export class IntegrationCardService<
   // DTO
@@ -32,12 +32,13 @@ export class IntegrationCardService<
   TUserResponse = UserResponseDto,
   TShippingResponse = ShippingResultInterface,
 > implements
-  IntegrationCardInterface<
-    TUserCardDto,
-    TCardDto,
-    TCardSearchDto,
-    TUserResponse
-  > {
+    IntegrationCardInterface<
+      TUserCardDto,
+      TCardDto,
+      TCardSearchDto,
+      TUserResponse
+    >
+{
   http: AxiosInstance;
   private routesMap: CardRoutesInterface;
   private client: ClientCardDto;

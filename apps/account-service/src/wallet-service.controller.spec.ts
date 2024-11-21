@@ -106,8 +106,8 @@ describe('WalletServiceController', () => {
       expect(accountServiceMock.findAll).toHaveBeenCalledWith({
         where: {
           type: TypesAccountEnum.WALLET,
-          showToOwner: true
-        }
+          showToOwner: true,
+        },
       });
     });
   });
@@ -116,10 +116,12 @@ describe('WalletServiceController', () => {
     it('should create default wallet if none exists and return all wallets', async () => {
       const userId = 'user123';
       jest.spyOn(CommonService, 'getUserId').mockReturnValue(userId);
-      jest.spyOn(CommonService, 'getQueryWithUserId').mockImplementation((query) => ({
-        ...query,
-        where: { ...query.where, owner: userId }
-      }));
+      jest
+        .spyOn(CommonService, 'getQueryWithUserId')
+        .mockImplementation((query) => ({
+          ...query,
+          where: { ...query.where, owner: userId },
+        }));
       jest.spyOn(CommonService, 'getNumberDigits').mockReturnValue('1234');
       jest.spyOn(CommonService, 'randomIntNumber').mockReturnValue(1234);
 
@@ -127,8 +129,8 @@ describe('WalletServiceController', () => {
         where: {
           owner: userId,
           type: TypesAccountEnum.WALLET,
-          showToOwner: true
-        }
+          showToOwner: true,
+        },
       };
 
       const emptyWallets: ResponsePaginator<any> = {
@@ -140,13 +142,13 @@ describe('WalletServiceController', () => {
         firstPage: 1,
         currentPage: 1,
         elementsPerPage: 10,
-        order: []
+        order: [],
       };
 
       const populatedWallets: ResponsePaginator<any> = {
         ...emptyWallets,
         list: [{ type: TypesAccountEnum.WALLET }],
-        totalElements: 1
+        totalElements: 1,
       };
 
       accountServiceMock.findAll
@@ -157,7 +159,7 @@ describe('WalletServiceController', () => {
 
       const mockReq = {
         user: { id: userId },
-        clientApi: {}
+        clientApi: {},
       };
 
       const result = await controller.findAllMe(query, mockReq);
@@ -169,15 +171,15 @@ describe('WalletServiceController', () => {
           accountType: WalletTypesAccountEnum.VAULT,
           type: TypesAccountEnum.WALLET,
           pin: '1234',
-          currency: CurrencyCodeB2cryptoEnum.USDT
+          currency: CurrencyCodeB2cryptoEnum.USDT,
         }),
-        userId
+        userId,
       );
 
       expect(cacheManagerMock.set).toHaveBeenCalledWith(
         `create-wallet-${userId}`,
         true,
-        6 * 1000
+        6 * 1000,
       );
 
       expect(result).toEqual(populatedWallets);
@@ -186,17 +188,19 @@ describe('WalletServiceController', () => {
     it('should not create default wallet if one already exists', async () => {
       const userId = 'user123';
       jest.spyOn(CommonService, 'getUserId').mockReturnValue(userId);
-      jest.spyOn(CommonService, 'getQueryWithUserId').mockImplementation((query) => ({
-        ...query,
-        where: { ...query.where, owner: userId }
-      }));
+      jest
+        .spyOn(CommonService, 'getQueryWithUserId')
+        .mockImplementation((query) => ({
+          ...query,
+          where: { ...query.where, owner: userId },
+        }));
 
       const query = {
         where: {
           owner: userId,
           type: TypesAccountEnum.WALLET,
-          showToOwner: true
-        }
+          showToOwner: true,
+        },
       };
 
       const existingWallets: ResponsePaginator<any> = {
@@ -208,7 +212,7 @@ describe('WalletServiceController', () => {
         firstPage: 1,
         currentPage: 1,
         elementsPerPage: 10,
-        order: []
+        order: [],
       };
 
       accountServiceMock.findAll.mockResolvedValue(existingWallets);
@@ -216,7 +220,7 @@ describe('WalletServiceController', () => {
 
       const mockReq = {
         user: { id: userId },
-        clientApi: {}
+        clientApi: {},
       };
 
       const result = await controller.findAllMe(query, mockReq);
@@ -228,17 +232,19 @@ describe('WalletServiceController', () => {
     it('should not create default wallet if creation is in progress', async () => {
       const userId = 'user123';
       jest.spyOn(CommonService, 'getUserId').mockReturnValue(userId);
-      jest.spyOn(CommonService, 'getQueryWithUserId').mockImplementation((query) => ({
-        ...query,
-        where: { ...query.where, owner: userId }
-      }));
+      jest
+        .spyOn(CommonService, 'getQueryWithUserId')
+        .mockImplementation((query) => ({
+          ...query,
+          where: { ...query.where, owner: userId },
+        }));
 
       const query = {
         where: {
           owner: userId,
           type: TypesAccountEnum.WALLET,
-          showToOwner: true
-        }
+          showToOwner: true,
+        },
       };
 
       const emptyWallets: ResponsePaginator<any> = {
@@ -250,7 +256,7 @@ describe('WalletServiceController', () => {
         firstPage: 1,
         currentPage: 1,
         elementsPerPage: 10,
-        order: []
+        order: [],
       };
 
       accountServiceMock.findAll.mockResolvedValue(emptyWallets);
@@ -258,7 +264,7 @@ describe('WalletServiceController', () => {
 
       const mockReq = {
         user: { id: userId },
-        clientApi: {}
+        clientApi: {},
       };
 
       const result = await controller.findAllMe(query, mockReq);
@@ -275,13 +281,15 @@ describe('WalletServiceController', () => {
 
       await controller.availablesWallet(mockQuery, mockReq);
 
-      expect(accountServiceMock.availableWalletsFireblocks).toHaveBeenCalledWith(
+      expect(
+        accountServiceMock.availableWalletsFireblocks,
+      ).toHaveBeenCalledWith(
         expect.objectContaining({
           where: {
             type: TypesAccountEnum.WALLET,
-            brand: 'testBrand'
-          }
-        })
+            brand: 'testBrand',
+          },
+        }),
       );
     });
   });
@@ -298,9 +306,9 @@ describe('WalletServiceController', () => {
       expect(walletServiceMock.createWalletB2BinPay).toHaveBeenCalledWith(
         expect.objectContaining({
           accountType: WalletTypesAccountEnum.EWALLET,
-          brand: 'testBrand'
+          brand: 'testBrand',
         }),
-        'userId'
+        'userId',
       );
     });
 
@@ -315,9 +323,9 @@ describe('WalletServiceController', () => {
       expect(walletServiceMock.createWalletFireblocks).toHaveBeenCalledWith(
         expect.objectContaining({
           accountType: WalletTypesAccountEnum.VAULT,
-          brand: 'testBrand'
+          brand: 'testBrand',
         }),
-        'userId'
+        'userId',
       );
     });
 
@@ -327,9 +335,9 @@ describe('WalletServiceController', () => {
       } as WalletCreateDto;
       const mockReq = { user: { brand: 'testBrand' } };
 
-      await expect(controller.createOne(createDto, mockReq))
-        .rejects
-        .toThrow(BadRequestException);
+      await expect(controller.createOne(createDto, mockReq)).rejects.toThrow(
+        BadRequestException,
+      );
     });
   });
 
@@ -338,7 +346,7 @@ describe('WalletServiceController', () => {
       const createDto = new WalletDepositCreateDto();
       const mockReq = {
         user: { id: 'userId' },
-        get: jest.fn().mockReturnValue('test.host.com')
+        get: jest.fn().mockReturnValue('test.host.com'),
       };
 
       const mockResponse = {
@@ -347,8 +355,8 @@ describe('WalletServiceController', () => {
           txId: 'tx123',
           url: 'https://example.com/tx',
           address: 'wallet123',
-          chain: 'ETH'
-        }
+          chain: 'ETH',
+        },
       };
 
       walletServiceMock.rechargeWallet.mockResolvedValue(mockResponse);
@@ -359,7 +367,7 @@ describe('WalletServiceController', () => {
       expect(walletServiceMock.rechargeWallet).toHaveBeenCalledWith(
         createDto,
         'userId',
-        'test.host.com'
+        'test.host.com',
       );
     });
 
@@ -367,30 +375,32 @@ describe('WalletServiceController', () => {
       const createDto = new WalletDepositCreateDto();
       const mockReq = {
         user: { id: 'userId' },
-        get: jest.fn().mockReturnValue('test.host.com')
+        get: jest.fn().mockReturnValue('test.host.com'),
       };
 
-      walletServiceMock.rechargeWallet.mockRejectedValue(new Error('Recharge failed'));
+      walletServiceMock.rechargeWallet.mockRejectedValue(
+        new Error('Recharge failed'),
+      );
 
-      await expect(controller.rechargeOne(createDto, mockReq))
-        .rejects
-        .toThrow(BadRequestException);
+      await expect(controller.rechargeOne(createDto, mockReq)).rejects.toThrow(
+        BadRequestException,
+      );
     });
 
     it('should throw BadRequestException when required fields are missing', async () => {
       const createDto = new WalletDepositCreateDto();
       const mockReq = {
         user: { id: 'userId' },
-        get: jest.fn().mockReturnValue('test.host.com')
+        get: jest.fn().mockReturnValue('test.host.com'),
       };
 
       walletServiceMock.rechargeWallet.mockRejectedValue(
-        new BadRequestException('Required fields are missing')
+        new BadRequestException('Required fields are missing'),
       );
 
-      await expect(controller.rechargeOne(createDto, mockReq))
-        .rejects
-        .toThrow(BadRequestException);
+      await expect(controller.rechargeOne(createDto, mockReq)).rejects.toThrow(
+        BadRequestException,
+      );
     });
 
     it('should handle successful recharge with account document response', async () => {
@@ -401,12 +411,12 @@ describe('WalletServiceController', () => {
         amount: 100,
         from: fromId as any,
         to: toId as any,
-        pin: ''
+        pin: '',
       };
 
       const mockReq = {
         user: { id: 'userId' },
-        get: jest.fn().mockReturnValue('test.host.com')
+        get: jest.fn().mockReturnValue('test.host.com'),
       };
 
       const mockAccountResponse = {
@@ -494,7 +504,7 @@ describe('WalletServiceController', () => {
       expect(walletServiceMock.rechargeWallet).toHaveBeenCalledWith(
         createDto,
         'userId',
-        'test.host.com'
+        'test.host.com',
       );
     });
   });
@@ -509,7 +519,7 @@ describe('WalletServiceController', () => {
         from: fromWalletId,
         to: toWalletId,
         amount: 100,
-        currency: 'USD'
+        currency: 'USD',
       } as unknown as WalletDepositCreateDto;
 
       jest.spyOn(CommonService, 'getUserId').mockReturnValue(userId.toString());
@@ -524,18 +534,20 @@ describe('WalletServiceController', () => {
           txId: 'tx123',
           url: 'https://example.com/tx',
           address: 'wallet123',
-          chain: 'ETH'
-        }
+          chain: 'ETH',
+        },
       };
 
       walletServiceMock.rechargeWallet.mockResolvedValue(mockResponse);
 
       const result = await controller.withdraw(createDto, {
         user: { id: userId.toString() },
-        get: jest.fn().mockReturnValue('test.host.com')
+        get: jest.fn().mockReturnValue('test.host.com'),
       });
 
-      expect(accountServiceMock.findOneById).toHaveBeenCalledWith(fromWalletId.toString());
+      expect(accountServiceMock.findOneById).toHaveBeenCalledWith(
+        fromWalletId.toString(),
+      );
       expect(result).toEqual(mockResponse);
     });
 
@@ -547,18 +559,18 @@ describe('WalletServiceController', () => {
         from: fromWalletId,
         to: 'toWalletId',
         amount: 100,
-        currency: 'USD'
+        currency: 'USD',
       } as unknown as WalletDepositCreateDto;
 
       jest.spyOn(CommonService, 'getUserId').mockReturnValue(userId.toString());
       accountServiceMock.findOneById.mockResolvedValue(null);
 
-      await expect(controller.withdraw(createDto, {
-        user: { id: userId.toString() },
-        get: jest.fn().mockReturnValue('test.host.com')
-      }))
-        .rejects
-        .toThrow(BadRequestException);
+      await expect(
+        controller.withdraw(createDto, {
+          user: { id: userId.toString() },
+          get: jest.fn().mockReturnValue('test.host.com'),
+        }),
+      ).rejects.toThrow(BadRequestException);
     });
 
     it('should throw BadRequestException if from is missing', async () => {
@@ -567,17 +579,17 @@ describe('WalletServiceController', () => {
       const createDto = {
         to: 'toWalletId',
         amount: 100,
-        currency: 'USD'
+        currency: 'USD',
       } as unknown as WalletDepositCreateDto;
 
       jest.spyOn(CommonService, 'getUserId').mockReturnValue(userId.toString());
 
-      await expect(controller.withdraw(createDto, {
-        user: { id: userId.toString() },
-        get: jest.fn().mockReturnValue('test.host.com')
-      }))
-        .rejects
-        .toThrow(BadRequestException);
+      await expect(
+        controller.withdraw(createDto, {
+          user: { id: userId.toString() },
+          get: jest.fn().mockReturnValue('test.host.com'),
+        }),
+      ).rejects.toThrow(BadRequestException);
     });
 
     it('should throw BadRequestException if to is missing', async () => {
@@ -587,17 +599,17 @@ describe('WalletServiceController', () => {
       const createDto = {
         from: fromWalletId,
         amount: 100,
-        currency: 'USD'
+        currency: 'USD',
       } as unknown as WalletDepositCreateDto;
 
       jest.spyOn(CommonService, 'getUserId').mockReturnValue(userId.toString());
 
-      await expect(controller.withdraw(createDto, {
-        user: { id: userId.toString() },
-        get: jest.fn().mockReturnValue('test.host.com')
-      }))
-        .rejects
-        .toThrow(BadRequestException);
+      await expect(
+        controller.withdraw(createDto, {
+          user: { id: userId.toString() },
+          get: jest.fn().mockReturnValue('test.host.com'),
+        }),
+      ).rejects.toThrow(BadRequestException);
     });
 
     it('should throw BadRequestException if wallet owner does not match', async () => {
@@ -609,7 +621,7 @@ describe('WalletServiceController', () => {
         from: fromWalletId,
         to: 'toWalletId',
         amount: 100,
-        currency: 'USD'
+        currency: 'USD',
       } as unknown as WalletDepositCreateDto;
 
       jest.spyOn(CommonService, 'getUserId').mockReturnValue(userId.toString());
@@ -618,12 +630,12 @@ describe('WalletServiceController', () => {
         _id: fromWalletId,
       } as unknown as AccountDocument);
 
-      await expect(controller.withdraw(createDto, {
-        user: { id: userId.toString() },
-        get: jest.fn().mockReturnValue('test.host.com')
-      }))
-        .rejects
-        .toThrow(BadRequestException);
+      await expect(
+        controller.withdraw(createDto, {
+          user: { id: userId.toString() },
+          get: jest.fn().mockReturnValue('test.host.com'),
+        }),
+      ).rejects.toThrow(BadRequestException);
     });
   });
 
@@ -634,7 +646,7 @@ describe('WalletServiceController', () => {
       await controller.blockedOneById(walletId);
       expect(walletServiceMock.updateStatusAccount).toHaveBeenCalledWith(
         walletId,
-        StatusAccountEnum.LOCK
+        StatusAccountEnum.LOCK,
       );
     });
 
@@ -642,7 +654,7 @@ describe('WalletServiceController', () => {
       await controller.unblockedOneById(walletId);
       expect(walletServiceMock.updateStatusAccount).toHaveBeenCalledWith(
         walletId,
-        StatusAccountEnum.UNLOCK
+        StatusAccountEnum.UNLOCK,
       );
     });
 
@@ -650,7 +662,7 @@ describe('WalletServiceController', () => {
       await controller.cancelOneById(walletId);
       expect(walletServiceMock.updateStatusAccount).toHaveBeenCalledWith(
         walletId,
-        StatusAccountEnum.CANCEL
+        StatusAccountEnum.CANCEL,
       );
     });
 
@@ -658,7 +670,7 @@ describe('WalletServiceController', () => {
       await controller.disableOneById(walletId);
       expect(walletServiceMock.toggleVisibleToOwner).toHaveBeenCalledWith(
         walletId,
-        false
+        false,
       );
     });
 
@@ -666,16 +678,16 @@ describe('WalletServiceController', () => {
       await controller.enableOneById(walletId);
       expect(walletServiceMock.toggleVisibleToOwner).toHaveBeenCalledWith(
         walletId,
-        true
+        true,
       );
     });
   });
 
   describe('deleteOneById', () => {
     it('should throw UnauthorizedException', async () => {
-      await expect(controller.deleteOneById('walletId'))
-        .rejects
-        .toThrow(UnauthorizedException);
+      await expect(controller.deleteOneById('walletId')).rejects.toThrow(
+        UnauthorizedException,
+      );
     });
   });
 
@@ -695,7 +707,9 @@ describe('WalletServiceController', () => {
 
         await controller.migrateWallet(mockCtx, mockWalletData);
 
-        expect(accountServiceMock.createOne).toHaveBeenCalledWith(mockWalletData);
+        expect(accountServiceMock.createOne).toHaveBeenCalledWith(
+          mockWalletData,
+        );
       });
 
       it('should update existing wallet', async () => {
@@ -736,7 +750,9 @@ describe('WalletServiceController', () => {
         const mockCtx = { ack: jest.fn() } as unknown as RmqContext;
         const createDto = new WalletCreateDto();
 
-        jest.spyOn(controller, 'createOne').mockResolvedValue({ success: true });
+        jest
+          .spyOn(controller, 'createOne')
+          .mockResolvedValue({ success: true });
 
         await controller.createOneWalletEvent(createDto, mockCtx);
 
@@ -747,13 +763,13 @@ describe('WalletServiceController', () => {
         const mockCtx = { ack: jest.fn() } as unknown as RmqContext;
         const createDto = new WalletCreateDto();
 
-        jest.spyOn(controller, 'createOne').mockRejectedValue(
-          new Error('Creation failed')
-        );
+        jest
+          .spyOn(controller, 'createOne')
+          .mockRejectedValue(new Error('Creation failed'));
 
-        await expect(controller.createOneWalletEvent(createDto, mockCtx))
-          .rejects
-          .toThrow('Creation failed');
+        await expect(
+          controller.createOneWalletEvent(createDto, mockCtx),
+        ).rejects.toThrow('Creation failed');
 
         expect(CommonService.ack).toHaveBeenCalledWith(mockCtx);
       });
@@ -764,13 +780,15 @@ describe('WalletServiceController', () => {
 
         jest.spyOn(controller, 'createOne').mockResolvedValue(mockResult);
 
-        const result = await controller.createOneWalletEvent(createDto, mockCtx);
+        const result = await controller.createOneWalletEvent(
+          createDto,
+          mockCtx,
+        );
 
         expect(CommonService.ack).toHaveBeenCalledWith(mockCtx);
         expect(controller.createOne).toHaveBeenCalledWith(createDto);
         expect(result).toEqual(mockResult);
       });
     });
-
   });
 });

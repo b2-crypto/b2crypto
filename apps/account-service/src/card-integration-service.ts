@@ -1,14 +1,13 @@
-import { BadRequestException, Injectable, Logger } from '@nestjs/common';
-import { IntegrationService } from '@integration/integration';
-import { User } from '@user/user/entities/mongoose/user.schema';
-import { AccountDocument } from '@account/account/entities/mongoose/account.schema';
-import IntegrationCardEnum from '@integration/integration/card/enums/IntegrationCardEnum';
-import { AddressSchema } from '@person/person/entities/mongoose/address.schema';
-import { UserCard } from '@account/account/entities/mongoose/user-card.schema';
 import { ConfigCardActivateDto } from '@account/account/dto/config.card.activate.dto';
+import { AccountDocument } from '@account/account/entities/mongoose/account.schema';
+import { UserCard } from '@account/account/entities/mongoose/user-card.schema';
 import { CommonService } from '@common/common';
 import DocIdTypeEnum from '@common/common/enums/DocIdTypeEnum';
-import { CardDto } from '@integration/integration/card/generic/dto/card.dto';
+import { IntegrationService } from '@integration/integration';
+import IntegrationCardEnum from '@integration/integration/card/enums/IntegrationCardEnum';
+import { BadRequestException, Injectable, Logger } from '@nestjs/common';
+import { AddressSchema } from '@person/person/entities/mongoose/address.schema';
+import { User } from '@user/user/entities/mongoose/user.schema';
 import pug from 'pug';
 import { AccountServiceService } from './account-service.service';
 interface PomeloResponse<T = any> {
@@ -203,7 +202,7 @@ export class CardIntegrationService {
     }
 
     try {
-      const result = await cardIntegration.getCard({ id: cardId } as CardDto);
+      const result = await cardIntegration.getCard(cardId);
 
       if (!result || typeof result !== 'object') {
         throw new BadRequestException('Invalid response format');
