@@ -1,3 +1,9 @@
+import { CardDepositCreateDto } from '@account/account/dto/card-deposit.create.dto';
+import { CardCreateDto } from '@account/account/dto/card.create.dto';
+import { ConfigCardActivateDto } from '@account/account/dto/config.card.activate.dto';
+import { ApiKeyAuthGuard } from '@auth/auth/guards/api.key.guard';
+import { NoCache } from '@common/common/decorators/no-cache.decorator';
+import { QuerySearchAnyDto } from '@common/common/models/query_search-any.dto';
 import {
   BadRequestException,
   Body,
@@ -14,17 +20,16 @@ import {
   UnauthorizedException,
   UseGuards,
 } from '@nestjs/common';
-import { ApiTags, ApiBearerAuth, ApiSecurity, ApiHeader } from '@nestjs/swagger';
-import { ApiKeyAuthGuard } from '@auth/auth/guards/api.key.guard';
-import { ConfigCardActivateDto } from '@account/account/dto/config.card.activate.dto';
+import {
+  ApiBearerAuth,
+  ApiHeader,
+  ApiSecurity,
+  ApiTags,
+} from '@nestjs/swagger';
 import { SwaggerSteakeyConfigEnum } from 'libs/config/enum/swagger.stakey.config.enum';
-import { CardCreateDto } from '@account/account/dto/card.create.dto';
-import { CardDepositCreateDto } from '@account/account/dto/card-deposit.create.dto';
-import { NoCache } from '@common/common/decorators/no-cache.decorator';
-import { QuerySearchAnyDto } from '@common/common/models/query_search-any.dto';
 import { CardIntegrationService } from './card-integration-service';
-import { CardTransactionService } from './Card/CardTransactionService';
 import { CardShippingService } from './Card/CardShippingService';
+import { CardTransactionService } from './Card/CardTransactionService';
 @ApiTags('CARD')
 @Controller('cards')
 export class CardServiceController {
@@ -32,7 +37,7 @@ export class CardServiceController {
     private readonly cardIntegrationService: CardIntegrationService,
     private readonly cardTransactionService: CardTransactionService,
     private readonly cardShippingService: CardShippingService,
-  ) { }
+  ) {}
 
   @Get('all')
   @NoCache()
@@ -51,6 +56,7 @@ export class CardServiceController {
   @ApiTags(SwaggerSteakeyConfigEnum.TAG_CARD)
   @ApiBearerAuth('bearerToken')
   async findAllMe(@Query() query: QuerySearchAnyDto, @Req() req?: any) {
+    console.log('findAllMe', query);
     return this.cardTransactionService.findAllMe(query, req);
   }
 
@@ -65,7 +71,10 @@ export class CardServiceController {
   @ApiSecurity('b2crypto-key')
   @ApiBearerAuth('bearerToken')
   @UseGuards(ApiKeyAuthGuard)
-  async rechargeCard(@Body() rechargeDto: CardDepositCreateDto, @Req() req?: any) {
+  async rechargeCard(
+    @Body() rechargeDto: CardDepositCreateDto,
+    @Req() req?: any,
+  ) {
     return this.cardTransactionService.rechargeCard(rechargeDto, req.user);
   }
 
@@ -74,9 +83,15 @@ export class CardServiceController {
   @ApiSecurity('b2crypto-key')
   @ApiBearerAuth('bearerToken')
   @UseGuards(ApiKeyAuthGuard)
-  async activateCard(@Body() configActivate: ConfigCardActivateDto, @Req() req?: any) {
+  async activateCard(
+    @Body() configActivate: ConfigCardActivateDto,
+    @Req() req?: any,
+  ) {
     try {
-      return await this.cardIntegrationService.activateCard(req.user, configActivate);
+      return await this.cardIntegrationService.activateCard(
+        req.user,
+        configActivate,
+      );
     } catch (error) {
       Logger.error(error, 'CardController - activateCard');
       throw new BadRequestException(error.message || 'Error activating card');
@@ -138,7 +153,9 @@ export class CardServiceController {
       return await this.cardIntegrationService.getCardStatus(cardId);
     } catch (error) {
       Logger.error(error, 'CardController - getCardStatus');
-      throw new BadRequestException(error.message || 'Error getting card status');
+      throw new BadRequestException(
+        error.message || 'Error getting card status',
+      );
     }
   }
 
@@ -147,13 +164,17 @@ export class CardServiceController {
   @ApiSecurity('b2crypto-key')
   @ApiBearerAuth('bearerToken')
   @UseGuards(ApiKeyAuthGuard)
-  async getShippingPhysicalCard(@Param('cardId') cardId: string, @Req() req?: any) {
+  async getShippingPhysicalCard(
+    @Param('cardId') cardId: string,
+    @Req() req?: any,
+  ) {
     try {
       await this.cardShippingService.getShippingPhysicalCard(cardId, req.user);
-
     } catch (error) {
       Logger.error(error, 'CardController - getShippingPhysicalCard');
-      throw new BadRequestException(error.message || 'Error getting shipping status');
+      throw new BadRequestException(
+        error.message || 'Error getting shipping status',
+      );
     }
   }
 
@@ -167,7 +188,9 @@ export class CardServiceController {
       return await this.cardShippingService.shippingPhysicalCard(req.user);
     } catch (error) {
       Logger.error(error, 'CardController - createShippingPhysicalCard');
-      throw new BadRequestException(error.message || 'Error creating shipping request');
+      throw new BadRequestException(
+        error.message || 'Error creating shipping request',
+      );
     }
   }
 
@@ -176,16 +199,25 @@ export class CardServiceController {
   @ApiSecurity('b2crypto-key')
   @ApiBearerAuth('bearerToken')
   @UseGuards(ApiKeyAuthGuard)
-  async getSensitiveInfo(@Param('cardId') cardId: string, @Res() res, @Req() req?: any) {
+  async getSensitiveInfo(
+    @Param('cardId') cardId: string,
+    @Res() res,
+    @Req() req?: any,
+  ) {
     try {
-      const html = await this.cardIntegrationService.getSensitiveCardInfo(cardId, req.user);
+      const html = await this.cardIntegrationService.getSensitiveCardInfo(
+        cardId,
+        req.user,
+      );
       return res
         .setHeader('Content-Type', 'text/html; charset=utf-8')
         .status(200)
         .send(html);
     } catch (error) {
       Logger.error(error, 'CardController - getSensitiveInfo');
-      throw new BadRequestException(error.message || 'Error getting sensitive information');
+      throw new BadRequestException(
+        error.message || 'Error getting sensitive information',
+      );
     }
   }
 

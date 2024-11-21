@@ -1,11 +1,31 @@
 import { NoCache } from '@common/common/decorators/no-cache.decorator';
 import { SecurityServiceService } from './security-service.service';
-import { 
-  Controller, Get, Post, Body, Param, UseGuards, Req, Res, Query, 
-  BadRequestException, NotFoundException, UnauthorizedException, 
-  BadGatewayException, HttpStatus, Inject, Logger
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Param,
+  UseGuards,
+  Req,
+  Res,
+  Query,
+  BadRequestException,
+  NotFoundException,
+  UnauthorizedException,
+  BadGatewayException,
+  HttpStatus,
+  Inject,
+  Logger,
 } from '@nestjs/common';
-import { ApiTags, ApiSecurity, ApiBearerAuth, ApiParam, ApiQuery, ApiResponse } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiSecurity,
+  ApiBearerAuth,
+  ApiParam,
+  ApiQuery,
+  ApiResponse,
+} from '@nestjs/swagger';
 import { AllowAnon } from '@auth/auth/decorators/allow-anon.decorator';
 import { ApiKeyCheck } from '@auth/auth/decorators/api-key-check.decorator';
 import { IsRefresh } from '@auth/auth/decorators/refresh.decorator';
@@ -63,7 +83,10 @@ export class SecurityServiceController {
   @ApiBearerAuth('bearerToken')
   @ApiSecurity('b2crypto-key')
   @Post('identity/url')
-  async sumsubGenerateUrl(@Body() identityDto: SumsubIssueTokenDto, @Req() req) {
+  async sumsubGenerateUrl(
+    @Body() identityDto: SumsubIssueTokenDto,
+    @Req() req,
+  ) {
     const client = await this.getClientFromPublicKey(req.clientApi, false);
     const user = req.user;
     if (!user) {
@@ -89,7 +112,10 @@ export class SecurityServiceController {
   @ApiTags(SwaggerSteakeyConfigEnum.TAG_SECURITY)
   @ApiBearerAuth('bearerToken')
   @ApiSecurity('b2crypto-key')
-  async sumsubGeneratetoken(@Body() identityDto: SumsubIssueTokenDto, @Req() req) {
+  async sumsubGeneratetoken(
+    @Body() identityDto: SumsubIssueTokenDto,
+    @Req() req,
+  ) {
     const user = req.user;
     if (!user) {
       throw new BadRequestException('User not found');
@@ -107,7 +133,11 @@ export class SecurityServiceController {
   @ApiParam({ name: 'userId', type: String, required: true })
   @ApiQuery({ name: 'apiKey', type: String, required: true })
   @Get('identity/page/:userId')
-  async sumsubGetPage(@Param('userId') userId, @Query('apiKey') clientId, @Res() res) {
+  async sumsubGetPage(
+    @Param('userId') userId,
+    @Query('apiKey') clientId,
+    @Res() res,
+  ) {
     const client = await this.getClientFromPublicKey(clientId);
     if (!client.isClientAPI) {
       throw new UnauthorizedException();

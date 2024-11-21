@@ -2,10 +2,15 @@ import { WalletDepositCreateDto } from '@account/account/dto/wallet-deposit.crea
 import { WalletCreateDto } from '@account/account/dto/wallet.create.dto';
 import StatusAccountEnum from '@account/account/enum/status.account.enum';
 import TypesAccountEnum from '@account/account/enum/types.account.enum';
+import WalletTypesAccountEnum from '@account/account/enum/wallet.types.account.enum';
 import { ApiKeyAuthGuard } from '@auth/auth/guards/api.key.guard';
 import { BuildersService } from '@builder/builders';
 import { CommonService } from '@common/common';
+import { NoCache } from '@common/common/decorators/no-cache.decorator';
+import CurrencyCodeB2cryptoEnum from '@common/common/enums/currency-code-b2crypto.enum';
 import { QuerySearchAnyDto } from '@common/common/models/query_search-any.dto';
+import { IntegrationService } from '@integration/integration';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import {
   BadRequestException,
   Body,
@@ -32,14 +37,7 @@ import {
   EventPattern, Payload,
   RmqContext
 } from '@nestjs/microservices';
-import EventsNamesAccountEnum from './enum/events.names.account.enum';
-import { ConfigService } from '@nestjs/config';
-import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
-import WalletTypesAccountEnum from '@account/account/enum/wallet.types.account.enum';
-import CurrencyCodeB2cryptoEnum from '@common/common/enums/currency-code-b2crypto.enum';
-import { IntegrationService } from '@integration/integration';
-import { NoCache } from '@common/common/decorators/no-cache.decorator';
 import { WalletServiceService } from './wallet-service.service';
 import { isMongoId } from 'class-validator';
 import { JwtAuthGuard } from '@auth/auth/guards/jwt-auth.guard';
@@ -87,7 +85,6 @@ export class WalletServiceController {
     query.where.type = TypesAccountEnum.WALLET;
     query.where.showToOwner = true;
     query = CommonService.getQueryWithUserId(query, req, 'owner');
-
     const rta = await this.accountService.findAll({
       take: 1,
       where: {
@@ -200,7 +197,11 @@ export class WalletServiceController {
   ) {
     try {
       const host = req.get('Host');
-      return await this.walletServiceService.rechargeWallet(createDto, req?.user?.id, host);
+      return await this.walletService.rechargeWallet(
+        createDto,
+        req?.user?.id,
+        host,
+      );
     } catch (error) {
       throw new BadRequestException(error.message);
     }

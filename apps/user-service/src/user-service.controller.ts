@@ -59,7 +59,7 @@ export class UserServiceController implements GenericServiceController {
     private readonly userService: UserServiceService,
     @Inject(BuildersService)
     readonly builder: BuildersService,
-  ) { }
+  ) {}
 
   @NoCache()
   @Get('all')

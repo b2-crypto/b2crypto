@@ -1,4 +1,3 @@
-
 import { ApiProperty } from '@nestjs/swagger';
 import { IsBoolean, IsEnum, IsOptional, IsString } from 'class-validator';
 import CardTypesAccountEnum from '../enum/card.types.account.enum';

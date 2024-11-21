@@ -9,7 +9,10 @@ import { CardCreateDto } from '@account/account/dto/card.create.dto';
 import { CardDepositCreateDto } from '@account/account/dto/card-deposit.create.dto';
 import { CardController } from './card-service.controller';
 import { ResponsePaginator } from '@common/common/interfaces/response-pagination.interface';
-import { Account, AccountDocument } from '@account/account/entities/mongoose/account.schema';
+import {
+  Account,
+  AccountDocument,
+} from '@account/account/entities/mongoose/account.schema';
 import { User } from '@user/user/entities/mongoose/user.schema';
 import TypesAccountEnum from '@account/account/enum/types.account.enum';
 import StatusAccountEnum from '@account/account/enum/status.account.enum';
@@ -34,7 +37,6 @@ describe('CardController', () => {
     slugEmail: 'test',
   };
 
-
   const mockAccount: Partial<Account> = {
     _id: new mongoose.Types.ObjectId(),
     type: TypesAccountEnum.CARD,
@@ -48,7 +50,7 @@ describe('CardController', () => {
     amount: 0,
     amountCustodial: 0,
     statusText: StatusAccountEnum.UNLOCK,
-    showToOwner: true
+    showToOwner: true,
   };
 
   beforeEach(async () => {
@@ -75,8 +77,14 @@ describe('CardController', () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [CardController],
       providers: [
-        { provide: CardIntegrationService, useValue: cardIntegrationServiceMock },
-        { provide: CardTransactionService, useValue: cardTransactionServiceMock },
+        {
+          provide: CardIntegrationService,
+          useValue: cardIntegrationServiceMock,
+        },
+        {
+          provide: CardTransactionService,
+          useValue: cardTransactionServiceMock,
+        },
         { provide: CardShippingService, useValue: cardShippingServiceMock },
       ],
     }).compile();
@@ -96,14 +104,16 @@ describe('CardController', () => {
         firstPage: null,
         currentPage: 0,
         elementsPerPage: 0,
-        order: []
+        order: [],
       };
       cardTransactionServiceMock.findAll.mockResolvedValue(mockResult);
 
       const result = await controller.findAll(mockQuery);
 
       expect(result).toBe(mockResult);
-      expect(cardTransactionServiceMock.findAll).toHaveBeenCalledWith(mockQuery);
+      expect(cardTransactionServiceMock.findAll).toHaveBeenCalledWith(
+        mockQuery,
+      );
     });
   });
 
@@ -120,14 +130,17 @@ describe('CardController', () => {
         firstPage: null,
         currentPage: 0,
         elementsPerPage: 0,
-        order: []
+        order: [],
       };
       cardTransactionServiceMock.findAllMe.mockResolvedValue(mockResult);
 
       const result = await controller.findAllMe(mockQuery, mockReq);
 
       expect(result).toBe(mockResult);
-      expect(cardTransactionServiceMock.findAllMe).toHaveBeenCalledWith(mockQuery, mockReq);
+      expect(cardTransactionServiceMock.findAllMe).toHaveBeenCalledWith(
+        mockQuery,
+        mockReq,
+      );
     });
   });
 
@@ -136,12 +149,17 @@ describe('CardController', () => {
       const createDto = new CardCreateDto();
       createDto.name = 'Test Card';
       const mockReq = { user: mockUser };
-      cardTransactionServiceMock.createCard.mockResolvedValue(mockAccount as AccountDocument);
+      cardTransactionServiceMock.createCard.mockResolvedValue(
+        mockAccount as AccountDocument,
+      );
 
       const result = await controller.createOne(createDto, mockReq);
 
       expect(result).toBe(mockAccount);
-      expect(cardTransactionServiceMock.createCard).toHaveBeenCalledWith(createDto, mockReq.user);
+      expect(cardTransactionServiceMock.createCard).toHaveBeenCalledWith(
+        createDto,
+        mockReq.user,
+      );
     });
   });
 
@@ -150,22 +168,29 @@ describe('CardController', () => {
       const toAccountId = new mongoose.Types.ObjectId();
       const fromAccountId = new mongoose.Types.ObjectId();
       const rechargeDto = new CardDepositCreateDto();
-      rechargeDto.to = toAccountId.toHexString() as unknown as mongoose.Schema.Types.ObjectId;
-      rechargeDto.from = fromAccountId as unknown as mongoose.Schema.Types.ObjectId;
+      rechargeDto.to =
+        toAccountId.toHexString() as unknown as mongoose.Schema.Types.ObjectId;
+      rechargeDto.from =
+        fromAccountId as unknown as mongoose.Schema.Types.ObjectId;
       rechargeDto.amount = 100;
       const mockReq = { user: mockUser };
       const mockRechargedAccount = {
         ...mockAccount,
         _id: fromAccountId,
         amount: 100,
-        amountCustodial: 100
+        amountCustodial: 100,
       };
-      cardTransactionServiceMock.rechargeCard.mockResolvedValue(mockRechargedAccount as AccountDocument);
+      cardTransactionServiceMock.rechargeCard.mockResolvedValue(
+        mockRechargedAccount as AccountDocument,
+      );
 
       const result = await controller.rechargeCard(rechargeDto, mockReq);
 
       expect(result).toBe(mockRechargedAccount);
-      expect(cardTransactionServiceMock.rechargeCard).toHaveBeenCalledWith(rechargeDto, mockReq.user);
+      expect(cardTransactionServiceMock.rechargeCard).toHaveBeenCalledWith(
+        rechargeDto,
+        mockReq.user,
+      );
     });
   });
 
@@ -183,16 +208,22 @@ describe('CardController', () => {
       const result = await controller.activateCard(configActivate, mockReq);
 
       expect(result).toBe(mockResult);
-      expect(cardIntegrationServiceMock.activateCard).toHaveBeenCalledWith(mockReq.user, configActivate);
+      expect(cardIntegrationServiceMock.activateCard).toHaveBeenCalledWith(
+        mockReq.user,
+        configActivate,
+      );
     });
 
     it('should handle activation errors', async () => {
       const configActivate = new ConfigCardActivateDto();
       const mockReq = { user: mockUser };
-      cardIntegrationServiceMock.activateCard.mockRejectedValue(new Error('Activation failed'));
+      cardIntegrationServiceMock.activateCard.mockRejectedValue(
+        new Error('Activation failed'),
+      );
 
-      await expect(controller.activateCard(configActivate, mockReq))
-        .rejects.toThrow(BadRequestException);
+      await expect(
+        controller.activateCard(configActivate, mockReq),
+      ).rejects.toThrow(BadRequestException);
     });
   });
 
@@ -201,42 +232,57 @@ describe('CardController', () => {
       const cardId = new mongoose.Types.ObjectId().toString();
       const mockLockedAccount = {
         ...mockAccount,
-        statusText: StatusAccountEnum.LOCK
+        statusText: StatusAccountEnum.LOCK,
       };
-      cardTransactionServiceMock.updateCardStatus.mockResolvedValue(mockLockedAccount as AccountDocument);
+      cardTransactionServiceMock.updateCardStatus.mockResolvedValue(
+        mockLockedAccount as AccountDocument,
+      );
 
       const result = await controller.blockedOneById(cardId);
 
       expect(result).toBe(mockLockedAccount);
-      expect(cardTransactionServiceMock.updateCardStatus).toHaveBeenCalledWith(cardId, StatusAccountEnum.LOCK);
+      expect(cardTransactionServiceMock.updateCardStatus).toHaveBeenCalledWith(
+        cardId,
+        StatusAccountEnum.LOCK,
+      );
     });
 
     it('should unlock the card when a valid cardId is provided', async () => {
       const cardId = new mongoose.Types.ObjectId().toString();
       const mockUnlockedAccount = {
         ...mockAccount,
-        statusText: StatusAccountEnum.UNLOCK
+        statusText: StatusAccountEnum.UNLOCK,
       };
-      cardTransactionServiceMock.updateCardStatus.mockResolvedValue(mockUnlockedAccount as AccountDocument);
+      cardTransactionServiceMock.updateCardStatus.mockResolvedValue(
+        mockUnlockedAccount as AccountDocument,
+      );
 
       const result = await controller.unblockedOneById(cardId);
 
       expect(result).toBe(mockUnlockedAccount);
-      expect(cardTransactionServiceMock.updateCardStatus).toHaveBeenCalledWith(cardId, StatusAccountEnum.UNLOCK);
+      expect(cardTransactionServiceMock.updateCardStatus).toHaveBeenCalledWith(
+        cardId,
+        StatusAccountEnum.UNLOCK,
+      );
     });
 
     it('should cancel the card when a valid cardId is provided', async () => {
       const cardId = new mongoose.Types.ObjectId().toString();
       const mockCancelledAccount = {
         ...mockAccount,
-        statusText: StatusAccountEnum.CANCEL
+        statusText: StatusAccountEnum.CANCEL,
       };
-      cardTransactionServiceMock.updateCardStatus.mockResolvedValue(mockCancelledAccount as AccountDocument);
+      cardTransactionServiceMock.updateCardStatus.mockResolvedValue(
+        mockCancelledAccount as AccountDocument,
+      );
 
       const result = await controller.cancelOneById(cardId);
 
       expect(result).toBe(mockCancelledAccount);
-      expect(cardTransactionServiceMock.updateCardStatus).toHaveBeenCalledWith(cardId, StatusAccountEnum.CANCEL);
+      expect(cardTransactionServiceMock.updateCardStatus).toHaveBeenCalledWith(
+        cardId,
+        StatusAccountEnum.CANCEL,
+      );
     });
   });
 
@@ -245,28 +291,38 @@ describe('CardController', () => {
       const cardId = new mongoose.Types.ObjectId().toString();
       const mockHiddenAccount = {
         ...mockAccount,
-        showToOwner: false
+        showToOwner: false,
       };
-      cardTransactionServiceMock.updateVisibility.mockResolvedValue(mockHiddenAccount as AccountDocument);
+      cardTransactionServiceMock.updateVisibility.mockResolvedValue(
+        mockHiddenAccount as AccountDocument,
+      );
 
       const result = await controller.disableOneById(cardId);
 
       expect(result).toBe(mockHiddenAccount);
-      expect(cardTransactionServiceMock.updateVisibility).toHaveBeenCalledWith(cardId, false);
+      expect(cardTransactionServiceMock.updateVisibility).toHaveBeenCalledWith(
+        cardId,
+        false,
+      );
     });
 
     it('should enable card visibility when valid cardId is provided', async () => {
       const cardId = new mongoose.Types.ObjectId().toString();
       const mockVisibleAccount = {
         ...mockAccount,
-        showToOwner: true
+        showToOwner: true,
       };
-      cardTransactionServiceMock.updateVisibility.mockResolvedValue(mockVisibleAccount as AccountDocument);
+      cardTransactionServiceMock.updateVisibility.mockResolvedValue(
+        mockVisibleAccount as AccountDocument,
+      );
 
       const result = await controller.enableOneById(cardId);
 
       expect(result).toBe(mockVisibleAccount);
-      expect(cardTransactionServiceMock.updateVisibility).toHaveBeenCalledWith(cardId, true);
+      expect(cardTransactionServiceMock.updateVisibility).toHaveBeenCalledWith(
+        cardId,
+        true,
+      );
     });
   });
 
@@ -284,7 +340,7 @@ describe('CardController', () => {
         affinity_group_name: 'Standard Delivery',
         courier: {
           company: 'DHL',
-          tracking_url: 'https://tracking.dhl.com/123'
+          tracking_url: 'https://tracking.dhl.com/123',
         },
         country_code: 'US',
         created_at: new Date().toISOString(),
@@ -292,7 +348,7 @@ describe('CardController', () => {
           id: 'B123',
           quantity: 1,
           has_stock: true,
-          status: 'active'
+          status: 'active',
         },
         address: {
           street_name: 'Main St',
@@ -304,7 +360,7 @@ describe('CardController', () => {
           country: 'USA',
           zip_code: '10001',
           neighborhood: 'Midtown',
-          additional_info: 'Near Park'
+          additional_info: 'Near Park',
         },
         receiver: {
           full_name: 'John Doe',
@@ -312,16 +368,20 @@ describe('CardController', () => {
           document_type: 'ID',
           document_number: '123456',
           tax_identification_number: 'TAX123',
-          telephone_number: '+1234567890'
+          telephone_number: '+1234567890',
         },
-        user_id: mockUserId.toString()
+        user_id: mockUserId.toString(),
       };
 
-      cardShippingServiceMock.getShippingPhysicalCard.mockResolvedValue(mockShippingResult);
+      cardShippingServiceMock.getShippingPhysicalCard.mockResolvedValue(
+        mockShippingResult,
+      );
 
       await controller.getShippingPhysicalCard(cardId, mockReq);
 
-      expect(cardShippingServiceMock.getShippingPhysicalCard).toHaveBeenCalledWith(cardId, mockReq.user);
+      expect(
+        cardShippingServiceMock.getShippingPhysicalCard,
+      ).toHaveBeenCalledWith(cardId, mockReq.user);
     });
 
     it('should create a shipping request when valid API key is provided', async () => {
@@ -336,7 +396,7 @@ describe('CardController', () => {
         affinity_group_name: 'Express Delivery',
         courier: {
           company: 'FedEx',
-          tracking_url: 'https://tracking.fedex.com/456'
+          tracking_url: 'https://tracking.fedex.com/456',
         },
         country_code: 'US',
         created_at: new Date().toISOString(),
@@ -344,7 +404,7 @@ describe('CardController', () => {
           id: 'B456',
           quantity: 1,
           has_stock: true,
-          status: 'pending'
+          status: 'pending',
         },
         address: {
           street_name: 'Broadway',
@@ -356,7 +416,7 @@ describe('CardController', () => {
           country: 'USA',
           zip_code: '10002',
           neighborhood: 'Downtown',
-          additional_info: 'Front desk'
+          additional_info: 'Front desk',
         },
         receiver: {
           full_name: mockUser.name || 'Test User',
@@ -364,16 +424,20 @@ describe('CardController', () => {
           document_type: 'ID',
           document_number: '123456',
           tax_identification_number: 'TAX456',
-          telephone_number: '+1987654321'
+          telephone_number: '+1987654321',
         },
-        user_id: mockUserId.toString()
+        user_id: mockUserId.toString(),
       };
-      cardShippingServiceMock.shippingPhysicalCard.mockResolvedValue(mockShippingResult as unknown as AccountDocument);
+      cardShippingServiceMock.shippingPhysicalCard.mockResolvedValue(
+        mockShippingResult as unknown as AccountDocument,
+      );
 
       const result = await controller.createShippingPhysicalCard(mockReq);
 
       expect(result).toBe(mockShippingResult);
-      expect(cardShippingServiceMock.shippingPhysicalCard).toHaveBeenCalledWith(mockReq.user);
+      expect(cardShippingServiceMock.shippingPhysicalCard).toHaveBeenCalledWith(
+        mockReq.user,
+      );
     });
   });
   describe('getSensitiveInfo', () => {
@@ -387,12 +451,19 @@ describe('CardController', () => {
       };
       const mockHtml = '<html>Card Info</html>';
 
-      cardIntegrationServiceMock.getSensitiveCardInfo.mockResolvedValue(mockHtml);
+      cardIntegrationServiceMock.getSensitiveCardInfo.mockResolvedValue(
+        mockHtml,
+      );
 
       await controller.getSensitiveInfo(cardId, mockRes, mockReq);
 
-      expect(cardIntegrationServiceMock.getSensitiveCardInfo).toHaveBeenCalledWith(cardId, mockReq.user);
-      expect(mockRes.setHeader).toHaveBeenCalledWith('Content-Type', 'text/html; charset=utf-8');
+      expect(
+        cardIntegrationServiceMock.getSensitiveCardInfo,
+      ).toHaveBeenCalledWith(cardId, mockReq.user);
+      expect(mockRes.setHeader).toHaveBeenCalledWith(
+        'Content-Type',
+        'text/html; charset=utf-8',
+      );
       expect(mockRes.status).toHaveBeenCalledWith(200);
       expect(mockRes.send).toHaveBeenCalledWith(mockHtml);
     });

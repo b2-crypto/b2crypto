@@ -59,7 +59,7 @@ describe('UserServiceController', () => {
         firstPage: 1,
         currentPage: 1,
         elementsPerPage: 0,
-        order: []
+        order: [],
       };
       jest.spyOn(userService, 'getAll').mockResolvedValue(result);
 
@@ -69,7 +69,10 @@ describe('UserServiceController', () => {
 
   describe('findOneById', () => {
     it('should return a single user', async () => {
-      const result: UserDocument = { id: '1', name: 'John Doe' } as UserDocument;
+      const result: UserDocument = {
+        id: '1',
+        name: 'John Doe',
+      } as UserDocument;
       jest.spyOn(userService, 'getOne').mockResolvedValue(result);
 
       expect(await controller.findOneById('1')).toBe(result);
@@ -91,7 +94,7 @@ describe('UserServiceController', () => {
         twoFactorQr: '',
         twoFactorSecret: '',
         twoFactorIsActive: false,
-        verifyEmail: false
+        verifyEmail: false,
       };
       const result: UserDocument = { id: '1', ...newUser } as UserDocument;
       jest.spyOn(userService, 'newUser').mockResolvedValue(result);
@@ -106,7 +109,10 @@ describe('UserServiceController', () => {
         id: '1',
         name: 'Jane Doe',
       };
-      const result: UserDocument = { id: '1', name: 'Jane Doe' } as UserDocument;
+      const result: UserDocument = {
+        id: '1',
+        name: 'Jane Doe',
+      } as UserDocument;
       jest.spyOn(userService, 'updateUser').mockResolvedValue(result);
 
       expect(await controller.updateOne(updateUser)).toBe(result);
@@ -115,7 +121,11 @@ describe('UserServiceController', () => {
 
   describe('deleteOneById', () => {
     it('should delete a user', async () => {
-      const result: UserDocument = { id: '1', name: 'John Doe', deleted: true } as unknown as UserDocument;
+      const result: UserDocument = {
+        id: '1',
+        name: 'John Doe',
+        deleted: true,
+      } as unknown as UserDocument;
       jest.spyOn(userService, 'deleteUser').mockResolvedValue(result);
 
       expect(await controller.deleteOneById('1')).toBe(result);
@@ -128,11 +138,16 @@ describe('UserServiceController', () => {
         password: 'newPassword123',
         confirmPassword: 'newPassword123',
       };
-      const userId = new ObjectId('507f1f77bcf86cd799439011'); 
-      const result: UserDocument = { _id: userId, name: 'John Doe' } as UserDocument;
+      const userId = new ObjectId('507f1f77bcf86cd799439011');
+      const result: UserDocument = {
+        _id: userId,
+        name: 'John Doe',
+      } as UserDocument;
       jest.spyOn(userService, 'changePasswordUser').mockResolvedValue(result);
 
-      expect(await controller.changePassword(userId, changePasswordDto)).toBe(result);
+      expect(await controller.changePassword(userId, changePasswordDto)).toBe(
+        result,
+      );
     });
   });
 
@@ -148,7 +163,7 @@ describe('UserServiceController', () => {
         firstPage: 1,
         currentPage: 1,
         elementsPerPage: 0,
-        order: []
+        order: [],
       };
       jest.spyOn(userService, 'getAll').mockResolvedValue(result);
 
@@ -169,11 +184,13 @@ describe('UserServiceController', () => {
         firstPage: 0,
         currentPage: 0,
         elementsPerPage: 0,
-        order: []
+        order: [],
       };
       jest.spyOn(userService, 'getAll').mockResolvedValue(emptyResult);
 
-      await expect(controller.findOneByEmail(email)).rejects.toThrow(NotFoundException);
+      await expect(controller.findOneByEmail(email)).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 });

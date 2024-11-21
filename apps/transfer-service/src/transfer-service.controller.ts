@@ -94,11 +94,11 @@ export class TransferServiceController implements GenericServiceController {
 
   @ApiExcludeEndpoint()
   @AllowAnon()
-  @Post('bold/webhook')//se migro logica a transfer service
+  @Post('bold/webhook') //se migro logica a transfer service
   async boldWebhook(@Body() transferBold: BoldTransferRequestDto) {
     return this.transferService.handleBoldWebhook(transferBold);
   }
-  
+
   @NoCache()
   @Get('searchText')
   // @CheckPoliciesAbility(new PolicyHandlerTransferRead())
@@ -634,7 +634,7 @@ export class TransferServiceController implements GenericServiceController {
     return this.transferService.deleteTransfer(id);
   }
 
- /*  @AllowAnon()
+  /*  @AllowAnon()
   @EventPattern(EventsNamesTransferEnum.sendLast6hHistoryCardPurchases)
   // @CheckPoliciesAbility(new PolicyHandlerTransferCreate())
   async sendLast6hHistoryCardPurchasesEvent(
@@ -646,7 +646,7 @@ export class TransferServiceController implements GenericServiceController {
     return true;
   } */
 
-/*   @AllowAnon()
+  /*   @AllowAnon()
   @EventPattern(EventsNamesTransferEnum.sendLast6hHistoryCardWalletDeposits)
   // @CheckPoliciesAbility(new PolicyHandlerTransferCreate())
   async sendLast6hHistoryCardWalletDepositsEvent(
@@ -658,7 +658,7 @@ export class TransferServiceController implements GenericServiceController {
     return true;
   } */ //TODO [Nestor]: errores no identificados
 
- /*  @AllowAnon()
+  /*  @AllowAnon()
   @EventPattern(EventsNamesTransferEnum.sendLast6hHistory)
   // @CheckPoliciesAbility(new PolicyHandlerTransferCreate())
   async sendLast6hHistory(

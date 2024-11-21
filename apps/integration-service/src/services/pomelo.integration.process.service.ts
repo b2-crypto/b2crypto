@@ -25,7 +25,7 @@ export class PomeloIntegrationProcessService {
     private readonly cache: PomeloCache,
     private readonly currencyConversion: FiatIntegrationClient,
     private readonly builder: BuildersService,
-  ) { }
+  ) {}
 
   private async process(
     process: any,
@@ -339,9 +339,9 @@ export class PomeloIntegrationProcessService {
           day: '2-digit',
           hour: '2-digit',
           minute: '2-digit',
-          second: '2-digit'
+          second: '2-digit',
         }),
-        customerName: "",
+        customerName: '',
         transactionStatus: process.status,
         transactionType: authorization.transaction?.type,
         merchantName: authorization.merchant?.name,
@@ -358,6 +358,4 @@ export class PomeloIntegrationProcessService {
 
     return process;
   }
-
-
 }

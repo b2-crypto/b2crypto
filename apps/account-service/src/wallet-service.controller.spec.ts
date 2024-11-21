@@ -95,7 +95,7 @@ describe('WalletServiceController', () => {
         firstPage: 1,
         currentPage: 1,
         elementsPerPage: 10,
-        order: []
+        order: [],
       };
 
       accountServiceMock.findAll.mockResolvedValue(mockWallets);

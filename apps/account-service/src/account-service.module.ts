@@ -11,6 +11,7 @@ import {
   IntegrationModule,
   IntegrationService,
 } from '@integration/integration';
+import { HttpModule } from '@nestjs/axios';
 import { CacheInterceptor, CacheModule, Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { APP_FILTER, APP_INTERCEPTOR } from '@nestjs/core';
@@ -19,15 +20,19 @@ import { StatusModule } from '@status/status';
 import { UserModule } from '@user/user';
 import { CategoryServiceService } from 'apps/category-service/src/category-service.service';
 import { GroupServiceService } from 'apps/group-service/src/group-service.service';
+import { FiatIntegrationClient } from 'apps/integration-service/src/clients/fiat.integration.client';
 import { StatusServiceService } from 'apps/status-service/src/status-service.service';
 import { UserServiceService } from 'apps/user-service/src/user-service.service';
 import { AccountServiceController } from './account-service.controller';
 import { AccountServiceService } from './account-service.service';
 import { WalletServiceController } from './wallet-service.controller';
-import { FiatIntegrationClient } from 'apps/integration-service/src/clients/fiat.integration.client';
-import { HttpModule } from '@nestjs/axios';
 import { WalletServiceService } from './wallet-service.service';
 import { CardServiceController } from './card-service.controller';
+import { CardIntegrationService } from './card-integration-service';
+import { CardTransactionService } from './Card/CardTransactionService';
+import { CardShippingService } from './Card/CardShippingService';
+import { CardValidationService } from './Card/card-validation.service';
+import { CardAfgService } from './Card/card-afg.service';
 
 @Module({
   imports: [
@@ -81,6 +86,12 @@ import { CardServiceController } from './card-service.controller';
       useClass: ResponseHttpExceptionFilter,
     },
     WalletServiceService,
+
+    CardAfgService,
+    CardValidationService,
+    CardShippingService,
+    CardTransactionService,
+    CardIntegrationService,
   ] as IProvider[],
 })
 export class AccountServiceModule { }

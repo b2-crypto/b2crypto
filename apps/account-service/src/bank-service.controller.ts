@@ -18,9 +18,7 @@ import { BankServiceService } from './bank-service.service';
 @ApiTags('BANK')
 @Controller('bank')
 export class BankServiceController {
-  constructor(
-    private readonly bankService: BankServiceService,
-  ) {}
+  constructor(private readonly bankService: BankServiceService) {}
 
   @Get('all')
   @NoCache()

@@ -1,11 +1,7 @@
 import dbIntegrationEnum from '@builder/builders/enums/db-integration.enum';
 import { CommonService } from '@common/common';
 import { BasicServiceModel } from '@common/common/models/basic-service.model';
-import {
-  BadRequestException,
-  Inject,
-  Injectable
-} from '@nestjs/common';
+import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { TransferCreateDto } from '@transfer/transfer/dto/transfer.create.dto';
 import { TransferUpdateDto } from '@transfer/transfer/dto/transfer.update.dto';
 import {
@@ -95,7 +91,7 @@ export class TransferServiceMongooseService extends BasicServiceModel<
     const transfers = await this.transferModel.find();
     for (let h = 0; h < transfers.length; h++) {
       transferUpdate.push({
-        id: transfers[h]._id
+        id: transfers[h]._id,
       });
     }
     return this.updateMany(

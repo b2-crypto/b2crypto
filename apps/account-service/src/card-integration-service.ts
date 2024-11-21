@@ -26,8 +26,6 @@ interface GenericResponse {
   };
 }
 
-
-
 interface CardActivationRequest {
   pin: string;
   pan: string;
@@ -39,7 +37,7 @@ export class CardIntegrationService {
   constructor(
     private readonly integration: IntegrationService,
     private readonly accountService: AccountServiceService,
-  ) { }
+  ) {}
 
   async getCardIntegrationWithUser(user: User) {
     const cardIntegration = await this.integration.getCardIntegration(
@@ -56,7 +54,11 @@ export class CardIntegrationService {
     return cardIntegration;
   }
 
-  async getUserCard(cardIntegration: any, user: User, account?: AccountDocument): Promise<UserCard> {
+  async getUserCard(
+    cardIntegration: any,
+    user: User,
+    account?: AccountDocument,
+  ): Promise<UserCard> {
     try {
       const response: PomeloResponse = await cardIntegration.getUser({
         email: user.email.toLowerCase(),
@@ -73,7 +75,11 @@ export class CardIntegrationService {
     }
   }
 
-  private async createUserCard(cardIntegration: any, user: User, account?: AccountDocument): Promise<UserCard> {
+  private async createUserCard(
+    cardIntegration: any,
+    user: User,
+    account?: AccountDocument,
+  ): Promise<UserCard> {
     const birthDate = account?.personalData?.birth ?? user.personalData.birth;
     if (!birthDate) {
       throw new BadRequestException('Birth date not found');
@@ -82,20 +88,34 @@ export class CardIntegrationService {
     const userCardData = {
       name: account?.personalData?.name ?? user.personalData.name,
       surname: account?.personalData?.lastName ?? user.personalData.lastName,
-      identification_type: this.getDocumentType(account?.personalData?.typeDocId ?? user.personalData.typeDocId),
-      identification_value: account?.personalData?.numDocId ?? user.personalData.numDocId?.toString(),
+      identification_type: this.getDocumentType(
+        account?.personalData?.typeDocId ?? user.personalData.typeDocId,
+      ),
+      identification_value:
+        account?.personalData?.numDocId ??
+        user.personalData.numDocId?.toString(),
       birthdate: this.formatDate(new Date(birthDate)),
       gender: account?.personalData?.gender ?? user.personalData.gender,
       email: account?.email ?? user.personalData.email[0] ?? user.email,
-      phone: account?.telephone ?? user.personalData.telephones[0]?.phoneNumber ?? user.personalData.phoneNumber,
+      phone:
+        account?.telephone ??
+        user.personalData.telephones[0]?.phoneNumber ??
+        user.personalData.phoneNumber,
       nationality: 'COL',
-      legal_address: this.buildUserAddress(account?.personalData?.location.address ?? user.personalData.location.address),
+      legal_address: this.buildUserAddress(
+        account?.personalData?.location.address ??
+          user.personalData.location.address,
+      ),
       operation_country: 'COL',
     };
 
-    const response: PomeloResponse = await cardIntegration.createUser(userCardData);
+    const response: PomeloResponse = await cardIntegration.createUser(
+      userCardData,
+    );
     if (response?.error) {
-      throw new BadRequestException(response.error?.message || 'Error creating user card');
+      throw new BadRequestException(
+        response.error?.message || 'Error creating user card',
+      );
     }
 
     return response.data;
@@ -132,7 +152,10 @@ export class CardIntegrationService {
   }
 
   private formatDate(date: Date): string {
-    return `${date.getFullYear()}-${CommonService.getNumberDigits(date.getMonth() + 1, 2)}-${CommonService.getNumberDigits(date.getDate(), 2)}`;
+    return `${date.getFullYear()}-${CommonService.getNumberDigits(
+      date.getMonth() + 1,
+      2,
+    )}-${CommonService.getNumberDigits(date.getDate(), 2)}`;
   }
 
   async activateCard(user: User, configActivate: ConfigCardActivateDto) {
@@ -143,19 +166,27 @@ export class CardIntegrationService {
     const cardIntegration = await this.getCardIntegrationWithUser(user);
 
     if (!configActivate.pin || configActivate.pin.length !== 4) {
-      configActivate.pin = CommonService.getNumberDigits(CommonService.randomIntNumber(9999), 4);
+      configActivate.pin = CommonService.getNumberDigits(
+        CommonService.randomIntNumber(9999),
+        4,
+      );
     }
 
     const activationRequest: CardActivationRequest = {
       pin: configActivate.pin,
       pan: configActivate.pan,
-      previous_card_id: configActivate.prevCardId
+      previous_card_id: configActivate.prevCardId,
     };
 
-    const response: PomeloResponse = await cardIntegration.activateCard(user.userCard, activationRequest);
+    const response: PomeloResponse = await cardIntegration.activateCard(
+      user.userCard,
+      activationRequest,
+    );
 
     if (response?.error) {
-      const errorDetails = (response.error.details || []).map(err => err.detail);
+      const errorDetails = (response.error.details || []).map(
+        (err) => err.detail,
+      );
       throw new BadRequestException(errorDetails.join(','));
     }
 
@@ -186,13 +217,17 @@ export class CardIntegrationService {
       }
 
       if (responseData.error) {
-        throw new BadRequestException(responseData.error.message || 'Error getting card status');
+        throw new BadRequestException(
+          responseData.error.message || 'Error getting card status',
+        );
       }
 
       return responseData;
     } catch (error) {
       Logger.error(error, 'Error getting card status');
-      throw new BadRequestException(error instanceof Error ? error.message : 'Error getting card status');
+      throw new BadRequestException(
+        error instanceof Error ? error.message : 'Error getting card status',
+      );
     }
   }
 
@@ -224,18 +259,19 @@ export class CardIntegrationService {
     const width = 'width="100%"';
     const height = 'height="270em"';
     const locale = 'es';
-    const urlStyles = 'https://cardsstyles.s3.eu-west-3.amazonaws.com/cardsstyles2.css';
+    const urlStyles =
+      'https://cardsstyles.s3.eu-west-3.amazonaws.com/cardsstyles2.css';
 
     const html = pug.render(
       '<iframe ' +
-      `${width} ` +
-      `${height} ` +
-      'allow="clipboard-write" ' +
-      'class="iframe-list" ' +
-      'scrolling="no" ' +
-      `src="${url}/v1/${cardIdPomelo}?auth=${token['access_token']}&styles=${urlStyles}&field_list=pan,code,pin,name,expiration&layout=card&locale=${locale}" ` +
-      'frameBorder="0">' +
-      '</iframe>',
+        `${width} ` +
+        `${height} ` +
+        'allow="clipboard-write" ' +
+        'class="iframe-list" ' +
+        'scrolling="no" ' +
+        `src="${url}/v1/${cardIdPomelo}?auth=${token['access_token']}&styles=${urlStyles}&field_list=pan,code,pin,name,expiration&layout=card&locale=${locale}" ` +
+        'frameBorder="0">' +
+        '</iframe>',
     );
 
     return html;

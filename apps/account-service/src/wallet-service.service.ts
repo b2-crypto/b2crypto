@@ -10,7 +10,6 @@ import { UserServiceService } from 'apps/user-service/src/user-service.service';
 import { IntegrationService } from '@integration/integration';
 import EventsNamesTransferEnum from 'apps/transfer-service/src/enum/events.names.transfer.enum';
 import EventsNamesCategoryEnum from 'apps/category-service/src/enum/events.names.category.enum';
-import EventsNamesStatusEnum from 'apps/status-service/src/enum/events.names.status.enum';
 import EventsNamesPspAccountEnum from 'apps/psp-service/src/enum/events.names.psp.acount.enum';
 import { TransferCreateButtonDto } from 'apps/transfer-service/src/dto/transfer.create.button.dto';
 import { TransferCreateDto } from '@transfer/transfer/dto/transfer.create.dto';
@@ -26,9 +25,12 @@ import { WalletTransactionService } from './Wallet/WalletTransactionService';
 import { WalletNotificationService } from './Wallet/WalletNotificationService';
 import { WalletB2BinPayService } from './Wallet/WalletB2BinPayService';
 import EventsNamesAccountEnum from './enum/events.names.account.enum';
+import EventsNamesStatusEnum from 'apps/status-service/src/enum/events.names.status.enum';
 
 @Injectable()
 export class WalletServiceService {
+  private cryptoType = null;
+
   constructor(
     @Inject(AccountServiceService)
     private readonly accountService: AccountServiceService,
@@ -99,17 +101,34 @@ export class WalletServiceService {
   private async handleInternalTransfer(createDto: WalletDepositCreateDto, to: any, user: User, host: string) {
     const from = await this.baseService.getWalletByIdAndValidate(createDto.from.toString());
 
-    const [depositWalletCategory, withDrawalWalletCategory, approvedStatus, internalPspAccount] = await Promise.all([
-      this.ewalletBuilder.getPromiseCategoryEventClient(EventsNamesCategoryEnum.findOneByNameType, {
-        slug: 'deposit-wallet',
-        type: TagEnum.MONETARY_TRANSACTION_TYPE,
-      }),
-      this.ewalletBuilder.getPromiseCategoryEventClient(EventsNamesCategoryEnum.findOneByNameType, {
-        slug: 'withdrawal-wallet',
-        type: TagEnum.MONETARY_TRANSACTION_TYPE,
-      }),
-      this.ewalletBuilder.getPromiseStatusEventClient(EventsNamesStatusEnum.findOneByName, 'approved'),
-      this.ewalletBuilder.getPromisePspAccountEventClient(EventsNamesPspAccountEnum.findOneByName, 'internal'),
+    const [
+      depositWalletCategory,
+      withDrawalWalletCategory,
+      approvedStatus,
+      internalPspAccount,
+    ] = await Promise.all([
+      this.ewalletBuilder.getPromiseCategoryEventClient(
+        EventsNamesCategoryEnum.findOneByNameType,
+        {
+          slug: 'deposit-wallet',
+          type: TagEnum.MONETARY_TRANSACTION_TYPE,
+        },
+      ),
+      this.ewalletBuilder.getPromiseCategoryEventClient(
+        EventsNamesCategoryEnum.findOneByNameType,
+        {
+          slug: 'withdrawal-wallet',
+          type: TagEnum.MONETARY_TRANSACTION_TYPE,
+        },
+      ),
+      this.ewalletBuilder.getPromiseStatusEventClient(
+        EventsNamesStatusEnum.findOneByName,
+        'approved',
+      ),
+      this.ewalletBuilder.getPromisePspAccountEventClient(
+        EventsNamesPspAccountEnum.findOneByName,
+        'internal',
+      ),
     ]);
 
     const result = await Promise.all([
@@ -128,7 +147,12 @@ export class WalletServiceService {
     return result;
   }
 
-  private async handleExternalDeposit(createDto: WalletDepositCreateDto, to: any, user: User, host: string) {
+  private async handleExternalDeposit(
+    createDto: WalletDepositCreateDto,
+    to: any,
+    user: User,
+    host: string,
+  ) {
     const transferBtn: TransferCreateButtonDto = {
       amount: createDto.amount.toString(),
       currency: 'USD',
@@ -144,9 +168,17 @@ export class WalletServiceService {
     try {
       let depositAddress = to.responseCreation;
       if (!depositAddress) {
-        depositAddress = await this.ewalletBuilder.getPromiseTransferEventClient(
-          EventsNamesTransferEnum.createOneDepositLink,
-          transferBtn,
+        depositAddress =
+          await this.ewalletBuilder.getPromiseTransferEventClient(
+            EventsNamesTransferEnum.createOneDepositLink,
+            transferBtn,
+          );
+        this.ewalletBuilder.emitAccountEventClient(
+          EventsNamesAccountEnum.updateOne,
+          {
+            id: to._id,
+            responseCreation: depositAddress,
+          },
         );
         this.ewalletBuilder.emitAccountEventClient(
           EventsNamesAccountEnum.updateOne,
