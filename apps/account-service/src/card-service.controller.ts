@@ -37,7 +37,7 @@ export class CardServiceController {
     private readonly cardIntegrationService: CardIntegrationService,
     private readonly cardTransactionService: CardTransactionService,
     private readonly cardShippingService: CardShippingService,
-  ) {}
+  ) { }
 
   @Get('all')
   @NoCache()

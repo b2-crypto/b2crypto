@@ -32,13 +32,12 @@ export class IntegrationCardService<
   TUserResponse = UserResponseDto,
   TShippingResponse = ShippingResultInterface,
 > implements
-    IntegrationCardInterface<
-      TUserCardDto,
-      TCardDto,
-      TCardSearchDto,
-      TUserResponse
-    >
-{
+  IntegrationCardInterface<
+    TUserCardDto,
+    TCardDto,
+    TCardSearchDto,
+    TUserResponse
+  > {
   http: AxiosInstance;
   private routesMap: CardRoutesInterface;
   private client: ClientCardDto;
@@ -176,8 +175,8 @@ export class IntegrationCardService<
     return this.http.patch(this.routesMap.updateUser, userCard);
   }
 
-  async getCard(card: TCardDto): Promise<AxiosResponse<any[], any>> {
-    return await this.fetch('GET', this.routesMap.searchCard, card);
+  async getCard(cardId: string): Promise<AxiosResponse<any, any>> {
+    return await this.fetch('GET', this.routesMap.searchCard + '/' + cardId);
   }
   async getCardByQuery(query: CardSearchDto) {
     const path = `${this.routesMap.searchCard}?filter[user_id]=${query.user_id}&page[size]=${query.page_size}`;

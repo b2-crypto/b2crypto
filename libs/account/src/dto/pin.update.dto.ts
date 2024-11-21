@@ -20,4 +20,13 @@ export class PinUpdateDto {
     example: ['1234'],
   })
   pin?: string;
+
+  /*@IsNotEmpty()
+  @IsString()
+  @ApiProperty({
+    required: true,
+    description: 'PIN before update',
+    example: ['1234'],
+  })
+  oldPin: string;*/
 }
