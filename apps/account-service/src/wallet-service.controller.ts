@@ -41,6 +41,8 @@ import { Cache } from 'cache-manager';
 import { WalletServiceService } from './wallet-service.service';
 import { isMongoId } from 'class-validator';
 import { JwtAuthGuard } from '@auth/auth/guards/jwt-auth.guard';
+import { ConfigService } from '@nestjs/config';
+import EventsNamesAccountEnum from './enum/events.names.account.enum';
 
 @ApiTags('E-WALLET')
 @Controller('wallets')
@@ -197,7 +199,7 @@ export class WalletServiceController {
   ) {
     try {
       const host = req.get('Host');
-      return await this.walletService.rechargeWallet(
+      return await this.walletServiceService.rechargeWallet(
         createDto,
         req?.user?.id,
         host,
