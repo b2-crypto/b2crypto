@@ -23,11 +23,11 @@ import { StatusServiceService } from 'apps/status-service/src/status-service.ser
 import { UserServiceService } from 'apps/user-service/src/user-service.service';
 import { AccountServiceController } from './account-service.controller';
 import { AccountServiceService } from './account-service.service';
-import { CardServiceController } from './card-service.controller';
 import { WalletServiceController } from './wallet-service.controller';
 import { FiatIntegrationClient } from 'apps/integration-service/src/clients/fiat.integration.client';
 import { HttpModule } from '@nestjs/axios';
 import { WalletServiceService } from './wallet-service.service';
+import { CardServiceController } from './card-service.controller';
 
 @Module({
   imports: [
@@ -83,4 +83,4 @@ import { WalletServiceService } from './wallet-service.service';
     WalletServiceService,
   ] as IProvider[],
 })
-export class AccountServiceModule {}
+export class AccountServiceModule { }

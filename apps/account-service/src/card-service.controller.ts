@@ -27,7 +27,7 @@ import { CardTransactionService } from './Card/CardTransactionService';
 import { CardShippingService } from './Card/CardShippingService';
 @ApiTags('CARD')
 @Controller('cards')
-export class CardController {
+export class CardServiceController {
   constructor(
     private readonly cardIntegrationService: CardIntegrationService,
     private readonly cardTransactionService: CardTransactionService,
