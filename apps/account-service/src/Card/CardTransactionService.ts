@@ -333,6 +333,8 @@ export class CardTransactionService {
   async createCard(createDto: CardCreateDto, user: User) {
     createDto.accountType =
       createDto.accountType ?? CardTypesAccountEnum.VIRTUAL;
+    createDto.owner = user.id;
+
     return this.accountService.createOne(createDto);
   }
 
