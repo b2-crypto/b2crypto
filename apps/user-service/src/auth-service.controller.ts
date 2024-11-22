@@ -415,6 +415,7 @@ export class AuthServiceController {
   @ApiResponse(ResponseB2Crypto.getResponseSwagger(500, ActionsEnum.LOGIN)) */
   @Post('registry')
   async registryUser(@Body() userDto: UserRegisterDto, @Req() req) {
+    console.log('init [AuthServiceController.registryUser]');
     const client = await this.getClientFromPublicKey(req.clientApi, false);
     userDto.name =
       userDto.name ?? userDto.username ?? userDto.email.split('@')[0];
@@ -627,7 +628,7 @@ export class AuthServiceController {
     // Checks verified email (first time sing-in)
     const statusCode =
       !isBoolean(userCodeDto.user.verifyEmail) ||
-      userCodeDto.user.verifyEmail === true
+        userCodeDto.user.verifyEmail === true
         ? 301
         : 201;
     // Get token
