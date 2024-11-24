@@ -35,7 +35,7 @@ import {
   TZ,
   URL_API_EMAIL_APP,
 } from '../../secrets';
-import { mongoAtlasCluster } from '../mongoatlas/mongodbatlas.cluster';
+import { mongoAtlasClusterExisting } from '../mongoatlas/mongodbatlas.cluster';
 import { mongodbatlasServerlessInstance } from '../mongoatlas/mongodbatlas.serverless-instance';
 import {
   cloudwatchLogGroup,
@@ -92,9 +92,12 @@ export const ecsFargateService = new awsx.ecs.FargateService(
             name: 'DATABASE_URL',
             value: pulumi
               .all([
-                mongoAtlasCluster?.connectionStrings.apply(
+                mongoAtlasClusterExisting?.connectionStrings.apply(
                   (connections) => connections[0].standardSrv,
                 ) ??
+                  // mongoAtlasCluster?.connectionStrings.apply(
+                  //   (connections) => connections[0].standardSrv,
+                  // ) ??
                   mongodbatlasServerlessInstance?.connectionStringsStandardSrv,
                 SECRETS.MONGOATLAS_USERNAME,
                 SECRETS.MONGOATLAS_PASSWORD,
@@ -107,7 +110,7 @@ export const ecsFargateService = new awsx.ecs.FargateService(
           },
           {
             name: 'RABBIT_MQ_HOST',
-            value: mqBrokerRabbitMQ.instances.apply(
+            value: mqBrokerRabbitMQ?.instances?.apply(
               (instances) =>
                 instances[0].endpoints[0]
                   ?.split('//')
@@ -115,6 +118,23 @@ export const ecsFargateService = new awsx.ecs.FargateService(
                   ?.split(':')
                   .shift() as string,
             ),
+            // value:
+            //   mqBrokerRabbitMQExisting?.instances?.apply(
+            //     (instances) =>
+            //       instances[0].endpoints[0]
+            //         ?.split('//')
+            //         .pop()
+            //         ?.split(':')
+            //         .shift() as string,
+            //   ) ??
+            //   mqBrokerRabbitMQ?.instances?.apply(
+            //     (instances) =>
+            //       instances[0].endpoints[0]
+            //         ?.split('//')
+            //         .pop()
+            //         ?.split(':')
+            //         .shift() as string,
+            //   ),
           },
           { name: 'RABBIT_MQ_PORT', value: RABBIT_MQ_PORT },
           { name: 'RABBIT_MQ_QUEUE', value: RABBIT_MQ_QUEUE },
@@ -271,7 +291,7 @@ export const ecsFargateService = new awsx.ecs.FargateService(
             targetGroup: lbApplicationLoadBalancer.defaultTargetGroup,
           },
         ],
-        readonlyRootFilesystem: true,
+        readonlyRootFilesystem: false,
         healthCheck: {
           command: ['CMD-SHELL', `curl -f http://localhost/health || exit 1`],
           startPeriod: 15,
