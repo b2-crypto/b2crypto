@@ -95,7 +95,7 @@ config:
   b2crypto-iac:TESTING: "false"
   b2crypto-iac:TZ: UTC
   b2crypto-iac:URL_API_EMAIL_APP: ""
-  b2crypto-iac:VPC_CIDR_BLOCK: 10.3.0.0/16
+  b2crypto-iac:VPC_CIDR_BLOCK: 10.2.0.0/16
   mongodbatlas:privateKey:
     secure: AAABAMJZ0+qVxLuwGcvwozo5VPgkpAkBcdm+bMxa0LuHaFt2DiM+kwgq7x43QD1Dv2CCnMv+tJsw5LpRQ1y5XvJP3cg=
   mongodbatlas:publicKey:
@@ -122,7 +122,7 @@ config:
   b2crypto-iac:SUBDOMAIN_PREFIX: apiprod
   b2crypto-iac:SUBDOMAIN_PREFIX_OPTL_COLLECTOR: optlcollector
   b2crypto-iac:SUBDOMAIN_PREFIX_OPTL_UI: optlui
-  b2crypto-iac:OPTL_OPEN_SEARCH_INSTANCE_TYPE: m5.large.search
+  b2crypto-iac:OPTL_OPEN_SEARCH_INSTANCE_TYPE: t3.small.search
   b2crypto-iac:OPTL_OPEN_SEARCH_INSTANCE_COUNT: "3"
   b2crypto-iac:OPTL_OPEN_SEARCH_ZONE_AWARENESS_AVAILABILITY_COUNT: "3"
   b2crypto-iac:OPTL_OPEN_SEARCH_EBS_VOLUME_SIZE: "20"

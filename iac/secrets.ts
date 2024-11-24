@@ -220,9 +220,7 @@ export const TAGS = {
 };
 
 export const isProduction = () => ENVIRONMENT === 'PROD';
-export const isStressTest = () =>
-  TESTING_MODE === 'STRESS_TEST' && ENVIRONMENT === 'TEST';
+export const isTesting = () => ENVIRONMENT === 'TEST';
+export const isStressTest = () => ENVIRONMENT === 'TEST_STRESS';
 
-export const mongoAtlasClusterName = isStressTest()
-  ? `${PROJECT_NAME}-monolith-stress-${STACK}`
-  : `${PROJECT_NAME}-monolith-${STACK}`;
+export const mongoAtlasClusterName = `${PROJECT_NAME}-monolith-${STACK}`;

@@ -41,3 +41,9 @@ export const mqBrokerRabbitMQ = new aws.mq.Broker(
     // protect: isProduction(),
   },
 );
+
+// export const mqBrokerRabbitMQExisting = isTesting()
+//   ? aws.mq.getBrokerOutput({
+//       brokerName: `${PROJECT_NAME}-rabbitmq-staging`,
+//     })
+//   : null;
