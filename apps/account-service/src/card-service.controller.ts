@@ -1547,10 +1547,10 @@ export class CardServiceController extends AccountServiceController {
     //   throw new BadRequestException('Wallet not found');
     // }
     if (!from) {
-      throw new BadRequestException('Wallet is not valid');
+      throw new BadRequestException('Wallet or Card not valid');
     }
     if (from.amount < createDto.amount) {
-      throw new BadRequestException('Wallet with enough balance');
+      throw new BadRequestException('Wallet or Card with enough balance');
     }
     const depositCardCategory =
       await this.cardBuilder.getPromiseCategoryEventClient(

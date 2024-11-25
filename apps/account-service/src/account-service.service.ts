@@ -166,11 +166,11 @@ export class AccountServiceService
       $exists: false,
     };
     const cryptoList = await this.lib.findAll(query);
-    const fireblocksCrm = await this.builder.getPromiseCrmEventClient(
-      EventsNamesCrmEnum.findOneByName,
-      IntegrationCryptoEnum.FIREBLOCKS,
-    );
     if (!cryptoList.totalElements) {
+      const fireblocksCrm = await this.builder.getPromiseCrmEventClient(
+        EventsNamesCrmEnum.findOneByName,
+        IntegrationCryptoEnum.FIREBLOCKS,
+      );
       const cryptoType = await this.integration.getCryptoIntegration(
         null,
         IntegrationCryptoEnum.FIREBLOCKS,
@@ -194,6 +194,18 @@ export class AccountServiceService
       cryptoList.list = await Promise.all(promises);
     }
     return cryptoList;
+  }
+  async networksWalletsFireblocks(query?: QuerySearchAnyDto): Promise<any> {
+    // Job to check fireblocks available wallets
+    query = query || new QuerySearchAnyDto();
+    query.where = query.where || {};
+    query.take = 10000;
+    query.where.accountType = WalletTypesAccountEnum.VAULT;
+    query.where.owner = {
+      $exists: false,
+    };
+    const networkList = await this.lib.groupByNetwork(query);
+    return networkList;
   }
 
   async checkAvailablesWalletsFireblocksAllBrands(query?: QuerySearchAnyDto) {

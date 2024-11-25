@@ -191,6 +191,17 @@ export class WalletServiceController extends AccountServiceController {
     return this.walletService.availableWalletsFireblocks(query);
   }
 
+  @Get('networks')
+  @UseGuards(ApiKeyAuthGuard)
+  @NoCache()
+  networksWallet(@Query() query: QuerySearchAnyDto, @Req() req?: any) {
+    query = query ?? {};
+    query.where = query.where ?? {};
+    query.where.type = TypesAccountEnum.WALLET;
+    query.where.brand = req.user.brand;
+    return this.walletService.networksWalletsFireblocks(query);
+  }
+
   @ApiExcludeEndpoint()
   @Get('clean')
   @UseGuards(ApiKeyAuthGuard, JwtAuthGuard)
