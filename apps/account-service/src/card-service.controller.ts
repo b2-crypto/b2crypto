@@ -1763,7 +1763,7 @@ export class CardServiceController extends AccountServiceController {
             error.message || error,
             `Update AFG Card-${n_card?.id.toString()}-${user.email}`,
           );
-          throw new BadRequestException('Bad update card');
+          //throw new BadRequestException('Bad update card');
         }
       }
       return {
