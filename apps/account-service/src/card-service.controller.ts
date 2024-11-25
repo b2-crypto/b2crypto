@@ -1721,16 +1721,23 @@ export class CardServiceController extends AccountServiceController {
       }
       const cardId = (rta.data && rta.data['id']) || rta['id'];
       Logger.debug(cardId, `cardId actived`);
-
-      const cards = await cardIntegration.getCard(cardId);
-      Logger.debug(cards, `Result pomelo active`);
-      const crd = cards.data;
-      Logger.debug(cardId, `Search card active`);
-      const card = await this.cardService.findAll({
-        where: {
-          'cardConfig.id': crd.id,
-        },
-      });
+      let crd = null;
+      let card = null;
+      let cards = null;
+      try {
+        cards = await cardIntegration.getCard(cardId);
+        Logger.debug(cards, `Result pomelo active`);
+        crd = cards.data;
+        Logger.debug(cardId, `Search card active`);
+        card = await this.cardService.findAll({
+          where: {
+            'cardConfig.id': crd.id,
+          },
+        });
+      } catch (err) {
+        Logger.error(err, 'Error get card pomelo');
+        throw new BadRequestException('Get Card error');
+      }
       if (!card.totalElements) {
         const cardDto = this.buildCardDto(crd, user.personalData, user.email);
         cardDto.pin = configActivate.pin;
