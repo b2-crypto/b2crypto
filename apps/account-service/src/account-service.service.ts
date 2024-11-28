@@ -331,13 +331,14 @@ export class AccountServiceService
         },
       };
 
-      Logger.log(data, 'Card Request Confirmation Email Prepared');
+      Logger.log(data, 'Account Request Confirmation Email Prepared');
       this.builder.emitMessageEventClient(
         EventsNamesMessageEnum.sendCardRequestConfirmationEmail,
         data,
       );
     } else {
       Logger.warn(
+        JSON.stringify(account),
         'Account created without email. Skipping confirmation email.',
       );
     }
