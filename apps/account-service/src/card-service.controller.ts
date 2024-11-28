@@ -1754,7 +1754,7 @@ export class CardServiceController extends AccountServiceController {
         const afg = group.list[0];
         try {
           const rta = await cardIntegration.updateCard({
-            id: n_card?.id,
+            id: crd?.id,
             affinity_group_id: afg.valueGroup,
           });
           Logger.debug(rta.data, `Updated AFG Card-${n_card?.id.toString()}`);
