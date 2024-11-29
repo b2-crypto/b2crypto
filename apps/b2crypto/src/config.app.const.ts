@@ -26,7 +26,7 @@ import { PermissionServiceModule } from 'apps/permission-service/src/permission-
 import { PersonServiceModule } from 'apps/person-service/src/person-service.module';
 import { PspServiceModule } from 'apps/psp-service/src/psp-service.module';
 import { RoleServiceModule } from 'apps/role-service/src/role-service.module';
-import { SecurityServiceModule } from 'apps/security-service/src/security-service.module';
+import { AuthServiceModule } from 'apps/auth-service/src/auth-service.module';
 import { StatsServiceModule } from 'apps/stats-service/src/stats-service.module';
 import { StatusServiceModule } from 'apps/status-service/src/status-service.module';
 import { TrafficServiceModule } from 'apps/traffic-service/src/traffic-service.module';
@@ -90,7 +90,7 @@ export const configApp = {
     AuthModule,
     // Servicies Public
     CommunicationServiceModule,
-    SecurityServiceModule,
+    AuthServiceModule,
     StatsServiceModule,
     QueueAdminModule,
     //SeedModule,

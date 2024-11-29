@@ -3,7 +3,7 @@ import { BuildersModule } from '@builder/builders';
 import { IntegrationModule } from '@integration/integration';
 import { Module } from '@nestjs/common';
 import { UserModule } from '@user/user';
-import { AuthServiceController } from './auth-service.controller';
+import { AuthServiceController } from '../../auth-service/src/auth-service.controller';
 import { UserServiceController } from './user-service.controller';
 import { UserServiceService } from './user-service.service';
 
@@ -12,4 +12,4 @@ import { UserServiceService } from './user-service.service';
   controllers: [UserServiceController, AuthServiceController],
   providers: [UserServiceService],
 })
-export class UserServiceModule {}
+export class UserServiceModule { }

@@ -18,6 +18,7 @@ import { TransferServiceModule } from 'apps/transfer-service/src/transfer-servic
 import { PersonServiceModule } from 'apps/person-service/src/person-service.module';
 import { AccountServiceModule } from 'apps/account-service/src/account-service.module';
 import { SwaggerSteakeyConfigEnum } from 'libs/config/enum/swagger.stakey.config.enum';
+import { AuthModule } from '@auth/auth';
 
 async function bootstrap(port?: number | string) {
   Logger.log(process.env.TZ, 'Timezone Gateway');
@@ -169,6 +170,7 @@ function addSwaggerGlobal(app: INestApplication) {
     include: [
       CrmServiceModule,
       UserServiceModule,
+      AuthModule,
       RoleServiceModule,
       LeadServiceModule,
       StatusServiceModule,

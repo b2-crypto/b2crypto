@@ -25,6 +25,8 @@ enum EventsNamesMessageEnum {
   sendSecurityNotifications = 'MESSAGE.SEND.SECURITY.NOTIFICATIONS',
   sendPasswordRestoredEmail = 'MESSAGE.SEND.PASSWORD.RESTORED.EMAIL',
   sendPreRegisterEmail = 'MESSAGE.SEND.PREREGISTER.EMAIL',
+  sendCryptoWalletsOperation = "sendCryptoWalletsOperation",
+  sendCryptoWalletsBalance = "sendCryptoWalletsBalance",
 }
 
 export default EventsNamesMessageEnum;

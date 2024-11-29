@@ -1,8 +1,8 @@
 import { NestFactory } from '@nestjs/core';
-import { SecurityServiceModule } from './security-service.module';
+import { AuthServiceModule } from './auth-service.module';
 
 async function bootstrap() {
-  const app = await NestFactory.create(SecurityServiceModule, {
+  const app = await NestFactory.create(AuthServiceModule, {
     // logger: false,
   });
   app.enableCors();

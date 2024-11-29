@@ -64,7 +64,7 @@ import EventsNamesPersonEnum from 'apps/person-service/src/enum/events.names.per
 import { isBoolean } from 'class-validator';
 import { SwaggerSteakeyConfigEnum } from 'libs/config/enum/swagger.stakey.config.enum';
 import { BadRequestError } from 'passport-headerapikey';
-import EventsNamesUserEnum from './enum/events.names.user.enum';
+import EventsNamesUserEnum from '../../user-service/src/enum/events.names.user.enum';
 
 @ApiTags('AUTHENTICATION')
 @Controller('auth')

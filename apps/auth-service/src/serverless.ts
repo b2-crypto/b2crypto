@@ -1,4 +1,4 @@
-import { SecurityServiceModule } from './security-service.module';
+import { AuthServiceModule } from './auth-service.module';
 import serverlessExpress from '@vendia/serverless-express';
 import { Callback, Context, Handler } from 'aws-lambda';
 import { NestFactory } from '@nestjs/core';
@@ -6,7 +6,7 @@ import { NestFactory } from '@nestjs/core';
 let server: Handler;
 
 async function bootstrap(): Promise<Handler> {
-  const app = await NestFactory.create(SecurityServiceModule, {
+  const app = await NestFactory.create(AuthServiceModule, {
     // logger: false,
   });
   app.enableCors();

@@ -19,6 +19,7 @@ import { RoleServiceModule } from 'apps/role-service/src/role-service.module';
 import { StatsServiceModule } from 'apps/stats-service/src/stats-service.module';
 import { TrafficServiceModule } from 'apps/traffic-service/src/traffic-service.module';
 import { UserServiceModule } from 'apps/user-service/src/user-service.module';
+import { AuthModule } from '@auth/auth';
 
 @Module({
   imports: [
@@ -28,12 +29,12 @@ import { UserServiceModule } from 'apps/user-service/src/user-service.module';
     LeadModule,
     UserModule,
     RoleModule,
-
     PersonModule,
     TrafficModule,
     CategoryModule,
     AffiliateModule,
     UserServiceModule,
+    AuthModule,
     RoleServiceModule,
     BrandModule,
     PersonServiceModule,

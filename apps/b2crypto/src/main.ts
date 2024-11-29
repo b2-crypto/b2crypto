@@ -20,6 +20,7 @@ import { AccountServiceModule } from 'apps/account-service/src/account-service.m
 import { PersonServiceModule } from 'apps/person-service/src/person-service.module';
 import { TransferServiceModule } from 'apps/transfer-service/src/transfer-service.module';
 import { SwaggerSteakeyConfigEnum } from 'libs/config/enum/swagger.stakey.config.enum';
+import { AuthModule } from '@auth/auth';
 
 async function bootstrap() {
   Logger.log(process.env.TZ, 'Timezone');
@@ -100,6 +101,7 @@ function addSwaggerStakeyCard(app: INestApplication) {
   const stakeyCardDocument = SwaggerModule.createDocument(app, config, {
     include: [
       UserServiceModule,
+      AuthModule,
       PersonServiceModule,
       TransferServiceModule,
       AccountServiceModule,
@@ -181,6 +183,7 @@ function addSwaggerGlobal(app: INestApplication) {
       CrmServiceModule,
       UserServiceModule,
       RoleServiceModule,
+      AuthModule,
       LeadServiceModule,
       StatusServiceModule,
       AffiliateServiceModule,
