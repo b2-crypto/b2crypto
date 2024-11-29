@@ -1,36 +1,36 @@
+import { WalletDepositCreateDto } from '@account/account/dto/wallet-deposit.create.dto';
+import { WalletCreateDto } from '@account/account/dto/wallet.create.dto';
+import { AccountDocument } from '@account/account/entities/mongoose/account.schema';
+import StatusAccountEnum from '@account/account/enum/status.account.enum';
+import TypesAccountEnum from '@account/account/enum/types.account.enum';
+import WalletTypesAccountEnum from '@account/account/enum/wallet.types.account.enum';
+import { BuildersService } from '@builder/builders';
+import { StatusCashierEnum } from '@common/common/enums/StatusCashierEnum';
+import TagEnum from '@common/common/enums/TagEnum';
+import { ResponsePaginator } from '@common/common/interfaces/response-pagination.interface';
+import { IntegrationService } from '@integration/integration';
 import {
-  Injectable,
-  Inject,
   BadRequestException,
+  Inject,
+  Injectable,
   Logger,
 } from '@nestjs/common';
-import { WalletCreateDto } from '@account/account/dto/wallet.create.dto';
-import { WalletDepositCreateDto } from '@account/account/dto/wallet-deposit.create.dto';
-import { AccountDocument } from '@account/account/entities/mongoose/account.schema';
-import WalletTypesAccountEnum from '@account/account/enum/wallet.types.account.enum';
-import TypesAccountEnum from '@account/account/enum/types.account.enum';
-import StatusAccountEnum from '@account/account/enum/status.account.enum';
-import { BuildersService } from '@builder/builders';
-import { UserServiceService } from 'apps/user-service/src/user-service.service';
-import { IntegrationService } from '@integration/integration';
-import EventsNamesTransferEnum from 'apps/transfer-service/src/enum/events.names.transfer.enum';
-import EventsNamesCategoryEnum from 'apps/category-service/src/enum/events.names.category.enum';
-import EventsNamesPspAccountEnum from 'apps/psp-service/src/enum/events.names.psp.acount.enum';
-import { TransferCreateButtonDto } from 'apps/transfer-service/src/dto/transfer.create.button.dto';
 import { TransferCreateDto } from '@transfer/transfer/dto/transfer.create.dto';
 import { OperationTransactionType } from '@transfer/transfer/enum/operation.transaction.type.enum';
-import { StatusCashierEnum } from '@common/common/enums/StatusCashierEnum';
 import { User } from '@user/user/entities/mongoose/user.schema';
-import { ResponsePaginator } from '@common/common/interfaces/response-pagination.interface';
-import TagEnum from '@common/common/enums/TagEnum';
+import EventsNamesCategoryEnum from 'apps/category-service/src/enum/events.names.category.enum';
+import EventsNamesPspAccountEnum from 'apps/psp-service/src/enum/events.names.psp.acount.enum';
+import EventsNamesStatusEnum from 'apps/status-service/src/enum/events.names.status.enum';
+import { TransferCreateButtonDto } from 'apps/transfer-service/src/dto/transfer.create.button.dto';
+import EventsNamesTransferEnum from 'apps/transfer-service/src/enum/events.names.transfer.enum';
+import { UserServiceService } from 'apps/user-service/src/user-service.service';
 import { AccountServiceService } from './account-service.service';
+import EventsNamesAccountEnum from './enum/events.names.account.enum';
+import { WalletB2BinPayService } from './Wallet/WalletB2BinPayService';
 import { WalletBaseService } from './Wallet/WalletBaseService';
 import { WalletFireblocksService } from './Wallet/WalletFireblocksService';
-import { WalletTransactionService } from './Wallet/WalletTransactionService';
 import { WalletNotificationService } from './Wallet/WalletNotificationService';
-import { WalletB2BinPayService } from './Wallet/WalletB2BinPayService';
-import EventsNamesAccountEnum from './enum/events.names.account.enum';
-import EventsNamesStatusEnum from 'apps/status-service/src/enum/events.names.status.enum';
+import { WalletTransactionService } from './Wallet/WalletTransactionService';
 
 @Injectable()
 export class WalletServiceService {
@@ -221,7 +221,7 @@ export class WalletServiceService {
       }
 
       const url = `https://${host}/transfers/deposit/page/${depositAddress?._id}`;
-      const data = depositAddress.responseAccount.data;
+      const data = depositAddress?.responseAccount?.data;
       return {
         statusCode: 200,
         data: {

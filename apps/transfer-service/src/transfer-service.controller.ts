@@ -29,6 +29,8 @@ import {
 } from '@nestjs/swagger';
 import { Response } from 'express';
 
+import TypesAccountEnum from '@account/account/enum/types.account.enum';
+import WalletTypesAccountEnum from '@account/account/enum/wallet.types.account.enum';
 import { AllowAnon } from '@auth/auth/decorators/allow-anon.decorator';
 import { ApiKeyCheck } from '@auth/auth/decorators/api-key-check.decorator';
 import { ApiKeyAffiliateAuthGuard } from '@auth/auth/guards/api.key.affiliate.guard';
@@ -80,8 +82,6 @@ import { TransferCreateButtonDto } from './dto/transfer.create.button.dto';
 import { BoldStatusEnum } from './enum/bold.status.enum';
 import EventsNamesTransferEnum from './enum/events.names.transfer.enum';
 import { TransferServiceService } from './transfer-service.service';
-import WalletTypesAccountEnum from '@account/account/enum/wallet.types.account.enum';
-import TypesAccountEnum from '@account/account/enum/types.account.enum';
 
 @ApiTags('TRANSFERS')
 @Controller('transfers')
@@ -841,7 +841,10 @@ export class TransferServiceController implements GenericServiceController {
     // Is NoApply because this operation generate a deposit address, not a transfer
     createTransferDto.operationType = OperationTransactionType.noApply;
     const depositLinkCategory = await this.getDepositLinkCategory();
-    createTransferDto.typeTransaction = depositLinkCategory._id.toString();
+    createTransferDto.typeTransaction = depositLinkCategory._id;
+    // createTransferDto.typeTransaction = new Types.ObjectId(
+    //   '66398f92fb784f6f068ea668',
+    // );
     const transfer = await this.transferService.newTransfer(createTransferDto);
     return transfer;
   }

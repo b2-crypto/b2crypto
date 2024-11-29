@@ -1,13 +1,14 @@
-import { Injectable, BadRequestException, Inject } from '@nestjs/common';
-import { AccountServiceService } from '../account-service.service';
 import { WalletCreateDto } from '@account/account/dto/wallet.create.dto';
-import { UserServiceService } from 'apps/user-service/src/user-service.service';
-import { User } from '@user/user/entities/mongoose/user.schema';
-import { CommonService } from '@common/common';
-import TypesAccountEnum from '@account/account/enum/types.account.enum';
+import { AccountDocument } from '@account/account/entities/mongoose/account.schema';
 import StatusAccountEnum from '@account/account/enum/status.account.enum';
+import TypesAccountEnum from '@account/account/enum/types.account.enum';
 import { BuildersService } from '@builder/builders';
+import { CommonService } from '@common/common';
+import { BadRequestException, Inject, Injectable } from '@nestjs/common';
+import { User } from '@user/user/entities/mongoose/user.schema';
 import EventsNamesStatusEnum from 'apps/status-service/src/enum/events.names.status.enum';
+import { UserServiceService } from 'apps/user-service/src/user-service.service';
+import { AccountServiceService } from '../account-service.service';
 
 @Injectable()
 export class WalletBaseService {
@@ -83,8 +84,9 @@ export class WalletBaseService {
   async getWalletByIdAndValidate(
     id: string,
     checkOwner?: string,
-  ): Promise<any> {
+  ): Promise<AccountDocument> {
     const wallet = await this.accountService.findOneById(id);
+
     if (!wallet || wallet.type !== TypesAccountEnum.WALLET) {
       throw new BadRequestException('Wallet not found');
     }

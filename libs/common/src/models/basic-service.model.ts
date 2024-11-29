@@ -4,10 +4,10 @@ import { CreateAnyDto } from '@common/common/models/create-any.dto';
 import { QuerySearchAnyDto } from '@common/common/models/query_search-any.dto';
 import { UpdateAnyDto } from '@common/common/models/update-any.dto';
 import { BadRequestException, Logger } from '@nestjs/common';
-import { isDate, isDateString, isMongoId } from 'class-validator';
+import { isDate, isDateString } from 'class-validator';
+import { ClientSession, isObjectIdOrHexString } from 'mongoose';
 import { ResponsePaginator } from '../interfaces/response-pagination.interface';
 import { ServiceModelInterface } from '../interfaces/service-model.interface';
-import { ClientSession } from 'mongoose';
 
 export class BasicServiceModel<
   TBasicEntity,
@@ -266,21 +266,22 @@ export class BasicServiceModel<
 
   async findOne(id: string): Promise<TBasicEntity> {
     try {
-      if (!isMongoId(id['_id'] || id)) {
-        Logger.error(
-          id['_id'] || id,
-          'Id is not mongoDb id in BasicServiceModel.findOne',
-        );
+      if (!isObjectIdOrHexString(id)) {
+        Logger.error(id, 'Id is not mongoDb id in BasicServiceModel.findOne');
         //throw new BadRequestException('Id is not valid');
       }
-      let rta;
-      if (this.nameOrm === dbIntegrationEnum.MONGOOSE) {
-        rta = await this.model.findOne({ _id: id['_id'] || id });
-      } else {
-        rta = await this.model.findOne({ id: id['_id'] || id });
-      }
-      if (!rta) rta = null;
-      return rta;
+
+      // let rta;
+      // if (this.nameOrm === dbIntegrationEnum.MONGOOSE) {
+      //   rta = await this.model.findOne({ _id: id });
+      // } else {
+      //   rta = await this.model.findOne({ id });
+      // }
+      // if (!rta) rta = null;
+
+      return this.nameOrm === dbIntegrationEnum.MONGOOSE
+        ? this.model.findOne({ _id: id })
+        : this.model.findOne({ id });
     } catch (err) {
       Logger.error(
         `${id}`,
