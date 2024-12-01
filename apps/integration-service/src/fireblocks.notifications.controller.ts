@@ -206,7 +206,7 @@ export class FireBlocksNotificationsController {
       return null;
     }
     let isApproved = null;
-    if (data.status === 'COMPLETED') {
+    if (data.status === 'CONFIRMED') {
       isApproved = true;
     } else if (
       data.status === TransactionStateEnum.Rejected ||
