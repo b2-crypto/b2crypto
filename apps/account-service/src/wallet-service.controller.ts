@@ -1090,10 +1090,14 @@ export class WalletServiceController extends AccountServiceController {
     } else {
       if (to.crm) {
         const address = to.accountName;
+        let base = 'https://tronscan.org/#/address/';
+        if (to.accountId.indexOf('ARB') >= 0) {
+          base = 'https://arbscan.org/address/';
+        }
         return {
           statusCode: 200,
           data: {
-            url: `https://tronscan.org/#/address/${address}`,
+            url: `${base}${address}`,
             address,
             chain: to.nativeAccountName,
           },

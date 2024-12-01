@@ -97,7 +97,8 @@ export class FireBlocksNotificationsController {
             dto,
           );
         }
-      } else if (rta?.status === 'COMPLETED' && !tx.isApprove) {
+        //} else if (rta?.status === 'COMPLETED' && !tx.isApprove) {
+      } else if (rta?.status === 'CONFIRMED' && !tx.isApprove) {
         const status = await this.builder.getPromiseStatusEventClient(
           EventsNamesStatusEnum.findOneByName,
           StatusCashierEnum.APPROVED,
