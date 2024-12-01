@@ -2035,7 +2035,7 @@ export class CardServiceController extends AccountServiceController {
     CommonService.ack(ctx);
     try {
       let txnAmount = 0;
-      Logger.log(`Looking for card: ${data.id}`, CardServiceController.name);
+      Logger.log(`Looking for card: ${data.id}`, 'proccessPomeloTx');
       const cardList = await this.cardService.findAll({
         where: {
           statusText: StatusAccountEnum.UNLOCK,
@@ -2080,20 +2080,20 @@ export class CardServiceController extends AccountServiceController {
   async findByCardId(@Ctx() ctx: RmqContext, @Payload() data: any) {
     CommonService.ack(ctx);
     try {
-      Logger.log(`Looking for card: ${data.id}`, CardServiceController.name);
+      Logger.log(`Looking for card: ${data.id}`, 'findByCardId');
       const cardList = await this.getCardById(data.id);
       if (!cardList || !cardList.list[0]) {
         throw new NotFoundException(`Card ${data.id} was not found`);
       }
       return cardList.list[0];
     } catch (error) {
-      Logger.error(error, CardServiceController.name);
+      Logger.error(error, 'Error-cfindByCardId');
     }
   }
 
   private async getCardById(cardId: string) {
     try {
-      Logger.log(`Looking for card: ${cardId}`, CardServiceController.name);
+      Logger.log(`Looking for card: ${cardId}`, 'getByCardId');
       const cardList = await this.cardService.findAll({
         where: {
           'cardConfig.id': cardId,
@@ -2101,7 +2101,7 @@ export class CardServiceController extends AccountServiceController {
       });
       return cardList;
     } catch (error) {
-      Logger.error(error, CardServiceController.name);
+      Logger.error(error, 'Error-getCardId');
     }
   }
 
@@ -2246,7 +2246,7 @@ export class CardServiceController extends AccountServiceController {
   async setBalanceByCard(@Ctx() ctx: RmqContext, @Payload() data: any) {
     CommonService.ack(ctx);
     try {
-      Logger.log(`Looking for card: ${data.id}`, CardServiceController.name);
+      Logger.log(`Looking for card: ${data.id}`, 'setBalanceByCard');
       const cardList = await this.cardService.findAll({
         where: {
           'cardConfig.id': data.id,
