@@ -267,7 +267,7 @@ export class MessageServiceService {
   ) {
     try {
       if (
-        this.configService.get<string>('ENVIRONMENT') !== EnvironmentEnum.prod
+        this.configService.get<string>('ENVIRONMENT') !== EnvironmentEnum.stage
       ) {
         Logger.debug(message.destinyText, 'Sended email');
         return { success: true };
