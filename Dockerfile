@@ -1,17 +1,19 @@
 FROM public.ecr.aws/docker/library/node:20.17.0-alpine3.20 AS build
 WORKDIR /app
 COPY . .
-RUN npm ci
+RUN corepack enable pnpm
+RUN pnpm install
 RUN apk update && apk add tree && apk add grep && apk add findutils
 RUN tree -fi | grep -P "(dockerfile|Dockerfile|\.dockerignore|docker-compose).*\$" | xargs -d"\n" rm
-RUN npm run build
+RUN pnpm run build
 
 FROM public.ecr.aws/docker/library/node:20.17.0-alpine3.20 AS deploy
 WORKDIR /app
 COPY --from=build /app/dist/apps/b2crypto ./dist/apps/b2crypto
 COPY --from=build /app/package*.json ./
 COPY --from=build /app/sftp ./sftp
-RUN npm ci --only=production
+RUN corepack enable pnpm
+RUN pnpm install --production
 RUN apk add --update curl
 RUN apk add tree && apk add grep && apk add findutils
 RUN tree -fi | grep -P "(dockerfile|Dockerfile|\.dockerignore|docker-compose).*\$" | xargs -d"\n" rm
