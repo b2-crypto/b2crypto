@@ -158,38 +158,36 @@ export class PersonServiceController implements GenericServiceController {
       throw new BadRequestError('User not have personal data');
     }
     updatePersonDto.id = personalData._id;
-    if (personalData?.location?.address) {
-      updatePersonDto.location = {} as LocationDto;
-      updatePersonDto.location.address = {
-        street_name:
-          updatePersonDto?.location?.address?.street_name ??
-          personalData?.location?.address?.street_name,
-        street_number:
-          updatePersonDto?.location?.address?.street_number ??
-          personalData?.location?.address?.street_number,
-        floor:
-          updatePersonDto?.location?.address?.floor ??
-          personalData?.location?.address?.floor,
-        city:
-          updatePersonDto?.location?.address?.city ??
-          personalData?.location?.address?.city,
-        region:
-          updatePersonDto?.location?.address?.region ??
-          personalData?.location?.address?.region,
-        neighborhood:
-          updatePersonDto?.location?.address?.neighborhood ??
-          personalData?.location?.address?.neighborhood,
-        country:
-          updatePersonDto?.location?.address?.country ??
-          personalData?.location?.address?.country,
-        zip_code:
-          updatePersonDto?.location?.address?.zip_code ??
-          personalData?.location?.address?.zip_code,
-        apartment:
-          updatePersonDto?.location?.address?.apartment ??
-          personalData?.location?.address?.apartment,
-      } as AddressSchema;
-    }
+    updatePersonDto.location = updatePersonDto.location ?? ({} as LocationDto);
+    updatePersonDto.location.address = {
+      street_name:
+        updatePersonDto?.location?.address?.street_name ??
+        personalData?.location?.address?.street_name,
+      street_number:
+        updatePersonDto?.location?.address?.street_number ??
+        personalData?.location?.address?.street_number,
+      floor:
+        updatePersonDto?.location?.address?.floor ??
+        personalData?.location?.address?.floor,
+      city:
+        updatePersonDto?.location?.address?.city ??
+        personalData?.location?.address?.city,
+      region:
+        updatePersonDto?.location?.address?.region ??
+        personalData?.location?.address?.region,
+      neighborhood:
+        updatePersonDto?.location?.address?.neighborhood ??
+        personalData?.location?.address?.neighborhood,
+      country:
+        updatePersonDto?.location?.address?.country ??
+        personalData?.location?.address?.country,
+      zip_code:
+        updatePersonDto?.location?.address?.zip_code ??
+        personalData?.location?.address?.zip_code,
+      apartment:
+        updatePersonDto?.location?.address?.apartment ??
+        personalData?.location?.address?.apartment,
+    } as AddressSchema;
     return this.personService.updatePerson(updatePersonDto);
   }
 
