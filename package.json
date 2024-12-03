@@ -112,6 +112,7 @@
     "test-monolith:e2e": "./node_modules/.bin/jest --config ./apps/b2crypto/test/jest-e2e.json"
   },
   "dependencies": {
+    "@amplication/opentelemetry-nestjs": "^5.0.3",
     "@casl/ability": "^6.5.0",
     "@fireblocks/ts-sdk": "^4.0.0",
     "@nestjs-modules/mailer": "^2.0.2",
@@ -120,6 +121,8 @@
     "@nestjs/common": "^9.0.0",
     "@nestjs/config": "^2.2.0",
     "@nestjs/core": "^9.0.0",
+    "@nestjs/event-emitter": "^2.1.1",
+    "@nestjs/graphql": "^10.2.1",
     "@nestjs/jwt": "^9.0.0",
     "@nestjs/mapped-types": "*",
     "@nestjs/microservices": "^9.1.6",

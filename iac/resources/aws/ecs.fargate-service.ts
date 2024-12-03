@@ -118,23 +118,6 @@ export const ecsFargateService = new awsx.ecs.FargateService(
                   ?.split(':')
                   .shift() as string,
             ),
-            // value:
-            //   mqBrokerRabbitMQExisting?.instances?.apply(
-            //     (instances) =>
-            //       instances[0].endpoints[0]
-            //         ?.split('//')
-            //         .pop()
-            //         ?.split(':')
-            //         .shift() as string,
-            //   ) ??
-            //   mqBrokerRabbitMQ?.instances?.apply(
-            //     (instances) =>
-            //       instances[0].endpoints[0]
-            //         ?.split('//')
-            //         .pop()
-            //         ?.split(':')
-            //         .shift() as string,
-            //   ),
           },
           { name: 'RABBIT_MQ_PORT', value: RABBIT_MQ_PORT },
           { name: 'RABBIT_MQ_QUEUE', value: RABBIT_MQ_QUEUE },
@@ -359,8 +342,8 @@ export const ecsFargateServiceOptlCollector = new awsx.ecs.FargateService(
         portMappings: [
           {
             name: `${PROJECT_NAME}-optl-collector-${STACK}`,
-            containerPort: 4318,
-            hostPort: 4318,
+            containerPort: 4317,
+            hostPort: 4317,
             protocol: 'tcp',
             targetGroup:
               lbApplicationLoadBalancerOptlCollector.defaultTargetGroup,
