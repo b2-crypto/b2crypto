@@ -40,6 +40,7 @@ import { SwaggerSteakeyConfigEnum } from 'libs/config/enum/swagger.stakey.config
 import { BadRequestError } from 'passport-headerapikey';
 import EventsNamesPersonEnum from './enum/events.names.person.enum';
 import { PersonServiceService } from './person-service.service';
+import LocationDto from '@person/person/dto/location.dto';
 
 @ApiTags(SwaggerSteakeyConfigEnum.TAG_PROFILE)
 @Controller('persons')
@@ -157,37 +158,38 @@ export class PersonServiceController implements GenericServiceController {
       throw new BadRequestError('User not have personal data');
     }
     updatePersonDto.id = personalData._id;
-    updatePersonDto.location.address = {
-      street_name:
-        updatePersonDto?.location?.address?.street_name ??
-        personalData?.location?.address?.street_name,
-      street_number:
-        updatePersonDto?.location?.address?.street_number ??
-        personalData?.location?.address?.street_number,
-      floor:
-        updatePersonDto?.location?.address?.floor ??
-        personalData?.location?.address?.floor,
-      city:
-        updatePersonDto?.location?.address?.city ??
-        personalData?.location?.address?.city,
-      region:
-        updatePersonDto?.location?.address?.region ??
-        personalData?.location?.address?.region,
-      neighborhood:
-        updatePersonDto?.location?.address?.neighborhood ??
-        personalData?.location?.address?.neighborhood,
-      country:
-        updatePersonDto?.location?.address?.country ??
-        personalData?.location?.address?.country,
-      zip_code:
-        updatePersonDto?.location?.address?.zip_code ??
-        (updatePersonDto?.location?.address &&
-          updatePersonDto?.location?.address['zip_code']) ??
-        personalData?.location?.address?.zip_code,
-      apartment:
-        updatePersonDto?.location?.address?.apartment ??
-        personalData?.location?.address?.apartment,
-    } as AddressSchema;
+    if (personalData?.location?.address) {
+      updatePersonDto.location = {} as LocationDto;
+      updatePersonDto.location.address = {
+        street_name:
+          updatePersonDto?.location?.address?.street_name ??
+          personalData?.location?.address?.street_name,
+        street_number:
+          updatePersonDto?.location?.address?.street_number ??
+          personalData?.location?.address?.street_number,
+        floor:
+          updatePersonDto?.location?.address?.floor ??
+          personalData?.location?.address?.floor,
+        city:
+          updatePersonDto?.location?.address?.city ??
+          personalData?.location?.address?.city,
+        region:
+          updatePersonDto?.location?.address?.region ??
+          personalData?.location?.address?.region,
+        neighborhood:
+          updatePersonDto?.location?.address?.neighborhood ??
+          personalData?.location?.address?.neighborhood,
+        country:
+          updatePersonDto?.location?.address?.country ??
+          personalData?.location?.address?.country,
+        zip_code:
+          updatePersonDto?.location?.address?.zip_code ??
+          personalData?.location?.address?.zip_code,
+        apartment:
+          updatePersonDto?.location?.address?.apartment ??
+          personalData?.location?.address?.apartment,
+      } as AddressSchema;
+    }
     return this.personService.updatePerson(updatePersonDto);
   }
 
