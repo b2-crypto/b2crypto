@@ -3,8 +3,6 @@ WORKDIR /app
 COPY . .
 RUN corepack enable pnpm
 RUN pnpm install
-RUN apk update && apk add tree && apk add grep && apk add findutils
-RUN tree -fi | grep -P "(dockerfile|Dockerfile|\.dockerignore|docker-compose).*\$" | xargs -d"\n" rm
 RUN pnpm run build
 
 FROM public.ecr.aws/docker/library/node:20.17.0-alpine3.20 AS deploy
