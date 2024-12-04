@@ -278,7 +278,7 @@ export class MessageServiceService {
         throw new Error('Invalid recipient email address');
       }
 
-      const from = await this.configService.get(
+      const from = await this.configService.getOrThrow(
         'AWS_SES_FROM_DEFAULT',
         'no-reply@b2crypto.com',
       );
