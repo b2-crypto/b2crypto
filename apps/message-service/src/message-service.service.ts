@@ -271,6 +271,7 @@ export class MessageServiceService {
       //   Logger.debug(message.destinyText, 'Sended email');
       //   return { success: true };
       // }
+
       const recipient = message.destinyText;
 
       if (!isEmail(recipient)) {
