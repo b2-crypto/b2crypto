@@ -60,6 +60,12 @@ export const ec2SecurityGroupOptlCollector = new aws.ec2.SecurityGroup(
     ingress: [
       {
         protocol: 'TCP',
+        fromPort: 4317,
+        toPort: 4317,
+        cidrBlocks: ['0.0.0.0/0'],
+      },
+      {
+        protocol: 'TCP',
         fromPort: 4318,
         toPort: 4318,
         cidrBlocks: ['0.0.0.0/0'],
@@ -78,6 +84,12 @@ export const ec2SecurityGroupOptlCollector = new aws.ec2.SecurityGroup(
       },
     ],
     egress: [
+      {
+        protocol: 'TCP',
+        fromPort: 4317,
+        toPort: 4317,
+        cidrBlocks: ['0.0.0.0/0'],
+      },
       {
         protocol: 'TCP',
         fromPort: 4318,
