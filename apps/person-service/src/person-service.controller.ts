@@ -50,7 +50,6 @@ export class PersonServiceController implements GenericServiceController {
     private readonly userService: UserServiceService,
   ) {}
 
-  @ApiExcludeEndpoint()
   @NoCache()
   @Get('all')
   // @CheckPoliciesAbility(new PolicyHandlerPersonRead())
@@ -76,7 +75,6 @@ export class PersonServiceController implements GenericServiceController {
     return persons;
   }
 
-  @ApiExcludeEndpoint()
   @NoCache()
   @Get(':personID')
   // @CheckPoliciesAbility(new PolicyHandlerPersonRead())
@@ -143,13 +141,16 @@ export class PersonServiceController implements GenericServiceController {
   @UseGuards(ApiKeyAuthGuard)
   // @CheckPoliciesAbility(new PolicyHandlerPersonUpdate())
   async updateOne(@Body() updatePersonDto: PersonUpdateDto, @Req() req?) {
-    const userId = updatePersonDto.user.toString() || req.user.id;
+    const userId = updatePersonDto.user?.toString() || req.user.id;
     const user = await this.userService.getOne(userId);
     if (!user?._id) {
       throw new BadRequestError('User not found');
     }
+    if (!user.personalData) {
+      throw new BadRequestError('User not have profile');
+    }
     const personalData = await this.personService.getOne(
-      user.personalData.toString(),
+      user.personalData?.toString(),
     );
     if (!personalData) {
       throw new BadRequestError('User not have personal data');
@@ -161,28 +162,30 @@ export class PersonServiceController implements GenericServiceController {
         personalData?.location?.address?.street_name,
       street_number:
         updatePersonDto?.location?.address?.street_number ??
-        updatePersonDto?.location?.address?.street_number,
+        personalData?.location?.address?.street_number,
       floor:
         updatePersonDto?.location?.address?.floor ??
-        updatePersonDto?.location?.address?.floor,
+        personalData?.location?.address?.floor,
       city:
         updatePersonDto?.location?.address?.city ??
-        updatePersonDto?.location?.address?.city,
+        personalData?.location?.address?.city,
       region:
         updatePersonDto?.location?.address?.region ??
-        updatePersonDto?.location?.address?.region,
+        personalData?.location?.address?.region,
       neighborhood:
         updatePersonDto?.location?.address?.neighborhood ??
-        updatePersonDto?.location?.address?.neighborhood,
+        personalData?.location?.address?.neighborhood,
       country:
         updatePersonDto?.location?.address?.country ??
-        updatePersonDto?.location?.address?.country,
+        personalData?.location?.address?.country,
       zip_code:
         updatePersonDto?.location?.address?.zip_code ??
-        updatePersonDto?.location?.address?.zip_code,
+        (updatePersonDto?.location?.address &&
+          updatePersonDto?.location?.address['zip_code']) ??
+        personalData?.location?.address?.zip_code,
       apartment:
         updatePersonDto?.location?.address?.apartment ??
-        updatePersonDto?.location?.address?.apartment,
+        personalData?.location?.address?.apartment,
     } as AddressSchema;
     return this.personService.updatePerson(updatePersonDto);
   }
@@ -235,6 +238,34 @@ export class PersonServiceController implements GenericServiceController {
     @Ctx() ctx: RmqContext,
   ) {
     const person = this.createOne(createDto);
+    CommonService.ack(ctx);
+    return person;
+  }
+
+  @AllowAnon()
+  @MessagePattern(EventsNamesPersonEnum.migrateOne)
+  async migrateOne(
+    @Payload() createDto: PersonCreateDto,
+    @Ctx() ctx: RmqContext,
+  ) {
+    let person;
+    let query: QuerySearchAnyDto = new QuerySearchAnyDto();
+    query = query ?? {};
+    query.where = query.where ?? {};
+    query.where['user'] = createDto?.user?.id ?? createDto?.user?._id;
+    const persons = await this.personService.getAll(query);
+    if (persons?.list?.length > 0) {
+      person = persons?.list[0];
+    } else {
+      const personalData = await this.personService.newPerson(createDto);
+      if (personalData.user) {
+        await this.userService.updateUser({
+          id: personalData.user._id,
+          personalData: personalData._id,
+        });
+      }
+      person = personalData;
+    }
     CommonService.ack(ctx);
     return person;
   }

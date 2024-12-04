@@ -323,9 +323,7 @@ export class CrmServiceController implements GenericServiceController {
     if (crms.totalElements) {
       return crms.list[0];
     }
-    throw new NotFoundException(
-      'Not found Crm with name: ' + CommonService.getSlug(crmName),
-    );
+    throw new NotFoundException('Not found Crm with name: ' + crmName);
   }
   @AllowAnon()
   @CacheTTL(5)

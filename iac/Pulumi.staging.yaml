@@ -104,3 +104,19 @@ config:
   b2crypto-iac:MONGOATLAS_INSTANCE_MIN: M2
   b2crypto-iac:MONGOATLAS_INSTANCE_MAX: M2
   b2crypto-iac:SUBDOMAIN_PREFIX: apistage
+  b2crypto-iac:OPTL_SERVICE_NAME: b2crypto_monolith
+  b2crypto-iac:OPTL_COLLECTOR_DESIRED_COUNT_TASK: "1"
+  b2crypto-iac:OPTL_COLLECTOR_MIN_CAPACITY_AUTOSCALING: "1"
+  b2crypto-iac:OPTL_COLLECTOR_MAX_CAPACITY_AUTOSCALING: "10"
+  b2crypto-iac:PROJECT_NAME: b2crypto
+  b2crypto-iac:OPTL_OPEN_SEARCH_ZONE_AWARENESS_ENABLED: "false"
+  b2crypto-iac:OPTL_OPEN_SEARCH_ZONE_AWARENESS_AVAILABILITY_COUNT: "1"
+  b2crypto-iac:OPTL_OPEN_SEARCH_INSTANCE_TYPE: t3.small.search
+  b2crypto-iac:OPTL_OPEN_SEARCH_INSTANCE_COUNT: "1"
+  b2crypto-iac:OPTL_OPEN_SEARCH_EBS_VOLUME_SIZE: "10"
+  b2crypto-iac:OPTL_OPEN_SEARCH_PASSWORD:
+    secure: AAABAEMdHeXd48br1+78/mvGpq/Phaa129NRT+zhtGwXw2DwhXRlfC1DWfrIoalh34IlMnJ9gfl4jTgh+Q==
+  b2crypto-iac:OPTL_OPEN_SEARCH_USERNAME:
+    secure: AAABAIcycJwVPOVW+n10d0oovcgL9JKuOKn/Hr0PHLL7C1c2hahRfEoAf3AO
+  b2crypto-iac:SUBDOMAIN_PREFIX_OPTL_COLLECTOR: optlcollectorstage
+  b2crypto-iac:SUBDOMAIN_PREFIX_OPTL_UI: optluistage

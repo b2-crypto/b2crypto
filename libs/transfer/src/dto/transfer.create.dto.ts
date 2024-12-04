@@ -90,6 +90,14 @@ export class TransferCreateDto extends CreateAnyDto {
   })
   account: ObjectId;
 
+  @IsNumber()
+  @IsOptional()
+  accountResultBalance: number;
+
+  @IsNumber()
+  @IsOptional()
+  accountPrevBalance: number;
+
   @IsEmpty()
   typeAccount?: TypesAccountEnum;
 

@@ -1,6 +1,5 @@
 /* eslint-disable prettier/prettier */
 import { BuildersService } from '@builder/builders';
-import { EnvironmentEnum } from '@common/common/enums/environment.enum';
 import { QuerySearchAnyDto } from '@common/common/models/query_search-any.dto';
 import { CrmInterface } from '@crm/crm/entities/crm.interface';
 import { Crm } from '@crm/crm/entities/mongoose/crm.schema';
@@ -266,12 +265,13 @@ export class MessageServiceService {
     template: TemplatesMessageEnum,
   ) {
     try {
-      if (
-        this.configService.get<string>('ENVIRONMENT') !== EnvironmentEnum.prod
-      ) {
-        Logger.debug(message.destinyText, 'Sended email');
-        return { success: true };
-      }
+      // if (
+      //   this.configService.get<string>('ENVIRONMENT') !== EnvironmentEnum.stage
+      // ) {
+      //   Logger.debug(message.destinyText, 'Sended email');
+      //   return { success: true };
+      // }
+
       const recipient = message.destinyText;
 
       if (!isEmail(recipient)) {

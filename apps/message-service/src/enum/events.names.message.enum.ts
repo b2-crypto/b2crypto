@@ -3,7 +3,8 @@ enum EventsNamesMessageEnum {
   websocketPort = '3100',
   clientName = 'MESSAGE',
   download = 'MESSAGE.DOWNLOAD',
-  //
+
+  // CRUD Operations
   createMany = 'MESSAGE.CREATE.MANY',
   createOne = 'MESSAGE.CREATE.ONE',
   updateMany = 'MESSAGE.UPDATE.MANY',
@@ -13,6 +14,7 @@ enum EventsNamesMessageEnum {
   deleteMany = 'MESSAGE.DELETE.MANY',
   deleteOneById = 'MESSAGE.DELETE.ONE.BY.ID',
 
+  // Email Notifications
   sendEmailBalanceReport = 'MESSAGE.SEND.EMAIL.REPORT',
   sendEmailOtpNotification = 'MESSAGE.SEND.EMAIL.OTP.NOTIFICATION',
   sendEmailDisclaimer = 'MESSAGE.SEND.EMAIL.DISCLAIMER',
@@ -23,8 +25,8 @@ enum EventsNamesMessageEnum {
   sendPurchases = 'MESSAGE.SEND.PURCHASES.TRANSACTION.PURCHASES',
   sendCryptoWalletsManagement = 'MESSAGE.SEND.CRYPTO.WALLETS.MANAGEMENT',
   sendSecurityNotifications = 'MESSAGE.SEND.SECURITY.NOTIFICATIONS',
-  sendPasswordRestoredEmail = 'MESSAGE.SEND.PASSWORD.RESTORED.EMAIL',
-  sendPreRegisterEmail = 'MESSAGE.SEND.PREREGISTER.EMAIL',
+  sendPreRegisterEmail = 'sendPreRegisterEmail',
+  sendPasswordRestoredEmail = 'MESSAGE.SEND.PASSWORD.RESTORED.EMAIL' 
 }
 
 export default EventsNamesMessageEnum;

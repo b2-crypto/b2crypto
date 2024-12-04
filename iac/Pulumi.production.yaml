@@ -91,11 +91,11 @@ config:
   b2crypto-iac:REDIS_PORT: "10790"
   b2crypto-iac:REDIS_USERNAME:
     secure: AAABAHb+g4S+rJoa2ilY8oWDPlB9nldUcOJgmCV+67x7/k9qSV7H
-  b2crypto-iac:STACK: production
+  b2crypto-iac:STACK: prod
   b2crypto-iac:TESTING: "false"
   b2crypto-iac:TZ: UTC
   b2crypto-iac:URL_API_EMAIL_APP: ""
-  b2crypto-iac:VPC_CIDR_BLOCK: 10.3.0.0/16
+  b2crypto-iac:VPC_CIDR_BLOCK: 10.2.0.0/16
   mongodbatlas:privateKey:
     secure: AAABAMJZ0+qVxLuwGcvwozo5VPgkpAkBcdm+bMxa0LuHaFt2DiM+kwgq7x43QD1Dv2CCnMv+tJsw5LpRQ1y5XvJP3cg=
   mongodbatlas:publicKey:
@@ -119,3 +119,19 @@ config:
   b2crypto-iac:MONGOATLAS_CLUSTER_TYPE: REPLICASET
   b2crypto-iac:MONGOATLAS_INSTANCE_MIN: M10
   b2crypto-iac:MONGOATLAS_INSTANCE_MAX: M30
+  b2crypto-iac:SUBDOMAIN_PREFIX: apiprod
+  b2crypto-iac:SUBDOMAIN_PREFIX_OPTL_COLLECTOR: optlcollector
+  b2crypto-iac:SUBDOMAIN_PREFIX_OPTL_UI: optlui
+  b2crypto-iac:OPTL_OPEN_SEARCH_INSTANCE_TYPE: t3.small.search
+  b2crypto-iac:OPTL_OPEN_SEARCH_INSTANCE_COUNT: "3"
+  b2crypto-iac:OPTL_OPEN_SEARCH_ZONE_AWARENESS_AVAILABILITY_COUNT: "3"
+  b2crypto-iac:OPTL_OPEN_SEARCH_EBS_VOLUME_SIZE: "20"
+  b2crypto-iac:OPTL_COLLECTOR_DESIRED_COUNT_TASK: "2"
+  b2crypto-iac:OPTL_COLLECTOR_MIN_CAPACITY_AUTOSCALING: "2"
+  b2crypto-iac:OPTL_COLLECTOR_MAX_CAPACITY_AUTOSCALING: "10"
+  b2crypto-iac:OPTL_SERVICE_NAME: b2crypto_monolith
+  b2crypto-iac:OPTL_OPEN_SEARCH_USERNAME:
+    secure: AAABAGb0xapcnZlC2ZWzZxsayZtTZnMZL8Lv6SxHL4NzmlS6AYdu7ykqHaE1zBnGXYoj4lJTkFlu/bJyDw==
+  b2crypto-iac:OPTL_OPEN_SEARCH_PASSWORD:
+    secure: AAABAFOW80OhUltoTHxEFDALsYRfGCQfIyQhcgRZ00j3uwC3ZlUF9NUbmXoiNjqf6DYz83r7tmk0+Sn8T+ZR0lldLmLtpclLbC9BRnIvC2DcZuYgAm7we8HvIbegUqA=
+  b2crypto-iac:OPTL_OPEN_SEARCH_ZONE_AWARENESS_ENABLED: "true"
