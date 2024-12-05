@@ -135,3 +135,13 @@ config:
   b2crypto-iac:OPTL_OPEN_SEARCH_PASSWORD:
     secure: AAABAFOW80OhUltoTHxEFDALsYRfGCQfIyQhcgRZ00j3uwC3ZlUF9NUbmXoiNjqf6DYz83r7tmk0+Sn8T+ZR0lldLmLtpclLbC9BRnIvC2DcZuYgAm7we8HvIbegUqA=
   b2crypto-iac:OPTL_OPEN_SEARCH_ZONE_AWARENESS_ENABLED: "true"
+  b2crypto-iac:V1_DB_USER:
+    secure: AAABAOTuRvZhc17C8kGzCY08f/G4E3DQq0lqRLdieQ1o2EeFoeSvZV9sAb7sCbI=
+  b2crypto-iac:V1_DB_PWD:
+    secure: AAABAAsP0KyA7CA8vPmltmTbXHO1WVlUJ6EboKm8ud3bjzR4/trJBkj0jrYrlqo=
+  b2crypto-iac:V1_DB_HOST:
+    secure: AAABAKT2iKwYkY5o+Rf9lLs5SWVkVyUvg84lNuXMsWe74ANl3bijJrU4Y4IXz7xRlIIPkbk0hgGWEu9rHFTg5YrJ+K+/c2Kn2cBwwhRWpBCvNE3TmjyIq+Azeg3cL3kgbLXYdaSAcpo=
+  b2crypto-iac:V1_DB_PORT:
+    secure: AAABANaXFHwmmoCr9CPJ35MMRuTxQF2YRfLos9yZIQB8UO97
+  b2crypto-iac:V1_DB_NAME:
+    secure: AAABAC0quouX6Rjufyvr7hg6YD1+COPOUNKY07KZYr+h2Q5ZJn0CJO7v2YfttrH+2w==

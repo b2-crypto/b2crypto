@@ -264,6 +264,26 @@ export const ecsFargateService = new awsx.ecs.FargateService(
             name: 'OPTL_SERVICE_NAME',
             value: SECRETS.OPTL_SERVICE_NAME,
           },
+          {
+            name: 'V1_DB_USER',
+            value: SECRETS.V1_DB_USER,
+          },
+          {
+            name: 'V1_DB_PWD',
+            value: SECRETS.V1_DB_PWD,
+          },
+          {
+            name: 'V1_DB_HOST',
+            value: SECRETS.V1_DB_HOST,
+          },
+          {
+            name: 'V1_DB_PORT',
+            value: SECRETS.V1_DB_PORT,
+          },
+          {
+            name: 'V1_DB_NAME',
+            value: SECRETS.V1_DB_NAME,
+          },
         ],
         portMappings: [
           {

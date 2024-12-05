@@ -135,3 +135,13 @@ config:
     secure: AAABAKWvA3gwan8DFQ+iAE4w88B9QjF3TU1E1GidHzI1fa63IbTnoU//MUkWi/v6p2wQyhrfEI7YsbDlXljUX7y/ouQ=
   mongodbatlas:publicKey:
     secure: AAABAHEX5KRJ+B3nn6THaWdCY66+rAybAc7yxOHwMOCbeR4IHg4Uuw==
+  b2crypto-iac:V1_DB_USER:
+    secure: AAABAKU5pOF/SE3Hi5G/sTB1MkLRUUDokd/uSPe7zlI=
+  b2crypto-iac:V1_DB_PWD:
+    secure: AAABALGctl/BKi0XJzG3gKOiW7m7X2Na6ebBGgAw/Wo=
+  b2crypto-iac:V1_DB_HOST:
+    secure: AAABAApz4tJZ0S45pmL6ufhQlzoBmCQpwqk7wbYWeV8=
+  b2crypto-iac:V1_DB_PORT:
+    secure: AAABAEYlhvWtClyshPdN8WhFsIAY+IXq53XTOEitllY=
+  b2crypto-iac:V1_DB_NAME:
+    secure: AAABABh/P7nmrTDc5nBeWeMjyu/W+fGPhWlb9n2yjNQ=

@@ -135,3 +135,13 @@ config:
   b2crypto-iac:OPTL_OPEN_SEARCH_EBS_VOLUME_SIZE: "10"
   b2crypto-iac:OPTL_COLLECTOR_DESIRED_COUNT_TASK: "1"
   b2crypto-iac:OPTL_OPEN_SEARCH_ZONE_AWARENESS_ENABLED: "false"
+  b2crypto-iac:V1_DB_USER:
+    secure: AAABADvE5Tu7vTSacArpKm9XQXBpxTAFTBiv63BBZko=
+  b2crypto-iac:V1_DB_PWD:
+    secure: AAABANW9R9Zx5lQdYCKgrK2PxUZLVnkBkvd12q2rGMI=
+  b2crypto-iac:V1_DB_HOST:
+    secure: AAABAFlZeSVQlIFwMdx2s8PKtDSQ8yyOVprwq6npU7k=
+  b2crypto-iac:V1_DB_PORT:
+    secure: AAABAK2Q8bxcCCuoWxhw1HKWH9n+QDl87PhOKPXb2m4=
+  b2crypto-iac:V1_DB_NAME:
+    secure: AAABAJqqCLtNaTSspvUShsBeu2nzUZaWn7eWth+rliQ=

@@ -35,6 +35,11 @@ export const SECRETS = pulumi
     config.requireSecret('OPTL_SERVICE_NAME'),
     config.requireSecret('OPTL_OPEN_SEARCH_USERNAME'),
     config.requireSecret('OPTL_OPEN_SEARCH_PASSWORD'),
+    config.requireSecret('V1_DB_USER'),
+    config.requireSecret('V1_DB_PWD'),
+    config.requireSecret('V1_DB_HOST'),
+    config.requireSecret('V1_DB_PORT'),
+    config.requireSecret('V1_DB_NAME'),
   ])
   .apply(
     ([
@@ -69,6 +74,11 @@ export const SECRETS = pulumi
       OPTL_SERVICE_NAME,
       OPTL_OPEN_SEARCH_USERNAME,
       OPTL_OPEN_SEARCH_PASSWORD,
+      V1_DB_USER,
+      V1_DB_PWD,
+      V1_DB_HOST,
+      V1_DB_PORT,
+      V1_DB_NAME,
     ]) => ({
       DATABASE_URL,
       RABBIT_MQ_HOST,
@@ -101,6 +111,11 @@ export const SECRETS = pulumi
       OPTL_SERVICE_NAME,
       OPTL_OPEN_SEARCH_USERNAME,
       OPTL_OPEN_SEARCH_PASSWORD,
+      V1_DB_USER,
+      V1_DB_PWD,
+      V1_DB_HOST,
+      V1_DB_PORT,
+      V1_DB_NAME,
     }),
   );
 
