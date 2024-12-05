@@ -361,9 +361,9 @@ export const ecsFargateServiceOptlCollector = new awsx.ecs.FargateService(
         ],
         portMappings: [
           {
-            name: `${PROJECT_NAME}-optl-collector-${STACK}`,
-            containerPort: 4317,
-            hostPort: 4317,
+            name: `${PROJECT_NAME}-optl-collector-grpc-${STACK}`,
+            containerPort: 4318,
+            hostPort: 4318,
             protocol: 'tcp',
             targetGroup:
               lbApplicationLoadBalancerOptlCollector.defaultTargetGroup,

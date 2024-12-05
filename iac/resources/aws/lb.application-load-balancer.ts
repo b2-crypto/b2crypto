@@ -50,7 +50,6 @@ export const lbApplicationLoadBalancerOptlCollector =
         name: `${PROJECT_NAME}-optl-collector-${STACK}`,
         protocol: 'HTTP',
         port: 4318,
-        // port: 14267,
         vpcId: ec2Vpc.vpcId,
         tags: TAGS,
         healthCheck: {
