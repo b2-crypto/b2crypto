@@ -4,12 +4,7 @@ import { registerAs } from '@nestjs/config';
 export default registerAs('config', () => ({
   AUTH_APP_NAME: process.env.AUTH_APP_NAME || 'MOISES',
   APP_NAME: process.env.APP_NAME || 'B2Crypto',
-  GOOGLE_2FA:
-    process.env.GOOGLE_2FA === 'true'
-      ? true
-      : process.env.GOOGLE_2FA === 'false'
-      ? false
-      : false,
+  GOOGLE_2FA: process.env.GOOGLE_2FA === 'true',
   MAX_SECOND_TO_REFRESH: process.env.MAX_SECOND_TO_REFRESH || 60,
   ENVIRONMENT: (process.env.ENVIRONMENT || EnvironmentEnum.prod).toLowerCase(),
   AUTH_SECRET:
@@ -67,8 +62,8 @@ export default registerAs('config', () => ({
   TZ: process.env.TZ,
   AWS_SES_HOST: process.env.AWS_SES_HOST,
   AWS_SES_PORT: process.env.AWS_SES_PORT,
-  AWS_SES_USERNAME: process.env.AWS_SES_USERNAME,
-  AWS_SES_PASSWORD: process.env.AWS_SES_PASSWORD,
+  AWS_SES_SMTP_USERNAME: process.env.AWS_SES_SMTP_USERNAME,
+  AWS_SES_SMTP_PASSWORD: process.env.AWS_SES_SMTP_PASSWORD,
   AWS_SES_FROM_DEFAULT: process.env.AWS_SES_FROM_DEFAULT,
   DEFAULT_CURRENCY_CONVERSION_COIN:
     process.env.DEFAULT_CURRENCY_CONVERSION_COIN ?? 'USD',
@@ -84,6 +79,11 @@ export default registerAs('config', () => ({
   POMELO_API_URL: process.env.POMELO_API_URL,
   CURRENCY_CONVERSION_API_KEY: process.env.CURRENCY_CONVERSION_API_KEY,
   CURRENCY_CONVERSION_API_URL: process.env.CURRENCY_CONVERSION_API_URL,
+  V1_DB_USER: process.env.V1_DB_USER,
+  V1_DB_PWD: process.env.V1_DB_PWD,
+  V1_DB_HOST: process.env.V1_DB_HOST,
+  V1_DB_PORT: process.env.V1_DB_PORT,
+  V1_DB_NAME: process.env.V1_DB_NAME,
   POMELO_SFTP_HOST: process.env.POMELO_SFTP_HOST,
   POMELO_SFTP_PORT: process.env.POMELO_SFTP_PORT,
   POMELO_SFTP_USR: process.env.POMELO_SFTP_USR,

@@ -6,4 +6,6 @@ import { TransferCreateDto } from './transfer.create.dto';
 export class TransferUpdateDto extends PartialType(TransferCreateDto) {
   @IsMongoId()
   id: ObjectId;
+  approvedAt?: Date;
+  isApprove?: boolean;
 }

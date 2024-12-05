@@ -449,6 +449,15 @@
       "compilerOptions": {
         "tsConfigPath": "apps/integration-service/tsconfig.app.json"
       }
+    },
+    "authentication": {
+      "type": "application",
+      "root": "apps/authentication",
+      "entryFile": "main",
+      "sourceRoot": "apps/authentication/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/authentication/tsconfig.app.json"
+      }
     }
   }
 }

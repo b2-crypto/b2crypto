@@ -4,8 +4,7 @@ import { BasicServiceModel } from '@common/common/models/basic-service.model';
 import {
   BadRequestException,
   Inject,
-  Injectable,
-  Logger,
+  Injectable
 } from '@nestjs/common';
 import { TransferCreateDto } from '@transfer/transfer/dto/transfer.create.dto';
 import { TransferUpdateDto } from '@transfer/transfer/dto/transfer.update.dto';
@@ -19,7 +18,7 @@ import { ApproveOrRejectDepositDto } from './dto/approve.or.reject.deposit.dto';
 import { QuerySearchAnyDto } from '@common/common/models/query_search-any.dto';
 import { OperationTransactionType } from './enum/operation.transaction.type.enum';
 import TypesAccountEnum from '@account/account/enum/types.account.enum';
-import { isArray, IsMongoId, isMongoId } from 'class-validator';
+import { isArray, isMongoId } from 'class-validator';
 
 @Injectable()
 export class TransferServiceMongooseService extends BasicServiceModel<
@@ -47,7 +46,6 @@ export class TransferServiceMongooseService extends BasicServiceModel<
     const transfer = await this.getTransferData(id);
     transfer.searchText = this.getSearchText(transfer);
     return await super.update(id, {
-      searchText: transfer.searchText,
       id: transfer.id,
     });
   }
@@ -97,8 +95,7 @@ export class TransferServiceMongooseService extends BasicServiceModel<
     const transfers = await this.transferModel.find();
     for (let h = 0; h < transfers.length; h++) {
       transferUpdate.push({
-        id: transfers[h]._id,
-        numericId: h + 1,
+        id: transfers[h]._id
       });
     }
     return this.updateMany(

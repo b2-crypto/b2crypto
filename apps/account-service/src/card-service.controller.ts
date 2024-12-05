@@ -23,7 +23,6 @@ import { IntegrationService } from '@integration/integration';
 import IntegrationCardEnum from '@integration/integration/card/enums/IntegrationCardEnum';
 import { UserCardDto } from '@integration/integration/card/generic/dto/user.card.dto';
 import { IntegrationCardService } from '@integration/integration/card/generic/integration.card.service';
-import * as pug from 'pug';
 import {
   BadRequestException,
   Body,
@@ -33,7 +32,6 @@ import {
   Inject,
   Logger,
   NotFoundException,
-  NotImplementedException,
   Param,
   Patch,
   Post,
@@ -46,14 +44,12 @@ import {
 import { ConfigService } from '@nestjs/config';
 import {
   Ctx,
-  EventPattern,
   MessagePattern,
   Payload,
   RmqContext,
 } from '@nestjs/microservices';
 import {
   ApiBearerAuth,
-  ApiExcludeEndpoint,
   ApiHeader,
   ApiSecurity,
   ApiTags,
@@ -72,24 +68,18 @@ import { StatusServiceService } from 'apps/status-service/src/status-service.ser
 import EventsNamesTransferEnum from 'apps/transfer-service/src/enum/events.names.transfer.enum';
 import EventsNamesUserEnum from 'apps/user-service/src/enum/events.names.user.enum';
 import { UserServiceService } from 'apps/user-service/src/user-service.service';
-import { isEmpty, isString, isNumber } from 'class-validator';
+import { isEmpty, isString } from 'class-validator';
 import { SwaggerSteakeyConfigEnum } from 'libs/config/enum/swagger.stakey.config.enum';
+import * as pug from 'pug';
 
+import { ConfigCardActivateDto } from '@account/account/dto/config.card.activate.dto';
 import { ResponsePaginator } from '../../../libs/common/src/interfaces/response-pagination.interface';
 import { AccountServiceController } from './account-service.controller';
 import { AccountServiceService } from './account-service.service';
 import { AfgNamesEnum } from './enum/afg.names.enum';
 import EventsNamesAccountEnum from './enum/events.names.account.enum';
-import { AccountUpdateDto } from '@account/account/dto/account.update.dto';
-import WalletTypesAccountEnum from '@account/account/enum/wallet.types.account.enum';
-import { ConfigCardActivateDto } from '@account/account/dto/config.card.activate.dto';
-import { PinUpdateDto } from '@account/account/dto/pin.update.dto';
-import { AccountInterface } from '@account/account/entities/account.interface';
-import { PspAccountInterface } from '@psp-account/psp-account/entities/psp-account.interface';
-import { CategoryInterface } from '@category/category/entities/category.interface';
-import DocIdTypeEnum from '@common/common/enums/DocIdTypeEnum';
 
-@ApiTags(SwaggerSteakeyConfigEnum.TAG_CARD)
+@ApiTags('CARD')
 @Controller('cards')
 export class CardServiceController extends AccountServiceController {
   constructor(
@@ -114,71 +104,6 @@ export class CardServiceController extends AccountServiceController {
   private readonly BLOCK_BALANCE_PERCENTAGE: number =
     this.configService.get<number>('AUTHORIZATIONS_BLOCK_BALANCE_PERCENTAGE');
 
-  @Patch('pin')
-  @ApiTags(SwaggerSteakeyConfigEnum.TAG_CARD)
-  @ApiBearerAuth('bearerToken')
-  @ApiHeader({
-    name: 'b2crypto-key',
-    description: 'The apiKey',
-  })
-  async updateOnePin(@Body() pinUpdateDto: PinUpdateDto, @Req() req?: any) {
-    const userId = CommonService.getUserId(req);
-    if (isNumber(parseInt(pinUpdateDto.pin)) && pinUpdateDto.id) {
-      if (pinUpdateDto.pin.toString().length != 4) {
-        throw new BadRequestException('PIN must be 4 digits');
-      }
-      const pin = CommonService.getNumberDigits(parseInt(pinUpdateDto.pin), 4);
-      const card = await this.findOneById(pinUpdateDto.id);
-      /*if(card.pin != pinUpdateDto.oldPin) {
-        throw new BadRequestException('PIN not updated');
-      }*/
-      if (card.cardConfig) {
-        const cardIntegration = await this.integration.getCardIntegration(
-          IntegrationCardEnum.POMELO,
-        );
-        if (!cardIntegration) {
-          throw new BadRequestException('Bad integration card');
-        }
-        const user = await this.cardBuilder.getPromiseUserEventClient(
-          EventsNamesUserEnum.findOneById,
-          userId,
-        );
-        try {
-          if (!user.userCard) {
-            user.userCard = await this.getUserCard(cardIntegration, user);
-          }
-          const cardUpdate = await cardIntegration.updateCard({
-            id: card.cardConfig.id,
-            pin,
-          });
-          if (cardUpdate['error']) {
-            throw new BadRequestException('PIN not updated');
-          }
-        } catch (err) {
-          if (err.response?.data) {
-            Logger.error(err.response?.data, 'Error HTTP request');
-            if (err.response?.data?.error?.details) {
-              throw new BadRequestException(
-                err.response?.data?.error?.details
-                  ?.map((e) => e.detail)
-                  .join(', '),
-              );
-            }
-          } else {
-            Logger.error(err, 'Error in card profile or update card');
-          }
-          throw new BadRequestException('Card not updated');
-        }
-      }
-      return this.updateOne({
-        id: pinUpdateDto.id,
-        pin: pin,
-      });
-    }
-    throw new BadRequestException('Not found id or numeric PIN to update');
-  }
-
-  @ApiExcludeEndpoint()
   @Get('all')
   @NoCache()
   @ApiTags(SwaggerSteakeyConfigEnum.TAG_CARD)
@@ -222,6 +147,7 @@ export class CardServiceController extends AccountServiceController {
 
   @Get('me')
   @NoCache()
+  @ApiTags(SwaggerSteakeyConfigEnum.TAG_CARD)
   @ApiBearerAuth('bearerToken')
   async findAllMe(@Query() query: QuerySearchAnyDto, @Req() req?: any) {
     query = query ?? {};
@@ -231,98 +157,43 @@ export class CardServiceController extends AccountServiceController {
     const rta = await this.cardService.findAll(query);
     rta.list.forEach(async (account) => {
       account.amount = await this.swapToCurrencyUser(req, account);
-      account.currency = req.user.currency ?? CurrencyCodeB2cryptoEnum.USDT;
+      account.currency = req.user.currency ?? CurrencyCodeB2cryptoEnum.USD;
     });
     return rta;
   }
 
+  @ApiTags(SwaggerSteakeyConfigEnum.TAG_CARD)
   @ApiSecurity('b2crypto-key')
   @ApiBearerAuth('bearerToken')
   @Post('create')
   @UseGuards(ApiKeyAuthGuard)
   async createOne(@Body() createDto: CardCreateDto, @Req() req?: any) {
+    const isNotStressTest = () => process.env.ENVIRONMENT !== 'TEST_STRESS';
+
     const userId = createDto.owner || req?.user?.id;
     const user: User = await this.getUser(userId);
     createDto.accountType =
       createDto.accountType ?? CardTypesAccountEnum.VIRTUAL;
-    if (!createDto.force) {
-      //await this.validateRuleLimitCards(user, createDto.accountType);
+    let cardAfg = AfgNamesEnum.CONSUMER_VIRTUAL_1K;
+
+    if (createDto.accountType === CardTypesAccountEnum.PHYSICAL) {
+      cardAfg = AfgNamesEnum.CONSUMER_NOMINADA_3K;
     }
-    if (createDto.accountType == CardTypesAccountEnum.PHYSICAL) {
-      const physicalCards = await this.findAll({
-        take: 1,
-        where: {
-          owner: userId,
-          statusText: StatusAccountEnum.ORDERED,
-        },
-      });
-      if (physicalCards.totalElements > 0) {
-        throw new BadRequestException('Already physical card ordered');
-      }
-      createDto.statusText = StatusAccountEnum.ORDERED;
-    }
-    //let level = await this.getCategoryById(user.level?.toString());
-    let level = await this.cardBuilder.getPromiseCategoryEventClient(
-      EventsNamesCategoryEnum.findOneByNameType,
-      {
-        slug: 'grupo-1',
-      },
-    );
-    const cardAfg = this.getAfgByLevel(
-      level.slug,
-      createDto.accountType === CardTypesAccountEnum.PHYSICAL,
-    );
-    let price = 0;
-    if (!cardAfg || cardAfg === AfgNamesEnum.NA) {
-      level = await this.cardBuilder.getPromiseCategoryEventClient(
-        EventsNamesCategoryEnum.findOneByNameType,
-        {
-          slug: 'grupo-1',
-        },
-      );
-      if (!level) {
-        throw new BadRequestException('Not found level 1');
-      }
-      // TODO Pasar la persona a nivel 1
-      // Logger.debug(
-      //   `${cardAfg} - ${level.slug}`,
-      //   `'AFG not found for CARD-${createDto.accountType}`,
-      // );
-      // throw new NotFoundException('Level AFG not found');
-    }
+
     if (!user.personalData) {
       throw new BadRequestException('Need the personal data to continue');
     }
-    // const virtualCardPending = await this.cardService.findAll({
-    //   where: {
-    //     owner: user._id,
-    //     accountType: CardTypesAccountEnum.VIRTUAL,
-    //   },
-    // });
+
+    const virtualCardPending = await this.cardService.findAll({
+      where: {
+        owner: user._id,
+        accountType: CardTypesAccountEnum.VIRTUAL,
+      },
+    });
     // TODO[hender - 2024/08/12] Limit virtual card
-    // if (virtualCardPending.totalElements === 10) {
-    //   throw new BadRequestException('Already have 10 cards');
-    // }
-    let cardGroupName = level.slug;
-    if (createDto.accountType === CardTypesAccountEnum.VIRTUAL) {
-      cardGroupName = 'virtuales-' + level.slug;
-    } else {
-      cardGroupName = 'fisicas-' + level.slug;
+    if (virtualCardPending.totalElements === 10) {
+      throw new BadRequestException('Already have 10 cards');
     }
-    const levelCardGroup = await this.cardBuilder.getPromiseCategoryEventClient(
-      EventsNamesCategoryEnum.findOneByNameType,
-      {
-        slug: `/${cardGroupName}/ig`,
-      },
-    );
-    const cardGroupPrice = await this.cardBuilder.getPromiseCategoryEventClient(
-      EventsNamesCategoryEnum.findOneByNameType,
-      {
-        categoryParent: levelCardGroup._id,
-        slug: 'precio-card-extra',
-      },
-    );
-    price = cardGroupPrice.valueNumber;
     createDto.owner = user._id;
     if (createDto.pin && createDto.pin?.toString().length != 4) {
       throw new BadRequestException('The PIN must be 4 digits');
@@ -331,21 +202,6 @@ export class CardServiceController extends AccountServiceController {
       createDto.pin ??
       CommonService.getNumberDigits(CommonService.randomIntNumber(9999), 4);
     const account = await this.cardService.createOne(createDto);
-    let tx = null;
-    if (price > 0) {
-      try {
-        tx = await this.txPurchaseCard(
-          price,
-          user,
-          `PURCHASE_${createDto.type}_${createDto.accountType}`,
-          null,
-          `Compra de ${createDto.type} ${createDto.accountType} ${level.name}`,
-        );
-      } catch (err) {
-        await this.getAccountService().deleteOneById(account._id);
-        throw err;
-      }
-    }
     try {
       const cardIntegration = await this.integration.getCardIntegration(
         IntegrationCardEnum.POMELO,
@@ -397,13 +253,16 @@ export class CardServiceController extends AccountServiceController {
           createDto?.address?.neighborhood ??
           user.personalData?.location?.address?.neighborhood,
       };
-      const cardDataIntegration = {
-        user_id: account.userCardConfig.id,
-        affinity_group_id: account.group.valueGroup,
-        card_type: account.accountType,
-        address: address,
-        previous_card_id: null,
-      };
+      const card = isNotStressTest()
+        ? await cardIntegration.createCard({
+            user_id: account.userCardConfig.id,
+            affinity_group_id: account.group.valueGroup,
+            card_type: account.accountType,
+            address: address,
+            previous_card_id: null,
+          })
+        : { error: false, data: {} };
+
       // if (createDto.prevAccount) {
       //   const prevCard = await this.cardService.findOneById(
       //     createDto.prevAccount.toString(),
@@ -413,270 +272,59 @@ export class CardServiceController extends AccountServiceController {
       //   }
       //   cardDataIntegration.previous_card_id = prevCard.cardConfig.id;
       // }
-      const card = await cardIntegration.createCard(cardDataIntegration);
+      // const card = isNotStressTest()
+      //   ? await cardIntegration.createCard(cardDataIntegration)
+      //   : { error: false, data: {} };
+
       const error = card['error'];
       if (error) {
         // TODO[hender - 2024-08-12] If problems with data user in Pomelo, flag to update in pomelo when update profile user
         throw new BadRequestException(error);
       }
-      account.cardConfig = card.data as unknown as Card;
-      if (card.data['shipment_id']) {
-        const dataShipping = await cardIntegration.getShippingPhysicalCard(
-          card.data['shipment_id'],
-        );
-        account.responseShipping = dataShipping.data;
-        if (
-          dataShipping.data.status === StatusAccountEnum.REJECTED ||
-          dataShipping.data.status === StatusAccountEnum.DESTRUCTION
-        ) {
-          account.statusText = StatusAccountEnum.CANCEL;
-        }
-      }
-      account.save();
 
-      const walletDTO = {
-        owner: account.owner,
-        name: 'USD Tether (Tron)',
-        type: TypesAccountEnum.WALLET,
-        accountType: WalletTypesAccountEnum.VAULT,
-      };
+      account.cardConfig = card.data as unknown as Card;
+      account.save();
       const countWalletsUser =
         await this.cardBuilder.getPromiseAccountEventClient(
           EventsNamesAccountEnum.count,
           {
-            take: 1,
-            where: walletDTO,
+            where: {
+              type: TypesAccountEnum.WALLET,
+              owner: account.owner,
+            },
           },
         );
       if (countWalletsUser < 1) {
         this.cardBuilder.emitAccountEventClient(
           EventsNamesAccountEnum.createOneWallet,
-          walletDTO,
+          {
+            owner: account.owner,
+            name: 'USDT',
+            pin: CommonService.getNumberDigits(
+              CommonService.randomIntNumber(4),
+              4,
+            ),
+            accountType: 'STABLECOIN',
+          },
         );
       }
+
       return account;
     } catch (err) {
       await this.getAccountService().deleteOneById(account._id);
-      if (price > 0) {
-        await this.txPurchaseCard(
-          price,
-          user,
-          `REVERSAL_PURCHASE_${createDto.type}_${createDto.accountType}`,
-          null,
-          `Compra de ${createDto.type} ${createDto.accountType} ${level.name}`,
-          `Reversal`,
-          true,
-        );
-      }
-      Logger.error(
-        JSON.stringify(err),
-        `Account Card not created ${account.owner}`,
+      Logger.error(err.response, `Account Card not created ${account._id}`);
+      err.response.details = err.response.details ?? [];
+      err.response.details.push({
+        detail: 'Card not created',
+      });
+      const desc = err.response.details.reduce(
+        (prev, current) => (current.detail += ', ' + prev.detail),
       );
-      if (err.response) {
-        err.response.details = err.response.details ?? [];
-        err.response.details.push({
-          detail: 'Card not created',
-        });
-        const desc = err.response.details.reduce(
-          (prev, current) => (current.detail += ', ' + prev.detail),
-        );
-        throw new BadRequestException({
-          statusCode: 400,
-          description: desc,
-        });
-      } else {
-        throw new BadRequestException({
-          statusCode: 400,
-          description: err,
-        });
-      }
+      throw new BadRequestException({
+        statusCode: 400,
+        description: desc,
+      });
     }
-  }
-
-  private async txPurchaseCard(
-    totalPurchase: number,
-    owner: User,
-    type: string,
-    account: AccountInterface,
-    description?: string,
-    page?: string,
-    reversal = false,
-  ) {
-    const pspAccount = await this.getPspAccountBySlug(
-      CommonService.getSlug('b2fintech'),
-    );
-    const typeTransaction = await this.getCategoryBySlug(
-      reversal
-        ? CommonService.getSlug('Reversal purchase')
-        : CommonService.getSlug('Purchase wallet'),
-    );
-    if (!account) {
-      const listAccount = await this.cardBuilder.getPromiseAccountEventClient(
-        EventsNamesAccountEnum.findAll,
-        {
-          where: {
-            type: 'WALLET',
-            accountId: 'TRX_USDT_S2UZ',
-            owner: owner._id,
-          },
-        },
-      );
-      if (!listAccount.totalElements) {
-        throw new BadRequestException('Need wallet to pay');
-      }
-      account = listAccount.list[0];
-    }
-    if (totalPurchase > account.amount * 0.9) {
-      throw new BadRequestException('Wallet with enough balance');
-    }
-    return this.cardBuilder.getPromiseTransferEventClient(
-      EventsNamesTransferEnum.createOne,
-      {
-        pspAccount,
-        typeTransaction,
-        operationType: reversal
-          ? OperationTransactionType.reversal_purchase
-          : OperationTransactionType.purchase,
-        amount: totalPurchase,
-        leadCrmName: type,
-        owner: owner._id,
-        userAccount: account.owner,
-        currency: 'USDT',
-        account: account._id,
-        page,
-        description,
-        statusPayment: StatusCashierEnum.APPROVED,
-        approvedAt: new Date(),
-        isApprove: true,
-      },
-    );
-  }
-
-  private async getCategoryBySlug(slug: string): Promise<CategoryInterface> {
-    const categoryList = await this.cardBuilder.getPromiseCategoryEventClient(
-      EventsNamesCategoryEnum.findAll,
-      {
-        where: {
-          slug,
-        },
-      },
-    );
-    const category = categoryList.list[0];
-    if (!category) {
-      throw new BadRequestException(`Category ${slug} not found`);
-    }
-    return category;
-  }
-
-  private async getPspAccountBySlug(
-    slug: string,
-  ): Promise<PspAccountInterface> {
-    const pspAccountList =
-      await this.cardBuilder.getPromisePspAccountEventClient(
-        EventsNamesPspAccountEnum.findAll,
-        {
-          where: {
-            slug,
-          },
-        },
-      );
-    const pspAccount = pspAccountList.list[0];
-    if (!pspAccount) {
-      throw new BadRequestException(`Psp account ${slug} not found`);
-    }
-    return pspAccount;
-  }
-
-  private async validateRuleLimitCards(
-    user: User,
-    cardType: CardTypesAccountEnum,
-  ) {
-    let cardTypeName = CommonService.getSlug(cardType);
-    if (cardTypeName === 'physical') {
-      cardTypeName = 'fisica';
-    }
-    const configLimitCards = user.rules.filter(
-      (variant) =>
-        CommonService.getSlug(variant.name).indexOf(cardTypeName) !== -1,
-    )[0];
-    if (!configLimitCards) {
-      throw new BadRequestException('Not found rule for type cards');
-    }
-    const ruleLimitCards = configLimitCards.rules.filter(
-      (variant) =>
-        CommonService.getSlug(variant.name).indexOf('limite-de-tarjetas') !==
-        -1,
-    )[0];
-    if (!ruleLimitCards) {
-      throw new BadRequestException('Not found rule limits cards');
-    }
-    const limitCards = ruleLimitCards.valueNumber;
-    const cardList = await this.cardService.findAll({
-      take: 1,
-      where: {
-        owner: user._id,
-        showToOwner: true,
-        accountType: cardType,
-        statusText: [StatusAccountEnum.UNLOCK, StatusAccountEnum.LOCK],
-      },
-    });
-    if (cardList.totalElements + 1 > limitCards) {
-      throw new BadRequestException(
-        `You have (${cardList.totalElements}) reached the limit (${limitCards}) of cards`,
-      );
-    }
-  }
-
-  private async getCategoryByType(type: string) {
-    const category = await this.cardBuilder.getPromiseCategoryEventClient(
-      EventsNamesCategoryEnum.findOneByNameType,
-      {
-        take: 1000,
-        where: {
-          type,
-        },
-      },
-    );
-    if (!category.totalElements) {
-      throw new BadRequestException('Empty list');
-    }
-    return category;
-  }
-
-  private async getCategoryById(categoryId: string) {
-    const category = await this.cardBuilder.getPromiseCategoryEventClient(
-      EventsNamesCategoryEnum.findOneById,
-      categoryId,
-    );
-    if (!category) {
-      throw new BadRequestException('Not found');
-    }
-    return category;
-  }
-
-  private getAfgByLevel(levelSlug: string, cardPhysical = false): AfgNamesEnum {
-    const map = cardPhysical
-      ? {
-          'grupo-0': AfgNamesEnum.NA,
-          'grupo-1': AfgNamesEnum.CONSUMER_NOMINADA_3K,
-          'grupo-2': AfgNamesEnum.CONSUMER_NOMINADA_10K,
-          'grupo-3': AfgNamesEnum.CONSUMER_INNOMINADA_25K,
-          'grupo-4': AfgNamesEnum.CONSUMER_INNOMINADA_100K,
-        }
-      : {
-          'grupo-0': AfgNamesEnum.CONSUMER_VIRTUAL_1K,
-          'grupo-1': AfgNamesEnum.CONSUMER_VIRTUAL_1K,
-          'grupo-2': AfgNamesEnum.CONSUMER_VIRTUAL_2K,
-          'grupo-3': AfgNamesEnum.CONSUMER_VIRTUAL_5K,
-          'grupo-4': AfgNamesEnum.CONSUMER_VIRTUAL_10K,
-        };
-
-    return (
-      map[levelSlug] ??
-      (() => {
-        throw new BadRequestException(`Wrong level ${levelSlug}`);
-      })()
-    );
   }
 
   private getAfgProd(cardAfg: AfgNamesEnum) {
@@ -1382,7 +1030,7 @@ export class CardServiceController extends AccountServiceController {
     return group;
   }
 
-  @ApiExcludeEndpoint()
+  @ApiTags(SwaggerSteakeyConfigEnum.TAG_CARD)
   @ApiSecurity('b2crypto-key')
   @ApiBearerAuth('bearerToken')
   @UseGuards(ApiKeyAuthGuard)
@@ -1417,88 +1065,83 @@ export class CardServiceController extends AccountServiceController {
     return card.responseShipping;
   }
 
-  @ApiExcludeEndpoint()
+  @ApiTags(SwaggerSteakeyConfigEnum.TAG_CARD)
   @ApiSecurity('b2crypto-key')
   @ApiBearerAuth('bearerToken')
   @UseGuards(ApiKeyAuthGuard)
   @Post('shipping')
   async shippingPhysicalCard(@Req() req?: any) {
-    // const user: User = await this.getUser(req?.user?.id);
-    // if (!user) {
-    //   throw new NotFoundException('User not found');
-    // }
-    // if (!user.personalData) {
-    //   throw new BadRequestException('Profile of user not found');
-    // }
-    // if (!user.personalData.location?.address) {
-    //   throw new BadRequestException('Location address not found');
-    // }
-    // const physicalCardPending = await this.cardService.findAll({
-    //   where: {
-    //     owner: user._id,
-    //     responseShiping: {
-    //       $exists: true,
-    //     },
-    //     cardConfig: {
-    //       $exists: false,
-    //     },
-    //   },
-    // });
-    // if (physicalCardPending.totalElements > 0) {
-    //   throw new BadRequestException('Already physical card pending');
-    // }
-    // const cardIntegration = await this.integration.getCardIntegration(
-    //   IntegrationCardEnum.POMELO,
-    // );
-    // if (!cardIntegration) {
-    //   throw new BadRequestException('Bad integration card');
-    // }
-    // if (!user.userCard) {
-    //   user.userCard = await this.getUserCard(cardIntegration, user);
-    // }
-    // const rtaShippingCard = await cardIntegration.shippingPhysicalCard({
-    //   shipment_type: 'CARD_FROM_WAREHOUSE',
-    //   // TODo[hender-2024/08/02] Default because is available AFG
-    //   affinity_group_id: 'afg-2jc1143Egwfm4SUOaAwBz9IfZKb',
-    //   // TODo[hender-2024/08/02] Default because only COL is authorized
-    //   country: 'COL',
-    //   user_id: user.userCard.id,
-    //   address: {
-    //     street_name: user.personalData.location.address.street_name,
-    //     street_number: ' ',
-    //     city: user.personalData.location.address.city,
-    //     region: user.personalData.location.address.region,
-    //     country: user.personalData.location.address.country,
-    //     neighborhood: user.personalData.location.address.neighborhood,
-    //     apartment: user.personalData.location.address.apartment,
-    //   },
-    //   receiver: {
-    //     full_name: user.personalData.name,
-    //     email: user.email,
-    //     document_type: user.personalData.typeDocId,
-    //     document_number: user.personalData.numDocId,
-    //     telephone_number:
-    //       user.personalData.telephones[0]?.phoneNumber ??
-    //       user.personalData.phoneNumber,
-    //   },
-    // });
+    const user: User = await this.getUser(req?.user?.id);
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    if (!user.personalData) {
+      throw new BadRequestException('Profile of user not found');
+    }
+    if (!user.personalData.location?.address) {
+      throw new BadRequestException('Location address not found');
+    }
+    const physicalCardPending = await this.cardService.findAll({
+      where: {
+        owner: user._id,
+        cardConfig: {
+          $exists: false,
+        },
+      },
+    });
+    if (physicalCardPending.totalElements > 0) {
+      throw new BadRequestException('Already physical card pending');
+    }
+    const cardIntegration = await this.integration.getCardIntegration(
+      IntegrationCardEnum.POMELO,
+    );
+    if (!cardIntegration) {
+      throw new BadRequestException('Bad integration card');
+    }
+    if (!user.userCard) {
+      user.userCard = await this.getUserCard(cardIntegration, user);
+    }
+    const rtaShippingCard = await cardIntegration.shippingPhysicalCard({
+      shipment_type: 'CARD_FROM_WAREHOUSE',
+      // TODo[hender-2024/08/02] Default because is available AFG
+      affinity_group_id: 'afg-2jc1143Egwfm4SUOaAwBz9IfZKb',
+      // TODo[hender-2024/08/02] Default because only COL is authorized
+      country: 'COL',
+      user_id: user.userCard.id,
+      address: {
+        street_name: user.personalData.location.address.street_name,
+        street_number: ' ',
+        city: user.personalData.location.address.city,
+        region: user.personalData.location.address.region,
+        country: user.personalData.location.address.country,
+        neighborhood: user.personalData.location.address.neighborhood,
+        apartment: user.personalData.location.address.apartment,
+      },
+      receiver: {
+        full_name: user.personalData.name,
+        email: user.email,
+        document_type: user.personalData.typeDocId,
+        document_number: user.personalData.numDocId,
+        telephone_number:
+          user.personalData.telephones[0]?.phoneNumber ??
+          user.personalData.phoneNumber,
+      },
+    });
 
-    // if (rtaShippingCard.data.id) {
-    //   const account = await this.cardService.createOne({
-    //     type: TypesAccountEnum.CARD,
-    //     accountType: CardTypesAccountEnum.PHYSICAL,
-    //     responseShipping: rtaShippingCard.data,
-    //     address: rtaShippingCard.data.address as any,
-    //     personalData: user.personalData,
-    //     owner: user._id ?? user.id,
-    //   } as AccountCreateDto);
-    //   return account;
-    // }
-    // throw new BadRequestException('Shipment was not created');
-    throw new NotImplementedException();
+    if (rtaShippingCard.data.id) {
+      const account = await this.cardService.createOne({
+        type: TypesAccountEnum.CARD,
+        accountType: CardTypesAccountEnum.PHYSICAL,
+        responseShipping: rtaShippingCard.data,
+        address: rtaShippingCard.data.address as any,
+        personalData: user.personalData,
+        owner: user._id ?? user.id,
+      } as AccountCreateDto);
+      return account;
+    }
+    throw new BadRequestException('Shipment was not created');
   }
 
-  //@ApiExcludeEndpoint()
   @Post('recharge')
   @ApiTags(SwaggerSteakeyConfigEnum.TAG_CARD)
   @ApiSecurity('b2crypto-key')
@@ -1513,9 +1156,7 @@ export class CardServiceController extends AccountServiceController {
       throw new BadRequestException('The recharge not be 10 or less');
     }
     if (!createDto.from) {
-      throw new BadRequestException(
-        'I need a wallet or card from recharge card',
-      );
+      throw new BadRequestException('I need a wallet to recharge card');
     }
     if (!createDto.to) {
       throw new BadRequestException('I need a card to recharge');
@@ -1523,9 +1164,6 @@ export class CardServiceController extends AccountServiceController {
     const to = await this.getAccountService().findOneById(
       createDto.to.toString(),
     );
-    if (!to) {
-      throw new BadRequestException('Card is not valid');
-    }
     if (to.type != TypesAccountEnum.CARD) {
       Logger.error(
         'Type not same',
@@ -1534,23 +1172,25 @@ export class CardServiceController extends AccountServiceController {
       );
       throw new BadRequestException('Card not found');
     }
-    const valueToPay = to.type === TypesAccountEnum.CARD ? 0 : 5;
+    if (!to) {
+      throw new BadRequestException('Card is not valid');
+    }
     const from = await this.getAccountService().findOneById(
       createDto.from.toString(),
     );
-    // if (from.type != TypesAccountEnum.WALLET) {
-    //   Logger.error(
-    //     'Type not same',
-    //     CardServiceController.name,
-    //     'Card.rechargeOne.wallet',
-    //   );
-    //   throw new BadRequestException('Wallet not found');
-    // }
+    if (from.type != TypesAccountEnum.WALLET) {
+      Logger.error(
+        'Type not same',
+        CardServiceController.name,
+        'Card.rechargeOne.wallet',
+      );
+      throw new BadRequestException('Wallet not found');
+    }
     if (!from) {
-      throw new BadRequestException('Wallet or Card not valid');
+      throw new BadRequestException('Wallet is not valid');
     }
     if (from.amount < createDto.amount) {
-      throw new BadRequestException('Wallet or Card with enough balance');
+      throw new BadRequestException('Wallet with enough balance');
     }
     const depositCardCategory =
       await this.cardBuilder.getPromiseCategoryEventClient(
@@ -1560,12 +1200,11 @@ export class CardServiceController extends AccountServiceController {
           type: TagEnum.MONETARY_TRANSACTION_TYPE,
         },
       );
-    const withdrawSlug = `withdrawal-${from.type?.toLowerCase()}`;
-    const withdrawalCategory =
+    const withDrawalWalletCategory =
       await this.cardBuilder.getPromiseCategoryEventClient(
         EventsNamesCategoryEnum.findOneByNameType,
         {
-          slug: withdrawSlug,
+          slug: 'withdrawal-wallet',
           type: TagEnum.MONETARY_TRANSACTION_TYPE,
         },
       );
@@ -1578,15 +1217,26 @@ export class CardServiceController extends AccountServiceController {
         EventsNamesPspAccountEnum.findOneByName,
         'internal',
       );
-    if (valueToPay > 0) {
-      // Pay transfer between cards
-      Logger.log('Pay transfer between cards', 'Make');
-    }
+    // Create
+    const result = Promise.all([
+      this.cardService.customUpdateOne({
+        id: createDto.to,
+        $inc: {
+          amount: createDto.amount,
+        },
+      }),
+      this.cardService.customUpdateOne({
+        id: createDto.from.toString(),
+        $inc: {
+          amount: createDto.amount * -1,
+        },
+      }),
+    ]).then((list) => list[0]);
     this.cardBuilder.emitTransferEventClient(
       EventsNamesTransferEnum.createOne,
       {
-        name: `Deposit card ${to.name}`,
-        description: `Deposit from ${from.name} to ${to.name}`,
+        name: `Recharge card ${to.name}`,
+        description: `Recharge from wallet ${from.name} to card ${to.name}`,
         currency: to.currency,
         amount: createDto.amount,
         currencyCustodial: to.currencyCustodial,
@@ -1594,15 +1244,13 @@ export class CardServiceController extends AccountServiceController {
         account: to._id,
         userCreator: req?.user?.id,
         userAccount: to.owner,
-        typeAccount: to.type,
-        typeAccountType: to.accountType,
         typeTransaction: depositCardCategory._id,
         psp: internalPspAccount.psp,
         pspAccount: internalPspAccount._id,
         operationType: OperationTransactionType.deposit,
         page: req.get('Host'),
         statusPayment: StatusCashierEnum.APPROVED,
-        isApprove: true,
+        approve: true,
         status: approvedStatus._id,
         brand: to.brand,
         crm: to.crm,
@@ -1614,7 +1262,7 @@ export class CardServiceController extends AccountServiceController {
       EventsNamesTransferEnum.createOne,
       {
         name: `Withdrawal wallet ${from.name}`,
-        description: `Withdrawal from ${from.name} to ${to.name}`,
+        description: `Recharge from wallet ${from.name} to card ${to.name}`,
         currency: from.currency,
         amount: createDto.amount,
         currencyCustodial: from.currencyCustodial,
@@ -1622,15 +1270,13 @@ export class CardServiceController extends AccountServiceController {
         account: from._id,
         userCreator: req?.user?.id,
         userAccount: from.owner,
-        typeAccount: from.type,
-        typeAccountType: from.accountType,
-        typeTransaction: withdrawalCategory._id,
+        typeTransaction: withDrawalWalletCategory._id,
         psp: internalPspAccount.psp,
         pspAccount: internalPspAccount._id,
         operationType: OperationTransactionType.withdrawal,
         page: req.get('Host'),
         statusPayment: StatusCashierEnum.APPROVED,
-        isApprove: true,
+        approve: true,
         status: approvedStatus._id,
         brand: from.brand,
         crm: from.crm,
@@ -1749,7 +1395,7 @@ export class CardServiceController extends AccountServiceController {
         if (configActivate.promoCode == 'pm2413') {
           afgName = 'grupo-3';
         }
-        const cardAfg = await this.getAfgByLevel(afgName, true);
+        const cardAfg = this.getAfgByLevel(afgName, true);
         const group = await this.buildAFG(null, cardAfg);
         const afg = group.list[0];
         try {
@@ -1840,34 +1486,34 @@ export class CardServiceController extends AccountServiceController {
   }
 
   @Patch('lock/:cardId')
+  @ApiTags(SwaggerSteakeyConfigEnum.TAG_CARD)
   @ApiSecurity('b2crypto-key')
   @ApiBearerAuth('bearerToken')
   @UseGuards(ApiKeyAuthGuard)
   async blockedOneById(@Param('cardId') id: string) {
-    // TODO: change status ON POMELO
     return this.updateStatusAccount(id, StatusAccountEnum.LOCK);
   }
 
   @Patch('unlock/:cardId')
+  @ApiTags(SwaggerSteakeyConfigEnum.TAG_CARD)
   @ApiSecurity('b2crypto-key')
   @ApiBearerAuth('bearerToken')
   @UseGuards(ApiKeyAuthGuard)
   async unblockedOneById(@Param('cardId') id: string) {
-    // TODO: change status ON POMELO
     return this.updateStatusAccount(id, StatusAccountEnum.UNLOCK);
   }
 
   @Patch('cancel/:cardId')
+  @ApiTags(SwaggerSteakeyConfigEnum.TAG_CARD)
   @ApiSecurity('b2crypto-key')
   @ApiBearerAuth('bearerToken')
   @UseGuards(ApiKeyAuthGuard)
   async cancelOneById(@Param('cardId') id: string) {
-    // TODO: change status ON POMELO
     return this.updateStatusAccount(id, StatusAccountEnum.CANCEL);
   }
 
-  @ApiExcludeEndpoint()
   @Patch('hidden/:cardId')
+  @ApiTags(SwaggerSteakeyConfigEnum.TAG_CARD)
   @ApiSecurity('b2crypto-key')
   @ApiBearerAuth('bearerToken')
   @UseGuards(ApiKeyAuthGuard)
@@ -1875,8 +1521,8 @@ export class CardServiceController extends AccountServiceController {
     return this.toggleVisibleToOwner(id, false);
   }
 
-  @ApiExcludeEndpoint()
   @Patch('visible/:cardId')
+  @ApiTags(SwaggerSteakeyConfigEnum.TAG_CARD)
   @ApiSecurity('b2crypto-key')
   @ApiBearerAuth('bearerToken')
   @UseGuards(ApiKeyAuthGuard)
@@ -1884,14 +1530,12 @@ export class CardServiceController extends AccountServiceController {
     return this.toggleVisibleToOwner(id, true);
   }
 
-  @ApiExcludeEndpoint()
   @Delete(':cardID')
   deleteOneById(@Param('cardID') id: string, req?: any) {
-    //return this.getAccountService().deleteOneById(id);
     throw new UnauthorizedException();
+    return this.getAccountService().deleteOneById(id);
   }
 
-  @ApiExcludeEndpoint()
   @Get('pomelo/check')
   async checkCardsInPomelo() {
     //await this.checkCardsCreatedInPomelo(null, null);
@@ -1903,131 +1547,6 @@ export class CardServiceController extends AccountServiceController {
       statusCode: 200,
       message: 'Started',
     };
-  }
-
-  @MessagePattern(EventsNamesAccountEnum.createOneCard)
-  async createOneCard(@Ctx() ctx: RmqContext, @Payload() data: CardCreateDto) {
-    CommonService.ack(ctx);
-    return await this.createOne(data);
-  }
-
-  @MessagePattern(EventsNamesAccountEnum.updateOneCard)
-  async updateOneCard(
-    @Ctx() ctx: RmqContext,
-    @Payload() data: AccountUpdateDto,
-  ) {
-    CommonService.ack(ctx);
-    if (data.group) {
-      // Actualizar en Pomelo antes
-    }
-    return await this.updateOne(data);
-  }
-
-  @EventPattern(EventsNamesAccountEnum.levelUpCards)
-  async levelUpCards(@Ctx() ctx: RmqContext, @Payload() userId: string) {
-    CommonService.ack(ctx);
-    const user = await this.getUserById(userId);
-    const virtualCards = await this.cardService.findAll({
-      where: {
-        owner: user._id,
-        showToOwner: true,
-        statusText: [StatusAccountEnum.UNLOCK, StatusAccountEnum.LOCK],
-        accountType: CardTypesAccountEnum.VIRTUAL,
-      },
-    });
-    const level = await this.getCategoryById(user.level);
-    if (virtualCards.totalElements > 0) {
-      const cardAfg = this.getAfgByLevel(level.slug, false);
-      if (!cardAfg || cardAfg === AfgNamesEnum.NA)
-        throw new NotFoundException(`AFG not found for level ${level.slug}`);
-      const group = await this.buildAFG(null, cardAfg);
-      const afg = group.list[0];
-      if (!afg) {
-        Logger.debug(JSON.stringify(cardAfg), 'AFG not found group');
-        throw new NotFoundException('AFG not found');
-      }
-      const cardIntegration = await this.integration.getCardIntegration(
-        IntegrationCardEnum.POMELO,
-      );
-      if (!cardIntegration) {
-        throw new BadRequestException('Bad integration card');
-      }
-      for (const card of virtualCards.list) {
-        try {
-          const rta = await cardIntegration.updateCard({
-            id: card.cardConfig.id,
-            affinity_group_id: afg.valueGroup,
-          });
-          Logger.log(rta.data, `Updated AFG Card-${card._id.toString()}`);
-          this.cardBuilder.emitAccountEventClient(
-            EventsNamesAccountEnum.updateOne,
-            {
-              id: card._id.toString(),
-              group: afg._id,
-            },
-          );
-        } catch (error) {
-          Logger.error(
-            error.message || error,
-            `LevelUpCard-${card._id.toString()}`,
-          );
-          throw new BadRequestException('Bad update card');
-        }
-      }
-    }
-    const physicalCards = await this.cardService.findAll({
-      where: {
-        owner: user._id,
-        showToOwner: true,
-        statusText: [
-          StatusAccountEnum.UNLOCK,
-          StatusAccountEnum.LOCK,
-          StatusAccountEnum.ORDERED,
-          StatusAccountEnum.VERIFIED,
-          StatusAccountEnum.SHIPPED,
-          StatusAccountEnum.DELIVERED,
-        ],
-        accountType: CardTypesAccountEnum.PHYSICAL,
-      },
-    });
-    if (physicalCards.totalElements > 0) {
-      physicalCards.list.forEach((card) => {
-        this.cardBuilder.emitAccountEventClient(
-          EventsNamesAccountEnum.createOneCard,
-          {
-            force: true,
-            owner: user._id,
-            type: TypesAccountEnum.CARD,
-            prevAccount: card._id.toString(),
-            statusText: StatusAccountEnum.ORDERED,
-            accountType: CardTypesAccountEnum.PHYSICAL,
-          },
-        );
-      });
-    } else {
-      if (level.name.indexOf(3) > -1 || level.name.indexOf(4) > -1) {
-        // Si grupos 3 o 4 enviar mensaje a support@b2fintech.com
-      } else if (level.name.indexOf(1) > -1 || level.name.indexOf(2) > -1) {
-        this.cardBuilder.emitAccountEventClient(
-          EventsNamesAccountEnum.createOneCard,
-          {
-            owner: user._id,
-            accountType: CardTypesAccountEnum.PHYSICAL,
-          },
-        );
-      }
-    }
-  }
-
-  private async getUserById(id: string) {
-    const user = await this.cardBuilder.getPromiseUserEventClient(
-      EventsNamesUserEnum.findOneById,
-      id,
-    );
-    if (!user) {
-      throw new NotFoundException('User not found');
-    }
-    return user;
   }
 
   @MessagePattern(EventsNamesAccountEnum.pomeloTransaction)
@@ -2046,11 +1565,11 @@ export class CardServiceController extends AccountServiceController {
       if (!card) {
         return CardsEnum.CARD_PROCESS_CARD_NOT_FOUND;
       }
-      Logger.log(
-        `Card balance: ${card.amount} | Movement amount: ${data.amount}`,
-        `CardService.ProcessPomeloTransaction.Authorize: ${data.authorize}`,
-      );
       if (data.authorize) {
+        Logger.log(
+          `Card balance: ${card.amount} | Movement amount: ${data.amount}`,
+          CardServiceController.name,
+        );
         const allowedBalance =
           card.amount * (1.0 - this.BLOCK_BALANCE_PERCENTAGE);
         if (allowedBalance <= data.amount) {
@@ -2102,6 +1621,58 @@ export class CardServiceController extends AccountServiceController {
       return cardList;
     } catch (error) {
       Logger.error(error, 'Error-getCardId');
+    }
+  }
+
+  @MessagePattern(EventsNamesAccountEnum.mingrateOne)
+  async migrateCard(
+    @Ctx() ctx: RmqContext,
+    @Payload() cardToMigrate: CardCreateDto,
+  ) {
+    try {
+      CommonService.ack(ctx);
+      Logger.log(
+        `Migrating card ${cardToMigrate?.cardConfig?.id}`,
+        CardServiceController.name,
+      );
+      const group = await this.buildAFG(cardToMigrate.afgId);
+      cardToMigrate.group = group?.list[0];
+      const cardList = await this.getCardById(cardToMigrate?.cardConfig?.id);
+      if (!cardList || !cardList.list[0]) {
+        return await this.cardService.createOne(cardToMigrate);
+      } else {
+        const card = cardList.list[0];
+        await this.cardService.customUpdateOne({
+          id: card._id,
+          $inc: {
+            amount: card.amount ? 0 : cardToMigrate.amount,
+            amountCustodial: card.amountCustodial
+              ? 0
+              : cardToMigrate.amountCustodial,
+          },
+        });
+        return card;
+      }
+    } catch (error) {
+      Logger.error(error, CardServiceController.name);
+    }
+  }
+
+  @MessagePattern(EventsNamesAccountEnum.findAllCardsToMigrate)
+  async finalALlCardsToMigrate(
+    @Ctx() ctx: RmqContext,
+    @Payload() data: QuerySearchAnyDto,
+  ) {
+    CommonService.ack(ctx);
+    try {
+      Logger.log(`Looking for all cards: `, CardServiceController.name);
+      const cardList = await this.cardService.findAll(data);
+      if (!cardList) {
+        throw new NotFoundException(`No card was found`);
+      }
+      return cardList;
+    } catch (error) {
+      Logger.error(error, CardServiceController.name);
     }
   }
 
@@ -2160,14 +1731,6 @@ export class CardServiceController extends AccountServiceController {
                   cardDto as AccountCreateDto,
                 );
                 Logger.debug(n_card.id, `Card created for ${usr.email}`);
-              } else if (
-                card.totalElements === 1 &&
-                card.list[0].statusText === StatusAccountEnum.ORDERED &&
-                crd.status === StatusAccountEnum.ACTIVE
-              ) {
-                card.list[0].statusText = StatusAccountEnum.UNLOCK;
-                card.list[0].save();
-                Logger.debug(card.list[0]?.id, `Card updated for ${usr.email}`);
               }
             }
           }
@@ -2195,7 +1758,6 @@ export class CardServiceController extends AccountServiceController {
     }
     return {
       name: person?.firstName,
-      pin: undefined,
       type: TypesAccountEnum.CARD,
       accountType: CardTypesAccountEnum[pomeloCard.card_type],
       firstName: person?.firstName ?? person?.name,
@@ -2210,13 +1772,14 @@ export class CardServiceController extends AccountServiceController {
       owner: person?.user,
       statusText,
       amount: balance ?? 0,
-      currency: CurrencyCodeB2cryptoEnum.USDT,
+      currency: CurrencyCodeB2cryptoEnum.USD,
       amountCustodial: balance ?? 0,
-      currencyCustodial: CurrencyCodeB2cryptoEnum.USDT,
+      currencyCustodial: CurrencyCodeB2cryptoEnum.USD,
       amountBlocked: 0,
-      currencyBlocked: CurrencyCodeB2cryptoEnum.USDT,
+      currencyBlocked: CurrencyCodeB2cryptoEnum.USD,
       amountBlockedCustodial: 0,
-      currencyBlockedCustodial: CurrencyCodeB2cryptoEnum.USDT,
+      currencyBlockedCustodial: CurrencyCodeB2cryptoEnum.USD,
+      pin: CommonService.getNumberDigits(CommonService.randomIntNumber(4), 4),
       cardConfig: {
         id: pomeloCard?.id,
         user_id: pomeloCard?.user_id,
@@ -2240,6 +1803,29 @@ export class CardServiceController extends AccountServiceController {
         },
       },
     };
+  }
+
+  @MessagePattern(EventsNamesAccountEnum.updateMigratedOwner)
+  async setCardOwner(@Ctx() ctx: RmqContext, @Payload() data: any) {
+    CommonService.ack(ctx);
+    try {
+      Logger.log(`Looking for card: ${data.id}`, CardServiceController.name);
+      const cardList = await this.cardService.findAll({
+        where: {
+          'cardConfig.id': data.id,
+        },
+      });
+      if (!cardList || !cardList.list[0]) {
+        throw new NotFoundException(`Card ${data.id} was not found`);
+      }
+      const card = cardList.list[0];
+      await this.cardService.customUpdateOne({
+        id: card._id,
+        owner: data.owner,
+      });
+    } catch (error) {
+      Logger.error(error, CardServiceController.name);
+    }
   }
 
   @MessagePattern(EventsNamesAccountEnum.setBalanceByCard)
@@ -2273,9 +1859,6 @@ export class CardServiceController extends AccountServiceController {
     user: User,
     account?: AccountDocument,
   ) {
-    if (!user?.email) {
-      throw new BadRequestException('Email not found');
-    }
     // TODO[hender - 2024/08/12] Check the Surname, City, Region to remove special characters
     // TODO[hender - 2024/08/12] Check the Surname, City, Region to remove numbers
     const rtaUserCard = await cardIntegration.getUser({
@@ -2301,20 +1884,11 @@ export class CardServiceController extends AccountServiceController {
           (account?.country ?? user.personalData.nationality),
       )[0].alpha3; */
       legalAddress.country = country;
-      let typeDocId: string =
-        account?.personalData?.typeDocId ?? user.personalData.typeDocId;
-      switch (typeDocId) {
-        case DocIdTypeEnum.PERMISO_PROTECCION_TEMPORAL:
-          typeDocId = 'PPT';
-          break;
-        case DocIdTypeEnum.PASSPORT:
-          typeDocId = 'PASSPORT';
-          break;
-      }
       const userCard = await cardIntegration.createUser({
         name: account?.personalData?.name ?? user.personalData.name,
         surname: account?.personalData?.lastName ?? user.personalData.lastName,
-        identification_type: typeDocId,
+        identification_type:
+          account?.personalData?.typeDocId ?? user.personalData.typeDocId,
         identification_value:
           account?.personalData?.numDocId ??
           user.personalData.numDocId?.toString(),
@@ -2386,5 +1960,29 @@ export class CardServiceController extends AccountServiceController {
     }
 
     return address;
+  }
+  private getAfgByLevel(levelSlug: string, cardPhysical = false): AfgNamesEnum {
+    const map = cardPhysical
+      ? {
+          'grupo-0': AfgNamesEnum.NA,
+          'grupo-1': AfgNamesEnum.CONSUMER_NOMINADA_3K,
+          'grupo-2': AfgNamesEnum.CONSUMER_NOMINADA_10K,
+          'grupo-3': AfgNamesEnum.CONSUMER_INNOMINADA_25K,
+          'grupo-4': AfgNamesEnum.CONSUMER_INNOMINADA_100K,
+        }
+      : {
+          'grupo-0': AfgNamesEnum.CONSUMER_VIRTUAL_1K,
+          'grupo-1': AfgNamesEnum.CONSUMER_VIRTUAL_1K,
+          'grupo-2': AfgNamesEnum.CONSUMER_VIRTUAL_2K,
+          'grupo-3': AfgNamesEnum.CONSUMER_VIRTUAL_5K,
+          'grupo-4': AfgNamesEnum.CONSUMER_VIRTUAL_10K,
+        };
+
+    return (
+      map[levelSlug] ??
+      (() => {
+        throw new BadRequestException(`Wrong level ${levelSlug}`);
+      })()
+    );
   }
 }

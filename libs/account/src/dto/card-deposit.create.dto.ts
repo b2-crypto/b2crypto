@@ -13,7 +13,7 @@ export class CardDepositCreateDto extends CreateAnyDto {
 
   @ApiProperty({
     required: false,
-    description: 'Wallet or Card to comes from',
+    description: 'Wallet to comes from',
   })
   @IsMongoId()
   @IsOptional()

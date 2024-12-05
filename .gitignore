@@ -40,6 +40,11 @@ lerna-debug.log*
 !.vscode/launch.json
 !.vscode/extensions.json
 
+# Migration files
+/migration
+/migration/*
 # SFTP report files
 /sftp/downloads
 /sftp/downloads/*
+# SUpload files
+upload/*

@@ -29,6 +29,7 @@ export class ResponseInterceptor implements NestInterceptor {
 
     return next.handle().pipe(
       map((data) => {
+        //const isHtml = data._headers['content-type']?.includes('html');
         if (this.checkPomeloHooksResponse(res)) {
           return data?.data || data;
         }

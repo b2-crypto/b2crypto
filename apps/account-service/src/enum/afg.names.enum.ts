@@ -1,5 +1,4 @@
 export enum AfgNamesEnum {
-  NA = 'na',
   CONSUMER_NOMINADA_3K = 'consumer-nominada-3k',
   CONSUMER_NOMINADA_10K = 'consumer-nominada-10k',
   CONSUMER_NOMINADA_25K = 'consumer-nominada-25k',
@@ -10,4 +9,5 @@ export enum AfgNamesEnum {
   CONSUMER_VIRTUAL_2K = 'consumer-virtual-2k',
   CONSUMER_VIRTUAL_5K = 'consumer-virtual-5k',
   CONSUMER_VIRTUAL_10K = 'consumer-virtual-10k',
+  NA = 'NA',
 }

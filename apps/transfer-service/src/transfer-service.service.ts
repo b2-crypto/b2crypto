@@ -33,7 +33,7 @@ import {
 } from '@psp-account/psp-account/entities/mongoose/psp-account.schema';
 import { PspAccountInterface } from '@psp-account/psp-account/entities/psp-account.interface';
 import { PspInterface } from '@psp/psp/entities/psp.interface';
-import { StatsDateCreateDto } from '@stats/stats/dto/stats.date.create.dto';
+import { StatsDateCreateDto } from '../../../libs/stats/src/dto/stats.date.create.dto';
 import { StatusDocument } from '@status/status/entities/mongoose/status.schema';
 import { StatusInterface } from '@status/status/entities/status.interface';
 import { TransferServiceMongooseService } from '@transfer/transfer';
@@ -66,14 +66,8 @@ import { AccountUpdateDto } from '@account/account/dto/account.update.dto';
 import { CategoryServiceService } from 'apps/category-service/src/category-service.service';
 import { PspAccountServiceService } from 'apps/psp-service/src/psp.account.service.service';
 import { StatusServiceService } from 'apps/status-service/src/status-service.service';
-import { AttachmentsEmailConfig } from '@message/message/dto/message.create.dto';
-import { FileUpdateDto } from '@file/file/dto/file.update.dto';
-import EventsNamesFileEnum from 'apps/file-service/src/enum/events.names.file.enum';
-import * as fs from 'fs';
-import { FileDocument } from '@file/file/entities/mongoose/file.schema';
-import TransportEnum from '@common/common/enums/TransportEnum';
-import EventsNamesMessageEnum from 'apps/message-service/src/enum/events.names.message.enum';
-import { EnvironmentEnum } from '@common/common/enums/environment.enum';
+import { BoldStatusEnum } from './enum/bold.status.enum';
+import { BoldTransferRequestDto } from './dto/bold.transfer.request.dto';
 import EventsNamesUserEnum from 'apps/user-service/src/enum/events.names.user.enum';
 
 @Injectable()
@@ -169,6 +163,53 @@ export class TransferServiceService
 
   async getOne(id: string) {
     return this.lib.findOne(id);
+  }
+
+  async handleBoldWebhook(transferBold: BoldTransferRequestDto) {//migrado desde controller
+    if (
+      !transferBold.link_id ||
+      !transferBold.payment_status ||
+      !transferBold.reference_id
+    ) {
+      throw new BadRequestException();
+    }
+    const txs = await this.getAll({
+      where: {
+        _id: transferBold.reference_id,
+      },
+    });
+    const tx = txs.list[0];
+    if (
+      tx.statusPayment === BoldStatusEnum.APPROVED ||
+      tx.statusPayment === BoldStatusEnum.NO_TRANSACTION_FOUND ||
+      tx.statusPayment === BoldStatusEnum.REJECTED
+    ) {
+      Logger.debug(
+        JSON.stringify(transferBold),
+        'Transaction has finish before',
+      );
+      throw new BadRequestException('transfer has finish before');
+    }
+    tx.statusPayment = transferBold.payment_status;
+    tx.responsePayment = {
+      success: true,
+      message: transferBold.description,
+      payload: {
+        url: transferBold.link_id,
+        message: transferBold.payer_email ?? 'N/A',
+        type: transferBold.payment_status,
+        data: transferBold,
+      },
+    };
+    this.builder.emitTransferEventClient(EventsNamesTransferEnum.updateOne, {
+      id: tx._id,
+      statusPayment: tx.statusPayment,
+      responsePayment: tx.responsePayment,
+    });
+    return {
+      statusCode: 200,
+      message: 'Transaction updated',
+    };
   }
 
   async getByLead(
@@ -510,7 +551,7 @@ export class TransferServiceService
     };
 
     if (transferSaved.isApprove) {
-      let multiply = 1;
+      let amount = transferSaved.amount;
       if (
         transferSaved.operationType ===
           OperationTransactionType.reversal_deposit ||
@@ -527,9 +568,9 @@ export class TransferServiceService
         transferSaved.operationType === OperationTransactionType.withdrawal ||
         transferSaved.operationType === OperationTransactionType.purchase
       ) {
-        multiply = -1;
+        amount *= -1;
       }
-      accountToUpdate.amount += transferSaved.amount * multiply;
+    /*   accountToUpdate.amount += transferSaved.amount * multiply; */  // TODO[Nestor] multiply no aparece
     }
     transferSaved.accountResultBalance = accountToUpdate.amount;
     const accountUpdated = await this.accountService.updateOne(accountToUpdate);
@@ -1465,265 +1506,5 @@ export class TransferServiceService
     const statDate = new StatsDateCreateDto();
     Logger.debug('checkStatsPspAccount', `${TransferServiceService.name}:902`);
   }
-
-  async sendLast6hHistoryCardPurchases(shortData = true) {
-    const query: QuerySearchAnyDto = {};
-    query.where = {};
-    const end = new Date();
-    const start = new Date();
-    const last_6h = 6 * /*30 * 24 **/ 60 * 60 * 1000;
-    start.setTime(end.getTime() - last_6h);
-    query.where.createdAt = {
-      start: start.toISOString(),
-      end: end.toISOString(),
-    };
-    const result = await this.lib.getHistoryCardPurchases(query);
-    await this.sendLast6hHistory(result, {
-      name: 'History card purchases',
-      start,
-      end,
-      shortData,
-    });
-  }
-
-  async sendLast6hHistoryCardWalletDeposits(shortData = true) {
-    const query: QuerySearchAnyDto = {};
-    query.where = {};
-    const end = new Date();
-    const start = new Date();
-    const last_6h = 6 * /*30 * 24 **/ 60 * 60 * 1000;
-    start.setTime(end.getTime() - last_6h);
-    query.where.createdAt = {
-      start: start.toISOString(),
-      end: end.toISOString(),
-    };
-    const result = await this.lib.getHistoryCardWalletDeposits(query);
-    await this.sendLast6hHistory(result, {
-      name: 'History card-wallet deposit',
-      start,
-      end,
-      shortData,
-    });
-  }
-
-  private async sendLast6hHistory(
-    result,
-    params: { name: string; start: Date; end: Date; shortData: boolean },
-  ) {
-    const name = `${
-      process.env.ENVIRONMENT !== EnvironmentEnum.prod
-        ? process.env.ENVIRONMENT
-        : ''
-    } ${params.name} transaction - from ${this.printShortDate(
-      params.start,
-    )} to ${this.printShortDate(params.end)}`;
-    const headers = [
-      'numeric_id',
-      'email',
-      'user_id',
-      'card_id',
-      'card_type',
-      'operation_type',
-      'confirmed_at',
-      'amount',
-      'status',
-    ];
-    if (!params.shortData) {
-      [
-        'expiration_date_validation',
-        'pin_validation',
-        'cvv_validation',
-        'merchant',
-        'city',
-        'origin',
-        'provider',
-        'last_four',
-      ].every((header) => headers.push(header));
-    }
-    await this.sendEmailToList(
-      [
-        this.getContentFileDataList(
-          result,
-          CommonService.getSlug(params.name),
-          headers,
-        ),
-      ],
-      name,
-    );
-    Logger.debug(name, `${params.name} sended`);
-  }
-
-  private printShortDate(date?: Date): string {
-    date = date ?? new Date();
-    return date.toLocaleString('es-CO', {
-      dateStyle: 'short',
-      timeStyle: 'short',
-      hourCycle: 'h24',
-    });
-  }
-
-  private async sendEmailToList(promisesAttachments, subject) {
-    const destiny = [
-      {
-        name: 'Luisa',
-        lastName: 'Fernanda',
-        email: 'luisa.fernanda@b2crypto.com',
-      },
-      {
-        name: 'Mateo',
-        lastName: 'Quintana',
-        email: 'mateo.quintana@b2fintech.com',
-      },
-      {
-        name: 'Hamilton',
-        lastName: 'Smith',
-        email: 'devops@b2fintech.com',
-      },
-      {
-        name: 'Hender',
-        lastName: 'Orlando',
-        email: 'hender.orlando@b2crypto.com',
-      },
-    ];
-    const attachments = await Promise.all(promisesAttachments);
-    Logger.log('History sended', TransferServiceService.name);
-    destiny.forEach((destiny) => {
-      this.sendEmail({
-        destinyText: destiny.email,
-        subject,
-        name: destiny.name,
-        lastname: destiny.lastName,
-        attachments,
-      });
-    });
-  }
-
-  private sendEmail({ destinyText, subject, name, lastname, attachments }) {
-    const data = {
-      name: subject,
-      body: ``,
-      originText: `System`,
-      destinyText,
-      transport: TransportEnum.EMAIL,
-      destiny: null,
-      vars: {
-        name,
-        lastname,
-      },
-      attachments: attachments,
-    };
-
-    this.builder.emitMessageEventClient(
-      EventsNamesMessageEnum.sendEmailBalanceReport,
-      data,
-    );
-  }
-
-  private async getContentFileDataList(
-    list: any[],
-    listName: string,
-    headers: Array<string>,
-    date?: Date,
-  ): Promise<AttachmentsEmailConfig> {
-    const filename = this.getFullname(listName, date);
-    const fileUri = `storage/${filename}`;
-    if (fs.existsSync(fileUri)) {
-      fs.unlinkSync(fileUri);
-    }
-    const objBase = this.getCustomObj(headers);
-    // File created
-    this.addDataToFile(objBase, filename, true, true);
-    Logger.log('File created', TransferServiceService.name);
-    const minSecWait = 2000;
-    return new Promise((res) => {
-      // Wait file creation
-      setTimeout(async () => {
-        Logger.log(`Rows ${list.length}`, TransferServiceService.name);
-        let time = 0;
-        list.forEach((item) => {
-          const customItem = this.getCustomObj(headers, item);
-          // Added rows
-          const idx = 100 * (item.numericId ?? 1);
-          time += idx;
-          setTimeout(
-            () => this.addDataToFile(customItem, filename, false),
-            idx,
-          );
-        });
-        Logger.debug(time / 1000, 'Total seg');
-        setTimeout(async () => {
-          // Wait file sending
-          this.responseFileContent({
-            filename,
-            fileUri,
-            listName,
-            res,
-          });
-        }, time + minSecWait);
-      }, minSecWait);
-    });
-  }
-  private responseFileContent({ filename, fileUri, listName, res }) {
-    setTimeout(async () => {
-      if (fs.existsSync(fileUri)) {
-        const content = fs.readFileSync(fileUri, {
-          encoding: 'base64',
-        });
-        const fileList = await this.builder.getPromiseFileEventClient<
-          ResponsePaginator<FileDocument>
-        >(EventsNamesFileEnum.findAll, {
-          where: {
-            name: filename,
-          },
-        });
-        if (fileList.totalElements > 0) {
-          this.builder.emitFileEventClient(EventsNamesFileEnum.updateOne, {
-            id: fileList.list[0]._id,
-            encodeBase64: content,
-          });
-        }
-        Logger.debug(`File "${filename}" sent`, listName);
-        res({
-          // encoded string as an attachment
-          filename: filename,
-          content: content,
-          encoding: 'base64',
-        });
-        if (fs.existsSync(fileUri)) {
-          fs.unlinkSync(fileUri);
-        }
-      } else {
-        Logger.debug(`File "${filename}" not found`, listName);
-        this.responseFileContent({ filename, fileUri, listName, res });
-      }
-    }, 20000);
-  }
-
-  private getCustomObj(keys: Array<string>, item?: any) {
-    const objBase = {};
-    keys.forEach((key) => {
-      objBase[key] = item ? item[key] ?? '' : null;
-    });
-    return objBase;
-  }
-
-  protected getFullname(baseName: string, today?: Date) {
-    today = today ?? new Date();
-    const dateStr = `${today.getUTCFullYear()}-${CommonService.getNumberDigits(
-      today.getUTCMonth() + 1,
-    )}-${today.getUTCDate()} UTC`;
-    return `${dateStr}_${baseName.toLowerCase()}.csv`;
-  }
-
-  private addDataToFile(item, filename, isFirst, onlyHeaders = false) {
-    //Logger.debug(JSON.stringify(item), filename);
-    this.builder.emitFileEventClient<File>(EventsNamesFileEnum.addDataToFile, {
-      isFirst,
-      onlyHeaders,
-      name: filename,
-      description: `Send email ${filename}`,
-      mimetype: 'text/csv',
-      data: JSON.stringify(item),
-    } as FileUpdateDto);
-  }
+  
 }

@@ -108,11 +108,13 @@ export class StatsPspAccountServiceController {
     return this.statsPspAccountServiceService.findAllPspAccountStats(query);
   }
 
+  @NoCache()
   @Get('psp-accounts')
   async getStatsDatePspAccounts(@Query() query?: QuerySearchAnyDto) {
     return this.statsPspAccountServiceService.getStatsDatePspAccounts(query);
   }
 
+  @NoCache()
   @Get('psp-accounts/:pspAccountId')
   async getStatsDatePspAccount(@Param('pspAccountId') pspAccountId: string) {
     return this.statsPspAccountServiceService.getStatsDatePspAccount(
@@ -120,31 +122,37 @@ export class StatsPspAccountServiceController {
     );
   }
 
+  @NoCache()
   @Get('brands')
   async getStatsDateBrands(@Query() query?: QuerySearchAnyDto) {
     throw new NotImplementedException();
   }
 
+  @NoCache()
   @Get('brands/:brandId')
   async getStatsDateBrand(@Param('brandId') brandId: string) {
     throw new NotImplementedException();
   }
 
+  @NoCache()
   @Get('crms')
   async getStatsDateCrms(@Query() query?: QuerySearchAnyDto) {
     throw new NotImplementedException();
   }
 
+  @NoCache()
   @Get('crms/:crmId')
   async getStatsDateCrm(@Param('crmId') crmId: string) {
     throw new NotImplementedException();
   }
 
+  @NoCache()
   @Get('psps')
   async getStatsDatePsps(@Query() query?: QuerySearchAnyDto) {
     throw new NotImplementedException();
   }
 
+  @NoCache()
   @Get('psps/:pspId')
   async getStatsDatePsp(@Param('pspId') pspId: string) {
     throw new NotImplementedException();
