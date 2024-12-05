@@ -120,3 +120,13 @@ config:
     secure: AAABAIcycJwVPOVW+n10d0oovcgL9JKuOKn/Hr0PHLL7C1c2hahRfEoAf3AO
   b2crypto-iac:SUBDOMAIN_PREFIX_OPTL_COLLECTOR: optlcollectorstage
   b2crypto-iac:SUBDOMAIN_PREFIX_OPTL_UI: optluistage
+  b2crypto-iac:V1_DB_USER:
+    secure: AAABAFywl8huAh7IwQqdPGwYwPhR3HrhXhcpJL7OOKw=
+  b2crypto-iac:V1_DB_PWD:
+    secure: AAABAN1O88lF8s/SurqUln41/jbBbwuURz9npTuXXbg=
+  b2crypto-iac:V1_DB_HOST:
+    secure: AAABAJuc/G+uzcz0eC5K5iGHSA1vk242c5gEB2R4zm0=
+  b2crypto-iac:V1_DB_PORT:
+    secure: AAABAMrMZX6Yr6KcSldk968s/0AWRYUfoRVh+1ZO63I=
+  b2crypto-iac:V1_DB_NAME:
+    secure: AAABAGzpP1TNxNx0QpnXox6FjkYLrbYvQOhL473e5RE=
