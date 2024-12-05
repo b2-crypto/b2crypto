@@ -14,7 +14,7 @@ import { PspAccountUpdateDto } from '@psp-account/psp-account/dto/psp-account.up
 import { PspAccountHasActiveDto } from '@psp-account/psp-account/dto/psp.has.active.dto';
 import { PspAccountDocument } from '@psp-account/psp-account/entities/mongoose/psp-account.schema';
 import { ConfigCheckStatsDto } from '@stats/stats/dto/config.check.stats.dto';
-import CheckStatsType from '@stats/stats/enum/check.stats.type';
+import CheckStatsType from '../../../libs/stats/src/enum/check.stats.type';
 import { StatusDocument } from '@status/status/entities/mongoose/status.schema';
 import EventsNamesStatusEnum from 'apps/status-service/src/enum/events.names.status.enum';
 import EventsNamesTransferEnum from 'apps/transfer-service/src/enum/events.names.transfer.enum';

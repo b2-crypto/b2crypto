@@ -30,7 +30,7 @@ config:
     secure: AAABADIXZfiAxtiASTFGNZLIhYYypTpSl07vW4R/W1eQ8fkN+DWS2w8+tDYzdrrCEUKBCW7pP6tyz62vlgZAog==
   b2crypto-iac:CURRENCY_CONVERSION_API_URL:
     secure: AAABALIY9swT1rccnRrVlt8ZFprM9Sqvn7zzSkrUyp1gObd5ECRLMbF/Tkrbwp0pdQPZe8AktKgKnbXXcVz5M40JWIzhsVUauaM=
-  b2crypto-iac:DATABASE_NAME: b2crypto
+  b2crypto-iac:DATABASE_NAME: b2fintech
   b2crypto-iac:DATABASE_URL:
     secure: AAABAMQsULCZcplyuHxDB76AyF1vwJI7dPri1hU+9THwunbLX67SOXQEvWNVANXXdvJ4oqm+nVnhkJgHYNEZXOLXXH+w0TiamkfHi+luevaulyPrEUGhIgjgKxirRGx3VWeCbdcspZsTUtFpc0sH5ESC0ZrikAvh+pUclH8SYbR5tkpwxyDB63CNNt6rENOFx50=
   b2crypto-iac:DEFAULT_CURRENCY_CONVERSION_COIN: USD
@@ -91,11 +91,11 @@ config:
   b2crypto-iac:REDIS_PORT: "10790"
   b2crypto-iac:REDIS_USERNAME:
     secure: AAABAHb+g4S+rJoa2ilY8oWDPlB9nldUcOJgmCV+67x7/k9qSV7H
-  b2crypto-iac:STACK: production
+  b2crypto-iac:STACK: prod
   b2crypto-iac:TESTING: "false"
   b2crypto-iac:TZ: UTC
   b2crypto-iac:URL_API_EMAIL_APP: ""
-  b2crypto-iac:VPC_CIDR_BLOCK: 10.1.0.0/16
+  b2crypto-iac:VPC_CIDR_BLOCK: 10.2.0.0/16
   mongodbatlas:privateKey:
     secure: AAABAMJZ0+qVxLuwGcvwozo5VPgkpAkBcdm+bMxa0LuHaFt2DiM+kwgq7x43QD1Dv2CCnMv+tJsw5LpRQ1y5XvJP3cg=
   mongodbatlas:publicKey:
@@ -108,3 +108,40 @@ config:
   b2crypto-iac:MIN_CAPACITY_AUTOSCALING: "3"
   b2crypto-iac:MQ_DEPLOYMENT_MODE: CLUSTER_MULTI_AZ
   b2crypto-iac:RABBIT_MQ_INSTANCE_TYPE: mq.m5.large
+  b2crypto-iac:MONGOATLAS_PROJECT_ID:
+    secure: AAABAOYIvAA4GCpfe0N9ppuPW+FKKaEwgnocxMOQjtNIhZtzWwc7uopnwZQbluGlJUwzDxglsWM=
+  b2crypto-iac:MONGOATLAS_PASSWORD:
+    secure: AAABANeY1Q9rckEuCyze8rOdI+Si/0oFfPtkllGkwqHy+aGk1OR9g3BdrXfH4b/K
+  b2crypto-iac:MONGOATLAS_USERNAME:
+    secure: AAABAMI7Pubk5PswoFuoIvnGcgi18tHEIuAMq/J6r7TC2cFuA2xavg==
+  b2crypto-iac:TESTING_MODE: NORMAL
+  b2crypto-iac:MONGOATLAS_INSTANCE: M20
+  b2crypto-iac:MONGOATLAS_CLUSTER_TYPE: REPLICASET
+  b2crypto-iac:MONGOATLAS_INSTANCE_MIN: M10
+  b2crypto-iac:MONGOATLAS_INSTANCE_MAX: M30
+  b2crypto-iac:SUBDOMAIN_PREFIX: apiprod
+  b2crypto-iac:SUBDOMAIN_PREFIX_OPTL_COLLECTOR: optlcollector
+  b2crypto-iac:SUBDOMAIN_PREFIX_OPTL_UI: optlui
+  b2crypto-iac:OPTL_OPEN_SEARCH_INSTANCE_TYPE: t3.small.search
+  b2crypto-iac:OPTL_OPEN_SEARCH_INSTANCE_COUNT: "3"
+  b2crypto-iac:OPTL_OPEN_SEARCH_ZONE_AWARENESS_AVAILABILITY_COUNT: "3"
+  b2crypto-iac:OPTL_OPEN_SEARCH_EBS_VOLUME_SIZE: "20"
+  b2crypto-iac:OPTL_COLLECTOR_DESIRED_COUNT_TASK: "2"
+  b2crypto-iac:OPTL_COLLECTOR_MIN_CAPACITY_AUTOSCALING: "2"
+  b2crypto-iac:OPTL_COLLECTOR_MAX_CAPACITY_AUTOSCALING: "10"
+  b2crypto-iac:OPTL_SERVICE_NAME: b2crypto_monolith
+  b2crypto-iac:OPTL_OPEN_SEARCH_USERNAME:
+    secure: AAABAGb0xapcnZlC2ZWzZxsayZtTZnMZL8Lv6SxHL4NzmlS6AYdu7ykqHaE1zBnGXYoj4lJTkFlu/bJyDw==
+  b2crypto-iac:OPTL_OPEN_SEARCH_PASSWORD:
+    secure: AAABAFOW80OhUltoTHxEFDALsYRfGCQfIyQhcgRZ00j3uwC3ZlUF9NUbmXoiNjqf6DYz83r7tmk0+Sn8T+ZR0lldLmLtpclLbC9BRnIvC2DcZuYgAm7we8HvIbegUqA=
+  b2crypto-iac:OPTL_OPEN_SEARCH_ZONE_AWARENESS_ENABLED: "true"
+  b2crypto-iac:V1_DB_USER:
+    secure: AAABAOTuRvZhc17C8kGzCY08f/G4E3DQq0lqRLdieQ1o2EeFoeSvZV9sAb7sCbI=
+  b2crypto-iac:V1_DB_PWD:
+    secure: AAABAAsP0KyA7CA8vPmltmTbXHO1WVlUJ6EboKm8ud3bjzR4/trJBkj0jrYrlqo=
+  b2crypto-iac:V1_DB_HOST:
+    secure: AAABAKT2iKwYkY5o+Rf9lLs5SWVkVyUvg84lNuXMsWe74ANl3bijJrU4Y4IXz7xRlIIPkbk0hgGWEu9rHFTg5YrJ+K+/c2Kn2cBwwhRWpBCvNE3TmjyIq+Azeg3cL3kgbLXYdaSAcpo=
+  b2crypto-iac:V1_DB_PORT:
+    secure: AAABANaXFHwmmoCr9CPJ35MMRuTxQF2YRfLos9yZIQB8UO97
+  b2crypto-iac:V1_DB_NAME:
+    secure: AAABAC0quouX6Rjufyvr7hg6YD1+COPOUNKY07KZYr+h2Q5ZJn0CJO7v2YfttrH+2w==

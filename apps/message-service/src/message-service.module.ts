@@ -2,6 +2,7 @@ import { BuildersModule } from '@builder/builders';
 import { MessageModule } from '@message/message';
 import { MailerModule } from '@nestjs-modules/mailer';
 import { Module } from '@nestjs/common';
+import { join } from 'node:path/posix';
 import { MessageServiceController } from './message-service.controller';
 import { MessageServiceService } from './message-service.service';
 
@@ -22,7 +23,7 @@ import { MessageServiceService } from './message-service.service';
       },
       preview: false,
       template: {
-        dir: './libs/message/src/templates/',
+        dir: join(process.cwd(), 'libs/message/src/templates'),
       },
     }),
   ],

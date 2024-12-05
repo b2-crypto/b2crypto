@@ -92,3 +92,41 @@ config:
   b2crypto-iac:SOCIAL_MEDIA_ICONS: '{"facebook":"https://message-templates-resource.s3.eu-west-3.amazonaws.com/social/facebook.png","instagram":"https://message-templates-resource.s3.eu-west-3.amazonaws.com/social/instagram.png","linkedin":"https://message-templates-resource.s3.eu-west-3.amazonaws.com/social/linkedin.png","youtube":"https://message-templates-resource.s3.eu-west-3.amazonaws.com/social/youtube.png"}'
   b2crypto-iac:SOCIAL_MEDIA_LINKS: '{"facebook":"https://www.facebook.com/share/qT7RXDDgRqKigRnn/?mibextid=LQQJ4d","linkedin":"https://www.linkedin.com/company/b2fintech/?viewAsMember=true","instagram":"https://www.instagram.com/b2fintech/","youtube":"https://www.youtube.com"}'
   b2crypto-iac:MQ_DEPLOYMENT_MODE: SINGLE_INSTANCE
+  b2crypto-iac:MONGOATLAS_PROJECT_ID:
+    secure: AAABAEfxDiareIOHDHzn64UHzeVjlMISR157bT934QFekMCFnt0vGlxKfDFnk4dvgRUuOvnk7tQ=
+  b2crypto-iac:MONGOATLAS_PASSWORD:
+    secure: AAABAKIL1mp1+X4ipZknh7VFUZhY+8zahmOHWp3+QEZSn3NgH3ihStMl2ZKwQ5cZ
+  b2crypto-iac:MONGOATLAS_USERNAME:
+    secure: AAABAF8b3D4cWVJVJssn0JQ5Lj+UFL6bWQUdtLpJvPGZd2rI8wfHjQ==
+  b2crypto-iac:TESTING_MODE: NORMAL
+  b2crypto-iac:MONGOATLAS_INSTANCE: M0
+  b2crypto-iac:MONGOATLAS_CLUSTER_TYPE: REPLICASET
+  b2crypto-iac:MONGOATLAS_INSTANCE_MIN: M2
+  b2crypto-iac:MONGOATLAS_INSTANCE_MAX: M2
+  b2crypto-iac:SUBDOMAIN_PREFIX: apistage
+  b2crypto-iac:OPTL_SERVICE_NAME: b2crypto_monolith
+  b2crypto-iac:OPTL_COLLECTOR_DESIRED_COUNT_TASK: "1"
+  b2crypto-iac:OPTL_COLLECTOR_MIN_CAPACITY_AUTOSCALING: "1"
+  b2crypto-iac:OPTL_COLLECTOR_MAX_CAPACITY_AUTOSCALING: "10"
+  b2crypto-iac:PROJECT_NAME: b2crypto
+  b2crypto-iac:OPTL_OPEN_SEARCH_ZONE_AWARENESS_ENABLED: "false"
+  b2crypto-iac:OPTL_OPEN_SEARCH_ZONE_AWARENESS_AVAILABILITY_COUNT: "1"
+  b2crypto-iac:OPTL_OPEN_SEARCH_INSTANCE_TYPE: t3.small.search
+  b2crypto-iac:OPTL_OPEN_SEARCH_INSTANCE_COUNT: "1"
+  b2crypto-iac:OPTL_OPEN_SEARCH_EBS_VOLUME_SIZE: "10"
+  b2crypto-iac:OPTL_OPEN_SEARCH_PASSWORD:
+    secure: AAABAEMdHeXd48br1+78/mvGpq/Phaa129NRT+zhtGwXw2DwhXRlfC1DWfrIoalh34IlMnJ9gfl4jTgh+Q==
+  b2crypto-iac:OPTL_OPEN_SEARCH_USERNAME:
+    secure: AAABAIcycJwVPOVW+n10d0oovcgL9JKuOKn/Hr0PHLL7C1c2hahRfEoAf3AO
+  b2crypto-iac:SUBDOMAIN_PREFIX_OPTL_COLLECTOR: optlcollectorstage
+  b2crypto-iac:SUBDOMAIN_PREFIX_OPTL_UI: optluistage
+  b2crypto-iac:V1_DB_USER:
+    secure: AAABAFywl8huAh7IwQqdPGwYwPhR3HrhXhcpJL7OOKw=
+  b2crypto-iac:V1_DB_PWD:
+    secure: AAABAN1O88lF8s/SurqUln41/jbBbwuURz9npTuXXbg=
+  b2crypto-iac:V1_DB_HOST:
+    secure: AAABAJuc/G+uzcz0eC5K5iGHSA1vk242c5gEB2R4zm0=
+  b2crypto-iac:V1_DB_PORT:
+    secure: AAABAMrMZX6Yr6KcSldk968s/0AWRYUfoRVh+1ZO63I=
+  b2crypto-iac:V1_DB_NAME:
+    secure: AAABAGzpP1TNxNx0QpnXox6FjkYLrbYvQOhL473e5RE=

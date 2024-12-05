@@ -12,6 +12,7 @@ import axios, {
   AxiosResponse,
   CreateAxiosDefaults,
 } from 'axios';
+import { randomUUID } from 'crypto';
 import { CardDto, CardSearchDto } from './dto/card.dto';
 import { ClientCardDto } from './dto/client.card.dto';
 import { ShippingDto } from './dto/shipping.dto';
@@ -176,8 +177,8 @@ export class IntegrationCardService<
     return this.http.patch(this.routesMap.updateUser, userCard);
   }
 
-  async getCard(cardId: string): Promise<AxiosResponse<any, any>> {
-    return await this.fetch('GET', this.routesMap.searchCard + '/' + cardId);
+  async getCard(card: TCardDto): Promise<AxiosResponse<any[], any>> {
+    return await this.fetch('GET', this.routesMap.searchCard, card);
   }
   async getCardByQuery(query: CardSearchDto) {
     const path = `${this.routesMap.searchCard}?filter[user_id]=${query.user_id}&page[size]=${query.page_size}`;

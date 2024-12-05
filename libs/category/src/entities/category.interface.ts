@@ -1,6 +1,5 @@
 import ResourcesEnum from '@common/common/enums/ResourceEnum';
 import TagEnum from '@common/common/enums/TagEnum';
-import { GroupInterface } from '@group/group/entities/group.interface';
 import { ObjectId } from 'mongoose';
 
 export interface CategoryInterface {
@@ -15,7 +14,6 @@ export interface CategoryInterface {
   previous: CategoryInterface;
   type: TagEnum;
   categoryParent: CategoryInterface;
-  groups: GroupInterface[];
   resources: ResourcesEnum[];
   createdAt: Date;
   updatedAt: Date;
@@ -23,7 +21,7 @@ export interface CategoryInterface {
   valueText: string;
 }
 
-export const CategoryPropertiesRelations = ['category', 'group'];
+export const CategoryPropertiesRelations = ['category'];
 
 export const CategoryPropertiesBasic = [
   'id',

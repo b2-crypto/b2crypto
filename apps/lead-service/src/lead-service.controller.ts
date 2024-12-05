@@ -45,11 +45,7 @@ import {
   RmqContext,
 } from '@nestjs/microservices';
 import { AuthGuard } from '@nestjs/passport';
-import ResponseB2Crypto from '@response-b2crypto/response-b2crypto/models/ResponseB2Crypto';
 import { TransferEntity } from '@transfer/transfer/entities/transfer.entity';
-import EventsNamesAffiliateEnum from 'apps/affiliate-service/src/enum/events.names.affiliate.enum';
-import EventsNamesCrmEnum from 'apps/crm-service/src/enum/events.names.crm.enum';
-import EventsNamesTransferEnum from 'apps/transfer-service/src/enum/events.names.transfer.enum';
 import { ApiKeyAffiliateAuthGuard } from '../../../libs/auth/src/guards/api.key.affiliate.guard';
 import { AutologinLeadDto } from './dto/autologin.lead.dto';
 import { CftdToFtdDto } from './dto/cftd_to_ftd.dto';
@@ -59,6 +55,10 @@ import { LoginLeadDto } from './dto/login.lead.dto';
 import { MoveLeadDto } from './dto/move_lead.dto';
 import EventsNamesLeadEnum from './enum/events.names.lead.enum';
 import { LeadServiceService } from './lead-service.service';
+import EventsNamesAffiliateEnum from 'apps/affiliate-service/src/enum/events.names.affiliate.enum';
+import EventsNamesTransferEnum from 'apps/transfer-service/src/enum/events.names.transfer.enum';
+import EventsNamesCrmEnum from 'apps/crm-service/src/enum/events.names.crm.enum';
+import ResponseB2Crypto from '@response-b2crypto/response-b2crypto/models/ResponseB2Crypto';
 
 @ApiTags('LEAD')
 @Controller('lead')

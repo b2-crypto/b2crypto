@@ -51,7 +51,6 @@ export class PersonServiceController implements GenericServiceController {
     private readonly userService: UserServiceService,
   ) {}
 
-  @ApiExcludeEndpoint()
   @NoCache()
   @Get('all')
   // @CheckPoliciesAbility(new PolicyHandlerPersonRead())
@@ -71,13 +70,12 @@ export class PersonServiceController implements GenericServiceController {
     const verifiedIdentity = req?.user?.verifyIdentity;
     const persons = await this.personService.getAll(query);
     persons.list.forEach((person) => {
-      person.verifiedIdentity = person.verifiedIdentity || !!verifiedIdentity;
+      person.verifiedIdentity = person.verifiedIdentity ?? !!verifiedIdentity;
       return person;
     });
     return persons;
   }
 
-  @ApiExcludeEndpoint()
   @NoCache()
   @Get(':personID')
   // @CheckPoliciesAbility(new PolicyHandlerPersonRead())
@@ -98,7 +96,8 @@ export class PersonServiceController implements GenericServiceController {
     createPersonDto.taxIdentificationType =
       createPersonDto.taxIdentificationType ?? createPersonDto.typeDocId;
     createPersonDto.taxIdentificationValue =
-      createPersonDto.taxIdentificationValue ?? createPersonDto.numDocId;
+      createPersonDto.taxIdentificationValue ??
+      parseInt(createPersonDto.numDocId);
     if (!createPersonDto.user) {
       const user = await this.userService.getOne(req.user.id);
       if (!user._id) {
@@ -239,6 +238,34 @@ export class PersonServiceController implements GenericServiceController {
     @Ctx() ctx: RmqContext,
   ) {
     const person = this.createOne(createDto);
+    CommonService.ack(ctx);
+    return person;
+  }
+
+  @AllowAnon()
+  @MessagePattern(EventsNamesPersonEnum.migrateOne)
+  async migrateOne(
+    @Payload() createDto: PersonCreateDto,
+    @Ctx() ctx: RmqContext,
+  ) {
+    let person;
+    let query: QuerySearchAnyDto = new QuerySearchAnyDto();
+    query = query ?? {};
+    query.where = query.where ?? {};
+    query.where['user'] = createDto?.user?.id ?? createDto?.user?._id;
+    const persons = await this.personService.getAll(query);
+    if (persons?.list?.length > 0) {
+      person = persons?.list[0];
+    } else {
+      const personalData = await this.personService.newPerson(createDto);
+      if (personalData.user) {
+        await this.userService.updateUser({
+          id: personalData.user._id,
+          personalData: personalData._id,
+        });
+      }
+      person = personalData;
+    }
     CommonService.ack(ctx);
     return person;
   }

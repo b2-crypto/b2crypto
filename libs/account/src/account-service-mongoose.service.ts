@@ -79,48 +79,6 @@ export class AccountServiceMongooseService extends BasicServiceModel<
     );
   }
 
-  async groupByNetwork(query: QuerySearchAnyDto) {
-    const aggregate = this.accountModel.aggregate();
-    if (query.where) {
-      for (const key in query.where) {
-        if (isArray(query.where[key])) {
-          if (key === '$or') {
-            for (const attrOR in query.where[key]) {
-              for (const attr in query.where[key][attrOR]) {
-                query.where[key][attrOR][attr] = CommonService.checkDateAttr(
-                  query.where[key][attrOR][attr],
-                );
-              }
-            }
-            continue;
-          }
-          query.where[key] = {
-            $in: query.where[key].map((item) => new ObjectId(item)),
-          };
-        } else if (isMongoId(query.where[key])) {
-          query.where[key] = new ObjectId(query.where[key]);
-        } else if (query.where[key]['start'] || query.where[key]['end']) {
-          query.where[key] = CommonService.checkDateAttr(query.where[key]);
-        }
-      }
-      aggregate.match(query.where);
-    }
-    if (query.order) {
-      const sort = {};
-      for (const order of query.order) {
-        sort[order[0]] = order[1];
-      }
-      aggregate.sort(sort);
-    }
-    aggregate.group({
-      _id: '$nativeAccountName',
-      list: { $addToSet: '$name' },
-      //data: { $push: '$$ROOT' },
-    });
-    const list = await aggregate.exec();
-    return list;
-  }
-
   async getBalanceByAccountTypeCard(query?: QuerySearchAnyDto) {
     query = query ?? {};
     query.where = query.where ?? {};

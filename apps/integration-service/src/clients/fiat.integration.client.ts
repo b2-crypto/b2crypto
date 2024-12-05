@@ -22,13 +22,6 @@ export class FiatIntegrationClient {
     const apiURL = process.env.CURRENCY_CONVERSION_API_URL;
     const apiKey = process.env.CURRENCY_CONVERSION_API_KEY;
 
-    if (from == 'USDT') {
-      from = 'USD';
-    }
-    if (to == 'USDT') {
-      to = 'USD';
-    }
-
     const url = `${apiURL}?access_key=${apiKey}&from=${from}&to=${to}&amount=${amount}`;
     Logger.log(url, 'FiatIntegrationClient.getCurrencyConversion');
     const obsResponse = this.httpService.get(url);
