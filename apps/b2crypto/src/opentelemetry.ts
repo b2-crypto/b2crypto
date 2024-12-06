@@ -13,7 +13,6 @@ const traceExporter = new OTLPTraceExporter({
 export const tracingConfig = {
   serviceName: process.env.OPTL_SERVICE_NAME,
   spanProcessor: new BatchSpanProcessor(traceExporter) as any,
-  traceExporter,
   textMapPropagator: new CompositePropagator({
     propagators: [
       new JaegerPropagator(),

@@ -18,4 +18,7 @@ export class PersonUpdateDto extends PartialType(PersonCreateDto) {
   @ValidateNested()
   @Type(() => LocationDto)
   location?: LocationDto;
+
+  @IsOptional()
+  verifiedIdentity?: boolean;
 }

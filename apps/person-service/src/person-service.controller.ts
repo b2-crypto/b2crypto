@@ -40,6 +40,7 @@ import { SwaggerSteakeyConfigEnum } from 'libs/config/enum/swagger.stakey.config
 import { BadRequestError } from 'passport-headerapikey';
 import EventsNamesPersonEnum from './enum/events.names.person.enum';
 import { PersonServiceService } from './person-service.service';
+import LocationDto from '@person/person/dto/location.dto';
 
 @ApiTags(SwaggerSteakeyConfigEnum.TAG_PROFILE)
 @Controller('persons')
@@ -156,6 +157,7 @@ export class PersonServiceController implements GenericServiceController {
       throw new BadRequestError('User not have personal data');
     }
     updatePersonDto.id = personalData._id;
+    updatePersonDto.location = updatePersonDto.location ?? ({} as LocationDto);
     updatePersonDto.location.address = {
       street_name:
         updatePersonDto?.location?.address?.street_name ??
@@ -180,8 +182,6 @@ export class PersonServiceController implements GenericServiceController {
         personalData?.location?.address?.country,
       zip_code:
         updatePersonDto?.location?.address?.zip_code ??
-        (updatePersonDto?.location?.address &&
-          updatePersonDto?.location?.address['zip_code']) ??
         personalData?.location?.address?.zip_code,
       apartment:
         updatePersonDto?.location?.address?.apartment ??

@@ -37,6 +37,7 @@ import {
   Post,
   Query,
   Req,
+  Res,
   UnauthorizedException,
   UseGuards,
 } from '@nestjs/common';
@@ -69,7 +70,9 @@ import EventsNamesUserEnum from 'apps/user-service/src/enum/events.names.user.en
 import { UserServiceService } from 'apps/user-service/src/user-service.service';
 import { isEmpty, isString } from 'class-validator';
 import { SwaggerSteakeyConfigEnum } from 'libs/config/enum/swagger.stakey.config.enum';
+import * as pug from 'pug';
 
+import { ConfigCardActivateDto } from '@account/account/dto/config.card.activate.dto';
 import { ResponsePaginator } from '../../../libs/common/src/interfaces/response-pagination.interface';
 import { AccountServiceController } from './account-service.controller';
 import { AccountServiceService } from './account-service.service';
@@ -1281,7 +1284,205 @@ export class CardServiceController extends AccountServiceController {
         approvedAt: new Date(),
       } as unknown as TransferCreateDto,
     );
-    return result;
+    from.amount = from.amount - createDto.amount;
+    return from;
+  }
+
+  @Patch('physical-active')
+  @ApiTags(SwaggerSteakeyConfigEnum.TAG_CARD)
+  @ApiSecurity('b2crypto-key')
+  @ApiBearerAuth('bearerToken')
+  @UseGuards(ApiKeyAuthGuard)
+  async physicalActive(
+    @Body() configActive: ConfigCardActivateDto,
+    @Req() req?: any,
+  ) {
+    return this.physicalActiveCard(
+      configActive,
+      await this.getValidUserFromReq(req),
+    );
+  }
+
+  async getValidUserFromReq(@Req() req?: any) {
+    const user: User = await this.getUser(req?.user?.id);
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    if (!user.personalData) {
+      throw new BadRequestException('Profile of user not found');
+    }
+    if (!user.personalData.location?.address) {
+      throw new BadRequestException('Location address not found');
+    }
+    Logger.debug(JSON.stringify(user), 'loggger user - getValidateUserFromReq');
+    return user;
+  }
+
+  async physicalActiveCard(configActivate: ConfigCardActivateDto, user) {
+    if (!configActivate.pan) {
+      throw new BadRequestException('PAN code is necesary');
+    }
+    const cardIntegration = await this.integration.getCardIntegration(
+      IntegrationCardEnum.POMELO,
+    );
+    if (!cardIntegration) {
+      throw new BadRequestException('Bad integration card');
+    }
+    try {
+      if (!user.userCard) {
+        user.userCard = await this.getUserCard(cardIntegration, user);
+      }
+    } catch (err) {
+      Logger.error(err, 'Error in card profile creation');
+      throw new BadRequestException('Card profile not found');
+    }
+    Logger.debug(configActivate.pin, 'pin active card');
+    if (!configActivate.pin && configActivate.pin?.length !== 4) {
+      configActivate.pin = CommonService.getNumberDigits(
+        CommonService.randomIntNumber(9999),
+        4,
+      );
+    }
+    const request = {
+      user_id: user.userCard.id,
+      pin: configActivate.pin,
+      previous_card_id: undefined,
+      pan: configActivate.pan,
+    };
+    if (configActivate.prevCardId) {
+      request.previous_card_id = configActivate.prevCardId;
+    }
+    const rta = await cardIntegration.activateCard(
+      user.userCard,
+      configActivate,
+    );
+    Logger.debug(JSON.stringify(rta), 'rta actived card');
+    if (rta) {
+      if (!!rta['error']) {
+        const details: Array<string> = (rta['error']['details'] || []).map(
+          (err) => err.detail,
+        );
+        Logger.error(details, 'activate card');
+        throw new BadRequestException(details.join(','));
+      }
+      const cardId = (rta.data && rta.data['id']) || rta['id'];
+      Logger.debug(cardId, `cardId actived`);
+      let crd = null;
+      let card = null;
+      let cards = null;
+      try {
+        cards = await cardIntegration.getCard(cardId);
+        Logger.debug(cards, `Result pomelo active`);
+        crd = cards.data;
+        Logger.debug(cardId, `Search card active`);
+        card = await this.cardService.findAll({
+          where: {
+            'cardConfig.id': crd.id,
+          },
+        });
+      } catch (err) {
+        Logger.error(err, 'Error get card pomelo');
+        throw new BadRequestException('Get Card error');
+      }
+      if (!card.totalElements) {
+        const cardDto = this.buildCardDto(crd, user.personalData, user.email);
+        cardDto.pin = configActivate.pin;
+        const n_card = await this.cardService.createOne(
+          cardDto as AccountCreateDto,
+        );
+        Logger.debug(n_card.id, `Card created for ${user.email}`);
+        let afgName = 'grupo-1';
+        if (configActivate.promoCode == 'pm2413') {
+          afgName = 'grupo-3';
+        }
+        const cardAfg = this.getAfgByLevel(afgName, true);
+        const group = await this.buildAFG(null, cardAfg);
+        const afg = group.list[0];
+        try {
+          const rta = await cardIntegration.updateCard({
+            id: crd?.id,
+            affinity_group_id: afg.valueGroup,
+          });
+          Logger.debug(rta.data, `Updated AFG Card-${n_card?.id.toString()}`);
+          this.cardBuilder.emitAccountEventClient(
+            EventsNamesAccountEnum.updateOne,
+            {
+              id: n_card?.id.toString(),
+              group: afg._id,
+            },
+          );
+        } catch (error) {
+          Logger.error(
+            error.message || error,
+            `Update AFG Card-${n_card?.id.toString()}-${user.email}`,
+          );
+          //throw new BadRequestException('Bad update card');
+        }
+      }
+      return {
+        statusCode: 200,
+        data: 'Card actived',
+      };
+    }
+    return rta;
+  }
+
+  @Get('sensitive-info/:cardId')
+  @ApiTags(SwaggerSteakeyConfigEnum.TAG_CARD)
+  @ApiSecurity('b2crypto-key')
+  @ApiBearerAuth('bearerToken')
+  @UseGuards(ApiKeyAuthGuard)
+  async getSensitiveInfo(
+    @Param('cardId') cardId: string,
+    @Res() res,
+    @Req() req?: any,
+  ) {
+    if (!cardId) {
+      throw new BadRequestException('Need cardId to search');
+    }
+    const cardList = await this.cardService.findAll({
+      where: {
+        _id: cardId,
+      },
+    });
+    if (!cardList?.totalElements || !cardList?.list[0]?.cardConfig) {
+      throw new BadRequestException('CardId is not valid');
+    }
+    cardId = cardList.list[0].cardConfig.id;
+    const user = await this.getValidUserFromReq(req);
+    const cardIntegration = await this.integration.getCardIntegration(
+      IntegrationCardEnum.POMELO,
+    );
+    if (!cardIntegration) {
+      throw new BadRequestException('Bad integration card');
+    }
+    if (!user.userCard) {
+      user.userCard = await this.getUserCard(cardIntegration, user);
+    }
+    const token = await cardIntegration.getTokenCardSensitive(user.userCard.id);
+
+    const url = 'https://secure-data-web.pomelo.la';
+    const cardIdPomelo = cardId;
+    const width = 'width="100%"';
+    const height = 'height="270em"';
+    const locale = 'es';
+    const urlStyles =
+      'https://cardsstyles.s3.eu-west-3.amazonaws.com/cardsstyles2.css';
+    const html = pug.render(
+      '<iframe ' +
+        `${width}` +
+        `${height}` +
+        'allow="clipboard-write" ' +
+        'class="iframe-list" ' +
+        'scrolling="no" ' +
+        `src="${url}/v1/${cardIdPomelo}?auth=${token['access_token']}&styles=${urlStyles}&field_list=pan,code,pin,name,expiration&layout=card&locale=${locale}" ` +
+        'frameBorder="0">' +
+        '</iframe>',
+    );
+    return res
+      .setHeader('Content-Type', 'text/html; charset=utf-8')
+      .status(200)
+      .send(html);
   }
 
   @Patch('lock/:cardId')
@@ -1353,7 +1554,7 @@ export class CardServiceController extends AccountServiceController {
     CommonService.ack(ctx);
     try {
       let txnAmount = 0;
-      Logger.log(`Looking for card: ${data.id}`, CardServiceController.name);
+      Logger.log(`Looking for card: ${data.id}`, 'proccessPomeloTx');
       const cardList = await this.cardService.findAll({
         where: {
           statusText: StatusAccountEnum.UNLOCK,
@@ -1398,20 +1599,20 @@ export class CardServiceController extends AccountServiceController {
   async findByCardId(@Ctx() ctx: RmqContext, @Payload() data: any) {
     CommonService.ack(ctx);
     try {
-      Logger.log(`Looking for card: ${data.id}`, CardServiceController.name);
+      Logger.log(`Looking for card: ${data.id}`, 'findByCardId');
       const cardList = await this.getCardById(data.id);
       if (!cardList || !cardList.list[0]) {
         throw new NotFoundException(`Card ${data.id} was not found`);
       }
       return cardList.list[0];
     } catch (error) {
-      Logger.error(error, CardServiceController.name);
+      Logger.error(error, 'Error-cfindByCardId');
     }
   }
 
   private async getCardById(cardId: string) {
     try {
-      Logger.log(`Looking for card: ${cardId}`, CardServiceController.name);
+      Logger.log(`Looking for card: ${cardId}`, 'getByCardId');
       const cardList = await this.cardService.findAll({
         where: {
           'cardConfig.id': cardId,
@@ -1419,7 +1620,7 @@ export class CardServiceController extends AccountServiceController {
       });
       return cardList;
     } catch (error) {
-      Logger.error(error, CardServiceController.name);
+      Logger.error(error, 'Error-getCardId');
     }
   }
 
@@ -1578,6 +1779,7 @@ export class CardServiceController extends AccountServiceController {
       currencyBlocked: CurrencyCodeB2cryptoEnum.USD,
       amountBlockedCustodial: 0,
       currencyBlockedCustodial: CurrencyCodeB2cryptoEnum.USD,
+      pin: CommonService.getNumberDigits(CommonService.randomIntNumber(4), 4),
       cardConfig: {
         id: pomeloCard?.id,
         user_id: pomeloCard?.user_id,
@@ -1630,7 +1832,7 @@ export class CardServiceController extends AccountServiceController {
   async setBalanceByCard(@Ctx() ctx: RmqContext, @Payload() data: any) {
     CommonService.ack(ctx);
     try {
-      Logger.log(`Looking for card: ${data.id}`, CardServiceController.name);
+      Logger.log(`Looking for card: ${data.id}`, 'setBalanceByCard');
       const cardList = await this.cardService.findAll({
         where: {
           'cardConfig.id': data.id,
@@ -1758,5 +1960,29 @@ export class CardServiceController extends AccountServiceController {
     }
 
     return address;
+  }
+  private getAfgByLevel(levelSlug: string, cardPhysical = false): AfgNamesEnum {
+    const map = cardPhysical
+      ? {
+          'grupo-0': AfgNamesEnum.NA,
+          'grupo-1': AfgNamesEnum.CONSUMER_NOMINADA_3K,
+          'grupo-2': AfgNamesEnum.CONSUMER_NOMINADA_10K,
+          'grupo-3': AfgNamesEnum.CONSUMER_INNOMINADA_25K,
+          'grupo-4': AfgNamesEnum.CONSUMER_INNOMINADA_100K,
+        }
+      : {
+          'grupo-0': AfgNamesEnum.CONSUMER_VIRTUAL_1K,
+          'grupo-1': AfgNamesEnum.CONSUMER_VIRTUAL_1K,
+          'grupo-2': AfgNamesEnum.CONSUMER_VIRTUAL_2K,
+          'grupo-3': AfgNamesEnum.CONSUMER_VIRTUAL_5K,
+          'grupo-4': AfgNamesEnum.CONSUMER_VIRTUAL_10K,
+        };
+
+    return (
+      map[levelSlug] ??
+      (() => {
+        throw new BadRequestException(`Wrong level ${levelSlug}`);
+      })()
+    );
   }
 }

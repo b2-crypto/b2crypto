@@ -105,6 +105,7 @@ export class UserServiceService {
         take: 999999,
         where: {
           owner: usr._id,
+          showToOwner: true,
         },
       });
       Logger.log(userId, 'Balance update');
