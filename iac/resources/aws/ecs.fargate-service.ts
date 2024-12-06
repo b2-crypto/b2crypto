@@ -258,7 +258,7 @@ export const ecsFargateService = new awsx.ecs.FargateService(
           },
           {
             name: 'OPTL_API_URL',
-            value: `https://${SUBDOMAIN_PREFIX_OPTL_COLLECTOR}.${DOMAIN}`,
+            value: `https://${SUBDOMAIN_PREFIX_OPTL_COLLECTOR}.${DOMAIN}/v1/traces`,
           },
           {
             name: 'OPTL_SERVICE_NAME',
