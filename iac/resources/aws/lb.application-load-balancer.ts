@@ -47,9 +47,9 @@ export const lbApplicationLoadBalancerOptlCollector =
       name: `${PROJECT_NAME}-optl-collector-${STACK}`,
       enableHttp2: true,
       defaultTargetGroup: {
-        name: `${PROJECT_NAME}-optl-collector-grpc-${STACK}`,
+        name: `${PROJECT_NAME}-optl-collector-${STACK}`,
         protocol: 'HTTP',
-        port: 4317,
+        port: 4318,
         vpcId: ec2Vpc.vpcId,
         tags: TAGS,
         healthCheck: {

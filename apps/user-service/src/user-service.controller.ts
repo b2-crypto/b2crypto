@@ -1,5 +1,4 @@
 import {
-  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -59,7 +58,7 @@ export class UserServiceController implements GenericServiceController {
     private readonly userService: UserServiceService,
     @Inject(BuildersService)
     readonly builder: BuildersService,
-  ) { }
+  ) {}
 
   @NoCache()
   @Get('all')
@@ -374,17 +373,22 @@ export class UserServiceController implements GenericServiceController {
 
   @AllowAnon()
   @EventPattern(EventsNamesUserEnum.activeTwoFactor)
-  async activeTwoFactor(@Payload() user: UserEntity) {
+  async activeTwoFactor(@Payload() user: UserEntity, @Ctx() ctx: RmqContext) {
     await this.userService.updateUser({
       id: user.id,
       twoFactorIsActive: true,
     });
+    CommonService.ack(ctx);
   }
 
   @AllowAnon()
   @EventPattern(EventsNamesUserEnum.updateLeveluser)
-  async updateLevelUser(@Payload() data: { user: string; level: string }) {
+  async updateLevelUser(
+    @Payload() data: { user: string; level: string },
+    @Ctx() ctx: RmqContext,
+  ) {
     await this.userService.updateLevelUser(data.level, data.user);
+    CommonService.ack(ctx);
   }
 
   private async findOneByApiKey(publicKey: string) {

@@ -1,4 +1,4 @@
-import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-grpc';
+import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-http';
 // import { PrometheusExporter } from '@opentelemetry/exporter-prometheus';
 import { TracingConfig } from '@amplication/opentelemetry-nestjs';
 import { CompositePropagator } from '@opentelemetry/core';
@@ -13,7 +13,6 @@ const traceExporter = new OTLPTraceExporter({
 export const tracingConfig = {
   serviceName: process.env.OPTL_SERVICE_NAME,
   spanProcessor: new BatchSpanProcessor(traceExporter) as any,
-  traceExporter,
   textMapPropagator: new CompositePropagator({
     propagators: [
       new JaegerPropagator(),

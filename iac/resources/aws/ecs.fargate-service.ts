@@ -258,11 +258,31 @@ export const ecsFargateService = new awsx.ecs.FargateService(
           },
           {
             name: 'OPTL_API_URL',
-            value: `https://${SUBDOMAIN_PREFIX_OPTL_COLLECTOR}.${DOMAIN}`,
+            value: `https://${SUBDOMAIN_PREFIX_OPTL_COLLECTOR}.${DOMAIN}/v1/traces`,
           },
           {
             name: 'OPTL_SERVICE_NAME',
             value: SECRETS.OPTL_SERVICE_NAME,
+          },
+          {
+            name: 'V1_DB_USER',
+            value: SECRETS.V1_DB_USER,
+          },
+          {
+            name: 'V1_DB_PWD',
+            value: SECRETS.V1_DB_PWD,
+          },
+          {
+            name: 'V1_DB_HOST',
+            value: SECRETS.V1_DB_HOST,
+          },
+          {
+            name: 'V1_DB_PORT',
+            value: SECRETS.V1_DB_PORT,
+          },
+          {
+            name: 'V1_DB_NAME',
+            value: SECRETS.V1_DB_NAME,
           },
         ],
         portMappings: [
@@ -342,17 +362,11 @@ export const ecsFargateServiceOptlCollector = new awsx.ecs.FargateService(
         portMappings: [
           {
             name: `${PROJECT_NAME}-optl-collector-grpc-${STACK}`,
-            containerPort: 4317,
-            hostPort: 4317,
-            protocol: 'tcp',
-            targetGroup:
-              lbApplicationLoadBalancerOptlCollector.defaultTargetGroup,
-          },
-          {
-            name: `${PROJECT_NAME}-optl-collector-http-${STACK}`,
             containerPort: 4318,
             hostPort: 4318,
             protocol: 'tcp',
+            targetGroup:
+              lbApplicationLoadBalancerOptlCollector.defaultTargetGroup,
           },
           {
             name: `${PROJECT_NAME}-optl-collector-health-${STACK}`,

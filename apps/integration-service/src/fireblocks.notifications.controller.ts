@@ -20,6 +20,7 @@ import {
   Post,
   Req,
 } from '@nestjs/common';
+import { CACHE_MANAGER, Cache } from '@nestjs/cache-manager';
 import { TransferCreateDto } from '@transfer/transfer/dto/transfer.create.dto';
 import { OperationTransactionType } from '@transfer/transfer/enum/operation.transaction.type.enum';
 import EventsNamesAccountEnum from 'apps/account-service/src/enum/events.names.account.enum';
@@ -50,6 +51,8 @@ export class FireBlocksNotificationsController {
   tSM7QYNhlftT4/yVvYnk0YcCAwEAAQ==
   -----END PUBLIC KEY-----`.replace(/\\n/g, '\n');
   constructor(
+    @Inject(CACHE_MANAGER)
+    private cacheManager: Cache,
     private readonly builder: BuildersService,
     @Inject(IntegrationService)
     private integrationService: IntegrationService,
@@ -76,10 +79,15 @@ export class FireBlocksNotificationsController {
     const rta = data.data;
     Logger.debug(rta, '-start');
     if (
-      rta?.source?.type === 'UNKNOWN' ||
-      (rta?.source?.type === 'VAULT_ACCOUNT' &&
-        rta?.destination?.type === 'EXTERNAL_WALLET')
+      rta.id &&
+      rta.status &&
+      (rta?.source?.type === 'UNKNOWN' ||
+        (rta?.source?.type === 'VAULT_ACCOUNT' &&
+          rta?.destination?.type === 'EXTERNAL_WALLET')) &&
+      (rta?.status === 'CONFIRMED' || rta?.status === 'COMPLETED') &&
+      !(await this.cacheManager.get<string>(rta.id))
     ) {
+      this.cacheManager.set(rta.id, rta.status, 10 * 1000);
       const txList = await this.builder.getPromiseTransferEventClient(
         EventsNamesTransferEnum.findAll,
         {
@@ -97,7 +105,8 @@ export class FireBlocksNotificationsController {
             dto,
           );
         }
-      } else if (rta?.status === 'COMPLETED' && !tx.isApprove) {
+        //} else if (rta?.status === 'COMPLETED' && !tx.isApprove) {
+      } else if (!tx.isApprove) {
         const status = await this.builder.getPromiseStatusEventClient(
           EventsNamesStatusEnum.findOneByName,
           StatusCashierEnum.APPROVED,
@@ -201,7 +210,7 @@ export class FireBlocksNotificationsController {
       return null;
     }
     let isApproved = null;
-    if (data.status === 'COMPLETED') {
+    if (data.status === 'CONFIRMED' || data.status === 'COMPLETED') {
       isApproved = true;
     } else if (
       data.status === TransactionStateEnum.Rejected ||
@@ -256,7 +265,7 @@ export class FireBlocksNotificationsController {
       crm,
       userAccount: wallet.owner,
       isApprove: isApproved,
-      ßapprovedAt: isApproved === null || !isApproved ? null : new Date(),
+      approvedAt: isApproved === null || !isApproved ? null : new Date(),
       rejectedAt: isApproved === null || isApproved ? null : new Date(),
       userApprover: isApproved ? null : wallet.owner,
       userRejecter: isApproved ? null : wallet.owner,
