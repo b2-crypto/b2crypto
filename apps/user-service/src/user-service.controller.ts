@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -50,6 +51,8 @@ import { SwaggerSteakeyConfigEnum } from 'libs/config/enum/swagger.stakey.config
 import { ObjectId } from 'mongodb';
 import EventsNamesUserEnum from './enum/events.names.user.enum';
 import { UserServiceService } from './user-service.service';
+import { UserLevelUpDto } from '@user/user/dto/user.level.up.dto';
+import { ResponsePaginator } from '@common/common/interfaces/response-pagination.interface';
 
 @ApiTags('USER')
 @Controller('users')
@@ -411,4 +414,89 @@ export class UserServiceController implements GenericServiceController {
     };
     return await this.userService.getAll(query);
   }
+  @Patch('level-up')
+async levelUp(@Body() userLevelUpDto: UserLevelUpDto, @Req() req?: any) {
+  try {
+    userLevelUpDto.user = req?.user.id;
+    return this.userService.levelUp(userLevelUpDto);
+  } catch (error) {
+    throw new BadRequestException(error);
+  }
+}
+@Patch('verify-by-card')
+async verifyUsersWithCard() {
+  const query = new QuerySearchAnyDto();
+  query.where = query.where ?? {};
+  query.where.verifyIdentity = false;
+  query.page = 0;
+  query.take = 10;
+  let users: ResponsePaginator<UserEntity> = null;
+  const promises = [];
+  do {
+    ++query.page;
+    users = await this.userService.getAll({
+      ...query,
+    });
+    for (const user of users.list) {
+      promises.push(
+        this.userService.verifyUsersWithCard(user._id.toString()),
+      );
+    }
+  } while (query.page < users.lastPage);
+  return Promise.all(promises);
+}
+@Patch('rules/me')
+async getRulesMe(@Req() req?: any) {
+  return this.getRules(req);
+}
+
+@Patch('rules')
+async getRules(@Req() req?: any) {
+  const user = req?.user;
+  const query = new QuerySearchAnyDto();
+  query.where = query.where ?? {};
+  query.page = 0;
+  query.take = 10;
+  query.relations = ['level'];
+  if (user.id) {
+    query.where._id = user.id;
+  }
+  let users: ResponsePaginator<UserEntity> = null;
+  const promises = [];
+  do {
+    ++query.page;
+    users = await this.userService.getAll({
+      ...query,
+    });
+    for (const user of users.list) {
+      promises.push(
+        this.userService
+          .applyAndGetRules({
+            id: user._id,
+            level: user.level,
+          } as unknown as UserUpdateDto)
+          .then((usr) => {
+            Logger.log(
+              `Apply level ${user.level?.name} to user ${user.email}`,
+              `page ${query.page}/${users.lastPage}`,
+            );
+            return {
+              user: usr._id,
+              level: usr.level._id,
+              email: usr.email,
+              rules: usr.rules,
+            };
+          }),
+      );
+    }
+  } while (query.page < users.lastPage);
+  return Promise.all(promises);
+}
+@AllowAnon()
+@EventPattern(EventsNamesUserEnum.checkBalanceUser)
+async checkBalanceEvent(@Payload() id: string, @Ctx() ctx: RmqContext) {
+  CommonService.ack(ctx);
+  id = id ?? '0';
+  await this.userService.updateBalance(id);
+}
 }
