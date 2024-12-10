@@ -20,6 +20,7 @@ import { UserServiceService } from 'apps/user-service/src/user-service.service';
 import { AccountServiceService } from './account-service.service';
 import EventsNamesAccountEnum from './enum/events.names.account.enum';
 
+
 @Injectable()
 export class WalletServiceService {
   constructor(
@@ -316,4 +317,5 @@ export class WalletServiceService {
 
     return createdWallet;
   }
+  
 }

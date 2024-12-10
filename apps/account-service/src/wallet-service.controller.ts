@@ -65,7 +65,7 @@ import { WalletServiceService } from './wallet-service.service';
 export class WalletServiceController extends AccountServiceController {
   private cryptoType = null;
   constructor(
-    readonly walletService: AccountServiceService,
+    readonly accountServiceService: AccountServiceService,
     @Inject(UserServiceService)
     private readonly userService: UserServiceService,
     @Inject(BuildersService)
@@ -75,7 +75,7 @@ export class WalletServiceController extends AccountServiceController {
     private readonly walletServiceService: WalletServiceService,
     private readonly configService: ConfigService,
   ) {
-    super(walletService, ewalletBuilder);
+    super(accountServiceService, ewalletBuilder);
   }
 
   @ApiTags(SwaggerSteakeyConfigEnum.TAG_WALLET)
@@ -88,7 +88,7 @@ export class WalletServiceController extends AccountServiceController {
     query = query ?? {};
     query.where = query.where ?? {};
     query.where.type = TypesAccountEnum.WALLET;
-    return this.walletService.findAll(query);
+    return this.accountServiceService.findAll(query);
   }
 
   @ApiTags(SwaggerSteakeyConfigEnum.TAG_WALLET)
@@ -101,7 +101,7 @@ export class WalletServiceController extends AccountServiceController {
     query.where = query.where ?? {};
     query.where.type = TypesAccountEnum.WALLET;
     query = CommonService.getQueryWithUserId(query, req, 'owner');
-    return this.walletService.findAll(query);
+    return this.accountServiceService.findAll(query);
   }
 
   @ApiTags(SwaggerSteakeyConfigEnum.TAG_WALLET)
@@ -297,7 +297,7 @@ export class WalletServiceController extends AccountServiceController {
             }
             Logger.debug(JSON.stringify(rta.data, null, 2), 'rta from -> to');
             promisesTx.push(
-              this.walletService.customUpdateOne({
+              this.accountServiceService.customUpdateOne({
                 id: to._id,
                 $inc: {
                   amountCustodial: createDto.amount,
@@ -318,7 +318,7 @@ export class WalletServiceController extends AccountServiceController {
             Logger.debug(JSON.stringify(rta.data, null, 2), 'rta from -> to?');
           }
           promisesTx.push(
-            this.walletService.customUpdateOne({
+            this.accountServiceService.customUpdateOne({
               id: from._id,
               $inc: {
                 amountCustodial: createDto.amount * -1,
@@ -381,13 +381,13 @@ export class WalletServiceController extends AccountServiceController {
             );
             const promisesTx = [];
             promisesTx.push(
-              this.walletService.customUpdateOne({
+              this.accountServiceService.customUpdateOne({
                 id: from._id,
                 $inc: {
                   amountCustodial: from.amountCustodial * -1,
                 },
               }),
-              this.walletService.customUpdateOne({
+              this.accountServiceService.customUpdateOne({
                 id: walletBrandWithdraw._id,
                 $inc: {
                   amountCustodial: from.amountCustodial,
@@ -408,7 +408,7 @@ export class WalletServiceController extends AccountServiceController {
                 vaultTo.accountId,
               );
               promisesTx.push(
-                this.walletService.customUpdateOne({
+                this.accountServiceService.customUpdateOne({
                   id: walletBrandWithdraw._id,
                   $inc: {
                     amountCustodial: createDto.amount * -1,
@@ -429,7 +429,7 @@ export class WalletServiceController extends AccountServiceController {
                 true,
               );
               promisesTx.push(
-                this.walletService.customUpdateOne({
+                this.accountServiceService.customUpdateOne({
                   id: walletBrandWithdraw._id,
                   $inc: {
                     amountCustodial: createDto.amount * -1,
@@ -645,14 +645,14 @@ export class WalletServiceController extends AccountServiceController {
         `Migrating wallet ${walletToMigrate.accountId}`,
         WalletServiceController.name,
       );
-      const walletList = await this.walletService.findAll({
+      const walletList = await this.accountServiceService.findAll({
         where: {
           accountId: walletToMigrate.accountId,
           type: TypesAccountEnum.WALLET,
         },
       });
       if (!walletList || !walletList.list[0]) {
-        return await this.walletService.createOne(walletToMigrate);
+        return await this.accountServiceService.createOne(walletToMigrate);
       } else {
         this.ewalletBuilder.emitAccountEventClient(
           EventsNamesAccountEnum.updateOne,
@@ -679,7 +679,7 @@ export class WalletServiceController extends AccountServiceController {
   }
   private async getWalletBase(fireblocksCrmId: string, nameWallet: string) {
     const walletBase = (
-      await this.walletService.availableWalletsFireblocks({
+      await this.accountServiceService.availableWalletsFireblocks({
         where: {
           crm: fireblocksCrmId,
           name: nameWallet,
@@ -704,7 +704,7 @@ export class WalletServiceController extends AccountServiceController {
     walletBase: AccountDocument,
     brandId: string,
   ) {
-    const vaultUserList = await this.walletService.findAll({
+    const vaultUserList = await this.accountServiceService.findAll({
       where: {
         name: `${userId}-vault`,
         accountType: WalletTypesAccountEnum.VAULT,
@@ -717,7 +717,7 @@ export class WalletServiceController extends AccountServiceController {
     if (!vaultUser) {
       const cryptoType = await this.getFireblocksType();
       const newVault = await cryptoType.createVault(`${userId}-vault`);
-      vaultUser = await this.walletService.createOne({
+      vaultUser = await this.accountServiceService.createOne({
         name: `${userId}-vault`,
         slug: `${userId}-vault`,
         owner: userId,
@@ -788,7 +788,7 @@ export class WalletServiceController extends AccountServiceController {
   ) {
     const walletName = `${dtoWallet.name}-${brandId}-${accountType}`;
     let walletUser = (
-      await this.walletService.findAll({
+      await this.accountServiceService.findAll({
         where: {
           name: walletName,
           type: TypesAccountEnum.WALLET,
@@ -821,7 +821,7 @@ export class WalletServiceController extends AccountServiceController {
         CommonService.getNumberDigits(CommonService.randomIntNumber(9999), 4);
       dtoWallet.accountType = WalletTypesAccountEnum.VAULT;
 
-      walletUser = await this.walletService.createOne(dtoWallet);
+      walletUser = await this.accountServiceService.createOne(dtoWallet);
     }
 
     return walletUser;
@@ -928,7 +928,7 @@ export class WalletServiceController extends AccountServiceController {
   ) {
     const vaultName = `${brandId}-vault-${accountType}`;
     let vaultBrand = (
-      await this.walletService.findAll({
+      await this.accountServiceService.findAll({
         where: {
           name: vaultName,
           brand: brandId,
@@ -945,7 +945,7 @@ export class WalletServiceController extends AccountServiceController {
     if (!vaultBrand) {
       const cryptoType = await this.getFireblocksType();
       const newVault = await cryptoType.createVault(vaultName);
-      vaultBrand = await this.walletService.createOne({
+      vaultBrand = await this.accountServiceService.createOne({
         name: vaultName,
         slug: `${brandId}-vault`,
         owner: undefined,
@@ -997,4 +997,59 @@ export class WalletServiceController extends AccountServiceController {
 
     return vaultBrand;
   }
+
+  @Get('availables')
+  @ApiTags(SwaggerSteakeyConfigEnum.TAG_WALLET)
+  @ApiSecurity('b2crypto-key')
+  @UseGuards(ApiKeyAuthGuard)
+  @NoCache()
+  availablesWallet(@Query() query: QuerySearchAnyDto, @Req() req?: any) {
+    query = query ?? {};
+    query.where = query.where ?? {};
+    query.where.type = TypesAccountEnum.WALLET;
+    query.where.brand = req.user.brand;
+    return this.accountServiceService.availableWalletsFireblocks(query);
+  }
+
+  @Get('networks')
+  @ApiTags(SwaggerSteakeyConfigEnum.TAG_WALLET)
+  @ApiSecurity('b2crypto-key')
+  @UseGuards(ApiKeyAuthGuard)
+  @NoCache()
+  networksWallet(@Query() query: QuerySearchAnyDto, @Req() req?: any) {
+    query = query ?? {};
+    query.where = query.where ?? {};
+    query.where.type = TypesAccountEnum.WALLET;
+    query.where.brand = req.user.brand;
+    return this.accountServiceService.networksWalletsFireblocks(query);
+  }
+  @Patch('withdraw')
+  @ApiTags(SwaggerSteakeyConfigEnum.TAG_WALLET)
+  @ApiSecurity('b2crypto-key')
+  @ApiBearerAuth('bearerToken')
+  @UseGuards(ApiKeyAuthGuard)
+  async withdraw(@Body() createDto: WalletDepositCreateDto, @Req() req?: any) {
+    const userId = CommonService.getUserId(req);
+    if (!createDto.from) {
+      throw new BadRequestException('from is required');
+    }
+    if (!createDto.to) {
+      throw new BadRequestException('to is required');
+    }
+    if (!isMongoId(createDto.from.toString())) {
+      throw new BadRequestException('from is invalid id');
+    }
+    const from = await this.findOneById(createDto.from.toString());
+    if (!from || from.owner.toString() != userId) {
+      throw new BadRequestException('from wallet is not found');
+    }
+    if (isMongoId(createDto.to.toString())) {
+      const to = await this.findOneById(createDto.to.toString());
+      if (!to) {
+        throw new BadRequestException('to wallet is not found');
+      }
+    }
+    return this.rechargeOne(createDto, req);
+  }
+ 
 }
