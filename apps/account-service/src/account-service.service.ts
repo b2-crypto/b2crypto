@@ -627,4 +627,44 @@ export class AccountServiceService
       data: JSON.stringify(item),
     } as FileUpdateDto);
   }
+  async networksWalletsFireblocks(
+    query?: QuerySearchAnyDto,    
+  ): Promise<ResponsePaginator<AccountDocument>> {
+    query = query || new QuerySearchAnyDto();
+    query.where = query.where || {};
+    query.where.accountType = WalletTypesAccountEnum.VAULT;
+    query.where.owner = {
+      $exists: false,
+    };
+    
+    const cryptoList = await this.lib.findAll(query);
+    const fireblocksCrm = await this.builder.getPromiseCrmEventClient(
+      EventsNamesCrmEnum.findOneByName,
+      IntegrationCryptoEnum.FIREBLOCKS,
+    );
+    if (!cryptoList.totalElements) {
+      const cryptoType = await this.integration.getCryptoIntegration(
+        null,
+        IntegrationCryptoEnum.FIREBLOCKS,
+        '',
+      );
+      const tmp = await cryptoType.getAvailablerWallets();
+      const promises = [];
+      tmp.forEach((wallet: AccountCreateDto) => {
+        const exist = cryptoList.list.find(
+          (x) => x.accountId == wallet.accountId,
+        );
+        if (exist) {
+          return exist;
+        }
+        wallet.type = TypesAccountEnum.WALLET;
+        wallet.brand = query?.where?.brand;
+        wallet.crm = fireblocksCrm._id;
+        wallet.accountType = WalletTypesAccountEnum.VAULT;
+        return promises.push(this.lib.create(wallet));
+      });
+      cryptoList.list = await Promise.all(promises);
+    }
+    return cryptoList;
+  }
 }
