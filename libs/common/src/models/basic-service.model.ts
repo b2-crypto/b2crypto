@@ -264,36 +264,29 @@ export class BasicServiceModel<
     return searchAttr;
   }
 
-  async findOne(id: string | ObjectId | {_id: ObjectId} & Record<string, any>): Promise<TBasicEntity> {
+  async findOne(
+    id: string | ObjectId | ({ _id: ObjectId } & Record<string, any>),
+  ): Promise<TBasicEntity> {
     try {
       const mongoId = id?.['_id'] || id;
-      
+
       if (!isObjectIdOrHexString(mongoId)) {
         Logger.error(
           mongoId,
-          'Id is not mongoDb id in BasicServiceModel.findOne'
+          'Id is not mongoDb id in BasicServiceModel.findOne',
         );
         // throw new BadRequestException('Id is not valid');
       }
-  
-      let rta;
-      if (this.nameOrm === dbIntegrationEnum.MONGOOSE) {
-        rta = await this.model.findOne({ _id: mongoId });
-      } else {
-        rta = await this.model.findOne({ id: mongoId });
-      }
-  
-      return rta || null;
-  
+
+      return this.nameOrm === dbIntegrationEnum.MONGOOSE
+        ? await this.model.findOne({ _id: mongoId })
+        : await this.model.findOne({ id: mongoId });
     } catch (err) {
       Logger.error(
         `${id}`,
-        `${BasicServiceModel.name}-findOne.id-${this.model.name}`
+        `${BasicServiceModel.name}-findOne.id-${this.model.name}`,
       );
-      Logger.error(
-        err,
-        `${BasicServiceModel.name}-findOne-${this.model.name}`
-      );
+      Logger.error(err, `${BasicServiceModel.name}-findOne-${this.model.name}`);
       return null;
     }
   }
