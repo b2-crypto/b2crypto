@@ -58,7 +58,6 @@ export class FireblocksIntegrationService extends IntegrationCryptoService<
     });
     this.basePath = this.configService.get<string>('ENVIRONMENT') === EnvironmentEnum.prod ? FireblocksEnvirormentProd.basePath : FireblocksEnvirormentStage.basePath;
     this.apiKeyFireblocks = this.configService.get<string>('ENVIRONMENT') === EnvironmentEnum.prod ? FireblocksEnvirormentProd.apiKey : FireblocksEnvirormentStage.apiKey;
-
   }
 
   async getFireblocks() {
