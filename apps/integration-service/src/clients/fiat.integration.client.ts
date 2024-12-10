@@ -1,5 +1,5 @@
-import { Injectable, Logger } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
+import { Injectable, Logger } from '@nestjs/common';
 import { lastValueFrom } from 'rxjs';
 
 @Injectable()
@@ -21,8 +21,10 @@ export class FiatIntegrationClient {
   ): Promise<any> {
     const apiURL = process.env.CURRENCY_CONVERSION_API_URL;
     const apiKey = process.env.CURRENCY_CONVERSION_API_KEY;
+    const toParsed = to === 'USDT' ? 'USD' : to;
+    const fromParsed = from === 'USDT' ? 'USD' : from;
 
-    const url = `${apiURL}?access_key=${apiKey}&from=${from}&to=${to}&amount=${amount}`;
+    const url = `${apiURL}?access_key=${apiKey}&from=${fromParsed}&to=${toParsed}&amount=${amount}`;
     Logger.log(url, 'FiatIntegrationClient.getCurrencyConversion');
     const obsResponse = this.httpService.get(url);
     const data = await (await lastValueFrom(obsResponse)).data;
