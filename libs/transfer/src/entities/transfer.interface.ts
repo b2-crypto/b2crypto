@@ -24,11 +24,13 @@ export interface TransferInterface {
   slug: string;
   description: string;
   searchText: string;
-  currency: CurrencyCodeB2cryptoEnum;
   operationType: OperationTransactionType;
   country: CountryCodeEnum;
   // Amount in minimal units
   amount: number;
+  currency: CurrencyCodeB2cryptoEnum;
+  amountCustodial: number;
+  currencyCustodial: CurrencyCodeB2cryptoEnum;
   leadEmail: string;
   leadTpId: string;
   leadAccountId: string;
@@ -46,6 +48,8 @@ export interface TransferInterface {
   responseAccount: any;
   lead: LeadEntity;
   account: AccountEntity;
+  accountResultBalance: number;
+  accountPrevBalance: number;
   typeAccount: TypesAccountEnum;
   typeAccountType: string;
   affiliate: AffiliateInterface;

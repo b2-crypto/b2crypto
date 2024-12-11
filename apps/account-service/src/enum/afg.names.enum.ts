@@ -9,4 +9,5 @@ export enum AfgNamesEnum {
   CONSUMER_VIRTUAL_2K = 'consumer-virtual-2k',
   CONSUMER_VIRTUAL_5K = 'consumer-virtual-5k',
   CONSUMER_VIRTUAL_10K = 'consumer-virtual-10k',
+  NA = 'NA',
 }

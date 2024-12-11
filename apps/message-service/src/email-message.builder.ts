@@ -1,7 +1,7 @@
 import TransportEnum from '@common/common/enums/TransportEnum';
 import {
-  AttachmentsEmailConfig,
-  MessageCreateDto,
+    AttachmentsEmailConfig,
+    MessageCreateDto,
 } from '@message/message/dto/message.create.dto';
 import { ScopeDto } from '@permission/permission/dto/scope.dto';
 

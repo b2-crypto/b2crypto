@@ -1,64 +1,109 @@
-import * as aws from '@pulumi/aws';
-import * as awsx from '@pulumi/awsx';
-import * as pulumi from '@pulumi/pulumi';
-import { randomBytes } from 'crypto';
-import { SECRETS, VARS_ENV } from './secrets';
+import { acmCertificate } from './resources/aws/acm.certificate';
+import {
+  appautoscalingPolicy,
+  appautoscalingPolicyOptlCollector,
+  appautoscalingPolicyOptlUi,
+} from './resources/aws/appautoscaling.policy';
+import {
+  appautoscalingTarget,
+  appautoscalingTargetOptlCollector,
+  appautoscalingTargetOptlUi,
+} from './resources/aws/appautoscaling.target';
+import {
+  cloudwatchDashboard,
+  cloudwatchDashboardOptlCollector,
+  cloudwatchDashboardOptlUi,
+} from './resources/aws/cloudwatch.dashboard';
+import {
+  cloudwatchLogGroup,
+  cloudwatchLogGroupOptlCollector,
+  cloudwatchLogGroupOptlUi,
+} from './resources/aws/cloudwatch.log-group';
+import {
+  ec2SecurityGroup,
+  ec2SecurityGroupOptlCollector,
+  ec2SecurityGroupOptlUi,
+} from './resources/aws/ec2.security-group';
+import { ec2Vpc } from './resources/aws/ec2.vpc';
+import { ecrImage, TAG } from './resources/aws/ecr.image';
+import { ecrRepository } from './resources/aws/ecr.repository';
+import { ecsCluster } from './resources/aws/ecs.cluster';
+import {
+  ecsFargateService,
+  ecsFargateServiceOptlCollector,
+  ecsFargateServiceOptlUi,
+} from './resources/aws/ecs.fargate-service';
+import {
+  lbApplicationLoadBalancer,
+  lbApplicationLoadBalancerOptlCollector,
+  lbApplicationLoadBalancerOptlUi,
+} from './resources/aws/lb.application-load-balancer';
+import { mqBrokerRabbitMQ } from './resources/aws/mq.broker';
+import { opensearchDomainOptl } from './resources/aws/opensearch.domain';
+import {
+  route53Record,
+  route53RecordOptlCollector,
+  route53RecordOptlUi,
+} from './resources/aws/route53.record';
+import { route53Zone } from './resources/aws/route53.zone';
+import { mongoAtlasCluster } from './resources/mongoatlas/mongodbatlas.cluster';
+import { mongodbatlasServerlessInstance } from './resources/mongoatlas/mongodbatlas.serverless-instance';
 
-const {
-  COMPANY_NAME,
-  PROJECT_NAME,
-  STACK,
-  CREATED_BY,
-  ENVIRONMENT,
-  PORT,
-  APP_NAME,
-  GOOGLE_2FA,
-  DATABASE_NAME,
-  RABBIT_MQ_PORT,
-  RABBIT_MQ_QUEUE,
-  REDIS_PORT,
-  CACHE_TTL,
-  CACHE_MAX_ITEMS,
-  AUTH_MAX_SECONDS_TO_REFRESH,
-  AUTH_EXPIRE_IN,
-  API_KEY_EMAIL_APP,
-  URL_API_EMAIL_APP,
-  TESTING,
-  TZ,
-  AWS_SES_PORT,
-  DEFAULT_CURRENCY_CONVERSION_COIN,
-  AUTHORIZATIONS_BLOCK_BALANCE_PERCENTAGE,
-  POMELO_WHITELISTED_IPS_CHECK,
-} = VARS_ENV;
-const TAGS = {
-  Company: COMPANY_NAME,
-  Projects: PROJECT_NAME,
-  Stack: STACK,
-  CreatedBy: CREATED_BY,
-};
-const TAG = process.env.COMMIT_SHA ?? randomBytes(4).toString('hex');
-
-const acmCertificate = aws.acm.getCertificateOutput({
-  domain: 'b2crypto.com',
-});
+// const acmCertificate = new aws.acm.Certificate(
+//   `${COMPANY_NAME}-${PROJECT_NAME}-${STACK}`,
+//   {
+//     domainName: DOMAIN,
+//     subjectAlternativeNames: [`*.${DOMAIN}`],
+//     validationMethod: 'DNS',
+//     tags: TAGS,
+//   },
+// );
 
 export const acmCertificateData = {
   arn: acmCertificate.arn,
   domain: acmCertificate.domain,
 };
 
-const ecrRepository = new aws.ecr.Repository(
-  `${COMPANY_NAME}/${PROJECT_NAME}-${STACK}`,
-  {
-    name: `${COMPANY_NAME}/${PROJECT_NAME}-${STACK}`,
-    imageTagMutability: 'IMMUTABLE',
-    imageScanningConfiguration: {
-      scanOnPush: true,
-    },
-    forceDelete: true,
-    tags: TAGS,
-  },
-);
+export const route53ZoneData = {
+  id: route53Zone.id,
+  name: route53Zone.name,
+};
+
+// const route53RecordValidation = new aws.route53.Record(
+//   `${COMPANY_NAME}-${PROJECT_NAME}-${STACK}-validation`,
+//   {
+//     zoneId: route53Zone.zoneId,
+//     name: acmCertificate.domainValidationOptions[0].resourceRecordName,
+//     type: acmCertificate.domainValidationOptions[0].resourceRecordType,
+//     records: [acmCertificate.domainValidationOptions[0].resourceRecordValue],
+//     ttl: 300,
+//   },
+// );
+
+// export const route53RecordValidationData = {
+//   name: route53RecordValidation.name,
+//   type: route53RecordValidation.type,
+//   zoneId: route53RecordValidation.zoneId,
+//   fqdn: route53RecordValidation.fqdn,
+// };
+
+// const certificateValidation = new aws.acm.CertificateValidation(
+//   `${COMPANY_NAME}-${PROJECT_NAME}-${STACK}`,
+//   {
+//     certificateArn: acmCertificate.arn,
+//     validationRecordFqdns: [route53RecordValidation.fqdn],
+//   },
+// );
+
+// export const certificateValidationData = {
+//   certificateArn: certificateValidation.certificateArn,
+//   validationRecordFqdns: certificateValidation.validationRecordFqdns,
+// };
+
+export const mongodbatlasServerlessInstanceData =
+  mongodbatlasServerlessInstance;
+
+export const mongoAtlasClusterData = mongoAtlasCluster;
 
 export const ecrRepositoryData = {
   id: ecrRepository.id,
@@ -67,134 +112,17 @@ export const ecrRepositoryData = {
   ),
 };
 
-const ecrImage = new awsx.ecr.Image(
-  `${COMPANY_NAME}/${PROJECT_NAME}-${STACK}`,
-  {
-    repositoryUrl: ecrRepository.repositoryUrl,
-    dockerfile: '../Dockerfile',
-    context: '../',
-    imageTag: TAG,
-    platform: 'linux/amd64',
-  },
-);
-
 export const ecrImageData = {
   imageUri: ecrImage.imageUri.apply(
     (imageUri) => `${imageUri.split('@').at(0)}:${TAG}`,
   ),
 };
 
-const ec2Vpc = new awsx.ec2.Vpc(`${COMPANY_NAME}-${PROJECT_NAME}-${STACK}`, {
-  enableNetworkAddressUsageMetrics: true,
-  numberOfAvailabilityZones: 3,
-  cidrBlock: '10.0.0.0/16',
-  enableDnsHostnames: true,
-  enableDnsSupport: true,
-  tags: TAGS,
-});
-
 export const ec2VpcData = {
   vpcId: ec2Vpc.vpcId,
   publicSubnetIds: ec2Vpc.publicSubnetIds,
   privateSubnetIds: ec2Vpc.privateSubnetIds,
 };
-
-const ec2SecurityGroup = new aws.ec2.SecurityGroup(
-  `${COMPANY_NAME}-${PROJECT_NAME}-${STACK}`,
-  {
-    name: `${COMPANY_NAME}-${PROJECT_NAME}-${STACK}`,
-    vpcId: ec2Vpc.vpcId,
-    ingress: [
-      {
-        fromPort: 443,
-        toPort: 443,
-        protocol: 'TCP',
-        cidrBlocks: ['0.0.0.0/0'],
-      },
-      {
-        fromPort: parseInt(PORT),
-        toPort: parseInt(PORT),
-        protocol: 'TCP',
-        cidrBlocks: ['0.0.0.0/0'],
-      },
-      {
-        fromPort: parseInt(RABBIT_MQ_PORT),
-        toPort: parseInt(RABBIT_MQ_PORT),
-        protocol: 'TCP',
-        cidrBlocks: ['0.0.0.0/0'],
-      },
-      {
-        fromPort: parseInt(REDIS_PORT),
-        toPort: parseInt(REDIS_PORT),
-        protocol: 'TCP',
-        cidrBlocks: ['0.0.0.0/0'],
-      },
-      {
-        fromPort: SECRETS.POMELO_SFTP_PORT.apply((value) => parseInt(value)),
-        toPort: SECRETS.POMELO_SFTP_PORT.apply((value) => parseInt(value)),
-        protocol: 'TCP',
-        cidrBlocks: ['0.0.0.0/0'],
-      },
-      {
-        fromPort: parseInt(AWS_SES_PORT),
-        toPort: parseInt(AWS_SES_PORT),
-        protocol: 'TCP',
-        cidrBlocks: ['0.0.0.0/0'],
-      },
-      {
-        fromPort: 27015,
-        toPort: 27017,
-        protocol: 'TCP',
-        cidrBlocks: ['0.0.0.0/0'],
-      },
-    ],
-    egress: [
-      {
-        fromPort: 443,
-        toPort: 443,
-        protocol: 'TCP',
-        cidrBlocks: ['0.0.0.0/0'],
-      },
-      {
-        fromPort: parseInt(PORT),
-        toPort: parseInt(PORT),
-        protocol: 'TCP',
-        cidrBlocks: ['0.0.0.0/0'],
-      },
-      {
-        fromPort: parseInt(RABBIT_MQ_PORT),
-        toPort: parseInt(RABBIT_MQ_PORT),
-        protocol: 'TCP',
-        cidrBlocks: ['0.0.0.0/0'],
-      },
-      {
-        fromPort: parseInt(REDIS_PORT),
-        toPort: parseInt(REDIS_PORT),
-        protocol: 'TCP',
-        cidrBlocks: ['0.0.0.0/0'],
-      },
-      {
-        fromPort: SECRETS.POMELO_SFTP_PORT.apply((value) => parseInt(value)),
-        toPort: SECRETS.POMELO_SFTP_PORT.apply((value) => parseInt(value)),
-        protocol: 'TCP',
-        cidrBlocks: ['0.0.0.0/0'],
-      },
-      {
-        fromPort: parseInt(AWS_SES_PORT),
-        toPort: parseInt(AWS_SES_PORT),
-        protocol: 'TCP',
-        cidrBlocks: ['0.0.0.0/0'],
-      },
-      {
-        fromPort: 27015,
-        toPort: 27017,
-        protocol: 'TCP',
-        cidrBlocks: ['0.0.0.0/0'],
-      },
-    ],
-    tags: TAGS,
-  },
-);
 
 export const ec2SecurityGroupData = {
   id: ec2SecurityGroup.id,
@@ -203,46 +131,36 @@ export const ec2SecurityGroupData = {
   ingress: ec2SecurityGroup.ingress,
 };
 
-const ecsCluster = new aws.ecs.Cluster(`${COMPANY_NAME}`, {
-  name: `${STACK}`,
-  tags: TAGS,
-});
+export const ec2SecurityGroupOptlCollectorData = {
+  id: ec2SecurityGroupOptlCollector.id,
+  name: ec2SecurityGroupOptlCollector.name,
+  egress: ec2SecurityGroupOptlCollector.egress,
+  ingress: ec2SecurityGroupOptlCollector.ingress,
+};
+
+export const ec2SecurityGroupOptlUiData = {
+  id: ec2SecurityGroupOptlUi.id,
+  name: ec2SecurityGroupOptlUi.name,
+  egress: ec2SecurityGroupOptlUi.egress,
+  ingress: ec2SecurityGroupOptlUi.ingress,
+};
+
+export const mqBrokerRabbitMQData = {
+  id: mqBrokerRabbitMQ.id,
+  brokerName: mqBrokerRabbitMQ.brokerName,
+  instances: mqBrokerRabbitMQ.instances,
+};
+
+export const opensearchDomainOptlData = {
+  id: opensearchDomainOptl.id,
+  domainName: opensearchDomainOptl.domainName,
+  endpoint: opensearchDomainOptl.endpoint,
+};
 
 export const ecsClusterData = {
   id: ecsCluster.id,
   name: ecsCluster.name,
 };
-
-const lbApplicationLoadBalancer = new awsx.lb.ApplicationLoadBalancer(
-  `${COMPANY_NAME}-${PROJECT_NAME}-${STACK}`,
-  {
-    name: `${COMPANY_NAME}-${PROJECT_NAME}-${STACK}`,
-    enableHttp2: true,
-    defaultTargetGroup: {
-      name: `${COMPANY_NAME}-${PROJECT_NAME}-${STACK}`,
-      protocol: 'HTTP',
-      port: parseInt(PORT),
-      vpcId: ec2Vpc.vpcId,
-      tags: TAGS,
-      healthCheck: {
-        path: '/health',
-        interval: 5,
-        timeout: 3,
-      },
-    },
-    securityGroups: [ec2SecurityGroup.id],
-    subnetIds: ec2Vpc.publicSubnetIds,
-    listeners: [
-      {
-        port: 443,
-        protocol: 'HTTPS',
-        certificateArn: acmCertificate.arn,
-        tags: TAGS,
-      },
-    ],
-    tags: TAGS,
-  },
-);
 
 export const lbApplicationLoadBalancerData = {
   vpcId: lbApplicationLoadBalancer.vpcId,
@@ -252,283 +170,79 @@ export const lbApplicationLoadBalancerData = {
   listeners: lbApplicationLoadBalancer.listeners,
 };
 
-const cloudwatchLogGroup = new aws.cloudwatch.LogGroup(
-  `${COMPANY_NAME}-${PROJECT_NAME}-${STACK}`,
-  {
-    name: `${COMPANY_NAME}/ecs/task/${PROJECT_NAME}-${STACK}`,
-    retentionInDays: 30,
-    tags: TAGS,
-  },
-);
+export const lbApplicationLoadBalancerOptlCollectorData = {
+  vpcId: lbApplicationLoadBalancerOptlCollector.vpcId,
+  defaultSecurityGroup:
+    lbApplicationLoadBalancerOptlCollector.defaultSecurityGroup,
+  defaultTargetGroup: lbApplicationLoadBalancerOptlCollector.defaultTargetGroup,
+  loadBalancer: lbApplicationLoadBalancerOptlCollector.loadBalancer,
+  listeners: lbApplicationLoadBalancerOptlCollector.listeners,
+};
+
+export const lbApplicationLoadBalancerOptlUiData = {
+  vpcId: lbApplicationLoadBalancerOptlUi.vpcId,
+  defaultSecurityGroup: lbApplicationLoadBalancerOptlUi.defaultSecurityGroup,
+  defaultTargetGroup: lbApplicationLoadBalancerOptlUi.defaultTargetGroup,
+  loadBalancer: lbApplicationLoadBalancerOptlUi.loadBalancer,
+  listeners: lbApplicationLoadBalancerOptlUi.listeners,
+};
+
+export const route53RecordData = {
+  name: route53Record.name,
+  type: route53Record.type,
+  zoneId: route53Record.zoneId,
+};
+
+export const route53RecordOptlCollectorData = {
+  name: route53RecordOptlCollector.name,
+  type: route53RecordOptlCollector.type,
+  zoneId: route53RecordOptlCollector.zoneId,
+};
+
+export const route53RecordOptlUiData = {
+  name: route53RecordOptlUi.name,
+  type: route53RecordOptlUi.type,
+  zoneId: route53RecordOptlUi.zoneId,
+};
 
 export const cloudwatchLogGroupData = {
   id: cloudwatchLogGroup.id,
   name: cloudwatchLogGroup.name,
 };
 
-const ecsFargateService = new awsx.ecs.FargateService(
-  `${COMPANY_NAME}-${PROJECT_NAME}-${STACK}`,
-  {
-    name: `${COMPANY_NAME}-${PROJECT_NAME}-${STACK}`,
-    // assignPublicIp: true,
-    cluster: ecsCluster.arn,
-    propagateTags: 'SERVICE',
-    networkConfiguration: {
-      subnets: ec2Vpc.publicSubnetIds,
-      securityGroups: [ec2SecurityGroup.id],
-      assignPublicIp: true,
-    },
-    taskDefinitionArgs: {
-      family: `${COMPANY_NAME}-${PROJECT_NAME}-${STACK}`,
-      cpu: '1024',
-      memory: '2048',
-      container: SECRETS.apply((secrets) => ({
-        name: `${PROJECT_NAME}`,
-        image: ecrImageData.imageUri,
-        cpu: 1024,
-        memory: 2048,
-        essential: true,
-        environment: [
-          { name: 'ENVIRONMENT', value: ENVIRONMENT },
-          { name: 'APP_NAME', value: APP_NAME },
-          { name: 'GOOGLE_2FA', value: GOOGLE_2FA },
-          { name: 'PORT', value: PORT },
-          { name: 'DATABASE_NAME', value: DATABASE_NAME },
-          {
-            name: 'DATABASE_URL',
-            value: secrets.DATABASE_URL,
-          },
-          {
-            name: 'RABBIT_MQ_HOST',
-            value: secrets.RABBIT_MQ_HOST,
-          },
-          { name: 'RABBIT_MQ_PORT', value: RABBIT_MQ_PORT },
-          { name: 'RABBIT_MQ_QUEUE', value: RABBIT_MQ_QUEUE },
-          {
-            name: 'RABBIT_MQ_USERNAME',
-            value: secrets.RABBIT_MQ_USERNAME,
-          },
-          {
-            name: 'RABBIT_MQ_PASSWORD',
-            value: secrets.RABBIT_MQ_PASSWORD,
-          },
-          {
-            name: 'REDIS_HOST',
-            value: secrets.REDIS_HOST,
-          },
-          {
-            name: 'REDIS_USERNAME',
-            value: secrets.REDIS_USERNAME,
-          },
-          {
-            name: 'REDIS_PASSWORD',
-            value: secrets.REDIS_PASSWORD,
-          },
-          { name: 'REDIS_PORT', value: REDIS_PORT },
-          { name: 'CACHE_TTL', value: CACHE_TTL },
-          { name: 'CACHE_MAX_ITEMS', value: CACHE_MAX_ITEMS },
-          {
-            name: 'AUTH_MAX_SECONDS_TO_REFRESH',
-            value: AUTH_MAX_SECONDS_TO_REFRESH,
-          },
-          {
-            name: 'AUTH_SECRET',
-            value: secrets.AUTH_SECRET,
-          },
-          { name: 'AUTH_EXPIRE_IN', value: AUTH_EXPIRE_IN },
-          {
-            name: 'API_KEY_EMAIL_APP',
-            value: API_KEY_EMAIL_APP,
-          },
-          {
-            name: 'URL_API_EMAIL_APP',
-            value: URL_API_EMAIL_APP,
-          },
-          { name: 'TESTING', value: TESTING },
-          { name: 'TZ', value: TZ },
-          {
-            name: 'AWS_SES_FROM_DEFAULT',
-            value: secrets.AWS_SES_FROM_DEFAULT,
-          },
-          {
-            name: 'AWS_SES_HOST',
-            value: secrets.AWS_SES_HOST,
-          },
-          { name: 'AWS_SES_PORT', value: AWS_SES_PORT },
-          {
-            name: 'AWS_SES_USERNAME',
-            value: secrets.AWS_SES_USERNAME,
-          },
-          {
-            name: 'AWS_SES_PASSWORD',
-            value: secrets.AWS_SES_PASSWORD,
-          },
-          {
-            name: 'DEFAULT_CURRENCY_CONVERSION_COIN',
-            value: DEFAULT_CURRENCY_CONVERSION_COIN,
-          },
-          {
-            name: 'AUTHORIZATIONS_BLOCK_BALANCE_PERCENTAGE',
-            value: AUTHORIZATIONS_BLOCK_BALANCE_PERCENTAGE,
-          },
-          {
-            name: 'POMELO_SIGNATURE_SECRET_KEY_DIC',
-            value: secrets.POMELO_SIGNATURE_SECRET_KEY_DIC,
-          },
-          {
-            name: 'POMELO_WHITELISTED_IPS_CHECK',
-            value: POMELO_WHITELISTED_IPS_CHECK,
-          },
-          {
-            name: 'POMELO_WHITELISTED_IPS',
-            value: secrets.POMELO_WHITELISTED_IPS,
-          },
-          {
-            name: 'POMELO_CLIENT_ID',
-            value: secrets.POMELO_CLIENT_ID,
-          },
-          {
-            name: 'POMELO_SECRET_ID',
-            value: secrets.POMELO_SECRET_ID,
-          },
-          {
-            name: 'POMELO_AUDIENCE',
-            value: secrets.POMELO_AUDIENCE,
-          },
-          {
-            name: 'POMELO_AUTH_GRANT_TYPE',
-            value: secrets.POMELO_AUTH_GRANT_TYPE,
-          },
-          {
-            name: 'POMELO_API_URL',
-            value: secrets.POMELO_API_URL,
-          },
-          {
-            name: 'CURRENCY_CONVERSION_API_KEY',
-            value: secrets.CURRENCY_CONVERSION_API_KEY,
-          },
-          {
-            name: 'CURRENCY_CONVERSION_API_URL',
-            value: secrets.CURRENCY_CONVERSION_API_URL,
-          },
-          {
-            name: 'POMELO_SFTP_HOST',
-            value: secrets.POMELO_SFTP_HOST,
-          },
-          {
-            name: 'POMELO_SFTP_PORT',
-            value: secrets.POMELO_SFTP_PORT,
-          },
-          {
-            name: 'POMELO_SFTP_USR',
-            value: secrets.POMELO_SFTP_USR,
-          },
-          {
-            name: 'POMELO_SFTP_PASSPHRASE',
-            value: secrets.POMELO_SFTP_PASSPHRASE,
-          },
-        ],
-        portMappings: [
-          {
-            name: `${COMPANY_NAME}-${PROJECT_NAME}-${STACK}`,
-            containerPort: parseInt(PORT),
-            hostPort: parseInt(PORT),
-            protocol: 'tcp',
-            targetGroup: lbApplicationLoadBalancer.defaultTargetGroup,
-          },
-        ],
-        readonlyRootFilesystem: true,
-        healthCheck: {
-          command: ['CMD-SHELL', `curl -f http://localhost/health || exit 1`],
-          startPeriod: 15,
-          interval: 5,
-          timeout: 3,
-          retries: 3,
-        },
-        logConfiguration: {
-          logDriver: 'awslogs',
-          options: {
-            'awslogs-group': cloudwatchLogGroup.name,
-            'awslogs-region': aws.config.region,
-            'awslogs-stream-prefix': 'ecs-task',
-          },
-        },
-      })),
-    },
-    desiredCount: 1,
-    deploymentMinimumHealthyPercent: 100,
-    deploymentMaximumPercent: 200,
-    enableEcsManagedTags: true,
-    tags: TAGS,
-  },
-);
+export const cloudwatchLogGroupOptlCollectorData = {
+  id: cloudwatchLogGroupOptlCollector.id,
+  name: cloudwatchLogGroupOptlCollector.name,
+};
+
+export const cloudwatchLogGroupOptlUiData = {
+  id: cloudwatchLogGroupOptlUi.id,
+  name: cloudwatchLogGroupOptlUi.name,
+};
 
 export const ecsFargateServiceData = {
   serviceName: ecsFargateService.service.name,
 };
 
-const cloudwatchDashboard = new aws.cloudwatch.Dashboard(
-  `${COMPANY_NAME}-${PROJECT_NAME}-${STACK}`,
-  {
-    dashboardName: `${COMPANY_NAME}-${PROJECT_NAME}-${STACK}`,
-    dashboardBody: pulumi
-      .all([ecsCluster.name, ecsFargateService.service.name])
-      .apply(([clusterName, serviceName]) =>
-        JSON.stringify({
-          widgets: [
-            {
-              type: 'metric',
-              x: 0,
-              y: 0,
-              width: 24,
-              height: 6,
-              properties: {
-                metrics: [
-                  [
-                    'AWS/ECS',
-                    'CPUUtilization',
-                    'ServiceName',
-                    serviceName,
-                    'ClusterName',
-                    clusterName,
-                  ],
-                  [
-                    'AWS/ECS',
-                    'MemoryUtilization',
-                    'ServiceName',
-                    serviceName,
-                    'ClusterName',
-                    clusterName,
-                  ],
-                ],
-                period: 60,
-                stat: 'Average',
-                view: 'timeSeries',
-                stacked: false,
-                region: aws.config.region,
-                title: 'ECS Task CPU and Memory Utilization',
-              },
-            },
-          ],
-        }),
-      ),
-  },
-);
+export const ecsFargateServiceOptlCollectorData = {
+  serviceName: ecsFargateServiceOptlCollector.service.name,
+};
+
+export const ecsFargateServiceOptlUiData = {
+  serviceName: ecsFargateServiceOptlUi.service.name,
+};
 
 export const cloudwatchDashboardData = {
   dashboardName: cloudwatchDashboard.dashboardName,
 };
 
-const appautoscalingTarget = new aws.appautoscaling.Target(
-  `${COMPANY_NAME}-${PROJECT_NAME}-${STACK}`,
-  {
-    maxCapacity: 10,
-    minCapacity: 1,
-    resourceId: pulumi.interpolate`service/${ecsCluster.name}/${ecsFargateService.service.name}`,
-    scalableDimension: 'ecs:service:DesiredCount',
-    serviceNamespace: 'ecs',
-  },
-);
+export const cloudwatchDashboardOptlCollectorData = {
+  dashboardName: cloudwatchDashboardOptlCollector.dashboardName,
+};
+
+export const cloudwatchDashboardOptlUiData = {
+  dashboardName: cloudwatchDashboardOptlUi.dashboardName,
+};
 
 export const appautoscalingTargetData = {
   resourceId: appautoscalingTarget.resourceId,
@@ -536,28 +250,44 @@ export const appautoscalingTargetData = {
   serviceNamespace: appautoscalingTarget.serviceNamespace,
 };
 
-const scalingPolicy = new aws.appautoscaling.Policy(
-  `${COMPANY_NAME}-${PROJECT_NAME}-${STACK}`,
-  {
-    policyType: 'TargetTrackingScaling',
-    resourceId: appautoscalingTarget.resourceId,
-    scalableDimension: appautoscalingTarget.scalableDimension,
-    serviceNamespace: appautoscalingTarget.serviceNamespace,
-    targetTrackingScalingPolicyConfiguration: {
-      predefinedMetricSpecification: {
-        predefinedMetricType: 'ECSServiceAverageCPUUtilization',
-      },
-      targetValue: 50.0,
-    },
-  },
-);
+export const appautoscalingTargetOptlCollectorData = {
+  resourceId: appautoscalingTargetOptlCollector.resourceId,
+  scalableDimension: appautoscalingTargetOptlCollector.scalableDimension,
+  serviceNamespace: appautoscalingTargetOptlCollector.serviceNamespace,
+};
 
-export const scalingPolicyData = {
-  name: scalingPolicy.name,
-  policyType: scalingPolicy.policyType,
-  resourceId: scalingPolicy.resourceId,
-  scalableDimension: scalingPolicy.scalableDimension,
-  serviceNamespace: scalingPolicy.serviceNamespace,
+export const appautoscalingTargetOptlUiData = {
+  resourceId: appautoscalingTargetOptlUi.resourceId,
+  scalableDimension: appautoscalingTargetOptlUi.scalableDimension,
+  serviceNamespace: appautoscalingTargetOptlUi.serviceNamespace,
+};
+
+export const appautoscalingPolicyData = {
+  name: appautoscalingPolicy.name,
+  policyType: appautoscalingPolicy.policyType,
+  resourceId: appautoscalingPolicy.resourceId,
+  scalableDimension: appautoscalingPolicy.scalableDimension,
+  serviceNamespace: appautoscalingPolicy.serviceNamespace,
   targetTrackingScalingPolicyConfiguration:
-    scalingPolicy.targetTrackingScalingPolicyConfiguration,
+    appautoscalingPolicy.targetTrackingScalingPolicyConfiguration,
+};
+
+export const appautoscalingPolicyOptlCollectorData = {
+  name: appautoscalingPolicyOptlCollector.name,
+  policyType: appautoscalingPolicyOptlCollector.policyType,
+  resourceId: appautoscalingPolicyOptlCollector.resourceId,
+  scalableDimension: appautoscalingPolicyOptlCollector.scalableDimension,
+  serviceNamespace: appautoscalingPolicyOptlCollector.serviceNamespace,
+  targetTrackingScalingPolicyConfiguration:
+    appautoscalingPolicyOptlCollector.targetTrackingScalingPolicyConfiguration,
+};
+
+export const appautoscalingPolicyOptlUiData = {
+  name: appautoscalingPolicyOptlUi.name,
+  policyType: appautoscalingPolicyOptlUi.policyType,
+  resourceId: appautoscalingPolicyOptlUi.resourceId,
+  scalableDimension: appautoscalingPolicyOptlUi.scalableDimension,
+  serviceNamespace: appautoscalingPolicyOptlUi.serviceNamespace,
+  targetTrackingScalingPolicyConfiguration:
+    appautoscalingPolicyOptlUi.targetTrackingScalingPolicyConfiguration,
 };

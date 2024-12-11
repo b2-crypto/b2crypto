@@ -1,3 +1,4 @@
+
 import { AccountEntity } from '@account/account/entities/account.entity';
 import { AffiliateEntity } from '@affiliate/affiliate/domain/entities/affiliate.entity';
 import { CategoryEntity } from '@category/category/entities/category.entity';
@@ -93,6 +94,8 @@ export class TransferEntity implements TransferInterface {
   responseAccount: any;
   lead: LeadEntity;
   account: AccountEntity;
+  accountResultBalance: number;
+  accountPrevBalance: number;
   typeAccount: TypesAccountEnum;
   typeAccountType: string;
   affiliate: AffiliateEntity;

@@ -33,7 +33,7 @@ import {
 } from '@psp-account/psp-account/entities/mongoose/psp-account.schema';
 import { PspAccountInterface } from '@psp-account/psp-account/entities/psp-account.interface';
 import { PspInterface } from '@psp/psp/entities/psp.interface';
-import { StatsDateCreateDto } from '@stats/stats/dto/stats.date.create.dto';
+import { StatsDateCreateDto } from '../../../libs/stats/src/dto/stats.date.create.dto';
 import { StatusDocument } from '@status/status/entities/mongoose/status.schema';
 import { StatusInterface } from '@status/status/entities/status.interface';
 import { TransferServiceMongooseService } from '@transfer/transfer';
@@ -55,11 +55,9 @@ import EventsNamesPspAccountEnum from 'apps/psp-service/src/enum/events.names.ps
 import EventsNamesPspEnum from 'apps/psp-service/src/enum/events.names.psp.enum';
 import EventsNamesStatsEnum from 'apps/stats-service/src/enum/events.names.stats.enum';
 import EventsNamesStatusEnum from 'apps/status-service/src/enum/events.names.status.enum';
-import axios from 'axios';
 import { isArray, isMongoId } from 'class-validator';
 import { BrandInterface } from 'libs/brand/src/entities/brand.interface';
 import { ObjectId } from 'mongodb';
-import { isObjectIdOrHexString } from 'mongoose';
 import { ApproveOrRejectDepositDto } from '../../../libs/transfer/src/dto/approve.or.reject.deposit.dto';
 import { TransferLeadStatsDto } from './dto/transfer.lead.stat.dto';
 import EventsNamesTransferEnum from './enum/events.names.transfer.enum';
@@ -68,6 +66,9 @@ import { AccountUpdateDto } from '@account/account/dto/account.update.dto';
 import { CategoryServiceService } from 'apps/category-service/src/category-service.service';
 import { PspAccountServiceService } from 'apps/psp-service/src/psp.account.service.service';
 import { StatusServiceService } from 'apps/status-service/src/status-service.service';
+import { BoldStatusEnum } from './enum/bold.status.enum';
+import { BoldTransferRequestDto } from './dto/bold.transfer.request.dto';
+import EventsNamesUserEnum from 'apps/user-service/src/enum/events.names.user.enum';
 
 @Injectable()
 export class TransferServiceService
@@ -162,6 +163,53 @@ export class TransferServiceService
 
   async getOne(id: string) {
     return this.lib.findOne(id);
+  }
+
+  async handleBoldWebhook(transferBold: BoldTransferRequestDto) {//migrado desde controller
+    if (
+      !transferBold.link_id ||
+      !transferBold.payment_status ||
+      !transferBold.reference_id
+    ) {
+      throw new BadRequestException();
+    }
+    const txs = await this.getAll({
+      where: {
+        _id: transferBold.reference_id,
+      },
+    });
+    const tx = txs.list[0];
+    if (
+      tx.statusPayment === BoldStatusEnum.APPROVED ||
+      tx.statusPayment === BoldStatusEnum.NO_TRANSACTION_FOUND ||
+      tx.statusPayment === BoldStatusEnum.REJECTED
+    ) {
+      Logger.debug(
+        JSON.stringify(transferBold),
+        'Transaction has finish before',
+      );
+      throw new BadRequestException('transfer has finish before');
+    }
+    tx.statusPayment = transferBold.payment_status;
+    tx.responsePayment = {
+      success: true,
+      message: transferBold.description,
+      payload: {
+        url: transferBold.link_id,
+        message: transferBold.payer_email ?? 'N/A',
+        type: transferBold.payment_status,
+        data: transferBold,
+      },
+    };
+    this.builder.emitTransferEventClient(EventsNamesTransferEnum.updateOne, {
+      id: tx._id,
+      statusPayment: tx.statusPayment,
+      responsePayment: tx.responsePayment,
+    });
+    return {
+      statusCode: 200,
+      message: 'Transaction updated',
+    };
   }
 
   async getByLead(
@@ -282,6 +330,7 @@ export class TransferServiceService
       transfer.typeAccountType = account.accountType;
       transfer.userCreator = transfer.userCreator ?? account.owner;
       transfer.userAccount = account.owner ?? transfer.userCreator;
+      transfer.accountPrevBalance = account.amount;
       const transferSaved = await this.lib.create(transfer);
       if (
         transferSaved.typeTransaction?.toString() === depositLinkCategory._id
@@ -521,13 +570,16 @@ export class TransferServiceService
       ) {
         amount *= -1;
       }
-      accountToUpdate.amount += amount;
+    /*   accountToUpdate.amount += transferSaved.amount * multiply; */  // TODO[Nestor] multiply no aparece
     }
-    await this.accountService.updateOne(accountToUpdate);
-    /* this.builder.emitLeadEventClient(
-      EventsNamesLeadEnum.updateOne,
-      leadToUpdate,
-    ); */
+    transferSaved.accountResultBalance = accountToUpdate.amount;
+    const accountUpdated = await this.accountService.updateOne(accountToUpdate);
+    this.builder.emitUserEventClient(
+      EventsNamesUserEnum.checkBalanceUser,
+      transferSaved.userAccount,
+    );
+    await transferSaved.save();
+    return accountUpdated;
   }
 
   async updateLead(
@@ -717,7 +769,7 @@ export class TransferServiceService
   }
 
   private async checkTransferAccount(transfer: TransferCreateDto, data) {
-    transfer.leadCrmName = data.crm?.name;
+    transfer.leadCrmName = transfer.leadCrmName ?? data.crm?.name;
     transfer.psp = data.pspAccount?.psp;
     transfer.affiliate = data.account.affiliate;
     // Fill status
@@ -820,7 +872,15 @@ export class TransferServiceService
   }
 
   async updateTransfer(transfer: TransferUpdateDto) {
-    return this.lib.update(transfer.id, transfer);
+    const rta = await this.lib.update(transfer.id, transfer);
+    if (transfer.approvedAt || transfer.isApprove) {
+      this.updateAccount(
+        rta.account as unknown as AccountInterface,
+        rta,
+        false,
+      );
+    }
+    return rta;
   }
 
   async updateTransferFromLatamCashier(
@@ -942,10 +1002,15 @@ export class TransferServiceService
   }
 
   async updateManyTransfer(transfers: TransferUpdateDto[]) {
-    return this.lib.updateMany(
+    const list = await this.lib.updateMany(
       transfers.map((transfer) => transfer.id.toString()),
       transfers,
     );
+    // this.builder.emitUserEventClient(
+    //   EventsNamesUserEnum.checkBalanceUser,
+    //   transferSaved.userAccount,
+    // );
+    return list;
   }
 
   async deleteTransfer(id: string) {
@@ -1441,4 +1506,5 @@ export class TransferServiceService
     const statDate = new StatsDateCreateDto();
     Logger.debug('checkStatsPspAccount', `${TransferServiceService.name}:902`);
   }
+  
 }

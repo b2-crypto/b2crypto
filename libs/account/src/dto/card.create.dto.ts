@@ -1,5 +1,6 @@
+
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEnum, IsNumber, IsOptional, IsString, Min } from 'class-validator';
+import { IsBoolean, IsEnum, IsOptional, IsString, Min } from 'class-validator';
 import CardTypesAccountEnum from '../enum/card.types.account.enum';
 import TypesAccountEnum from '../enum/types.account.enum';
 import { AccountCreateDto } from './account.create.dto';
@@ -14,6 +15,10 @@ export class CardCreateDto extends AccountCreateDto {
   })
   @IsString()
   type = TypesAccountEnum.CARD;
+
+  @IsOptional()
+  @IsBoolean()
+  force = false;
 
   @IsEnum(CardTypesAccountEnum)
   @IsOptional()
@@ -34,12 +39,12 @@ export class CardCreateDto extends AccountCreateDto {
   @IsOptional()
   name: string;
 
-  @IsNumber({ maxDecimalPlaces: 0, allowNaN: false, allowInfinity: false })
+  @IsString()
   @Min(0)
   @IsOptional()
   @ApiProperty({
     required: false,
     description: 'Card pin',
   })
-  pin: number;
+  pin: string;
 }

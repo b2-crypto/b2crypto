@@ -165,6 +165,17 @@ export class MessageServiceService {
     );
   }
 
+  async sendPreRegisterEmail(message: MessageCreateDto) {
+    const emailMessage = new EmailMessageBuilder()
+      .setName('Pre-registration Confirmation')
+      .setBody('Thank you for pre-registering with B2pay.')
+      .setOriginText(this.getOriginEmail())
+      .setDestinyText(message.destinyText)
+      .setVars(message.vars)
+      .build();
+    return this.sendEmail(emailMessage, TemplatesMessageEnum.preRegister);
+  }
+
   async sendAdjustments(message: MessageCreateDto) {
     const getCard = await this.builder.getPromiseAccountEventClient(
       EventsNamesAccountEnum.findOneByCardId,
@@ -254,13 +265,20 @@ export class MessageServiceService {
     template: TemplatesMessageEnum,
   ) {
     try {
+      // if (
+      //   this.configService.get<string>('ENVIRONMENT') !== EnvironmentEnum.stage
+      // ) {
+      //   Logger.debug(message.destinyText, 'Sended email');
+      //   return { success: true };
+      // }
+
       const recipient = message.destinyText;
 
       if (!isEmail(recipient)) {
         throw new Error('Invalid recipient email address');
       }
 
-      const from = await this.configService.get(
+      const from = await this.configService.getOrThrow(
         'AWS_SES_FROM_DEFAULT',
         'no-reply@b2crypto.com',
       );
@@ -279,7 +297,7 @@ export class MessageServiceService {
 
       return { success: true };
     } catch (error) {
-      console.error('Error sending email:', error);
+      Logger.error(error, 'Error sending email:');
       return { success: false, error: error.message };
     }
   }
@@ -288,10 +306,11 @@ export class MessageServiceService {
       pageTitle: vars.name,
       headerColor: this.getHeaderColorForTemplate(template),
       headerTitle: vars.name,
-      logoUrl: process.env.LOGO_URL,
+      logoUrl: this.configService.getOrThrow('LOGO_URL'),
+      socialMediaIcons: this.configService.getOrThrow('SOCIAL_MEDIA_ICONS'),
+      socialMediaLinks: this.configService.getOrThrow('SOCIAL_MEDIA_LINKS'),
       vars: vars,
     };
-
     const rta = pug.renderFile(template, templateVars);
     return rta;
   }

@@ -27,6 +27,7 @@ import { CardServiceController } from './card-service.controller';
 import { WalletServiceController } from './wallet-service.controller';
 import { FiatIntegrationClient } from 'apps/integration-service/src/clients/fiat.integration.client';
 import { HttpModule } from '@nestjs/axios';
+import { WalletServiceService } from './wallet-service.service';
 
 @Module({
   imports: [
@@ -58,6 +59,7 @@ import { HttpModule } from '@nestjs/axios';
     WalletServiceController,
   ],
   providers: [
+    WalletServiceService,
     StatusServiceService,
     CategoryServiceService,
     GroupServiceService,
@@ -78,6 +80,7 @@ import { HttpModule } from '@nestjs/axios';
       provide: APP_FILTER,
       useClass: ResponseHttpExceptionFilter,
     },
+    WalletServiceService,
   ] as IProvider[],
 })
 export class AccountServiceModule {}

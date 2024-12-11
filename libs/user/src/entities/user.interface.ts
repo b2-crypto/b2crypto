@@ -1,3 +1,4 @@
+import { AffiliateInterface } from '@affiliate/affiliate/domain/entities/affiliate.interface';
 import { CategoryInterface } from '@category/category/entities/category.interface';
 import CurrencyCodeB2cryptoEnum from '@common/common/enums/currency-code-b2crypto.enum';
 import { FileInterface } from '@file/file/entities/file.interface';
@@ -7,6 +8,8 @@ import { RoleInterface } from '@role/role/entities/role.interface';
 import { ObjectId } from 'mongoose';
 import UserVerifyIdentityDto from '../dto/user.verify.identity.dto';
 import { UserBalanceModel } from './user.balance.model';
+import { BrandInterface } from '@brand/brand/entities/brand.interface';
+import { GroupInterface } from '@group/group/entities/group.interface';
 
 export interface UserInterface {
   _id?: ObjectId;
@@ -36,11 +39,15 @@ export interface UserInterface {
   amountCustodial: number;
   currencyCustodial: CurrencyCodeB2cryptoEnum;
   image: FileInterface;
+  brand: BrandInterface;
   role: RoleInterface;
   permissions: Array<PermissionInterface>;
   authorizations: Array<string>;
   category: CategoryInterface;
+  level: CategoryInterface;
   personalData: PersonInterface;
+  affiliate: AffiliateInterface;
+  group: GroupInterface;
   userParent: UserInterface;
   verifyIdentity: boolean;
   verifyIdentityTtl: number;

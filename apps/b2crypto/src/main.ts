@@ -1,28 +1,33 @@
+/* eslint-disable */
+import { tracingConfig } from './opentelemetry';
+/* eslint-disable */
+
+import { Tracing } from '@amplication/opentelemetry-nestjs';
+import { QueueAdminModule } from '@common/common/queue-admin-providers/queue.admin.provider.module';
 import { INestApplication, Logger, ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
-import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { DocumentBuilder, OpenAPIObject, SwaggerModule } from '@nestjs/swagger';
+import { PathsObject } from '@nestjs/swagger/dist/interfaces/open-api-spec.interface';
+import { AccountServiceModule } from 'apps/account-service/src/account-service.module';
 import { AffiliateServiceModule } from 'apps/affiliate-service/src/affiliate-service.module';
 import { CategoryServiceModule } from 'apps/category-service/src/category-service.module';
 import { CrmServiceModule } from 'apps/crm-service/src/crm-service.module';
 import { LeadServiceModule } from 'apps/lead-service/src/lead-service.module';
 import { PermissionServiceModule } from 'apps/permission-service/src/permission-service.module';
+import { PersonServiceModule } from 'apps/person-service/src/person-service.module';
 import { RoleServiceModule } from 'apps/role-service/src/role-service.module';
 import { StatusServiceModule } from 'apps/status-service/src/status-service.module';
+import { TransferServiceModule } from 'apps/transfer-service/src/transfer-service.module';
 import * as basicAuth from 'express-basic-auth';
+import { SwaggerSteakeyConfigEnum } from 'libs/config/enum/swagger.stakey.config.enum';
 import { UserServiceModule } from '../../user-service/src/user-service.module';
 import { AppHttpModule } from './app.http.module';
 
-import { QueueAdminModule } from '@common/common/queue-admin-providers/queue.admin.provider.module';
-import { OpenAPIObject } from '@nestjs/swagger';
-import { PathsObject } from '@nestjs/swagger/dist/interfaces/open-api-spec.interface';
-import { AccountServiceModule } from 'apps/account-service/src/account-service.module';
-import { PersonServiceModule } from 'apps/person-service/src/person-service.module';
-import { TransferServiceModule } from 'apps/transfer-service/src/transfer-service.module';
-import { SwaggerSteakeyConfigEnum } from 'libs/config/enum/swagger.stakey.config.enum';
-
 async function bootstrap() {
+  Tracing.init(tracingConfig);
   Logger.log(process.env.TZ, 'Timezone');
+
   const app = await NestFactory.create(AppHttpModule, {
     // logger: false,
     cors: true,
@@ -45,16 +50,17 @@ async function bootstrap() {
   addSwaggerIntegration(app);
   addSwaggerStakeyCard(app);
 
-  app.enableCors();
+  // app.enableCors();
   app.enableCors({
     origin: '*',
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
-    preflightContinue: false,
+    preflightContinue: true,
     optionsSuccessStatus: 204,
     credentials: true,
     allowedHeaders: 'b2crypto-affiliate-key b2crypto-key Content-Type Accept',
   });
   app.getHttpAdapter().getInstance().disable('x-powered-by');
+
   app.connectMicroservice(
     await QueueAdminModule.getClientProvider(
       configService,
@@ -185,6 +191,9 @@ function addSwaggerGlobal(app: INestApplication) {
       StatusServiceModule,
       AffiliateServiceModule,
       PermissionServiceModule,
+      AccountServiceModule,
+      PersonServiceModule,
+      TransferServiceModule,
     ],
   });
 

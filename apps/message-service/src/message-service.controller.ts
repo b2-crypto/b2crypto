@@ -13,11 +13,6 @@ import {
 import { ApiTags } from '@nestjs/swagger';
 
 import { AllowAnon } from '@auth/auth/decorators/allow-anon.decorator';
-import { PolicyHandlerMessageCreate } from '@auth/auth/policy/message/policity.handler.message.create';
-import { PolicyHandlerMessageDelete } from '@auth/auth/policy/message/policity.handler.message.delete';
-import { PolicyHandlerMessageRead } from '@auth/auth/policy/message/policity.handler.message.read';
-import { PolicyHandlerMessageUpdate } from '@auth/auth/policy/message/policity.handler.message.update';
-import { CheckPoliciesAbility } from '@auth/auth/policy/policy.handler.ability';
 import { CommonService } from '@common/common';
 import GenericServiceController from '@common/common/interfaces/controller.generic.interface';
 import { QuerySearchAnyDto } from '@common/common/models/query_search-any.dto';
@@ -347,6 +342,22 @@ export class MessageServiceController implements GenericServiceController {
       await this.messageService.sendPurchases(message);
     } catch (err) {
       Logger.error(err, `${MessageServiceController.name}-sendPurchasesEmail`);
+    }
+  }
+  @AllowAnon()
+  @EventPattern(EventsNamesMessageEnum.sendPreRegisterEmail)
+  async eventSendPreRegister(
+    @Payload() message: MessageCreateDto,
+    @Ctx() ctx: RmqContext,
+  ) {
+    CommonService.ack(ctx);
+    try {
+      await this.messageService.sendPreRegisterEmail(message);
+    } catch (err) {
+      Logger.error(
+        err,
+        `${MessageServiceController.name}-sendPreRegisterEmail`,
+      );
     }
   }
 }

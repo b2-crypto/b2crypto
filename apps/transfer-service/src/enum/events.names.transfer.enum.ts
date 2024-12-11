@@ -8,6 +8,7 @@ enum EventsNamesTransferEnum {
   createOne = 'TRANSFER.CREATE.ONE',
   createOneDepositLink = 'TRANSFER.CREATE.ONE.LINK',
   createOneWebhok = 'TRANSFER.CREATE.ONE.WEBHOOK',
+  createOneMigration = 'TRANSFER.CREATE.ONE.MIGRATION',
   createOneWebhook = 'TRANSFER.CREATE.ONE.WEBHOOK',
   updateMany = 'TRANSFER.UPDATE.MANY',
   updateOne = 'TRANSFER.UPDATE.ONE',
@@ -23,6 +24,9 @@ enum EventsNamesTransferEnum {
   checkTransferStatsByQuery = 'TRANSFER.CHECK.STATS.BY.QUERY',
   checkTransferInCashierByStatus = 'TRANSFER.CHECK.CASHIER.STATUS',
   checkTransferInB2BinPay = 'TRANSFER.CHECK.B2BINPAY',
+  sendLast6hHistoryCardPurchases = 'TRANSFER.SEND.LAST.6H.HISTORY.CARD.PURCHASE',
+  sendLast6hHistoryCardWalletDeposits = 'TRANSFER.SEND.LAST.6H.HISTORY.CARD.WALLET.DEPOSITS',
+  sendLast6hHistory = 'TRANSFER.SEND.LAST.6H.HISTORY',
 }
 
 export default EventsNamesTransferEnum;

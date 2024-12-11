@@ -2,14 +2,19 @@ import {
   UserCard,
   UserCardSchema,
 } from '@account/account/entities/mongoose/user-card.schema';
+import { Affiliate } from '@affiliate/affiliate/infrastructure/mongoose/affiliate.schema';
+import { Brand } from '@brand/brand/entities/mongoose/brand.schema';
+import { Category } from '@category/category/entities/mongoose/category.schema';
 import CurrencyCodeB2cryptoEnum from '@common/common/enums/currency-code-b2crypto.enum';
 import { FileInterface } from '@file/file/entities/file.interface';
+import { Group } from '@group/group/entities/mongoose/group.schema';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Permission } from '@permission/permission/entities/mongoose/permission.schema';
 import { Person } from '@person/person/entities/mongoose/person.schema';
 import { Role } from '@role/role/entities/mongoose/role.schema';
 import { UserEntity } from '@user/user/entities/user.entity';
 import mongoose, { Document, ObjectId } from 'mongoose';
+import { RulesUser } from './rules.user.schema';
 import { UserBalance } from './user.balance.schema';
 import { UserVerifyIdentitySchema } from './user.verify.identity.schema';
 
@@ -124,8 +129,14 @@ export class User extends UserEntity {
   @Prop({ type: [String] })
   authorizations: Array<string>;
 
+  @Prop({ type: () => Array<RulesUser> })
+  rules: Array<RulesUser>;
+
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'files' })
   image: FileInterface;
+
+  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'brands' })
+  brand: Brand;
 
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'roles' })
   role: Role;
@@ -138,7 +149,19 @@ export class User extends UserEntity {
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'persons' })
   personalData: Person;
 
+  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'groups' })
+  group: Group;
+
+  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'categories' })
+  category: Category;
+
+  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'categories' })
+  level: Category;
+
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'affiliates' })
+  affiliate: Affiliate;
+
+  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'users' })
   userParent: User;
 
   @Prop({ type: UserCardSchema })

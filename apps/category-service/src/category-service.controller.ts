@@ -291,6 +291,71 @@ export class CategoryServiceController implements GenericServiceController {
     return this.categoryListByType(query, 'doc_type');
   }
 
+  @ApiKeyCheck()
+  @Get('levels')
+  // @CheckPoliciesAbility(new PolicyHandlerCategoryRead())
+  async listLevels(@Query() query: QuerySearchAnyDto) {
+    const rta = [];
+    query = query ?? new QuerySearchAnyDto();
+    query.where = query.where ?? {};
+    query.take = 1000;
+    query.where.type = TagEnum.LEVEL;
+    query.where.hidden = false;
+    const levels = await this.categoryService.getAll({
+      ...query,
+    });
+    delete query.where.hidden;
+    for (const level of levels.list) {
+      level['options'] = [];
+      query.where.categoryParent = level.id ?? level._id;
+      query.where.type = TagEnum.CUSTOM_LEVEL;
+      const customLevels = await this.categoryService.getAll({
+        ...query,
+      });
+
+      for (const customLevel of customLevels.list) {
+        query.where.categoryParent = customLevel.id ?? customLevel._id;
+        query.where.type = TagEnum.CUSTOM_RULE;
+        const customRules = await this.categoryService.getAll({
+          ...query,
+        });
+        customLevel['rules'] = customRules.list.map((rule) => {
+          return {
+            _id: rule._id,
+            name: rule.name,
+            description: rule.description,
+            valueNumber: rule.valueNumber,
+            valueText: rule.valueText,
+            next: rule.next,
+            previous: rule.previous,
+          };
+        });
+        level['options'].push({
+          _id: customLevel._id,
+          name: customLevel.name,
+          rules: customLevel['rules'],
+          description: customLevel.description,
+          valueNumber: customLevel.valueNumber,
+          valueText: customLevel.valueText,
+          next: customLevel.next,
+          previous: customLevel.previous,
+        });
+      }
+      rta.push({
+        _id: level._id,
+        name: level.name,
+        variants: level['options'],
+        description: level.description,
+        valueNumber: level.valueNumber,
+        valueText: level.valueText,
+        next: level.next,
+        previous: level.previous,
+      });
+    }
+
+    return rta;
+  }
+
   @Get(':categoryID')
   @NoCache()
   // @CheckPoliciesAbility(new PolicyHandlerCategoryRead())

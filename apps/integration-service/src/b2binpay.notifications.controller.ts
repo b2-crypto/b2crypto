@@ -24,7 +24,7 @@ import EventsNamesCategoryEnum from 'apps/category-service/src/enum/events.names
 import EventsNamesPspAccountEnum from 'apps/psp-service/src/enum/events.names.psp.acount.enum';
 import EventsNamesStatusEnum from 'apps/status-service/src/enum/events.names.status.enum';
 import EventsNamesTransferEnum from 'apps/transfer-service/src/enum/events.names.transfer.enum';
-import { isEmpty } from 'class-validator';
+
 
 @Controller('b2binpay')
 //@UseGuards(ApiKeyAuthGuard)
@@ -299,8 +299,6 @@ export class B2BinPayNotificationsController {
           currencyCustodial: account.currencyCustodial,
           amountCustodial: attributes.amount_target,
           account: account._id,
-          typeAccount: account.type,
-          typeAccountType: account.accountType,
           userCreator: account.owner,
           userAccount: account.owner,
           typeTransaction: depositWalletCategory._id,

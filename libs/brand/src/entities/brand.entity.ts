@@ -5,6 +5,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { PspEntity } from '@psp/psp/entities/psp.entity';
 import { StatusEntity } from '@status/status/entities/status.entity';
 import { ObjectId } from 'mongodb';
+import { UserEntity } from '@user/user/entities/user.entity';
 
 export class BrandEntity implements BrandInterface {
   _id?: ObjectId;
@@ -32,6 +33,7 @@ export class BrandEntity implements BrandInterface {
   quantityAffiliateFtd: number;
   totalAffiliateFtd: number;
   totalAffiliateConversion: number;
+  owner: UserEntity;
   department: CategoryEntity;
   currentCrm: CrmEntity;
   status: StatusEntity;

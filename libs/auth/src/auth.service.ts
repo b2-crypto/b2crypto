@@ -155,6 +155,7 @@ export class AuthService {
     const payload = {
       id: user._id,
       //api: user.apiData,
+      brand: user.brand,
       email: user.email,
       verifyIdentity: user.verifyIdentity,
       verifyIdentityLevelName: user.verifyIdentityLevelName,

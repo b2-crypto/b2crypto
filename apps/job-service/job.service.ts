@@ -12,9 +12,11 @@ export class JobService {
   static readonly periodicTime = {
     //sendBalanceCardReports: CronExpression.EVERY_DAY_AT_1PM,
     sendBalanceCardReports: '30 10 * * *',
+    sweepOmnibus: CronExpression.EVERY_12_HOURS,
     checkBalanceUser: CronExpression.EVERY_DAY_AT_11AM,
     checkCardsInPomelo: '0 */6 * * * *',
-    checkB2BinPayTransfers: '0 */5 * * * *',
+    checkB2BinPayTransfers: CronExpression.EVERY_5_MINUTES,
+    sendLast6hHistoryTransfer: CronExpression.EVERY_6_HOURS,
   };
   private env = 'DEV';
 
@@ -26,11 +28,34 @@ export class JobService {
     this.env = configService.get('ENVIRONMENT');
   }
 
+  @Cron(JobService.periodicTime.sendLast6hHistoryTransfer, {
+    timeZone: process.env.TZ,
+  })
+  async sendLast6hHistoryTransfer() {
+    Logger.log(
+      'Sended last 6h history transfer',
+      `${this.env} - ${JobService.name}`,
+    );
+    if (this.env == EnvironmentEnum.prod) {
+      this.builder.emitTransferEventClient(
+        EventsNamesTransferEnum.sendLast6hHistoryCardPurchases,
+        0,
+      );
+      this.builder.emitTransferEventClient(
+        EventsNamesTransferEnum.sendLast6hHistoryCardWalletDeposits,
+        0,
+      );
+    }
+  }
+
   @Cron(JobService.periodicTime.sendBalanceCardReports, {
     timeZone: process.env.TZ,
   })
   async sendBalanceCardReportsCron() {
-    Logger.log('Sended reports', JobService.name);
+    Logger.log(
+      'Sended balance card report',
+      `${this.env} - ${JobService.name}`,
+    );
     if (this.env == EnvironmentEnum.prod) {
       await this.builder.getPromiseAccountEventClient(
         EventsNamesAccountEnum.sendBalanceReport,
@@ -47,7 +72,7 @@ export class JobService {
     timeZone: process.env.TZ,
   })
   checkBalanceUserCron() {
-    Logger.log('Checked balance users', JobService.name);
+    Logger.log('Checked balance users', `${this.env} - ${JobService.name}`);
     if (this.env == EnvironmentEnum.prod) {
       this.builder.emitUserEventClient(
         EventsNamesUserEnum.checkBalanceUser,
@@ -60,13 +85,25 @@ export class JobService {
     timeZone: process.env.TZ,
   })
   checkCardsInPomelo() {
+    Logger.log('Checking Cards in pomelo', `${this.env} - ${JobService.name}`);
     if (this.env === EnvironmentEnum.prod) {
       this.builder.emitAccountEventClient(
         EventsNamesAccountEnum.checkCardsCreatedInPomelo,
         'pomelo',
       );
-    } else {
-      Logger.log('Checking Cards in pomelo', JobService.name);
+    }
+  }
+
+  @Cron(JobService.periodicTime.checkB2BinPayTransfers, {
+    timeZone: process.env.TZ,
+  })
+  sweepOmibus() {
+    Logger.log('Job sweep omibus', `${this.env} - ${JobService.name}`);
+    if (this.env === EnvironmentEnum.prod) {
+      // this.builder.emitAccountEventClient(
+      //   EventsNamesAccountEnum.sweepOmnibus,
+      //   'omnibus',
+      // );
     }
   }
 
@@ -74,13 +111,19 @@ export class JobService {
     timeZone: process.env.TZ,
   })
   checkB2BinPayTransfers() {
-    if (this.env === EnvironmentEnum.prod) {
-      this.builder.emitTransferEventClient(
-        EventsNamesTransferEnum.checkTransferInB2BinPay,
-        'b2binpay',
-      );
-    } else {
-      Logger.log('Checking B2BinPay transfers', JobService.name);
-    }
+    Logger.warn(
+      'Disabled Job checkB2BinPayTransfers',
+      `${this.env} - ${JobService.name}`,
+    );
+    // Logger.log(
+    //   'Checking B2BinPay transfers',
+    //   `${this.env} - ${JobService.name}`,
+    // );
+    // if (this.env === EnvironmentEnum.prod) {
+    //   this.builder.emitTransferEventClient(
+    //     EventsNamesTransferEnum.checkTransferInB2BinPay,
+    //     'b2binpay',
+    //   );
+    // }
   }
 }

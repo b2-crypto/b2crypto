@@ -1,36 +1,57 @@
 import { AccountModule } from '@account/account/account.module';
 import { AuthModule } from '@auth/auth';
+import { JwtAuthGuard } from '@auth/auth/guards/jwt-auth.guard';
 import { BuildersModule } from '@builder/builders';
 import { CommonModule } from '@common/common';
+import { ResponseHttpExceptionFilter } from '@common/common/exceptions/response.exception';
+import { B2CryptoCacheInterceptor } from '@common/common/interceptors/b-2-crypto-cache.interceptor';
+import { ResponseInterceptor } from '@common/common/interceptors/response.interceptor';
 import { PomeloProcessConstants } from '@common/common/utils/pomelo.integration.process.constants';
 import { PomeloHttpUtils } from '@common/common/utils/pomelo.integration.process.http.utils';
 import { PomeloSignatureUtils } from '@common/common/utils/pomelo.integration.process.signature';
 import { SumsubHttpUtils } from '@common/common/utils/sumsub.integration.process.http.utils';
 import { SumsubSignatureUtils } from '@common/common/utils/sumsub.integration.process.signature';
+import { FileModule } from '@file/file';
 import { IntegrationModule } from '@integration/integration';
 import { PomeloRestClient } from '@integration/integration/client/pomelo.integration.client';
 import { PomeloCache } from '@integration/integration/util/pomelo.integration.process.cache';
 import { HttpModule } from '@nestjs/axios';
-import { Module } from '@nestjs/common';
+import { CacheModule, Logger, Module } from '@nestjs/common';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
+import { MulterModule } from '@nestjs/platform-express';
+import { ScheduleModule } from '@nestjs/schedule';
+import { ResponseB2CryptoService } from '@response-b2crypto/response-b2crypto';
 import { UserModule } from '@user/user';
 import { AccountServiceService } from 'apps/account-service/src/account-service.service';
 import { UserServiceService } from 'apps/user-service/src/user-service.service';
+import { redisStore } from 'cache-manager-redis-store';
+import configuration from 'config/configuration';
+import { RedisClientOptions } from 'redis';
+import { B2BinPayNotificationsController } from './b2binpay.notifications.controller';
+import { B2CoreMigrationController } from './b2core.migration.controller';
 import { ClientsIntegrationController } from './clients.controller';
 import { FiatIntegrationClient } from './clients/fiat.integration.client';
+import { PomeloV1DBClient } from './clients/pomelo.v1.bd.client';
 import { IntegrationServiceService } from './integration-service.service';
 import { PomeloIntegrationServiceController } from './pomelo.integration-service.controller';
+import { PomeloMigrationController } from './pomelo.migration.controller';
 import { PomeloSensitiveInfoController } from './pomelo.sensitive-info.controller';
 import { PomeloShippingController } from './pomelo.shipping.controller';
+import { B2CoreMigrationService } from './services/b2core.migration.service';
 import { PomeloIntegrationProcessService } from './services/pomelo.integration.process.service';
+import { PomeloIntegrationSFTPService } from './services/pomelo.integration.sftp.service';
 import { PomeloIntegrationShippingService } from './services/pomelo.integration.shipping.service';
+import { PomeloMigrationService } from './services/pomelo.migration.service';
 import { SumsubNotificationIntegrationService } from './services/sumsub.notification.integration.service';
 import { SumsubNotificationIntegrationController } from './sumsub.notification.controller';
-import { PomeloIntegrationSFTPService } from './services/pomelo.integration.sftp.service';
-import { B2BinPayNotificationsController } from './b2binpay.notifications.controller';
-import { ResponseB2CryptoService } from '@response-b2crypto/response-b2crypto';
 
 @Module({
   imports: [
+    MulterModule.register({
+      dest: './upload',
+    }),
+    FileModule,
     AuthModule,
     UserModule,
     HttpModule,
@@ -40,14 +61,17 @@ import { ResponseB2CryptoService } from '@response-b2crypto/response-b2crypto';
     IntegrationModule,
   ],
   controllers: [
-    PomeloShippingController,
-    ClientsIntegrationController,
-    PomeloSensitiveInfoController,
-    B2BinPayNotificationsController,
-    PomeloIntegrationServiceController,
     SumsubNotificationIntegrationController,
+    B2BinPayNotificationsController,
+    ClientsIntegrationController,
+    PomeloIntegrationServiceController,
+    PomeloSensitiveInfoController,
+    B2CoreMigrationController,
+    PomeloShippingController,
+    PomeloMigrationController,
   ],
   providers: [
+    PomeloV1DBClient,
     PomeloCache,
     PomeloSignatureUtils,
     PomeloHttpUtils,
@@ -56,6 +80,8 @@ import { ResponseB2CryptoService } from '@response-b2crypto/response-b2crypto';
     UserServiceService,
     SumsubSignatureUtils,
     FiatIntegrationClient,
+    PomeloMigrationService,
+    B2CoreMigrationService,
     AccountServiceService,
     PomeloProcessConstants,
     IntegrationServiceService,

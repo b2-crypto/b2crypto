@@ -77,6 +77,9 @@ export class UserPreRegisterDto {
   @IsEmpty()
   twoFactorSecret: string;
 
+  @IsEmpty()
+  brand: ObjectId;
+
   @IsOptional()
   twoFactorIsActive = false;
 

@@ -7,6 +7,7 @@
 
 # Migration
 migration/*
+upload/*
 # Logs
 logs
 *.log
@@ -39,6 +40,15 @@ lerna-debug.log*
 !.vscode/launch.json
 !.vscode/extensions.json
 
+# Migration files
+/migration
+/migration/*
 # SFTP report files
 /sftp/downloads
 /sftp/downloads/*
+# SUpload files
+upload/*
+
+pnpm-lock.yaml
+package-lock.json
+yarn.lock

@@ -13,7 +13,6 @@ import {
   IsEnum,
   IsMongoId,
   IsNotEmpty,
-  IsNumber,
   IsOptional,
   IsString,
   Min,
@@ -89,13 +88,13 @@ export class AccountCreateDto extends CreateAnyDto implements AccountInterface {
   @IsOptional()
   secret: string;
 
-  @IsNumber({ maxDecimalPlaces: 0, allowNaN: false, allowInfinity: false })
+  @IsString()
   @Min(0)
   @ApiProperty({
     required: false,
     description: 'Account pin',
   })
-  pin: number;
+  pin: string;
 
   @ApiProperty({
     required: false,
@@ -138,6 +137,30 @@ export class AccountCreateDto extends CreateAnyDto implements AccountInterface {
 
   @ApiProperty({
     required: false,
+    description: 'ID Account',
+  })
+  @IsString()
+  @IsOptional()
+  protocol?: string;
+
+  @ApiProperty({
+    required: false,
+    description: 'ID Account',
+  })
+  @IsString()
+  @IsOptional()
+  nativeAccountName?: string;
+
+  @ApiProperty({
+    required: false,
+    description: 'ID Account',
+  })
+  @IsString()
+  @IsOptional()
+  decimals: number;
+
+  @ApiProperty({
+    required: false,
     description: 'Tecnical account name',
   })
   @IsString()
@@ -165,7 +188,7 @@ export class AccountCreateDto extends CreateAnyDto implements AccountInterface {
   })
   @IsString()
   @IsOptional()
-  referral: string;
+  referral?: string;
 
   @ApiProperty({
     required: false,
@@ -175,7 +198,7 @@ export class AccountCreateDto extends CreateAnyDto implements AccountInterface {
   })
   @IsEnum(CountryCodeEnum)
   @IsOptional()
-  country: CountryCodeEnum;
+  country?: CountryCodeEnum;
 
   @ApiProperty({
     required: false,
@@ -184,7 +207,7 @@ export class AccountCreateDto extends CreateAnyDto implements AccountInterface {
   })
   @IsString()
   @IsOptional()
-  referralType: string;
+  referralType?: string;
 
   @IsEmpty()
   referralTypeObj?: CategoryUpdateDto;
@@ -208,7 +231,7 @@ export class AccountCreateDto extends CreateAnyDto implements AccountInterface {
   @IsOptional()
   @ValidateNested()
   @Type(() => PersonCreateDto)
-  personalData: ObjectId;
+  personalData?: ObjectId;
 
   @IsOptional()
   @IsMongoId()
@@ -220,15 +243,15 @@ export class AccountCreateDto extends CreateAnyDto implements AccountInterface {
 
   @IsOptional()
   @IsMongoId()
-  crm: ObjectId;
+  crm?: ObjectId;
 
   @IsOptional()
   @IsMongoId()
-  brand: ObjectId;
+  brand?: ObjectId;
 
   @IsOptional()
   @IsMongoId()
-  affiliate: ObjectId;
+  affiliate?: ObjectId;
 
   @ApiProperty({
     required: false,
