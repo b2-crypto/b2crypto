@@ -1,9 +1,3 @@
-<<<<<<< Updated upstream
-import { IsEnum, IsNumberString, IsOptional, IsString, Length } from 'class-validator';
-import TypesAccountEnum from '../enum/types.account.enum';
-import { AccountCreateDto } from './account.create.dto';
-=======
->>>>>>> Stashed changes
 import { ApiProperty } from '@nestjs/swagger';
 import {
   IsEnum,
