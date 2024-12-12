@@ -47,47 +47,200 @@ export class WalletServiceService {
     createDto: WalletDepositCreateDto,
     userId: string,
     host: string,
-  ) {
-    const user: User = (
-      await this.userService.getAll({
-        relations: ['personalData'],
-        where: { _id: userId },
-      })
-    ).list[0];
-
-    if (!user.personalData) {
-      throw new BadRequestException('Need the personal data to continue');
-    }
-    if (createDto.amount <= 10) {
-      throw new BadRequestException('The recharge not be 10 or less');
-    }
-
-    const to = await this.accountService.findOneById(createDto.to.toString());
-    if (to.type != TypesAccountEnum.WALLET) {
-      throw new BadRequestException('Wallet not found');
-    }
+) {
+    const isProd = this.configService.get<string>('ENVIRONMENT') === EnvironmentEnum.prod;
+    const user = await this.validateAndGetUser(userId);
+    
+    this.validateRechargeAmount(createDto.amount);
+    const to = await this.validateAndGetToWallet(createDto.to.toString());
 
     if (createDto.from) {
-      return this.handleInternalTransfer(createDto, to, user, host);
+      const from = await this.validateAndGetFromWallet(createDto.from.toString());
+      
+      if (isProd) {
+        return this.handleFireblocksTransfer(createDto, from, to, user, host);
+      } else {
+        return this.handleInternalTransfer(createDto, to, from, user, host);
+      }
     } else {
-      return this.handleExternalDeposit(createDto, to, user, host);
+      if (isProd && to.crm) {
+        return this.handleFireblocksDeposit(to);
+      } else {
+        return this.handleExternalDeposit(createDto, to, user, host);
+      }
     }
-  }
+}
   
-
-  private async handleInternalTransfer(
+  private async handleFireblocksTransfer(
     createDto: WalletDepositCreateDto,
+    from: any,
     to: any,
     user: User,
     host: string,
   ) {
-    const from = await this.accountService.findOneById(
-      createDto.from.toString(),
+    const fireblocksCrm = await this.ewalletBuilder.getPromiseCrmEventClient(
+      EventsNamesCrmEnum.findOneByName,
+      IntegrationCryptoEnum.FIREBLOCKS,
     );
+
+    const [
+      depositWalletCategory,
+      withdrawalWalletCategory,
+      approvedStatus,
+      internalPspAccount,
+    ] = await Promise.all([
+      this.ewalletBuilder.getPromiseCategoryEventClient(
+        EventsNamesCategoryEnum.findOneByNameType,
+        {
+          slug: 'deposit-wallet',
+          type: TagEnum.MONETARY_TRANSACTION_TYPE,
+        },
+      ),
+      this.ewalletBuilder.getPromiseCategoryEventClient(
+        EventsNamesCategoryEnum.findOneByNameType,
+        {
+          slug: 'withdrawal-wallet',
+          type: TagEnum.MONETARY_TRANSACTION_TYPE,
+        },
+      ),
+      this.ewalletBuilder.getPromiseStatusEventClient(
+        EventsNamesStatusEnum.findOneByName,
+        'approved',
+      ),
+      this.ewalletBuilder.getPromisePspAccountEventClient(
+        EventsNamesPspAccountEnum.findOneByName,
+        'internal',
+      ),
+    ]);
+
+    const walletBase = await this.getWalletBase(fireblocksCrm._id, from.name);
+    const vaultFrom = await this.getVaultUser(
+      from.owner.toString(),
+      fireblocksCrm._id,
+      walletBase,
+      from.brand.toString(),
+    );
+
+    const costTx = 5;
+    const comisionTx = 0.03;
+    const valueToPay = createDto.amount * comisionTx + costTx;
+    
+    if (from.amount < createDto.amount + valueToPay) {
+      throw new BadRequestException('Not enough balance');
+    }
+
+    try {
+      const cryptoType = await this.getFireblocksType();
+      const vaultTo = await this.getVaultUser(
+        to.owner.toString(),
+        fireblocksCrm._id,
+        walletBase,
+        to.brand.toString(),
+      );
+
+      const rta = await cryptoType.createTransaction(
+        from.accountId,
+        String(createDto.amount),
+        vaultFrom.accountId,
+        vaultTo.accountId,
+      );
+
+      await this.updateWalletBalances(from._id, to._id, createDto.amount);
+      
+      await this.createTransferEvents(
+        to,
+        from,
+        createDto,
+        user,
+        depositWalletCategory,
+        withdrawalWalletCategory,
+        approvedStatus,
+        internalPspAccount,
+        host,
+      );
+
+      return {
+        statusCode: 200,
+        data: rta.data,
+      };
+    } catch (error) {
+      throw new BadRequestException('Error processing Fireblocks transaction');
+    }
+  }
+
+  private handleFireblocksDeposit(to: any) {
+    const base = to.accountId.indexOf('ARB') >= 0 
+      ? 'https://arbscan.org/address/'
+      : 'https://tronscan.org/#/address/';
+
+    return {
+      statusCode: 200,
+      data: {
+        url: `${base}${to.accountName}`,
+        address: to.accountName,
+        chain: to.nativeAccountName,
+      },
+    };
+  }
+
+  private async validateAndGetUser(userId: string) {
+    const user = (await this.userService.getAll({
+      relations: ['personalData'],
+      where: { _id: userId },
+    })).list[0];
+
+    if (!user.personalData) {
+      throw new BadRequestException('Need the personal data to continue');
+    }
+    return user;
+  }
+
+  private validateRechargeAmount(amount: number) {
+    if (amount <= 10) {
+      throw new BadRequestException('The recharge not be 10 or less');
+    }
+  }
+
+  private async validateAndGetToWallet(walletId: string) {
+    const wallet = await this.accountService.findOneById(walletId);
+    if (wallet.type !== TypesAccountEnum.WALLET) {
+      throw new BadRequestException('Wallet not found');
+    }
+    return wallet;
+  }
+
+  private async validateAndGetFromWallet(walletId: string) {
+    const wallet = await this.accountService.findOneById(walletId);
+    if (wallet.type !== TypesAccountEnum.WALLET) {
+      throw new BadRequestException('Wallet not found');
+    }
+    return wallet;
+  }
+
+  private async updateWalletBalances(fromId: string, toId: string, amount: number) {
+    await Promise.all([
+      this.accountService.customUpdateOne({
+        id: toId,
+        $inc: { amount: amount },
+      }),
+      this.accountService.customUpdateOne({
+        id: fromId,
+        $inc: { amount: amount * -1 },
+      }),
+    ]);
+  }
+  private async handleInternalTransfer(
+    createDto: WalletDepositCreateDto,
+    to: any,
+    from: any,
+    user: User,
+    host: string,
+  ) {
+    console.log({ createDto, to, from, user, host });
     if (from.type != TypesAccountEnum.WALLET) {
       throw new BadRequestException('Wallet not found');
     }
-
+  
     const [
       depositWalletCategory,
       withDrawalWalletCategory,
@@ -117,7 +270,7 @@ export class WalletServiceService {
         'internal',
       ),
     ]);
-
+  
     const result = await Promise.all([
       this.accountService.customUpdateOne({
         id: createDto.to,
@@ -128,7 +281,7 @@ export class WalletServiceService {
         $inc: { amount: createDto.amount * -1 },
       }),
     ]).then((list) => list[0]);
-
+  
     this.createTransferEvents(
       to,
       from,
@@ -140,10 +293,9 @@ export class WalletServiceService {
       internalPspAccount,
       host,
     );
-
+  
     return result;
   }
-
 
   private async handleExternalDeposit(
     createDto: WalletDepositCreateDto,
