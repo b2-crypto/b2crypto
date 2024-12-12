@@ -109,7 +109,7 @@ export class WalletServiceController extends AccountServiceController {
   @ApiSecurity('b2crypto-key')
   @Post('create')
   async createOne(@Body() createDto: WalletCreateDto, @Req() req?: any) {
-    createDto.brand = req.user.brand; 
+    createDto.brand = req.user.brand;
     return this.walletServiceService.createWallet(createDto, req?.user?.id);
   }
 
@@ -1052,5 +1052,4 @@ export class WalletServiceController extends AccountServiceController {
     }
     return this.rechargeOne(createDto, req);
   }
- 
 }
