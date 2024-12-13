@@ -3,10 +3,10 @@
 
 doctype html
 html(lang="es")
-  include ../partials/head.pug
+  include ./partials/head.pug
   body
     .container
-      include ../partials/header.pug
+      include ./partials/header.pug
       .content
         div(style="display: flex; justify-content: center; align-items: center; flex-direction: column;")
           img(src=iconsInfo.info alt=iconsInfo.info)
@@ -58,4 +58,4 @@ html(lang="es")
         p
           small Si el estado es "Pendiente" o "En Proceso", significa que estamos procesando tu solicitud. Recibirás una notificación adicional una vez que se complete este proceso.
 
-      include ../partials/footer.pug
+      include ./partials/footer.pug

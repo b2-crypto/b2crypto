@@ -3,10 +3,10 @@
 
 doctype html
 html(lang="es")
-  include ../partials/head.pug
+  include ./partials/head.pug
   body
     .container
-      include ../partials/header.pug
+      include ./partials/header.pug
       .content
         div(style="display: flex; justify-content: center; align-items: center; flex-direction: column;")
           img(src=iconsInfo.warning alt=iconsInfo.warning)
@@ -54,4 +54,4 @@ html(lang="es")
           a.button(href="#" target="_blank" rel="noopener noreferrer") Enlace para cambiar contraseña
           a.button(href="#" target="_blank" rel="noopener noreferrer") Contactar con el servicio al cliente
 
-      include ../partials/footer.pug
+      include ./partials/footer.pug
