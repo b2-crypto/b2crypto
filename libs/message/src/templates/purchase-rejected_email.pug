@@ -1,0 +1,75 @@
+- const iconsInfo = typeof icons === 'string' ? JSON.parse(icons) : icons
+- const iconsMails = typeof iconsEmail === 'string' ? JSON.parse(iconsEmail) : iconsEmail
+
+doctype html
+html(lang="es")
+  include ./partials/head.pug
+  body
+    .container
+      include ./partials/header.pug
+      .content
+        div(style="display: flex; justify-content: center; align-items: center; flex-direction: column;")
+          img(src=iconsInfo.error alt=iconsInfo.error)
+          p.title(style="margin-block-end: 0.5em; margin-block-start: 0.5em;") Lo sentimos, tu compra ha sido rechazada
+        p 
+          small #{vars.name}, Tu compra ha sido rechazada
+        p 
+          small Lamentamos informarte que tu intento de compra realizado el 31 de Julio del 2024 a las 16:50h en Zara no pudo ser procesado. A continuación, te proporcionamos más detalles sobre esta situación:
+
+        p 
+          small
+            strong Detalles de la Transacción Rechazada:
+
+        .icon-info
+          img(src=iconsMails.date alt=iconsMails.date height="25vh")
+          div 
+            small.small-title Fecha y Hora
+            br
+            small 14 de Julio del 2024, 17:55h
+        .icon-info
+          img(src=iconsMails.location alt=iconsMails.location height="25vh")
+          div 
+            small.small-title Establecimiento
+            br
+            small Blank Street Coffee
+        .icon-info
+          img(src=iconsMails.currency alt=iconsMails.currency height="25vh")
+          div 
+            small.small-title Moneda
+            br
+            small #{vars.currency}
+        .icon-info
+          img(src=iconsMails.amount alt=iconsMails.amount height="25vh")
+          div 
+            small.small-title Monto
+            br
+            small #{vars.amountReload}
+        .icon-info
+          img(src=iconsMails.paymentMethod alt=iconsMails.paymentMethod height="25vh")
+          div 
+            small.small-title Método de Pago Utilizado
+            br
+            small xxxx xxxx 9898
+
+        div(style="padding: 1em 0em;")
+          hr
+
+        p
+          small Para evitar que este tipo de situaciones se repitan en el futuro, te recomendamos:
+
+        ol 
+          li
+            small Verificar el saldo de tu cuenta: Asegúrate de que cuentas con los fondos suficientes antes de realizar una compra.
+          li
+            small Actualizar la información de tu tarjeta: Si has cambiado de tarjeta o tu información ha caducado, actualiza los datos en tus métodos de pago.
+          li
+            small Revisar la información de la transacción: Asegúrate de que los detalles de la compra y el establecimiento sean correctos.
+          li
+            small Nuestra tesorería cripto garantiza que pequeñas fluctuaciones en la paridad uno a uno entre tu stablecoin y su contraparte fiat no afecten tu capacidad de pago. Por ello, establecemos un límite de gasto del 90% sobre los fondos totales disponibles en tu tarjeta.
+
+        p
+          small Si deseas más información o tienes alguna pregunta, no dudes en contactarnos.
+        p
+          small Ofrecemos disculpas por cualquier inconveniente causado por esta situación y estamos aquí para asistirte en lo que necesites. Tu satisfacción es nuestra prioridad, y queremos asegurarnos de que puedas disfrutar de una experiencia sin interrupciones en el futuro.
+
+      include ./partials/footer.pug

@@ -1,0 +1,61 @@
+- const iconsInfo = typeof icons === 'string' ? JSON.parse(icons) : icons
+- const iconsMails = typeof iconsEmail === 'string' ? JSON.parse(iconsEmail) : iconsEmail
+
+doctype html
+html(lang="es")
+  include ./partials/head.pug
+  body
+    .container
+      include ./partials/header.pug
+      .content
+        div(style="display: flex; justify-content: center; align-items: center; flex-direction: column;")
+          img(src=iconsInfo.info alt=iconsInfo.info)
+          p.title(style="margin-block-end: 0.5em; margin-block-start: 0.5em;") Información de tu deposito
+        p 
+          small Estimado/a #{vars.name},
+        p 
+          small Nos complace informarte que tu transferencia se ha realizado exitosamente. A continuación, encontrarás los detalles de la transacción:
+
+        p 
+          small
+            strong Detalles de la transferencia:
+
+        .icon-info
+          img(src=iconsMails.currency alt=iconsMails.currency height="25vh")
+          div 
+            small.small-title Moneda
+            br
+            small #{vars.currency}
+        .icon-info
+          img(src=iconsMails.withdraw alt=iconsMails.withdraw height="25vh")
+
+          div 
+            small.small-title Saldo transferido
+            br
+            small #{vars.amountReload}
+        .icon-info
+          img(src=iconsMails.date alt=iconsMails.date height="25vh")
+          div 
+            small.small-title Fecha y Hora
+            br
+            small 14 de Julio del 2024, 17:55h
+        .icon-info
+          img(src=iconsMails.hash alt=iconsMails.hash height="25vh")
+          div 
+            small.small-title Hash de la Transacción
+            br
+            small 02BF54U79
+        .icon-info
+          img(src=iconsMails.location alt=iconsMails.location height="25vh")
+          div 
+            small.small-title Dirección de destino
+            br
+            small 98NHF0NDR48
+
+        p
+          small Puedes verificar tu saldo y el historial completo de tus transacciones accediendo a tu wallet a través del siguiente boton.
+
+        div(style="display: flex; justify-content: center; align-items: center; gap: 0.5em;")
+          a.button(href="#" target="_blank" rel="noopener noreferrer") Verificar saldo
+
+      include ./partials/footer.pug
