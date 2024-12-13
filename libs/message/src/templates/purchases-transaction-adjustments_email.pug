@@ -1,0 +1,28 @@
+doctype html
+html(lang="es")
+  include ../partials/head.pug
+  body
+    .container
+      include ../partials/header.pug
+      .content
+        h2 Notificación de Ajuste de Transacción
+        p Estimado/a usuario,
+        p Se ha realizado un ajuste en una de tus transacciones recientes. A continuación, te proporcionamos los detalles:
+
+        ul
+          li ID de Usuario: #{vars.userId}
+          li ID de Transacción: #{vars.transactionId}
+          li Tipo de Transacción: #{vars.transactionType}
+          li Fecha de Transacción: #{vars.transactionDate}
+          li Comerciante: #{vars.merchantName}
+          li Categoría del Comerciante (MCC): #{vars.merchantMcc}
+          li Últimos 4 dígitos de la tarjeta: #{vars.cardLastFour}
+          li Tipo de Producto de Tarjeta: #{vars.cardProductType}
+          li Monto Local: #{vars.amountLocal} #{vars.currencyLocal}
+          li Monto de Liquidación: #{vars.amountSettlement} #{vars.currencySettlement}
+
+        p El ajuste se reflejará en tu próximo estado de cuenta. Si tienes alguna pregunta sobre este ajuste, por favor contáctanos inmediatamente.
+
+        p Gracias por tu comprensión y por ser cliente de nuestros servicios.
+
+      include ../partials/footer.pug

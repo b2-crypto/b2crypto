@@ -1,0 +1,63 @@
+doctype html
+html(lang="es")
+  include ../partials/head.pug
+  body
+    .container
+      include ../partials/header.pug
+      .content
+        p.title Bienvenido al Pre-Registro de B2pay
+        p
+          small Estimado/a #{vars.name},
+        p
+          small ¡Gracias por unirte al pre-registro de B2pay! Estamos emocionados de que formes parte de nuestra comunidad y queremos asegurarnos que tu acceso sea lo más sencillo y confiable posible.
+
+        p
+          small Para que puedas acceder a tu cuenta de B2pay, aquí te damos tu contraseña exclusivamente creada para ti:
+        p
+          small Contraseña: [#{vars.password}]
+        p
+          small Importante: Esta contraseña es provisional y podrás cambiarla en cualquier momento una vez que inicies sesión.
+
+        div(style="padding: 1em 0em;")
+          hr
+
+        p.title Pasos para acceder a la aplicación B2pay:
+
+        p
+          small Descarga la aplicación
+        ul
+          li 
+            small Si usas Android, encuéntrala en Google Play.
+          li
+            small Si tienes iPhone, descárgala desde la App Store.
+
+        p
+          small Accede a tu cuenta
+        ul
+          li 
+            small Usuario: Tu correo electrónico registrado: #{vars.user}
+          li
+            small Contraseña: Usa la contraseña que te proporcionamos.
+
+        p
+          small Si tienes algún problema o necesitas ayuda, no dudes en contactarnos a support@b2fintech.com.
+          br
+          small ¡Estamos aquí para asegurarnos de que disfrutes de la mejor experiencia!
+
+        p
+          strong boton de descarga de la app para ios y andoid
+        a(href="#" target="_blank" rel="noopener noreferrer")
+          img(src="https://message-templates-resource.s3.eu-west-3.amazonaws.com/social/instagram.png" alt="Download app icon")
+
+        p
+          small Gracias por confiar en B2pay.
+
+        div(style="padding: 1em 0em;")
+          hr
+
+        p.title Tutoriales para guiarte:
+
+        p
+          small Sabemos que cada detalle cuenta, por eso hemos preparado videos tutoriales que te acompañarán en cada paso:
+
+      include ../partials/footer.pug

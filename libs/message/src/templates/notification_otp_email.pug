@@ -1,0 +1,38 @@
+doctype html
+html(lang="es")
+  include ../partials/head.pug
+  body
+    .container
+      include ../partials/header.pug
+      .content
+        p.title Confirmación de registro
+        p
+          small Estimado/a #{vars.name},
+
+        p(style="margin-block-end: 0em; margin-block-start: 0em;")
+          small ¡Bienvenido/a a B2pay!
+        p(style="margin-block-end: 0em; margin-block-start: 0em;")
+          small Gracias por registrarte con nosotros. Para completar tu registro y activar tu cuenta, por favor verifica tu dirección de correo electrónico copiando y pegando el siguiente código en la casilla correspondiente.
+
+
+        table(width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top: 20px;")
+          tr
+            td(style="text-align: center;")
+              each digit in vars.otp.toString().split('')
+                span.otp-code #{digit}
+
+        p
+          small Si el código de verificación no funciona, puedes dar click al siguiente enlace para completar este proceso.
+
+        div.container-button
+          a.button(href="#" target="_blank" rel="noopener noreferrer") Enlace de verificación
+
+        p
+          small Gracias por confiar en B2pay.
+
+        hr
+
+        p
+          small Este enlace de verificación es válido por 3 días. Si no verificas tu correo electrónico en este periodo, será necesario iniciar el proceso de registro nuevamente. Si no te has registrado en B2pay y has recibido este correo por error, por favor ignóralo.
+
+      include ../partials/footer.pug
