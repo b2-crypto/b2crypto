@@ -5,34 +5,24 @@ html(lang="es")
     .container
       include ./partials/header.pug
       .content
-        p.title Confirmación de registro
-        p
-          small Estimado/a #{vars.name},
+        h2 Código de Verificación OTP
+        p Hola #{vars.name},
 
-        p(style="margin-block-end: 0em; margin-block-start: 0em;")
-          small ¡Bienvenido/a a B2pay!
-        p(style="margin-block-end: 0em; margin-block-start: 0em;")
-          small Gracias por registrarte con nosotros. Para completar tu registro y activar tu cuenta, por favor verifica tu dirección de correo electrónico copiando y pegando el siguiente código en la casilla correspondiente.
+        p Tu código OTP de b2crypto es:
 
-
-        table(width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top: 20px;")
+        table(width="100%", cellpadding="0", cellspacing="0", border="0", style="margin-top: 20px;")
           tr
             td(style="text-align: center;")
               each digit in vars.otp.toString().split('')
-                span.otp-code #{digit}
+                span(style="background-color: #1b1330; color: white; font-size: 25px; padding: 8px 12px; border-radius: 8px; margin: 0 5px; display: inline-block;") #{digit}
 
-        p
-          small Si el código de verificación no funciona, puedes dar click al siguiente enlace para completar este proceso.
+        p Este código es válido por un tiempo limitado. Por favor, úsalo pronto para completar tu verificación.
 
-        div.container-button
-          a.button(href="#" target="_blank" rel="noopener noreferrer") Enlace de verificación
+        p Si no has solicitado este código, por favor ignora este correo y contacta con nuestro equipo de soporte.
 
-        p
-          small Gracias por confiar en B2pay.
+        p Gracias por usar b2crypto para tus transacciones seguras.
 
-        hr
-
-        p
-          small Este enlace de verificación es válido por 3 días. Si no verificas tu correo electrónico en este periodo, será necesario iniciar el proceso de registro nuevamente. Si no te has registrado en B2pay y has recibido este correo por error, por favor ignóralo.
-
+        p Saludos cordiales,
+        p El equipo de b2crypto
+      
       include ./partials/footer.pug

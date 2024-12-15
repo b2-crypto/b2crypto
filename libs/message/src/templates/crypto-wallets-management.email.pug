@@ -5,35 +5,26 @@ html(lang="es")
     .container
       include ./partials/header.pug
       .content
-        p.title ¡Disfruta de tu nueva Wallet!
-        p
-          small Estimado/a #{vars.name},
-        p(style="margin-block-end: 0em; margin-block-start: 0em;")
-          small Nos complace informarte que tu wallet ha sido creada exitosamente en B2pay.
-        p(style="margin-block-end: 0em; margin-block-start: 0em;")
-          small Ahora puedes acceder a tu wallet y comenzar a gestionar tus activos digitales de manera ágil, segura y sencilla.
-
-        div.container-button
-          a.button(href="#" target="_blank" rel="noopener noreferrer") Acceder a mi wallet
-
-        p 
-          small
-            strong Funciones Principales de tu B2pay Wallet:
-
-        ol 
+        h2 Nuevo Wallet Creado
+        p Hola #{vars.name},
+        p Se ha creado un nuevo wallet en tu cuenta. Aquí están los detalles:
+        
+        ul
           li
-            small Maneja tus finanzas: Usa tus criptomonedas de forma segura con nuestra tecnología avanzada de encriptación.
+            strong Tipo de Cuenta: 
+            | #{vars.accountType}
           li
-            small Envio de dinero: Transfiere tus activos digitales a otras wallets de manera rápida y segura.
+            strong Nombre de la Cuenta: 
+            | #{vars.accountName}
           li
-            small Recibir dinero: Recibe activos digitales de cualquier parte del mundo con facilidad de forma inmediata.
+            strong ID de la Cuenta: 
+            | #{vars.accountId}
           li
-            small Historial de Transacciones: Revisa todas tus transacciones anteriores para mantener un registro claro y transparente.
+            strong Saldo Inicial: 
+            | #{vars.balance} #{vars.currency}
 
-        p 
-          small Te animamos a explorar todas las funciones que tu wallet tiene para ofrecerte y empezar a utilizar B2pay.
+        p Puedes acceder a tu nuevo wallet a través de nuestra plataforma. Si no reconoces esta actividad, por favor contáctanos inmediatamente.
 
-        p 
-          small ¡Esperamos que disfrutes de tu experiencia con nuestra wallet B2pay!
+        p Gracias por usar nuestros servicios.
 
       include ./partials/footer.pug

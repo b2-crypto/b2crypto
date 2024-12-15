@@ -5,64 +5,28 @@ html(lang="es")
     .container
       include ./partials/header.pug
       .content
-        p.title ¡Tu solicitud de tarjeta ha sido recibida!
-        p
-          small Estimado/a #{vars.name} #{vars.lastName},
-
-        small Gracias por solicitar tu tarjeta con nosotros. Queremos confirmarte que hemos recibido tu solicitud y te proporcionamos a continuación algunos detalles:
-
-        p 
-          small
-            strong Detalles de la solicitud:
+        h2 Confirmación de Solicitud de Tarjeta
+        p Estimado/a #{vars.name} #{vars.lastName},
+        p Tu solicitud de tarjeta ha sido recibida exitosamente. A continuación, te proporcionamos los detalles de tu solicitud:
+        
         ul
           li
-            small Tipo de Tarjeta: 
+            strong Tipo de Cuenta: 
             | #{vars.accountType}
           li
-            small Nombre del Titular: 
+            strong Tipo de Tarjeta: 
             | #{vars.cardType}
           li
-            small Dirección de Envío: 
+            strong ID de Cuenta: 
             | #{vars.accountId}
           li
-            small Estado de la Solicitud: 
+            strong Estado de la Solicitud: 
             | #{vars.status}
 
-        p 
-          small
-            strong Estado de solicitud:
-        p 
-          small En proceso: Estamos revisando tu solicitud y te mantendremos informado sobre su progreso.
+        p Procesaremos tu solicitud lo antes posible. Te mantendremos informado sobre cualquier actualización o si necesitamos información adicional.
 
-        p 
-          small
-            strong Entrega de la Tarjeta Física:
-        p 
-          small Si has solicitado una tarjeta física, estimamos que la recibirás en un plazo de 10 días hábiles.
+        p Si tienes alguna pregunta sobre tu solicitud, no dudes en contactarnos.
 
-        p
-          small Gracias por confiar en B2pay.
-
-        hr
-
-        p 
-          small
-            strong Activación de la Tarjeta:
-
-        p 
-          small Una vez que recibas tu tarjeta, sigue estos pasos para activarla:
-
-        ol 
-          li
-            small Inicia sesión en tu cuenta en nuestra plataforma.
-          li
-            small Navega a la sección de tarjetas y haz click en “Activar Tarjeta".
-          li
-            small Introduce un PIN personalizado.
-          li
-            small ¡Y listo! Tu tarjeta estará lista para ser utilizada.
-
-        div.container-button
-          a.button(href="#" target="_blank" rel="noopener noreferrer") Activar ahora
+        p Gracias por elegir nuestros servicios.
 
       include ./partials/footer.pug
