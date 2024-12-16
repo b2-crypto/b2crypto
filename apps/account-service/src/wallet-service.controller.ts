@@ -11,6 +11,7 @@ import { CommonService } from '@common/common';
 import { NoCache } from '@common/common/decorators/no-cache.decorator';
 import CountryCodeEnum from '@common/common/enums/country.code.b2crypto.enum';
 import CurrencyCodeB2cryptoEnum from '@common/common/enums/currency-code-b2crypto.enum';
+import { EnvironmentEnum } from '@common/common/enums/environment.enum';
 import { StatusCashierEnum } from '@common/common/enums/StatusCashierEnum';
 import TagEnum from '@common/common/enums/TagEnum';
 import { QuerySearchAnyDto } from '@common/common/models/query_search-any.dto';
@@ -45,8 +46,10 @@ import { ApiBearerAuth, ApiSecurity, ApiTags } from '@nestjs/swagger';
 import { TransferCreateDto } from '@transfer/transfer/dto/transfer.create.dto';
 import { OperationTransactionType } from '@transfer/transfer/enum/operation.transaction.type.enum';
 import EventsNamesCategoryEnum from 'apps/category-service/src/enum/events.names.category.enum';
+import EventsNamesCrmEnum from 'apps/crm-service/src/enum/events.names.crm.enum';
 import EventsNamesPspAccountEnum from 'apps/psp-service/src/enum/events.names.psp.acount.enum';
 import EventsNamesStatusEnum from 'apps/status-service/src/enum/events.names.status.enum';
+import { TransferCreateButtonDto } from 'apps/transfer-service/src/dto/transfer.create.button.dto';
 import EventsNamesTransferEnum from 'apps/transfer-service/src/enum/events.names.transfer.enum';
 import { UserServiceService } from 'apps/user-service/src/user-service.service';
 import { isMongoId } from 'class-validator';
@@ -55,9 +58,6 @@ import { AccountServiceController } from './account-service.controller';
 import { AccountServiceService } from './account-service.service';
 import EventsNamesAccountEnum from './enum/events.names.account.enum';
 import { WalletServiceService } from './wallet-service.service';
-import { TransferCreateButtonDto } from 'apps/transfer-service/src/dto/transfer.create.button.dto';
-import EventsNamesCrmEnum from 'apps/crm-service/src/enum/events.names.crm.enum';
-import { EnvironmentEnum } from '@common/common/enums/environment.enum';
 
 @ApiTags('E-WALLET')
 @Controller('wallets')
@@ -109,7 +109,7 @@ export class WalletServiceController extends AccountServiceController {
   @ApiSecurity('b2crypto-key')
   @Post('create')
   async createOne(@Body() createDto: WalletCreateDto, @Req() req?: any) {
-    createDto.brand = req.user.brand; 
+    createDto.brand = req.user.brand;
     console.log({ createDto });
     return this.walletServiceService.createWallet(createDto, req?.user?.id);
   }
@@ -599,7 +599,7 @@ export class WalletServiceController extends AccountServiceController {
   ) {
     const isProd =
       this.configService.get<string>('ENVIRONMENT') === EnvironmentEnum.prod;
-    const user= (
+    const user = (
       await this.userService.getAll({
         relations: ['personalData'],
         where: {
@@ -1061,5 +1061,4 @@ export class WalletServiceController extends AccountServiceController {
       }
     }
   }
- 
 }
