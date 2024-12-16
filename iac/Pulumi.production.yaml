@@ -77,13 +77,13 @@ config:
   b2crypto-iac:POMELO_WHITELISTED_IPS_CHECK: 'ON'
   b2crypto-iac:PORT: '80'
   b2crypto-iac:RABBIT_MQ_HOST:
-    secure: AAABAMJWC6b9b3WWPy54sHEsz6u8HrFFiQZlBI2kkBd+uWmM+ixq3c4lUqfXN1fFLfvlqL67qo1rlruTSztIfT/LQUmu+kILnti9a7kutdLKQ5sK2vPF1p+fb6fbhbrd1A==
+    secure: AAABAEWVGo1pgr/M7Ezm1kKEe9vmWsqngiKbbN+tXsN34saSo2theVDbTn77ES2CBIggOS9L58kOffeBCdv1T64aQgmvmINp1o9YqE3mHqNBvCqJq4fu3bo+GZw7S/62ag==
   b2crypto-iac:RABBIT_MQ_PASSWORD:
-    secure: AAABALTIx8eZcOtkYwP3pnKO1xOF+Ux4hzyi0r3WuX6ST3IUZ2Rb4eejsU2AFMHxtM1OjxReDgT/3dY00Wz4ig==
+    secure: AAABALhCuNiwh4kRSVD0tO20xhLOsa7WIQHKO6kbBm7q5k50ivNbbvZ0Pdt+KxtPL1sJf06iHXbqHxIRz6C5rA==
   b2crypto-iac:RABBIT_MQ_PORT: '5671'
   b2crypto-iac:RABBIT_MQ_QUEUE: PRODUCTION
   b2crypto-iac:RABBIT_MQ_USERNAME:
-    secure: AAABAGIGj69/dil8bbfRDBps3ia4CHGF+RYvHCA3XJ0ivppTzYmiC5c=
+    secure: AAABAFX2AFTSHXXEtydCEfKOWlPBwWMcwysf8RGEM5Ed8CdP8NwH/wg=
   b2crypto-iac:REDIS_HOST:
     secure: AAABAJC3fwjc1Qbg3Dg4YE+Q6f6ug5xYlD35NBwejtQCOxC0T3Q8qoxnFongMYxM5O5L+EPLppOEKArYU+klugdl65NP/yNae8oNkjcIYnOJ9/tl2Q==
   b2crypto-iac:REDIS_PASSWORD:
@@ -103,7 +103,7 @@ config:
   b2crypto-iac:LOGO_URL: https://message-templates-resource.s3.eu-west-3.amazonaws.com/logo/b2pay.png
   b2crypto-iac:SOCIAL_MEDIA_ICONS: '{"facebook":"https://message-templates-resource.s3.eu-west-3.amazonaws.com/social/facebook.png","instagram":"https://message-templates-resource.s3.eu-west-3.amazonaws.com/social/instagram.png","linkedin":"https://message-templates-resource.s3.eu-west-3.amazonaws.com/social/linkedin.png","youtube":"https://message-templates-resource.s3.eu-west-3.amazonaws.com/social/youtube.png"}'
   b2crypto-iac:SOCIAL_MEDIA_LINKS: '{"facebook":"https://www.facebook.com/share/qT7RXDDgRqKigRnn/?mibextid=LQQJ4d","linkedin":"https://www.linkedin.com/company/b2fintech/?viewAsMember=true","instagram":"https://www.instagram.com/b2fintech/","youtube":"https://www.youtube.com"}'
-  b2crypto-iac:DESIRED_COUNT_TASK: '1'
+  b2crypto-iac:DESIRED_COUNT_TASK: '3'
   b2crypto-iac:MAX_CAPACITY_AUTOSCALING: '10'
   b2crypto-iac:MIN_CAPACITY_AUTOSCALING: '3'
   b2crypto-iac:MQ_DEPLOYMENT_MODE: CLUSTER_MULTI_AZ
