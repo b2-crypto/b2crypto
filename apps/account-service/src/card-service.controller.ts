@@ -1155,137 +1155,110 @@ export class CardServiceController extends AccountServiceController {
       throw new BadRequestException('Need the personal data to continue');
     }
     if (createDto.amount < 10) {
-      throw new BadRequestException('The recharge not be 10 or less');
+      throw new BadRequestException('The recharge must be greater than 10');
     }
     if (!createDto.from) {
-      throw new BadRequestException('I need a wallet to recharge card');
+      throw new BadRequestException('I need a wallet or card to recharge from');
     }
     if (!createDto.to) {
       throw new BadRequestException('I need a card to recharge');
     }
-    const to = await this.getAccountService().findOneById(
-      createDto.to.toString(),
-    );
-    if (to.type != TypesAccountEnum.CARD) {
-      Logger.error(
-        'Type not same',
-        CardServiceController.name,
-        'Card.rechargeOne.card',
-      );
-      throw new BadRequestException('Card not found');
-    }
+  
+    const to = await this.getAccountService().findOneById(createDto.to.toString());
     if (!to) {
       throw new BadRequestException('Card is not valid');
     }
-    const from = await this.getAccountService().findOneById(
-      createDto.from.toString(),
-    );
-    if (from.type != TypesAccountEnum.WALLET) {
-      Logger.error(
-        'Type not same',
-        CardServiceController.name,
-        'Card.rechargeOne.wallet',
-      );
-      throw new BadRequestException('Wallet not found');
+    if (to.type !== TypesAccountEnum.CARD) {
+      Logger.error('Type not same', CardServiceController.name, 'Card.rechargeOne.card');
+      throw new BadRequestException('Destination must be a card');
     }
+  
+    const from = await this.getAccountService().findOneById(createDto.from.toString());
     if (!from) {
-      throw new BadRequestException('Wallet is not valid');
+      throw new BadRequestException('Source account not valid');
     }
     if (from.amount < createDto.amount) {
-      throw new BadRequestException('Wallet with enough balance');
+      throw new BadRequestException('Insufficient balance in source account');
     }
-    const depositCardCategory =
-      await this.cardBuilder.getPromiseCategoryEventClient(
-        EventsNamesCategoryEnum.findOneByNameType,
-        {
-          slug: 'deposit-card',
-          type: TagEnum.MONETARY_TRANSACTION_TYPE,
-        },
-      );
-    const withDrawalWalletCategory =
-      await this.cardBuilder.getPromiseCategoryEventClient(
-        EventsNamesCategoryEnum.findOneByNameType,
-        {
-          slug: 'withdrawal-wallet',
-          type: TagEnum.MONETARY_TRANSACTION_TYPE,
-        },
-      );
+  
+    const depositCardCategory = await this.cardBuilder.getPromiseCategoryEventClient(
+      EventsNamesCategoryEnum.findOneByNameType,
+      {
+        slug: 'deposit-card',
+        type: TagEnum.MONETARY_TRANSACTION_TYPE,
+      }
+    );
+  
+    const withdrawalCategory = await this.cardBuilder.getPromiseCategoryEventClient(
+      EventsNamesCategoryEnum.findOneByNameType,
+      {
+        slug: `withdrawal-${from.type?.toLowerCase()}`,
+        type: TagEnum.MONETARY_TRANSACTION_TYPE,
+      }
+    );
+  
     const approvedStatus = await this.cardBuilder.getPromiseStatusEventClient(
       EventsNamesStatusEnum.findOneByName,
-      'approved',
+      'approved'
     );
-    const internalPspAccount =
-      await this.cardBuilder.getPromisePspAccountEventClient(
-        EventsNamesPspAccountEnum.findOneByName,
-        'internal',
-      );
-    // Create
-    const result = Promise.all([
-      this.cardService.customUpdateOne({
-        id: createDto.to,
-        $inc: {
-          amount: createDto.amount,
-        },
-      }),
-      this.cardService.customUpdateOne({
-        id: createDto.from.toString(),
-        $inc: {
-          amount: createDto.amount * -1,
-        },
-      }),
-    ]).then((list) => list[0]);
-    this.cardBuilder.emitTransferEventClient(
-      EventsNamesTransferEnum.createOne,
-      {
-        name: `Recharge card ${to.name}`,
-        description: `Recharge from wallet ${from.name} to card ${to.name}`,
-        currency: to.currency,
-        amount: createDto.amount,
-        currencyCustodial: to.currencyCustodial,
-        amountCustodial: createDto.amount,
-        account: to._id,
-        userCreator: req?.user?.id,
-        userAccount: to.owner,
-        typeTransaction: depositCardCategory._id,
-        psp: internalPspAccount.psp,
-        pspAccount: internalPspAccount._id,
-        operationType: OperationTransactionType.deposit,
-        page: req.get('Host'),
-        statusPayment: StatusCashierEnum.APPROVED,
-        approve: true,
-        status: approvedStatus._id,
-        brand: to.brand,
-        crm: to.crm,
-        confirmedAt: new Date(),
-        approvedAt: new Date(),
-      } as unknown as TransferCreateDto,
+  
+    const internalPspAccount = await this.cardBuilder.getPromisePspAccountEventClient(
+      EventsNamesPspAccountEnum.findOneByName,
+      'internal'
     );
-    this.cardBuilder.emitTransferEventClient(
-      EventsNamesTransferEnum.createOne,
-      {
-        name: `Withdrawal wallet ${from.name}`,
-        description: `Recharge from wallet ${from.name} to card ${to.name}`,
-        currency: from.currency,
-        amount: createDto.amount,
-        currencyCustodial: from.currencyCustodial,
-        amountCustodial: createDto.amount,
-        account: from._id,
-        userCreator: req?.user?.id,
-        userAccount: from.owner,
-        typeTransaction: withDrawalWalletCategory._id,
-        psp: internalPspAccount.psp,
-        pspAccount: internalPspAccount._id,
-        operationType: OperationTransactionType.withdrawal,
-        page: req.get('Host'),
-        statusPayment: StatusCashierEnum.APPROVED,
-        approve: true,
-        status: approvedStatus._id,
-        brand: from.brand,
-        crm: from.crm,
-        confirmedAt: new Date(),
-        approvedAt: new Date(),
-      } as unknown as TransferCreateDto,
-    );
+  
+    this.cardBuilder.emitTransferEventClient(EventsNamesTransferEnum.createOne, {
+      name: `Deposit card ${to.name}`,
+      description: `Deposit from ${from.name} to ${to.name}`,
+      currency: to.currency,
+      amount: createDto.amount,
+      currencyCustodial: to.currencyCustodial,
+      amountCustodial: createDto.amount,
+      account: to._id,
+      userCreator: req?.user?.id,
+      userAccount: to.owner,
+      typeAccount: to.type,
+      typeAccountType: to.accountType,
+      typeTransaction: depositCardCategory._id,
+      psp: internalPspAccount.psp,
+      pspAccount: internalPspAccount._id,
+      operationType: OperationTransactionType.deposit,
+      page: req.get('Host'),
+      statusPayment: StatusCashierEnum.APPROVED,
+      isApprove: true,
+      status: approvedStatus._id,
+      brand: to.brand,
+      crm: to.crm,
+      confirmedAt: new Date(),
+      approvedAt: new Date(),
+    } as unknown as TransferCreateDto);
+  
+    this.cardBuilder.emitTransferEventClient(EventsNamesTransferEnum.createOne, {
+      name: `Withdrawal from ${from.name}`,
+      description: `Withdrawal from ${from.name} to ${to.name}`,
+      currency: from.currency,
+      amount: createDto.amount,
+      currencyCustodial: from.currencyCustodial,
+      amountCustodial: createDto.amount,
+      account: from._id,
+      userCreator: req?.user?.id,
+      userAccount: from.owner,
+      typeAccount: from.type,
+      typeAccountType: from.accountType,
+      typeTransaction: withdrawalCategory._id,
+      psp: internalPspAccount.psp,
+      pspAccount: internalPspAccount._id,
+      operationType: OperationTransactionType.withdrawal,
+      page: req.get('Host'),
+      statusPayment: StatusCashierEnum.APPROVED,
+      isApprove: true,
+      status: approvedStatus._id,
+      brand: from.brand,
+      crm: from.crm,
+      confirmedAt: new Date(),
+      approvedAt: new Date(),
+    } as unknown as TransferCreateDto);
+  
     from.amount = from.amount - createDto.amount;
     return from;
   }
