@@ -24,9 +24,7 @@ jobs:
           node-version: 20
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 9
+        run: corepack enable pnpm
 
       - name: Install dependencies
         run: pnpm install
@@ -71,9 +69,7 @@ jobs:
           node-version: 20
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 9
+        run: corepack enable pnpm
 
       - name: Install dependencies
         run: pnpm install
