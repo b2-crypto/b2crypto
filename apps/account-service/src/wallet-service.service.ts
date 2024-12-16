@@ -1,16 +1,24 @@
 import { WalletDepositCreateDto } from '@account/account/dto/wallet-deposit.create.dto';
 import { WalletCreateDto } from '@account/account/dto/wallet.create.dto';
+import { AccountDocument } from '@account/account/entities/mongoose/account.schema';
+import StatusAccountEnum from '@account/account/enum/status.account.enum';
 import TypesAccountEnum from '@account/account/enum/types.account.enum';
+import WalletTypesAccountEnum from '@account/account/enum/wallet.types.account.enum';
 import { BuildersService } from '@builder/builders';
 import { CommonService } from '@common/common';
+import CurrencyCodeB2cryptoEnum from '@common/common/enums/currency-code-b2crypto.enum';
 import { EnvironmentEnum } from '@common/common/enums/environment.enum';
 import { StatusCashierEnum } from '@common/common/enums/StatusCashierEnum';
 import TagEnum from '@common/common/enums/TagEnum';
+import { IntegrationService } from '@integration/integration';
+import IntegrationCryptoEnum from '@integration/integration/crypto/enums/IntegrationCryptoEnum';
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { TransferCreateDto } from '@transfer/transfer/dto/transfer.create.dto';
 import { OperationTransactionType } from '@transfer/transfer/enum/operation.transaction.type.enum';
 import { User } from '@user/user/entities/mongoose/user.schema';
 import EventsNamesCategoryEnum from 'apps/category-service/src/enum/events.names.category.enum';
+import EventsNamesCrmEnum from 'apps/crm-service/src/enum/events.names.crm.enum';
 import EventsNamesMessageEnum from 'apps/message-service/src/enum/events.names.message.enum';
 import EventsNamesPspAccountEnum from 'apps/psp-service/src/enum/events.names.psp.acount.enum';
 import EventsNamesStatusEnum from 'apps/status-service/src/enum/events.names.status.enum';
@@ -19,15 +27,6 @@ import EventsNamesTransferEnum from 'apps/transfer-service/src/enum/events.names
 import { UserServiceService } from 'apps/user-service/src/user-service.service';
 import { AccountServiceService } from './account-service.service';
 import EventsNamesAccountEnum from './enum/events.names.account.enum';
-import WalletTypesAccountEnum from '@account/account/enum/wallet.types.account.enum';
-import CurrencyCodeB2cryptoEnum from '@common/common/enums/currency-code-b2crypto.enum';
-import StatusAccountEnum from '@account/account/enum/status.account.enum';
-import { AccountDocument } from '@account/account/entities/mongoose/account.schema';
-import EventsNamesCrmEnum from 'apps/crm-service/src/enum/events.names.crm.enum';
-import IntegrationCryptoEnum from '@integration/integration/crypto/enums/IntegrationCryptoEnum';
-import { ConfigService } from '@nestjs/config';
-import { IntegrationService } from '@integration/integration';
-
 
 @Injectable()
 export class WalletServiceService {
@@ -47,16 +46,19 @@ export class WalletServiceService {
     createDto: WalletDepositCreateDto,
     userId: string,
     host: string,
-) {
-    const isProd = this.configService.get<string>('ENVIRONMENT') === EnvironmentEnum.prod;
+  ) {
+    const isProd =
+      this.configService.get<string>('ENVIRONMENT') === EnvironmentEnum.prod;
     const user = await this.validateAndGetUser(userId);
-    
+
     this.validateRechargeAmount(createDto.amount);
     const to = await this.validateAndGetToWallet(createDto.to.toString());
 
     if (createDto.from) {
-      const from = await this.validateAndGetFromWallet(createDto.from.toString());
-      
+      const from = await this.validateAndGetFromWallet(
+        createDto.from.toString(),
+      );
+
       if (isProd) {
         return this.handleFireblocksTransfer(createDto, from, to, user, host);
       } else {
@@ -69,8 +71,8 @@ export class WalletServiceService {
         return this.handleExternalDeposit(createDto, to, user, host);
       }
     }
-}
-  
+  }
+
   private async handleFireblocksTransfer(
     createDto: WalletDepositCreateDto,
     from: any,
@@ -124,7 +126,7 @@ export class WalletServiceService {
     const costTx = 5;
     const comisionTx = 0.03;
     const valueToPay = createDto.amount * comisionTx + costTx;
-    
+
     if (from.amount < createDto.amount + valueToPay) {
       throw new BadRequestException('Not enough balance');
     }
@@ -146,7 +148,7 @@ export class WalletServiceService {
       );
 
       await this.updateWalletBalances(from._id, to._id, createDto.amount);
-      
+
       await this.createTransferEvents(
         to,
         from,
@@ -169,9 +171,10 @@ export class WalletServiceService {
   }
 
   private handleFireblocksDeposit(to: any) {
-    const base = to.accountId.indexOf('ARB') >= 0 
-      ? 'https://arbscan.org/address/'
-      : 'https://tronscan.org/#/address/';
+    const base =
+      to.accountId.indexOf('ARB') >= 0
+        ? 'https://arbscan.org/address/'
+        : 'https://tronscan.org/#/address/';
 
     return {
       statusCode: 200,
@@ -184,10 +187,12 @@ export class WalletServiceService {
   }
 
   private async validateAndGetUser(userId: string) {
-    const user = (await this.userService.getAll({
-      relations: ['personalData'],
-      where: { _id: userId },
-    })).list[0];
+    const user = (
+      await this.userService.getAll({
+        relations: ['personalData'],
+        where: { _id: userId },
+      })
+    ).list[0];
 
     if (!user.personalData) {
       throw new BadRequestException('Need the personal data to continue');
@@ -217,7 +222,11 @@ export class WalletServiceService {
     return wallet;
   }
 
-  private async updateWalletBalances(fromId: string, toId: string, amount: number) {
+  private async updateWalletBalances(
+    fromId: string,
+    toId: string,
+    amount: number,
+  ) {
     await Promise.all([
       this.accountService.customUpdateOne({
         id: toId,
@@ -240,7 +249,7 @@ export class WalletServiceService {
     if (from.type != TypesAccountEnum.WALLET) {
       throw new BadRequestException('Wallet not found');
     }
-  
+
     const [
       depositWalletCategory,
       withDrawalWalletCategory,
@@ -270,7 +279,7 @@ export class WalletServiceService {
         'internal',
       ),
     ]);
-  
+
     const result = await Promise.all([
       this.accountService.customUpdateOne({
         id: createDto.to,
@@ -281,7 +290,7 @@ export class WalletServiceService {
         $inc: { amount: createDto.amount * -1 },
       }),
     ]).then((list) => list[0]);
-  
+
     this.createTransferEvents(
       to,
       from,
@@ -293,7 +302,7 @@ export class WalletServiceService {
       internalPspAccount,
       host,
     );
-  
+
     return result;
   }
 
@@ -406,8 +415,6 @@ export class WalletServiceService {
     );
   }
 
-  
-  
   private async getFireblocksType() {
     if (!this.cryptoType) {
       this.cryptoType = await this.integration.getCryptoIntegration(
@@ -432,15 +439,22 @@ export class WalletServiceService {
         },
       })
     ).list[0];
-    
+
     if (!walletBase) {
-      throw new BadRequestException(`The wallet ${nameWallet} is not available`);
+      throw new BadRequestException(
+        `The wallet ${nameWallet} is not available`,
+      );
     }
 
     return walletBase;
   }
 
-  private async getVaultUser(userId: string, fireblocksCrmId: string, walletBase: any, brandId: string) {
+  private async getVaultUser(
+    userId: string,
+    fireblocksCrmId: string,
+    walletBase: any,
+    brandId: string,
+  ) {
     const vaultUserList = await this.accountService.findAll({
       where: {
         name: `${userId}-vault`,
@@ -464,7 +478,10 @@ export class WalletServiceService {
         accountId: newVault.id,
         accountName: walletBase.accountName,
         showToOwner: false,
-        pin: CommonService.getNumberDigits(CommonService.randomIntNumber(9999), 4),
+        pin: CommonService.getNumberDigits(
+          CommonService.randomIntNumber(9999),
+          4,
+        ),
         responseCreation: newVault,
         type: TypesAccountEnum.WALLET,
         brand: brandId,
@@ -488,7 +505,7 @@ export class WalletServiceService {
           city: '',
           region: '',
           additional_info: '',
-          country: ''
+          country: '',
         },
         email: '',
         telephone: '',
@@ -506,7 +523,7 @@ export class WalletServiceService {
         currencyBlocked: CurrencyCodeB2cryptoEnum.USD,
         amountBlockedCustodial: 0,
         currencyBlockedCustodial: CurrencyCodeB2cryptoEnum.USD,
-        afgId: ''
+        afgId: '',
       });
     }
 
@@ -549,7 +566,9 @@ export class WalletServiceService {
       dtoWallet.showToOwner = true;
       dtoWallet.brand = brandId;
       dtoWallet.accountName = newWallet.address;
-      dtoWallet.pin = dtoWallet.pin ?? CommonService.getNumberDigits(CommonService.randomIntNumber(9999), 4);
+      dtoWallet.pin =
+        dtoWallet.pin ??
+        CommonService.getNumberDigits(CommonService.randomIntNumber(9999), 4);
       dtoWallet.accountType = WalletTypesAccountEnum.VAULT;
 
       walletUser = await this.accountService.createOne(dtoWallet);
@@ -568,8 +587,16 @@ export class WalletServiceService {
       IntegrationCryptoEnum.FIREBLOCKS,
     );
 
-    const walletBase = await this.getWalletBase(fireblocksCrm._id, createDto.name);
-    const vaultUser = await this.getVaultUser(user.id, fireblocksCrm._id, walletBase, createDto.brand);
+    const walletBase = await this.getWalletBase(
+      fireblocksCrm._id,
+      createDto.name,
+    );
+    const vaultUser = await this.getVaultUser(
+      user.id,
+      fireblocksCrm._id,
+      walletBase,
+      createDto.brand,
+    );
 
     createDto.type = TypesAccountEnum.WALLET;
     createDto.accountName = walletBase.accountName;
@@ -578,13 +605,21 @@ export class WalletServiceService {
     createDto.crm = fireblocksCrm;
     createDto.owner = user.id ?? user._id;
 
-    const createdWallet = await this.getWalletUser(createDto, user.id, fireblocksCrm._id, vaultUser);
+    const createdWallet = await this.getWalletUser(
+      createDto,
+      user.id,
+      fireblocksCrm._id,
+      vaultUser,
+    );
     await this.sendNotification(createdWallet, user);
 
     return createdWallet;
   }
 
-  async createWallet(createDto: WalletCreateDto, userId?: string): Promise<any> {
+  async createWallet(
+    createDto: WalletCreateDto,
+    userId?: string,
+  ): Promise<any> {
     userId = userId ?? createDto.owner;
     if (!userId) {
       throw new BadRequestException('Need the user id to continue');
@@ -598,14 +633,18 @@ export class WalletServiceService {
       case WalletTypesAccountEnum.VAULT:
         return this.createWalletFireblocks(createDto, user);
       default:
-        throw new BadRequestException(`The accountType ${createDto.accountType} is not valid`);
+        throw new BadRequestException(
+          `The accountType ${createDto.accountType} is not valid`,
+        );
     }
   }
   private async getUser(userId: string) {
-    const user = (await this.userService.getAll({
-      relations: ['personalData'],
-      where: { _id: userId },
-    })).list[0];
+    const user = (
+      await this.userService.getAll({
+        relations: ['personalData'],
+        where: { _id: userId },
+      })
+    ).list[0];
 
     if (!user.personalData) {
       throw new BadRequestException('Need the personal data to continue');
@@ -639,7 +678,9 @@ export class WalletServiceService {
     createDto.accountName = 'CoxSQtiWAHVo';
     createDto.accountPassword = 'w7XDOfgfudBvRG';
     createDto.owner = user.id ?? user._id;
-    createDto.pin = createDto.pin ?? CommonService.getNumberDigits(CommonService.randomIntNumber(9999), 4);
+    createDto.pin =
+      createDto.pin ??
+      CommonService.getNumberDigits(CommonService.randomIntNumber(9999), 4);
     createDto.currency = CurrencyCodeB2cryptoEnum.USDT;
     createDto.currencyCustodial = CurrencyCodeB2cryptoEnum.USDT;
 
@@ -675,10 +716,11 @@ export class WalletServiceService {
     );
 
     if (this.configService.get('ENVIRONMENT') === EnvironmentEnum.prod) {
-      const depositLink = await this.ewalletBuilder.getPromiseTransferEventClient(
-        EventsNamesTransferEnum.createOneDepositLink,
-        transferBtn,
-      );
+      const depositLink =
+        await this.ewalletBuilder.getPromiseTransferEventClient(
+          EventsNamesTransferEnum.createOneDepositLink,
+          transferBtn,
+        );
 
       await this.ewalletBuilder.emitAccountEventClient(
         EventsNamesAccountEnum.updateOne,
@@ -692,19 +734,26 @@ export class WalletServiceService {
     return createdWallet;
   }
 
-  private async getWalletUser(createDto: WalletCreateDto, userId: string, fireblocksCrmId: string, vaultUser: any) {
+  private async getWalletUser(
+    createDto: WalletCreateDto,
+    userId: string,
+    fireblocksCrmId: string,
+    vaultUser: any,
+  ) {
     const walletName = `${createDto.name}-${userId}`;
-    let walletUser = (await this.accountService.findAll({
-      where: {
-        name: walletName,
-        owner: userId,
-        accountType: WalletTypesAccountEnum.VAULT,
-        crm: fireblocksCrmId,
-        showToOwner: true,
-        brand: createDto.brand,
-        referral: vaultUser.id,
-      },
-    })).list[0];
+    let walletUser = (
+      await this.accountService.findAll({
+        where: {
+          name: walletName,
+          owner: userId,
+          accountType: WalletTypesAccountEnum.VAULT,
+          crm: fireblocksCrmId,
+          showToOwner: true,
+          brand: createDto.brand,
+          referral: vaultUser.id,
+        },
+      })
+    ).list[0];
 
     if (!walletUser) {
       const cryptoType = await this.getFireblocksType();
@@ -720,7 +769,9 @@ export class WalletServiceService {
       createDto.responseCreation = newWallet;
       createDto.showToOwner = true;
       createDto.accountName = newWallet.address;
-      createDto.pin = createDto.pin ?? CommonService.getNumberDigits(CommonService.randomIntNumber(9999), 4);
+      createDto.pin =
+        createDto.pin ??
+        CommonService.getNumberDigits(CommonService.randomIntNumber(9999), 4);
       createDto.accountType = WalletTypesAccountEnum.VAULT;
 
       walletUser = await this.accountService.createOne(createDto);
@@ -728,5 +779,4 @@ export class WalletServiceService {
 
     return walletUser;
   }
-
 }
