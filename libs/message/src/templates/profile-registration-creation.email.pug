@@ -3,45 +3,39 @@ html(lang="es")
   include ./partials/head.pug
   body
     .container
-      include ./partials/header.pug
+      .header
+        include ./partials/header.pug
       .content
-        p.title ¡Bienvenido a B2pay!
-        p
-          small Estimado/a #{vars.name},
-        p
-          small Nos complace informarte que tu perfil ha sido creado exitosamente. Ahora puedes acceder a tu cuenta y comenzar a disfrutar de todas las ventajas que ofrecemos.
-
-        div.container-button
-          a.button(href="#" target="_blank" rel="noopener noreferrer") Acceder a mi perfil
-
-        p
-          small Te animamos a personalizar tu perfil para reflejar tu identidad y preferencias. Esto te permitirá sacar el máximo provecho de nuestra plataforma y asegurarte de que recibes una experiencia personalizada.
-
-        div(style="padding: 1em 0em;")
-          hr
-
-        p.title Conoce tu nueva plataforma
-
-        p 
-          small
-            strong Funciones principales de B2pay:
-
+        h2 Bienvenido a nuestra plataforma
+        p Hola #{vars.name},
+        p Tu cuenta ha sido creada exitosamente. A continuación, te proporcionamos los detalles de tu cuenta:
+        
+        ul
+          li
+            strong Nombre de usuario: 
+            | #{vars.username}
+          li
+            strong Correo electrónico: 
+            | #{vars.email}
+          li
+            strong Tipo de cuenta: 
+            | #{vars.accountType}
+          li
+            strong Estado de la cuenta: 
+            | #{vars.accountStatus}
+        
+        p Para comenzar a usar tu cuenta, por favor sigue estos pasos:
+        
         ol
-          li
-            small Tarjeta disponible: Accede a una tarjeta física o virtual para tus transacciones diarias.
-          li
-            small Recarga de wallet: Recarga tu billetera digital de forma sencilla y sin complicaciones.
-          li
-            small Pagos globales: Realiza pagos de manera rápida y segura en cualquier parte del mundo.
-          li
-            small Maneja tus finanzas: Accede a un historial personalizado de todos tus movimientos financieros.
-
-        br
-
-        p 
-          small No esperes más y comienza a explorar todas las posibilidades que B2pay tiene para ofrecerte. Estamos aquí para ayudarte en cada paso del camino.
-
-        p
-          small Gracias por confiar en B2pay.
-
-      include ./partials/footer.pug
+          li Inicia sesión con tu correo electrónico y contraseña.
+          li Completa tu perfil con toda la información necesaria.
+          li Explora las funcionalidades de nuestra plataforma.
+        
+        //- p Si tienes alguna pregunta o necesitas asistencia, no dudes en contactar a nuestro equipo de soporte.
+        
+        //- a.button(href="#") Enlace de verificación
+        
+        p ¡Gracias por unirte a nosotros!
+      
+      .footer
+        p © 2024 B2fintech. Todos los derechos reservados.
