@@ -79,11 +79,11 @@ config:
   b2crypto-iac:RABBIT_MQ_HOST:
     secure: AAABAMJWC6b9b3WWPy54sHEsz6u8HrFFiQZlBI2kkBd+uWmM+ixq3c4lUqfXN1fFLfvlqL67qo1rlruTSztIfT/LQUmu+kILnti9a7kutdLKQ5sK2vPF1p+fb6fbhbrd1A==
   b2crypto-iac:RABBIT_MQ_PASSWORD:
-    secure: AAABADB2THwbir5LDc71ET3UGw5MG4R+jygXwMYdH8Q0DO8vj88KByy5a7U9Pqk9Em35MpOMD9g3bSbQYyyRjg==
+    secure: AAABALTIx8eZcOtkYwP3pnKO1xOF+Ux4hzyi0r3WuX6ST3IUZ2Rb4eejsU2AFMHxtM1OjxReDgT/3dY00Wz4ig==
   b2crypto-iac:RABBIT_MQ_PORT: '5671'
   b2crypto-iac:RABBIT_MQ_QUEUE: PRODUCTION
   b2crypto-iac:RABBIT_MQ_USERNAME:
-    secure: AAABAObgJiSTmRXMPIo/Sr0zEGhcrIgHpZFb7I83ifQcvD+3Gks3Vuk=
+    secure: AAABAGIGj69/dil8bbfRDBps3ia4CHGF+RYvHCA3XJ0ivppTzYmiC5c=
   b2crypto-iac:REDIS_HOST:
     secure: AAABAJC3fwjc1Qbg3Dg4YE+Q6f6ug5xYlD35NBwejtQCOxC0T3Q8qoxnFongMYxM5O5L+EPLppOEKArYU+klugdl65NP/yNae8oNkjcIYnOJ9/tl2Q==
   b2crypto-iac:REDIS_PASSWORD:
