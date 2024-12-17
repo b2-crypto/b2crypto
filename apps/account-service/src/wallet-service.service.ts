@@ -620,12 +620,12 @@ export class WalletServiceService {
     createDto: WalletCreateDto,
     userId?: string,
   ): Promise<any> {
-    userId = userId ?? createDto.owner;
-    if (!userId) {
+    const _userId = userId ?? createDto.owner;
+    if (!_userId) {
       throw new BadRequestException('Need the user id to continue');
     }
 
-    const user = await this.getUser(userId);
+    const user = await this.getUser(_userId);
 
     switch (createDto.accountType) {
       case WalletTypesAccountEnum.EWALLET:

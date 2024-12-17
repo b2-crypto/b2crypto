@@ -1,3 +1,5 @@
+import { AccountUpdateDto } from '@account/account/dto/account.update.dto';
+import { AccountInterface } from '@account/account/entities/account.interface';
 import { AccountDocument } from '@account/account/entities/mongoose/account.schema';
 import { AffiliateDocument } from '@affiliate/affiliate/infrastructure/mongoose/affiliate.schema';
 import { BuildersService } from '@builder/builders';
@@ -33,7 +35,6 @@ import {
 } from '@psp-account/psp-account/entities/mongoose/psp-account.schema';
 import { PspAccountInterface } from '@psp-account/psp-account/entities/psp-account.interface';
 import { PspInterface } from '@psp/psp/entities/psp.interface';
-import { StatsDateCreateDto } from '../../../libs/stats/src/dto/stats.date.create.dto';
 import { StatusDocument } from '@status/status/entities/mongoose/status.schema';
 import { StatusInterface } from '@status/status/entities/status.interface';
 import { TransferServiceMongooseService } from '@transfer/transfer';
@@ -47,28 +48,27 @@ import { OperationTransactionType } from '@transfer/transfer/enum/operation.tran
 import { AccountServiceService } from 'apps/account-service/src/account-service.service';
 import EventsNamesAffiliateEnum from 'apps/affiliate-service/src/enum/events.names.affiliate.enum';
 import EventsNamesBrandEnum from 'apps/brand-service/src/enum/events.names.brand.enum';
+import { CategoryServiceService } from 'apps/category-service/src/category-service.service';
 import EventsNamesCategoryEnum from 'apps/category-service/src/enum/events.names.category.enum';
 import EventsNamesCrmEnum from 'apps/crm-service/src/enum/events.names.crm.enum';
 import EventsNamesLeadEnum from 'apps/lead-service/src/enum/events.names.lead.enum';
 import EventsNamesPersonEnum from 'apps/person-service/src/enum/events.names.person.enum';
 import EventsNamesPspAccountEnum from 'apps/psp-service/src/enum/events.names.psp.acount.enum';
 import EventsNamesPspEnum from 'apps/psp-service/src/enum/events.names.psp.enum';
+import { PspAccountServiceService } from 'apps/psp-service/src/psp.account.service.service';
 import EventsNamesStatsEnum from 'apps/stats-service/src/enum/events.names.stats.enum';
 import EventsNamesStatusEnum from 'apps/status-service/src/enum/events.names.status.enum';
+import { StatusServiceService } from 'apps/status-service/src/status-service.service';
+import EventsNamesUserEnum from 'apps/user-service/src/enum/events.names.user.enum';
 import { isArray, isMongoId } from 'class-validator';
 import { BrandInterface } from 'libs/brand/src/entities/brand.interface';
 import { ObjectId } from 'mongodb';
+import { StatsDateCreateDto } from '../../../libs/stats/src/dto/stats.date.create.dto';
 import { ApproveOrRejectDepositDto } from '../../../libs/transfer/src/dto/approve.or.reject.deposit.dto';
-import { TransferLeadStatsDto } from './dto/transfer.lead.stat.dto';
-import EventsNamesTransferEnum from './enum/events.names.transfer.enum';
-import { AccountInterface } from '@account/account/entities/account.interface';
-import { AccountUpdateDto } from '@account/account/dto/account.update.dto';
-import { CategoryServiceService } from 'apps/category-service/src/category-service.service';
-import { PspAccountServiceService } from 'apps/psp-service/src/psp.account.service.service';
-import { StatusServiceService } from 'apps/status-service/src/status-service.service';
-import { BoldStatusEnum } from './enum/bold.status.enum';
 import { BoldTransferRequestDto } from './dto/bold.transfer.request.dto';
-import EventsNamesUserEnum from 'apps/user-service/src/enum/events.names.user.enum';
+import { TransferLeadStatsDto } from './dto/transfer.lead.stat.dto';
+import { BoldStatusEnum } from './enum/bold.status.enum';
+import EventsNamesTransferEnum from './enum/events.names.transfer.enum';
 
 @Injectable()
 export class TransferServiceService
@@ -165,7 +165,8 @@ export class TransferServiceService
     return this.lib.findOne(id);
   }
 
-  async handleBoldWebhook(transferBold: BoldTransferRequestDto) {//migrado desde controller
+  async handleBoldWebhook(transferBold: BoldTransferRequestDto) {
+    //migrado desde controller
     if (
       !transferBold.link_id ||
       !transferBold.payment_status ||
@@ -570,7 +571,7 @@ export class TransferServiceService
       ) {
         amount *= -1;
       }
-    /*   accountToUpdate.amount += transferSaved.amount * multiply; */  // TODO[Nestor] multiply no aparece
+      /*   accountToUpdate.amount += transferSaved.amount * multiply; */ // TODO[Nestor] multiply no aparece
     }
     transferSaved.accountResultBalance = accountToUpdate.amount;
     const accountUpdated = await this.accountService.updateOne(accountToUpdate);
@@ -872,7 +873,8 @@ export class TransferServiceService
   }
 
   async updateTransfer(transfer: TransferUpdateDto) {
-    const rta = await this.lib.update(transfer.id, transfer);
+    console.log('updateTransfer =>', transfer);
+    const rta = await this.lib.update(transfer.id ?? transfer['_id'], transfer);
     if (transfer.approvedAt || transfer.isApprove) {
       this.updateAccount(
         rta.account as unknown as AccountInterface,
@@ -1506,5 +1508,4 @@ export class TransferServiceService
     const statDate = new StatsDateCreateDto();
     Logger.debug('checkStatsPspAccount', `${TransferServiceService.name}:902`);
   }
-  
 }
