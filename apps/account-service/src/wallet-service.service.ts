@@ -427,11 +427,11 @@ export class WalletServiceService {
 
   private async payByServicesFromWallet(
     walletFrom: AccountEntity,
-    walletTo: AccountEntity, 
+    walletTo: AccountEntity,
     amount: number,
     creatorId: string,
     paymentResponse: any,
-  ): Promise<AccountDocument> {
+  ): Promise<boolean> {  
     const [
       paymentWalletCategory,
       purchaseWalletCategory,
@@ -516,7 +516,7 @@ export class WalletServiceService {
       } as unknown as TransferCreateDto,
     );
   
-    return walletFrom as unknown as AccountDocument;
+    return true; 
   }
   
   private async getWalletBrand(
@@ -921,17 +921,16 @@ export class WalletServiceService {
         },
       };
     }
-  
     const transferBtn: TransferCreateButtonDto = {
       amount: createDto.amount.toString(),
       currency: 'USDT',
       account: to._id.toString(),
-      creator: user.id.toString(), 
+      creator: (user.id || user._id).toString(),
       details: 'Recharge in wallet',
       customer_name: user.name,
       customer_email: user.email,
       public_key: null,
-      identifier: user._id.toString(), 
+      identifier: user._id.toString(),
     };
   
     try {
@@ -1316,3 +1315,4 @@ export class WalletServiceService {
     return walletUser;
   }
 }
+
