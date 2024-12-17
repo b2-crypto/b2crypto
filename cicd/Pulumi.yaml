@@ -1,0 +1,10 @@
+name: b2crypto-cicd
+runtime:
+  name: nodejs
+  options:
+    packagemanager: npm
+description: b2crypto cicd
+config:
+  pulumi:tags:
+    value:
+      pulumi:template: aws-typescript

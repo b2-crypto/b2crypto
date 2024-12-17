@@ -1093,13 +1093,15 @@ export class TransferServiceController implements GenericServiceController {
   }
 
   private async getDepositLinkCategory() {
-    return this.builder.getPromiseCategoryEventClient(
+    const category = await this.builder.getPromiseCategoryEventClient(
       EventsNamesCategoryEnum.findOneByNameType,
       {
         slug: 'deposit-link',
         type: TagEnum.MONETARY_TRANSACTION_TYPE,
       },
     );
+
+    return category;
   }
 
   private async filterFromUserPermissions(
