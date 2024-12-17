@@ -42,11 +42,7 @@ export class TransferServiceMongooseService extends BasicServiceModel<
     const transfer = await this.getTransferData(id);
     transfer.searchText = this.getSearchText(transfer);
 
-    return this.update(id, transfer);
-
-    // return await super.update(id, {
-    //   id: transfer.id,
-    // });
+    return await super.update(id, transfer);
   }
 
   async getTransferData(id: string): Promise<Transfer> {
