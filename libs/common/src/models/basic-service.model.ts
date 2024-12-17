@@ -268,13 +268,13 @@ export class BasicServiceModel<
     id: string | ObjectId | ({ _id: ObjectId } & Record<string, any>),
   ): Promise<TBasicEntity> {
     try {
-      const mongoId = id?.['_id'] || id;
+      const mongoId = (isObjectIdOrHexString(id) ? id : id?.['_id']) as
+        | string
+        | ObjectId
+        | undefined;
 
-      if (!isObjectIdOrHexString(mongoId)) {
-        Logger.error(
-          mongoId,
-          'Id is not mongoDb id in BasicServiceModel.findOne',
-        );
+      if (!mongoId) {
+        Logger.error(id, 'Id is not mongoDb id in BasicServiceModel.findOne');
         // throw new BadRequestException('Id is not valid');
       }
 
@@ -282,6 +282,7 @@ export class BasicServiceModel<
         ? await this.model.findOne({ _id: mongoId })
         : await this.model.findOne({ id: mongoId });
     } catch (err) {
+      console.log(err);
       Logger.error(
         `${id}`,
         `${BasicServiceModel.name}-findOne.id-${this.model.name}`,
