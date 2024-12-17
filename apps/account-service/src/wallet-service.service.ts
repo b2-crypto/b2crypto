@@ -902,30 +902,45 @@ export class WalletServiceService {
 
   private async handleExternalDeposit(
     createDto: WalletDepositCreateDto,
-    to: any,
+    to: AccountEntity,
     user: User,
     host: string,
   ) {
+    if (to.crm) {
+      const address = to.accountName;
+      let base = 'https://tronscan.org/#/address/';
+      if (to.accountId.indexOf('ARB') >= 0) {
+        base = 'https://arbscan.org/address/';
+      }
+      return {
+        statusCode: 200,
+        data: {
+          url: `${base}${address}`,
+          address,
+          chain: to.nativeAccountName,
+        },
+      };
+    }
+  
     const transferBtn: TransferCreateButtonDto = {
       amount: createDto.amount.toString(),
-      currency: 'USD',
+      currency: 'USDT',
       account: to._id.toString(),
-      creator: user.id.toString(),
+      creator: user.id.toString(), 
       details: 'Recharge in wallet',
       customer_name: user.name,
       customer_email: user.email,
       public_key: null,
-      identifier: user._id.toString(),
+      identifier: user._id.toString(), 
     };
-
+  
     try {
       let depositAddress = to.responseCreation;
       if (!depositAddress) {
-        depositAddress =
-          await this.ewalletBuilder.getPromiseTransferEventClient(
-            EventsNamesTransferEnum.createOneDepositLink,
-            transferBtn,
-          );
+        depositAddress = await this.ewalletBuilder.getPromiseTransferEventClient(
+          EventsNamesTransferEnum.createOneDepositLink,
+          transferBtn,
+        );
         this.ewalletBuilder.emitAccountEventClient(
           EventsNamesAccountEnum.updateOne,
           {
@@ -934,15 +949,13 @@ export class WalletServiceService {
           },
         );
       }
-
-      const url = `https://${host}/transfers/deposit/page/${depositAddress?._id}`;
-      const data = depositAddress.responseAccount.data;
+      const data = depositAddress?.responseAccount?.data;
       return {
         statusCode: 200,
         data: {
           txId: depositAddress?._id,
           url: `https://tronscan.org/#/address/${data?.attributes?.address}`,
-          address: data?.attributes?.address,
+          address: data?.attributes?.address ?? to.accountName,
           chain: 'TRON BLOCKCHAIN',
         },
       };
