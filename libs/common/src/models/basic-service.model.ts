@@ -61,8 +61,9 @@ export class BasicServiceModel<
     if (!!createAnyDto['name'] && !createAnyDto['slug']) {
       createAnyDto['slug'] = CommonService.getSlug(createAnyDto['name']);
     }
-    const rta = await this.createMany([createAnyDto], session);
-    return rta[0];
+    console.log('createAnyDto =>', createAnyDto);
+    const [rta] = await this.createMany([createAnyDto], session);
+    return rta;
   }
 
   async createMany(
@@ -71,19 +72,20 @@ export class BasicServiceModel<
   ): Promise<TBasicEntity[]> {
     if (this.nameOrm === dbIntegrationEnum.MONGOOSE) {
       try {
-        createAnyDto = createAnyDto.map((dto) => {
+        const createDto = createAnyDto.map((dto) => {
           if (!dto['searchText']) {
             dto['searchText'] = this.getSearchText(dto);
           }
           return dto;
         });
-        return this.model.create(createAnyDto, { session });
+
+        return this.model.create(createDto, session);
       } catch (err) {
         Logger.error(err, 'CreateMany');
         throw new BadRequestException(err);
       }
     }
-    return this.model.save(createAnyDto, { session });
+    return this.model.save(createAnyDto, session);
   }
 
   async findAll(

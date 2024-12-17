@@ -25,8 +25,8 @@ export class TransferCreateButtonDto {
   success_url?: string;
 
   @IsString()
-  @IsNotEmpty()
-  public_key: string;
+  @IsOptional()
+  public_key?: string;
 
   @IsString()
   @IsOptional()
