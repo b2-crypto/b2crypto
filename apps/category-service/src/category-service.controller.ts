@@ -435,7 +435,6 @@ export class CategoryServiceController implements GenericServiceController {
   @MessagePattern(EventsNamesCategoryEnum.findOneByNameType)
   async findOneByNameEvent(
     @Payload() categoryDto: CategoryQueryEventsDto,
-    // @Payload() categoryDto: any,
     @Ctx() ctx: RmqContext,
   ): Promise<CategoryDocument> {
     CommonService.ack(ctx);
