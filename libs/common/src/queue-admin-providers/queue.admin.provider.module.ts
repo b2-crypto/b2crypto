@@ -47,7 +47,7 @@ export class QueueAdminModule {
   static async getClientProvider(
     configService: ConfigService,
     queueName = null,
-    noAck = true,
+    noAck = false,
   ): Promise<ClientProvider> {
     queueName = null;
     const host = configService.get<string>('RABBIT_MQ_HOST');
