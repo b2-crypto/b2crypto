@@ -1,14 +1,12 @@
-import { isEmpty, isString } from 'class-validator';
 import { DynamicModule, Module } from '@nestjs/common';
-import { QueueAdminService } from './queue.admin.provider.service';
+import { ConfigService } from '@nestjs/config';
 import {
   ClientProvider,
   ClientProxyFactory,
   ClientsModule,
   Transport,
 } from '@nestjs/microservices';
-import { ConfigService } from '@nestjs/config';
-import { CommonService } from '../common.service';
+import { QueueAdminService } from './queue.admin.provider.service';
 //let portsMap = {};
 @Module({
   providers: [QueueAdminService],
@@ -49,7 +47,7 @@ export class QueueAdminModule {
   static async getClientProvider(
     configService: ConfigService,
     queueName = null,
-    noAck = false,
+    noAck = true,
   ): Promise<ClientProvider> {
     queueName = null;
     const host = configService.get<string>('RABBIT_MQ_HOST');
