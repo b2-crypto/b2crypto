@@ -15,11 +15,13 @@ import { ApiHeader, ApiResponse, ApiSecurity, ApiTags } from '@nestjs/swagger';
 import { AllowAnon } from '@auth/auth/decorators/allow-anon.decorator';
 import { ApiKeyCheck } from '@auth/auth/decorators/api-key-check.decorator';
 import { ApiKeyAffiliateAuthGuard } from '@auth/auth/guards/api.key.affiliate.guard';
+import { ApiKeyAuthGuard } from '@auth/auth/guards/api.key.guard';
 import { CategoryCreateDto } from '@category/category/dto/category.create.dto';
 import { CategoryUpdateDto } from '@category/category/dto/category.update.dto';
 import { CategoryEntity } from '@category/category/entities/category.entity';
 import { CategoryDocument } from '@category/category/entities/mongoose/category.schema';
 import { CommonService } from '@common/common';
+import { NoCache } from '@common/common/decorators/no-cache.decorator';
 import TagEnum from '@common/common/enums/TagEnum';
 import GenericServiceController from '@common/common/interfaces/controller.generic.interface';
 import { ResponsePaginator } from '@common/common/interfaces/response-pagination.interface';
@@ -32,14 +34,12 @@ import {
   RmqContext,
 } from '@nestjs/microservices';
 import ResponseB2Crypto from '@response-b2crypto/response-b2crypto/models/ResponseB2Crypto';
+import { SwaggerSteakeyConfigEnum } from 'libs/config/enum/swagger.stakey.config.enum';
 import { CategoryServiceService } from './category-service.service';
 import { CategoryQueryEventsDto } from './dto/category.query.events.dto';
 import { CategoryResponseDto } from './dto/category.response.dto';
 import { PspAccountResponseDto } from './dto/psp.account.response.dto';
 import EventsNamesCategoryEnum from './enum/events.names.category.enum';
-import { ApiKeyAuthGuard } from '@auth/auth/guards/api.key.guard';
-import { SwaggerSteakeyConfigEnum } from 'libs/config/enum/swagger.stakey.config.enum';
-import { NoCache } from '@common/common/decorators/no-cache.decorator';
 
 @ApiTags('CATEGORY')
 @Controller('category')
@@ -435,6 +435,7 @@ export class CategoryServiceController implements GenericServiceController {
   @MessagePattern(EventsNamesCategoryEnum.findOneByNameType)
   async findOneByNameEvent(
     @Payload() categoryDto: CategoryQueryEventsDto,
+    // @Payload() categoryDto: any,
     @Ctx() ctx: RmqContext,
   ): Promise<CategoryDocument> {
     CommonService.ack(ctx);
