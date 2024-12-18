@@ -1137,12 +1137,14 @@ export class WalletServiceController extends AccountServiceController {
         //const url = `${req.protocol}://${host}/transfers/deposit/page/${transfer?._id}`;
         const url = `https://${host}/transfers/deposit/page/${depositAddress?._id}`;
         const data = depositAddress?.responseAccount?.data;
+        const address = data?.attributes?.address ?? to.accountName;
+        console.log('depositAddress =>', depositAddress);
         return {
           statusCode: 200,
           data: {
             txId: depositAddress?._id,
-            url: `https://tronscan.org/#/address/${data?.attributes?.address}`,
-            address: data?.attributes?.address ?? to.accountName,
+            url: `https://tronscan.org/#/address/${address}`,
+            address,
             chain: 'TRON BLOCKCHAIN',
           },
         };
