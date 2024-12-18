@@ -1,11 +1,7 @@
-import * as awsx from '@pulumi/awsx';
-import { PROJECT_NAME, STACK, TAGS, VPC_CIDR_BLOCK } from '../../secrets';
+import * as aws from '@pulumi/aws';
+import { TAGS, VPC_CIDR_BLOCK } from '../../secrets';
 
-export const ec2Vpc = new awsx.ec2.Vpc(`${PROJECT_NAME}-${STACK}`, {
-  enableNetworkAddressUsageMetrics: true,
-  numberOfAvailabilityZones: 3,
+export const ec2Vpc = aws.ec2.getVpcOutput({
   cidrBlock: VPC_CIDR_BLOCK,
-  enableDnsHostnames: true,
-  enableDnsSupport: true,
   tags: TAGS,
 });
