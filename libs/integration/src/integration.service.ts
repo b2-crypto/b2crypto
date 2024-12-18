@@ -4,6 +4,7 @@ import { CrmDocument } from '@crm/crm/entities/mongoose/crm.schema';
 import { AntelopeIntegrationService } from '@integration/integration/crm/antelope-integration/antelope-integration.service';
 import { LeverateIntegrationService } from '@integration/integration/crm/leverate-integration/leverate-integration.service';
 import { HttpService } from '@nestjs/axios';
+import { CACHE_MANAGER, Cache } from '@nestjs/cache-manager';
 import { Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { RpcException } from '@nestjs/microservices';
@@ -16,11 +17,10 @@ import { IntegrationCrmService } from './crm/generic/integration.crm.service';
 import { RegisterLeadLeverateRequestDto } from './crm/leverate-integration/dto/register.lead.leverate.request.dto';
 import { B2BinPayIntegrationService } from './crypto/b2binpay-integration/b2binpay-integration.service';
 import IntegrationCryptoEnum from './crypto/enums/IntegrationCryptoEnum';
+import { FireblocksIntegrationService } from './crypto/fireblocks/fireblocks-integration.service';
 import { IntegrationCryptoService } from './crypto/generic/integration.crypto.service';
 import { IntegrationIdentityEnum } from './identity/generic/domain/integration.identity.enum';
 import { IntegrationIdentityService } from './identity/generic/integration.identity.service';
-import { CACHE_MANAGER, Cache } from '@nestjs/cache-manager';
-import { FireblocksIntegrationService } from './crypto/fireblocks/fireblocks-integration.service';
 
 @Injectable()
 export class IntegrationService {

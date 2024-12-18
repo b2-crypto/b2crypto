@@ -61,9 +61,8 @@ export class BasicServiceModel<
     if (!!createAnyDto['name'] && !createAnyDto['slug']) {
       createAnyDto['slug'] = CommonService.getSlug(createAnyDto['name']);
     }
-    console.log('createAnyDto =>', createAnyDto);
-    const [rta] = await this.createMany([createAnyDto], session);
-    return rta;
+    const rta = await this.createMany([createAnyDto], session);
+    return rta[0];
   }
 
   async createMany(
