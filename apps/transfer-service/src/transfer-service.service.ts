@@ -301,9 +301,11 @@ export class TransferServiceService
       if (!transfer.account) {
         throw new BadRequestException('Account is mandatory');
       }
+
       const account: AccountDocument = await this.accountService.findOneById(
         transfer.account,
       );
+
       if (!account) {
         throw new BadRequestException('Not found account');
       }
@@ -332,19 +334,47 @@ export class TransferServiceService
       transfer.userCreator = transfer.userCreator ?? account.owner;
       transfer.userAccount = account.owner ?? transfer.userCreator;
       transfer.accountPrevBalance = account.amount;
+
       const transferSaved = await this.lib.create(transfer);
       if (
         transferSaved.typeTransaction?.toString() === depositLinkCategory._id
       ) {
         try {
+          console.log('transferSaved =>', transferSaved);
           const url = transfer.account.url ?? 'https://api.b2binpay.com';
           Logger.log(url, 'URL B2BinPay');
+          console.log('account =>', account);
           const integration =
             await this.integrationService.getCryptoIntegration(
               account,
               IntegrationCryptoEnum.B2BINPAY,
               url,
             );
+          console.log('integration =>', integration);
+          console.log({
+            data: {
+              type: 'deposit',
+              attributes: {
+                target_amount_requested: transferSaved.amount.toString(),
+                label: transferSaved.name,
+                tracking_id: transferSaved._id,
+                confirmations_needed: 2,
+                // TODO[hender-2024/05/30] Change callback_url to environment params
+                callback_url:
+                  process.env.ENVIRONMENT === 'PROD'
+                    ? 'https://api.b2fintech.com/b2binpay/status'
+                    : 'https://stage.b2fintech.com/b2binpay/status',
+              },
+              relationships: {
+                wallet: {
+                  data: {
+                    type: 'wallet',
+                    id: account.accountId,
+                  },
+                },
+              },
+            },
+          });
           const deposit = await integration.createDeposit({
             data: {
               type: 'deposit',
@@ -369,6 +399,7 @@ export class TransferServiceService
               },
             },
           });
+          console.log('deposit =>', deposit);
           if (!deposit.data) {
             Logger.error(deposit, 'Error B2BinPay Deposit');
             throw new BadRequestException(deposit['errors']);
