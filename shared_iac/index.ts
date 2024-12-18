@@ -21,7 +21,6 @@ import {
   ec2SecurityGroupOptlUi,
 } from './resources/aws/ec2.security-group';
 import { ec2Vpc } from './resources/aws/ec2.vpc';
-import { ecrRepository } from './resources/aws/ecr.repository';
 import { ecsCluster } from './resources/aws/ecs.cluster';
 import {
   ecsFargateServiceOptlCollector,
@@ -96,13 +95,6 @@ export const mongodbatlasServerlessInstanceData =
   mongodbatlasServerlessInstance;
 
 export const mongoAtlasClusterData = mongoAtlasCluster;
-
-export const ecrRepositoryData = {
-  id: ecrRepository.id,
-  repositoryUrl: ecrRepository.repositoryUrl.apply((value) =>
-    value.split('@').at(0),
-  ),
-};
 
 export const ec2VpcData = {
   vpcId: ec2Vpc.vpcId,

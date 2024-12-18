@@ -3,10 +3,17 @@ import { appautoscalingTarget } from './resources/aws/appautoscaling.target';
 import { cloudwatchDashboard } from './resources/aws/cloudwatch.dashboard';
 import { cloudwatchLogGroup } from './resources/aws/cloudwatch.log-group';
 import { ecrImage, TAG } from './resources/aws/ecr.image';
+import { ecrRepository } from './resources/aws/ecr.repository';
 import { ecsFargateService } from './resources/aws/ecs.fargate-service';
 import { lbApplicationLoadBalancer } from './resources/aws/lb.application-load-balancer';
 import { route53Record } from './resources/aws/route53.record';
-3;
+
+export const ecrRepositoryData = {
+  id: ecrRepository.id,
+  repositoryUrl: ecrRepository.repositoryUrl.apply((value) =>
+    value.split('@').at(0),
+  ),
+};
 
 export const ecrImageData = {
   imageUri: ecrImage.imageUri.apply(
