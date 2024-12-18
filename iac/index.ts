@@ -1,21 +1,17 @@
 import { acmCertificate } from './resources/aws/acm.certificate';
 import {
-  appautoscalingPolicy,
   appautoscalingPolicyOptlCollector,
   appautoscalingPolicyOptlUi,
 } from './resources/aws/appautoscaling.policy';
 import {
-  appautoscalingTarget,
   appautoscalingTargetOptlCollector,
   appautoscalingTargetOptlUi,
 } from './resources/aws/appautoscaling.target';
 import {
-  cloudwatchDashboard,
   cloudwatchDashboardOptlCollector,
   cloudwatchDashboardOptlUi,
 } from './resources/aws/cloudwatch.dashboard';
 import {
-  cloudwatchLogGroup,
   cloudwatchLogGroupOptlCollector,
   cloudwatchLogGroupOptlUi,
 } from './resources/aws/cloudwatch.log-group';
@@ -25,23 +21,19 @@ import {
   ec2SecurityGroupOptlUi,
 } from './resources/aws/ec2.security-group';
 import { ec2Vpc } from './resources/aws/ec2.vpc';
-import { ecrImage, TAG } from './resources/aws/ecr.image';
 import { ecrRepository } from './resources/aws/ecr.repository';
 import { ecsCluster } from './resources/aws/ecs.cluster';
 import {
-  ecsFargateService,
   ecsFargateServiceOptlCollector,
   ecsFargateServiceOptlUi,
 } from './resources/aws/ecs.fargate-service';
 import {
-  lbApplicationLoadBalancer,
   lbApplicationLoadBalancerOptlCollector,
   lbApplicationLoadBalancerOptlUi,
 } from './resources/aws/lb.application-load-balancer';
 import { mqBrokerRabbitMQ } from './resources/aws/mq.broker';
 import { opensearchDomainOptl } from './resources/aws/opensearch.domain';
 import {
-  route53Record,
   route53RecordOptlCollector,
   route53RecordOptlUi,
 } from './resources/aws/route53.record';
@@ -112,12 +104,6 @@ export const ecrRepositoryData = {
   ),
 };
 
-export const ecrImageData = {
-  imageUri: ecrImage.imageUri.apply(
-    (imageUri) => `${imageUri.split('@').at(0)}:${TAG}`,
-  ),
-};
-
 export const ec2VpcData = {
   vpcId: ec2Vpc.vpcId,
   publicSubnetIds: ec2Vpc.publicSubnetIds,
@@ -162,14 +148,6 @@ export const ecsClusterData = {
   name: ecsCluster.name,
 };
 
-export const lbApplicationLoadBalancerData = {
-  vpcId: lbApplicationLoadBalancer.vpcId,
-  defaultSecurityGroup: lbApplicationLoadBalancer.defaultSecurityGroup,
-  defaultTargetGroup: lbApplicationLoadBalancer.defaultTargetGroup,
-  loadBalancer: lbApplicationLoadBalancer.loadBalancer,
-  listeners: lbApplicationLoadBalancer.listeners,
-};
-
 export const lbApplicationLoadBalancerOptlCollectorData = {
   vpcId: lbApplicationLoadBalancerOptlCollector.vpcId,
   defaultSecurityGroup:
@@ -187,12 +165,6 @@ export const lbApplicationLoadBalancerOptlUiData = {
   listeners: lbApplicationLoadBalancerOptlUi.listeners,
 };
 
-export const route53RecordData = {
-  name: route53Record.name,
-  type: route53Record.type,
-  zoneId: route53Record.zoneId,
-};
-
 export const route53RecordOptlCollectorData = {
   name: route53RecordOptlCollector.name,
   type: route53RecordOptlCollector.type,
@@ -205,11 +177,6 @@ export const route53RecordOptlUiData = {
   zoneId: route53RecordOptlUi.zoneId,
 };
 
-export const cloudwatchLogGroupData = {
-  id: cloudwatchLogGroup.id,
-  name: cloudwatchLogGroup.name,
-};
-
 export const cloudwatchLogGroupOptlCollectorData = {
   id: cloudwatchLogGroupOptlCollector.id,
   name: cloudwatchLogGroupOptlCollector.name,
@@ -220,22 +187,6 @@ export const cloudwatchLogGroupOptlUiData = {
   name: cloudwatchLogGroupOptlUi.name,
 };
 
-export const ecsFargateServiceData = {
-  serviceName: ecsFargateService.service.name,
-};
-
-export const ecsFargateServiceOptlCollectorData = {
-  serviceName: ecsFargateServiceOptlCollector.service.name,
-};
-
-export const ecsFargateServiceOptlUiData = {
-  serviceName: ecsFargateServiceOptlUi.service.name,
-};
-
-export const cloudwatchDashboardData = {
-  dashboardName: cloudwatchDashboard.dashboardName,
-};
-
 export const cloudwatchDashboardOptlCollectorData = {
   dashboardName: cloudwatchDashboardOptlCollector.dashboardName,
 };
@@ -244,10 +195,12 @@ export const cloudwatchDashboardOptlUiData = {
   dashboardName: cloudwatchDashboardOptlUi.dashboardName,
 };
 
-export const appautoscalingTargetData = {
-  resourceId: appautoscalingTarget.resourceId,
-  scalableDimension: appautoscalingTarget.scalableDimension,
-  serviceNamespace: appautoscalingTarget.serviceNamespace,
+export const ecsFargateServiceOptlCollectorData = {
+  serviceName: ecsFargateServiceOptlCollector.service.name,
+};
+
+export const ecsFargateServiceOptlUiData = {
+  serviceName: ecsFargateServiceOptlUi.service.name,
 };
 
 export const appautoscalingTargetOptlCollectorData = {
@@ -260,16 +213,6 @@ export const appautoscalingTargetOptlUiData = {
   resourceId: appautoscalingTargetOptlUi.resourceId,
   scalableDimension: appautoscalingTargetOptlUi.scalableDimension,
   serviceNamespace: appautoscalingTargetOptlUi.serviceNamespace,
-};
-
-export const appautoscalingPolicyData = {
-  name: appautoscalingPolicy.name,
-  policyType: appautoscalingPolicy.policyType,
-  resourceId: appautoscalingPolicy.resourceId,
-  scalableDimension: appautoscalingPolicy.scalableDimension,
-  serviceNamespace: appautoscalingPolicy.serviceNamespace,
-  targetTrackingScalingPolicyConfiguration:
-    appautoscalingPolicy.targetTrackingScalingPolicyConfiguration,
 };
 
 export const appautoscalingPolicyOptlCollectorData = {
