@@ -722,65 +722,35 @@ export class TransferServiceService
     brand: BrandInterface;
     crm: CrmInterface;
   }> {
-    const [
-      account,
-      pspAccount,
-      typeTransaction,
-      status,
-      department,
-      bank,
-      brand,
-      crm,
-    ] = await Promise.all([
-      this.getAccountById(transfer.account),
-      this.getPspAccountById(transfer.pspAccount),
-      this.getCategoryById(transfer.typeTransaction),
-      this.getStatusById(transfer.status),
-      transfer.department && this.getCategoryById(transfer.department),
-      transfer.bank && this.getCategoryById(transfer.bank),
-      transfer.brand && this.getBrandById(transfer.brand),
-      transfer.crm && this.getCrmById(transfer.crm),
-    ]);
-
-    return {
-      account: account as unknown as AccountInterface,
-      pspAccount: pspAccount as unknown as PspAccountInterface,
-      typeTransaction: typeTransaction as unknown as CategoryInterface,
-      status: status as unknown as StatusInterface,
-      department: department as unknown as CategoryInterface,
-      bank: bank as unknown as CategoryInterface,
-      brand: brand as unknown as BrandInterface,
-      crm: crm as unknown as CrmInterface,
+    const promisesByIds = {
+      account: this.getAccountById(transfer.account),
+      pspAccount: this.getPspAccountById(transfer.pspAccount),
+      // TODO[hender] Buscar agregando el tipo de category
+      typeTransaction: this.getCategoryById(transfer.typeTransaction),
+      status: this.getStatusById(transfer.status),
+      department:
+        transfer.department && this.getCategoryById(transfer.department),
+      bank: transfer.bank && this.getCategoryById(transfer.bank),
+      brand: transfer.brand && this.getBrandById(transfer.brand),
+      crm: transfer.crm && this.getCrmById(transfer.crm),
     };
-    // const promisesByIds = {
-    //   account: this.getAccountById(transfer.account),
-    //   pspAccount: this.getPspAccountById(transfer.pspAccount),
-    //   // TODO[hender] Buscar agregando el tipo de category
-    //   typeTransaction: this.getCategoryById(transfer.typeTransaction),
-    //   status: this.getStatusById(transfer.status),
-    //   department:
-    //     transfer.department && this.getCategoryById(transfer.department),
-    //   bank: transfer.bank && this.getCategoryById(transfer.bank),
-    //   brand: transfer.brand && this.getBrandById(transfer.brand),
-    //   crm: transfer.crm && this.getCrmById(transfer.crm),
-    // };
-    // const data = {
-    //   account: null as AccountInterface,
-    //   pspAccount: null as PspAccountInterface,
-    //   typeTransaction: null as CategoryInterface,
-    //   status: null as StatusInterface,
-    //   department: null as CategoryInterface,
-    //   bank: null as CategoryInterface,
-    //   brand: null as BrandInterface,
-    //   crm: null as CrmInterface,
-    // };
-    // const keys = Object.keys(data);
+    const data = {
+      account: null as AccountInterface,
+      pspAccount: null as PspAccountInterface,
+      typeTransaction: null as CategoryInterface,
+      status: null as StatusInterface,
+      department: null as CategoryInterface,
+      bank: null as CategoryInterface,
+      brand: null as BrandInterface,
+      crm: null as CrmInterface,
+    };
+    const keys = Object.keys(data);
 
-    // const valuesIds = await Promise.all(Object.values(promisesByIds));
-    // valuesIds.forEach((entry, idx) => {
-    //   data[keys[idx]] = entry;
-    // });
-    // return data;
+    const valuesIds = await Promise.all(Object.values(promisesByIds));
+    valuesIds.forEach((entry, idx) => {
+      data[keys[idx]] = entry;
+    });
+    return data;
   }
 
   private async queryData(transfer: TransferCreateDto): Promise<{
@@ -852,8 +822,6 @@ export class TransferServiceService
     // Fill crm
     transfer.crm = data.crm?.id || data.account.crm;
     transfer.account = data.account?._id;
-
-    return transfer;
   }
 
   private async checkTransfer(transfer: TransferCreateDto, data) {
