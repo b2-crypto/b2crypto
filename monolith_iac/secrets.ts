@@ -6,8 +6,6 @@ export const SECRETS = pulumi
   .all([
     config.requireSecret('AWS_ACCESS_KEY'),
     config.requireSecret('AWS_SECRET_KEY'),
-    config.requireSecret('DATABASE_URL'),
-    config.requireSecret('RABBIT_MQ_HOST'),
     config.requireSecret('RABBIT_MQ_USERNAME'),
     config.requireSecret('RABBIT_MQ_PASSWORD'),
     config.requireSecret('REDIS_HOST'),
@@ -45,10 +43,8 @@ export const SECRETS = pulumi
   ])
   .apply(
     ([
-      ACCESS_KEY,
-      SECRET_KEY,
-      DATABASE_URL,
-      RABBIT_MQ_HOST,
+      AWS_ACCESS_KEY,
+      AWS_SECRET_KEY,
       RABBIT_MQ_USERNAME,
       RABBIT_MQ_PASSWORD,
       REDIS_HOST,
@@ -84,10 +80,8 @@ export const SECRETS = pulumi
       V1_DB_PORT,
       V1_DB_NAME,
     ]) => ({
-      ACCESS_KEY,
-      SECRET_KEY,
-      DATABASE_URL,
-      RABBIT_MQ_HOST,
+      AWS_ACCESS_KEY,
+      AWS_SECRET_KEY,
       RABBIT_MQ_USERNAME,
       RABBIT_MQ_PASSWORD,
       REDIS_HOST,

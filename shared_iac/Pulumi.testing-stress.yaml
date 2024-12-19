@@ -31,8 +31,6 @@ config:
   b2crypto-iac:CURRENCY_CONVERSION_API_URL:
     secure: AAABAB1ymcntj70SrlSfVxjirDHiJXJ4LiLpvF9roYBEYxPsxrLzLYcUuvsKbL1g/CSrWuho3KxUWhFF2eHbug3Xfz1U/KpGxKs=
   b2crypto-iac:DATABASE_NAME: b2fintech
-  b2crypto-iac:DATABASE_URL:
-    secure: AAABAFo7ROSm4fnOMJDqyJ6DwVewkG1no6H7GoQoWa/UQISqmzkQCnk+HaETCj5veDo5jgxvmuPkQdw06BywRmu18Z/qXZmNQ5Ox1wYaqpf3js91lyubfMlGahfmqbhNZG2XeBiKmvliiGGkobtp9BDhWQkv41QwpXy1kJG2MzxzARqe/SK1oZ+BTRpFbaWxdoo=
   b2crypto-iac:DEFAULT_CURRENCY_CONVERSION_COIN: USD
   b2crypto-iac:DESIRED_COUNT_TASK: '1'
   b2crypto-iac:ENVIRONMENT: TEST_STRESS
@@ -104,8 +102,6 @@ config:
     secure: AAABAK+cuZHPDmwSC5ZpF5qU/rlmlaPgT0jPjGEGXZFADiJx/PcQbqAM7LahU5et+s6Gg408SgNNcS9Spt85UD5O+6znzFY70PZz5lpCLPezSf8RjWQtcDKC
   b2crypto-iac:POMELO_WHITELISTED_IPS_CHECK: 'ON'
   b2crypto-iac:PORT: '80'
-  b2crypto-iac:RABBIT_MQ_HOST:
-    secure: AAABALKRUijShxiY4pYrE8bupLiVUubb5Ue0v0Yqm/B0lE+VyNkMM6LNyQ4/mXc6pY8pKZSdVGK61tczZvBkYB0O/DLfebQefpLNGXTHDpE7bk5FH0o3Phl10MUgEPYr0w==
   b2crypto-iac:RABBIT_MQ_INSTANCE_TYPE: mq.m5.large
   b2crypto-iac:RABBIT_MQ_PASSWORD:
     secure: AAABAHin1Ke+oz46n2LIu1txADgWI3bAGgr+baqLWNi1fvmx0pW6jK2YPGrhi/cGitKr4rC9vHejNROwEOkExQ==
