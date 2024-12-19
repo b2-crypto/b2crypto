@@ -87,14 +87,16 @@ export class IntegrationCryptoService<
           this.token = await this.cacheManager.get('token-B2BinPay');
           if (!this.token) {
             const token = await this.fetch('POST', this.routesMap.auth, req);
-            const today = new Date();
+            console.log('token =>', token);
+
             if (!token.data) {
               Logger.error(token, 'Token crypto not found');
               throw new NotFoundException(
-                `Token crypto not found: ${token.errors[0].message}`,
+                `Token crypto not found: ${token.errors[0].detail}`,
                 IntegrationCryptoService.name,
               );
             }
+
             this.token = token.data?.attributes.access;
             await this.cacheManager.set(
               'token-B2BinPay',

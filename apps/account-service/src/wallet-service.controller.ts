@@ -1,5 +1,6 @@
 import { WalletDepositCreateDto } from '@account/account/dto/wallet-deposit.create.dto';
 import { WalletCreateDto } from '@account/account/dto/wallet.create.dto';
+import { AccountEntity } from '@account/account/entities/account.entity';
 import { AccountDocument } from '@account/account/entities/mongoose/account.schema';
 import StatusAccountEnum from '@account/account/enum/status.account.enum';
 import TypesAccountEnum from '@account/account/enum/types.account.enum';
@@ -7,6 +8,7 @@ import WalletTypesAccountEnum from '@account/account/enum/wallet.types.account.e
 import { ApiKeyAuthGuard } from '@auth/auth/guards/api.key.guard';
 import { JwtAuthGuard } from '@auth/auth/guards/jwt-auth.guard';
 import { BuildersService } from '@builder/builders';
+import { CategoryDocument } from '@category/category/entities/mongoose/category.schema';
 import { CommonService } from '@common/common';
 import { NoCache } from '@common/common/decorators/no-cache.decorator';
 import CountryCodeEnum from '@common/common/enums/country.code.b2crypto.enum';
@@ -14,10 +16,12 @@ import CurrencyCodeB2cryptoEnum from '@common/common/enums/currency-code-b2crypt
 import { EnvironmentEnum } from '@common/common/enums/environment.enum';
 import { StatusCashierEnum } from '@common/common/enums/StatusCashierEnum';
 import TagEnum from '@common/common/enums/TagEnum';
+import { ResponsePaginator } from '@common/common/interfaces/response-pagination.interface';
 import { QuerySearchAnyDto } from '@common/common/models/query_search-any.dto';
 import { IntegrationService } from '@integration/integration';
 import IntegrationCryptoEnum from '@integration/integration/crypto/enums/IntegrationCryptoEnum';
 import { FireblocksIntegrationService } from '@integration/integration/crypto/fireblocks/fireblocks-integration.service';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import {
   BadRequestException,
   Body,
@@ -35,6 +39,7 @@ import {
   UnauthorizedException,
   UseGuards,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { Ctx, EventPattern, Payload, RmqContext } from '@nestjs/microservices';
 import {
   ApiBearerAuth,
@@ -53,17 +58,12 @@ import EventsNamesStatusEnum from 'apps/status-service/src/enum/events.names.sta
 import { TransferCreateButtonDto } from 'apps/transfer-service/src/dto/transfer.create.button.dto';
 import EventsNamesTransferEnum from 'apps/transfer-service/src/enum/events.names.transfer.enum';
 import { UserServiceService } from 'apps/user-service/src/user-service.service';
+import { Cache } from 'cache-manager';
+import { isMongoId } from 'class-validator';
 import { SwaggerSteakeyConfigEnum } from 'libs/config/enum/swagger.stakey.config.enum';
 import { AccountServiceController } from './account-service.controller';
 import { AccountServiceService } from './account-service.service';
 import EventsNamesAccountEnum from './enum/events.names.account.enum';
-import { ConfigService } from '@nestjs/config';
-import { isMongoId } from 'class-validator';
-import { AccountEntity } from '@account/account/entities/account.entity';
-import { CategoryDocument } from '@category/category/entities/mongoose/category.schema';
-import { ResponsePaginator } from '@common/common/interfaces/response-pagination.interface';
-import { CACHE_MANAGER } from '@nestjs/cache-manager';
-import { Cache } from 'cache-manager';
 
 @ApiTags(SwaggerSteakeyConfigEnum.TAG_WALLET)
 @Controller('wallets')
@@ -144,7 +144,7 @@ export class WalletServiceController extends AccountServiceController {
           type: TypesAccountEnum.WALLET,
           pin: CommonService.getNumberDigits(
             CommonService.randomIntNumber(9999),
-            4
+            4,
           ),
           id: undefined,
           slug: '',
@@ -173,7 +173,7 @@ export class WalletServiceController extends AccountServiceController {
           currencyBlocked: CurrencyCodeB2cryptoEnum.USDT,
           amountBlockedCustodial: 0,
           currencyBlockedCustodial: CurrencyCodeB2cryptoEnum.USDT,
-          afgId: '' // TODO: AFG ID
+          afgId: '', // TODO: AFG ID
         },
         req,
       );
@@ -450,7 +450,7 @@ export class WalletServiceController extends AccountServiceController {
         showToOwner: false,
         pin: CommonService.getNumberDigits(
           CommonService.randomIntNumber(9999),
-          4
+          4,
         ),
         responseCreation: newVault,
         id: undefined,
@@ -485,7 +485,7 @@ export class WalletServiceController extends AccountServiceController {
         currencyBlocked: CurrencyCodeB2cryptoEnum.USDT,
         amountBlockedCustodial: 0,
         currencyBlockedCustodial: CurrencyCodeB2cryptoEnum.USDT,
-        afgId: '' // TODO: AFG ID
+        afgId: '', // TODO: AFG ID
       });
     }
 
@@ -527,7 +527,7 @@ export class WalletServiceController extends AccountServiceController {
         showToOwner: false,
         pin: CommonService.getNumberDigits(
           CommonService.randomIntNumber(9999),
-          4
+          4,
         ),
         responseCreation: newVault,
         id: undefined,
@@ -562,7 +562,7 @@ export class WalletServiceController extends AccountServiceController {
         currencyBlocked: CurrencyCodeB2cryptoEnum.USDT,
         amountBlockedCustodial: 0,
         currencyBlockedCustodial: CurrencyCodeB2cryptoEnum.USDT,
-        afgId: '' // TODO: AFG ID
+        afgId: '', // TODO: AFG ID
       });
     }
 
@@ -1137,12 +1137,14 @@ export class WalletServiceController extends AccountServiceController {
         //const url = `${req.protocol}://${host}/transfers/deposit/page/${transfer?._id}`;
         const url = `https://${host}/transfers/deposit/page/${depositAddress?._id}`;
         const data = depositAddress?.responseAccount?.data;
+        const address = data?.attributes?.address ?? to.accountName;
+        console.log('depositAddress =>', depositAddress);
         return {
           statusCode: 200,
           data: {
             txId: depositAddress?._id,
-            url: `https://tronscan.org/#/address/${data?.attributes?.address}`,
-            address: data?.attributes?.address ?? to.accountName,
+            url: `https://tronscan.org/#/address/${address}`,
+            address,
             chain: 'TRON BLOCKCHAIN',
           },
         };
@@ -1536,7 +1538,10 @@ export class WalletServiceController extends AccountServiceController {
 
   @ApiExcludeEndpoint()
   @Delete(':walletID')
-  async deleteOneById(@Param('walletID') id: string, req?: any): Promise<AccountDocument> {
+  async deleteOneById(
+    @Param('walletID') id: string,
+    req?: any,
+  ): Promise<AccountDocument> {
     //return this.getAccountService().deleteOneById(id);
     throw new UnauthorizedException();
   }
