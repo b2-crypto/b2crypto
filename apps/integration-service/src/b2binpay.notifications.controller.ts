@@ -6,16 +6,7 @@ import { StatusCashierEnum } from '@common/common/enums/StatusCashierEnum';
 import TagEnum from '@common/common/enums/TagEnum';
 import { ResponsePaginator } from '@common/common/interfaces/response-pagination.interface';
 import { IntegrationService } from '@integration/integration';
-import IntegrationCryptoEnum from '@integration/integration/crypto/enums/IntegrationCryptoEnum';
-import {
-  BadRequestException,
-  Body,
-  Controller,
-  Inject,
-  Logger,
-  Post,
-  Req,
-} from '@nestjs/common';
+import { Body, Controller, Inject, Logger, Post, Req } from '@nestjs/common';
 import { Ctx, EventPattern, Payload, RmqContext } from '@nestjs/microservices';
 import { TransferCreateDto } from '@transfer/transfer/dto/transfer.create.dto';
 import { OperationTransactionType } from '@transfer/transfer/enum/operation.transaction.type.enum';
@@ -24,7 +15,6 @@ import EventsNamesCategoryEnum from 'apps/category-service/src/enum/events.names
 import EventsNamesPspAccountEnum from 'apps/psp-service/src/enum/events.names.psp.acount.enum';
 import EventsNamesStatusEnum from 'apps/status-service/src/enum/events.names.status.enum';
 import EventsNamesTransferEnum from 'apps/transfer-service/src/enum/events.names.transfer.enum';
-
 
 @Controller('b2binpay')
 //@UseGuards(ApiKeyAuthGuard)
@@ -226,30 +216,30 @@ export class B2BinPayNotificationsController {
     for (const account of accounts.list) {
       const responseAccount = account.responseCreation?.responseAccount.data;
       if (responseAccount.id) {
-        const url = 'https://api.b2binpay.com';
-        const integration = await this.integrationService.getCryptoIntegration(
-          account,
-          IntegrationCryptoEnum.B2BINPAY,
-          url,
-        );
+        // const url = 'https://api.b2binpay.com';
+        // const integration = await this.integrationService.getCryptoIntegration(
+        //   account,
+        //   IntegrationCryptoEnum.B2BINPAY,
+        //   url,
+        // );
         try {
-          const minute = 60 * 60 * 1000;
-          const now = new Date();
-          const listTransfers = await integration.getTransferByDeposit(
-            responseAccount.id,
-            1,
-            {
-              from: new Date(now.getTime() - minute).toISOString(),
-              to: now.toISOString(),
-            },
-          );
-          if (listTransfers?.data) {
-            for (const transfer of listTransfers.data) {
-              promises.push(this.checkTransfer(account, transfer));
-            }
-          } else {
-            Logger.error(listTransfers, `checkAccounts-${responseAccount.id}`);
-          }
+          // const minute = 60 * 60 * 1000;
+          // const now = new Date();
+          // const listTransfers = await integration.getTransferByDeposit(
+          //   responseAccount.id,
+          //   1,
+          //   {
+          //     from: new Date(now.getTime() - minute).toISOString(),
+          //     to: now.toISOString(),
+          //   },
+          // );
+          // if (listTransfers?.data) {
+          //   for (const transfer of listTransfers.data) {
+          //     promises.push(this.checkTransfer(account, transfer));
+          //   }
+          // } else {
+          //   Logger.error(listTransfers, `checkAccounts-${responseAccount.id}`);
+          // }
         } catch (err) {
           Logger.error(err, `checkAccounts-${responseAccount.id}`);
         }

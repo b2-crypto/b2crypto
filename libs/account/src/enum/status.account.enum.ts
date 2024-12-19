@@ -3,6 +3,7 @@ enum StatusAccountEnum {
   HIDDEN = 'HIDDEN',
   LOCK = 'LOCK',
   UNLOCK = 'UNLOCK',
+  ACTIVE = 'ACTIVE',
   CANCEL = 'CANCEL',
   ORDERED = 'ORDERED',
   VERIFIED = 'VERIFIED',

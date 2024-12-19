@@ -1,5 +1,6 @@
 import { CategoryUpdateDto } from '@category/category/dto/category.update.dto';
 import CountryCodeEnum from '@common/common/enums/country.code.b2crypto.enum';
+import CurrencyCodeB2cryptoEnum from '@common/common/enums/currency-code-b2crypto.enum';
 import { CreateAnyDto } from '@common/common/models/create-any.dto';
 import { ApiProperty } from '@nestjs/swagger';
 import AddressDto from '@person/person/dto/address.dto';
@@ -15,14 +16,12 @@ import {
   IsNotEmpty,
   IsOptional,
   IsString,
-  Min,
   ValidateNested,
 } from 'class-validator';
 import { ObjectId } from 'mongodb';
 import { AccountInterface } from '../entities/account.interface';
-import TypesAccountEnum from '../enum/types.account.enum';
 import StatusAccountEnum from '../enum/status.account.enum';
-import CurrencyCodeB2cryptoEnum from '@common/common/enums/currency-code-b2crypto.enum';
+import TypesAccountEnum from '../enum/types.account.enum';
 
 export class AccountCreateDto extends CreateAnyDto implements AccountInterface {
   _id?: ObjectId;
@@ -89,7 +88,6 @@ export class AccountCreateDto extends CreateAnyDto implements AccountInterface {
   secret: string;
 
   @IsString()
-  @Min(0)
   @ApiProperty({
     required: false,
     description: 'Account pin',
@@ -311,5 +309,5 @@ export class AccountCreateDto extends CreateAnyDto implements AccountInterface {
   @IsEmpty()
   currencyBlockedCustodial: CurrencyCodeB2cryptoEnum;
   @IsEmpty()
-  afgId: string;
+  afgId?: string;
 }

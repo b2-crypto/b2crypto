@@ -89,8 +89,9 @@ export class IntegrationCryptoService<
             const token = await this.fetch('POST', this.routesMap.auth, req);
             const today = new Date();
             if (!token.data) {
+              Logger.error(token, 'Token crypto not found');
               throw new NotFoundException(
-                'Token crypto not found',
+                `Token crypto not found: ${token.errors[0].message}`,
                 IntegrationCryptoService.name,
               );
             }
