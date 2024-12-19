@@ -1,8 +1,4 @@
-import { Cache } from '@nestjs/cache-manager';
-import { ConfigService } from '@nestjs/config';
-import { DepositDto } from '../generic/dto/deposit.dto';
-import { WalletDto } from '../generic/dto/wallet.dto';
-import { IntegrationCryptoService } from '../generic/integration.crypto.service';
+import { EnvironmentEnum } from '@common/common/enums/environment.enum';
 import {
   Fireblocks,
   FireblocksResponse,
@@ -10,18 +6,22 @@ import {
   TransactionStateEnum,
   TransferPeerPathType,
 } from '@fireblocks/ts-sdk';
+import { Cache } from '@nestjs/cache-manager';
 import { Logger } from '@nestjs/common';
-import { EnvironmentEnum } from '@common/common/enums/environment.enum';
+import { ConfigService } from '@nestjs/config';
+import { DepositDto } from '../generic/dto/deposit.dto';
+import { WalletDto } from '../generic/dto/wallet.dto';
+import { IntegrationCryptoService } from '../generic/integration.crypto.service';
 
 enum FireblocksEnvirormentStage {
-basePath = 'https://sandbox-api.fireblocks.io/v1',
-secretKeyPath = './secret.key',
+  basePath = 'https://sandbox-api.fireblocks.io/v1',
+  secretKeyPath = './secret.key',
   apiKey = 'xpub661MyMwAqRbcGenBxs6DqTr6rbGVLVuxS9HzhMvhZQuezEQDKUunabkstEqhjHWPJRqHg57iqucTEXwnCYSx4XqSB8xjaybuoNivrTn8mzM',
 }
 enum FireblocksEnvirormentProd {
-  basePath = 'https://sandbox-api.fireblocks.io/v1',
+  basePath = 'https://api.fireblocks.io/v1',
   secretKeyPath = './secret.key',
-    apiKey = 'ff89b0e3-e827-4ba3-93b2-a834fd9b4724',
+  apiKey = 'ff89b0e3-e827-4ba3-93b2-a834fd9b4724',
 }
 
 export class FireblocksIntegrationService extends IntegrationCryptoService<
@@ -29,7 +29,6 @@ export class FireblocksIntegrationService extends IntegrationCryptoService<
   DepositDto,
   WalletDto
 > {
-
   private readonly FIREBLOCKS_API_SECRET_PATH = './secret.key';
   private fireblocks: Fireblocks;
   private basePath: string;
@@ -56,8 +55,14 @@ export class FireblocksIntegrationService extends IntegrationCryptoService<
       getDeposit: '/deposit/{id}',
       getTransferByDeposit: '/transfer',
     });
-    this.basePath = this.configService.get<string>('ENVIRONMENT') === EnvironmentEnum.prod ? FireblocksEnvirormentProd.basePath : FireblocksEnvirormentStage.basePath;
-    this.apiKeyFireblocks = this.configService.get<string>('ENVIRONMENT') === EnvironmentEnum.prod ? FireblocksEnvirormentProd.apiKey : FireblocksEnvirormentStage.apiKey;
+    this.basePath =
+      this.configService.get<string>('ENVIRONMENT') === EnvironmentEnum.prod
+        ? FireblocksEnvirormentProd.basePath
+        : FireblocksEnvirormentStage.basePath;
+    this.apiKeyFireblocks =
+      this.configService.get<string>('ENVIRONMENT') === EnvironmentEnum.prod
+        ? FireblocksEnvirormentProd.apiKey
+        : FireblocksEnvirormentStage.apiKey;
   }
 
   async getFireblocks() {
@@ -78,22 +83,26 @@ export class FireblocksIntegrationService extends IntegrationCryptoService<
       const assetsActives = await this.fireblocks.vaults.getVaultAssets();
       const assetsAvailables =
         await this.fireblocks.blockchainsAssets.getSupportedAssets();
-      return assetsActives.data.map((wallet) => {
-        const asset = assetsAvailables.data.filter(
-          (asset) => asset.id === wallet.id,
-        )[0];
-        return {
-          id: undefined,
-          name: asset.name,
-          accountId: asset.id,
-          accountName: asset.contractAddress,
-          referral: asset['issuerAddress'],
-          protocol: asset.type,
-          decimals: asset.decimals,
-          nativeAccountName: asset.nativeAsset,
-          showToOwner: false,
-        };
-      });
+
+      return assetsActives.data.flatMap((wallet) => {
+        const asset = assetsAvailables.data
+          .filter((asset) => asset.id === wallet.id)
+          .shift();
+
+        return asset
+          ? {
+              id: undefined,
+              name: asset.name,
+              accountId: asset.id,
+              accountName: asset.contractAddress,
+              referral: asset['issuerAddress'],
+              protocol: asset.type,
+              decimals: asset.decimals,
+              nativeAccountName: asset.nativeAsset,
+              showToOwner: false,
+            }
+          : [];
+      }, Infinity);
     } catch (e) {
       Logger.error(e);
     }
