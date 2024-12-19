@@ -90,6 +90,7 @@ export class IntegrationCryptoService<
             console.log('token =>', token);
 
             if (!token.data) {
+              Logger.error(token, 'Token crypto not found');
               throw new NotFoundException(
                 `Token crypto not found: ${token.errors[0].detail}`,
                 IntegrationCryptoService.name,

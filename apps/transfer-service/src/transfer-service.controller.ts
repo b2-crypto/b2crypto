@@ -73,11 +73,13 @@ import { PomeloProcessEnum } from 'apps/integration-service/src/enums/pomelo.pro
 import EventsNamesPspAccountEnum from 'apps/psp-service/src/enum/events.names.psp.acount.enum';
 import EventsNamesStatsEnum from 'apps/stats-service/src/enum/events.names.stats.enum';
 import EventsNamesStatusEnum from 'apps/status-service/src/enum/events.names.status.enum';
+import { isMongoId } from 'class-validator';
 import { SwaggerSteakeyConfigEnum } from 'libs/config/enum/swagger.stakey.config.enum';
 import { ApproveOrRejectDepositDto } from '../../../libs/transfer/src/dto/approve.or.reject.deposit.dto';
 import { BoldTransferRequestDto } from './dto/bold.transfer.request.dto';
 import { TransferAffiliateResponseDto } from './dto/transfer.affiliate.response.dto';
 import { TransferCreateButtonDto } from './dto/transfer.create.button.dto';
+import { BoldStatusEnum } from './enum/bold.status.enum';
 import EventsNamesTransferEnum from './enum/events.names.transfer.enum';
 import { TransferServiceService } from './transfer-service.service';
 
@@ -94,11 +96,70 @@ export class TransferServiceController implements GenericServiceController {
 
   @ApiExcludeEndpoint()
   @AllowAnon()
-  @Post('bold/webhook') //se migro logica a transfer service
+  @Post('bold/webhook')
+  // @CheckPoliciesAbility(new PolicyHandlerTransferRead())
   async boldWebhook(@Body() transferBold: BoldTransferRequestDto) {
-    return this.transferService.handleBoldWebhook(transferBold);
+    if (
+      !transferBold.link_id ||
+      !transferBold.payment_status ||
+      !transferBold.reference_id
+    ) {
+      throw new BadRequestException();
+    }
+    const txs = await this.transferService.getAll({
+      where: {
+        _id: transferBold.reference_id,
+      },
+    });
+    const tx = txs.list[0];
+    if (
+      tx.statusPayment === BoldStatusEnum.APPROVED ||
+      tx.statusPayment === BoldStatusEnum.NO_TRANSACTION_FOUND ||
+      tx.statusPayment === BoldStatusEnum.REJECTED
+    ) {
+      Logger.debug(
+        JSON.stringify(transferBold),
+        'Transaction has finish before',
+      );
+      throw new BadRequestException('transfer has finish before');
+    }
+    tx.statusPayment = transferBold.payment_status;
+    tx.responsePayment = {
+      success: true,
+      message: transferBold.description,
+      payload: {
+        url: transferBold.link_id,
+        message: transferBold.payer_email ?? 'N/A',
+        type: transferBold.payment_status,
+        data: transferBold,
+      },
+    };
+    /* switch (tx.statusPayment) {
+      case BoldStatusEnum.APPROVED:
+        break;
+      case BoldStatusEnum.FAILED:
+        break;
+      case BoldStatusEnum.REJECTED:
+        break;
+      case BoldStatusEnum.PENDING:
+        break;
+      case BoldStatusEnum.PROCESSING:
+        break;
+      case BoldStatusEnum.NO_TRANSACTION_FOUND:
+        break;
+    } */
+    this.builder.emitTransferEventClient(EventsNamesTransferEnum.updateOne, {
+      id: tx._id,
+      statusPayment: tx.statusPayment,
+      responsePayment: tx.responsePayment,
+    });
+    return {
+      statusCode: 200,
+      message: 'Transaction updated',
+    };
   }
 
+  @ApiExcludeEndpoint()
   @NoCache()
   @Get('searchText')
   // @CheckPoliciesAbility(new PolicyHandlerTransferRead())
@@ -106,6 +167,8 @@ export class TransferServiceController implements GenericServiceController {
     //query = await this.filterFromUserPermissions(query, req);
     return this.transferService.getSearchText(query);
   }
+
+  @ApiExcludeEndpoint()
   @NoCache()
   @Get('all')
   // @CheckPoliciesAbility(new PolicyHandlerTransferRead())
@@ -127,6 +190,54 @@ export class TransferServiceController implements GenericServiceController {
     return this.transferService.getAll(query);
   }
 
+  @ApiExcludeEndpoint()
+  @NoCache()
+  @Get('check-types-account/:transferID')
+  @ApiTags(SwaggerSteakeyConfigEnum.TAG_DEPOSIT)
+  @ApiSecurity('b2crypto-key')
+  @ApiBearerAuth('bearerToken')
+  @UseGuards(ApiKeyAuthGuard)
+  // @CheckPoliciesAbility(new PolicyHandlerTransferRead())
+  async checkTypesAccount(@Param('transferID') id: string, @Req() req?) {
+    if (isMongoId(id)) {
+      const txs = await this.transferService.getAll({
+        relations: ['account'],
+        where: {
+          _id: id,
+        },
+      });
+      if (!txs.list[0]) {
+        throw new NotFoundException();
+      }
+      const tx = txs.list[0];
+      Logger.debug(
+        `${tx.account.type}-${tx.account.accountType}`,
+        `Check types account - ${tx.numericId} - Transfer: ${tx._id}`,
+      );
+      return this.transferService
+        .updateTransfer({
+          id: tx._id,
+          typeAccount: tx.account.type,
+          typeAccountType: tx.account.accountType,
+        })
+        .then(() => `${tx.numericId}-${tx._id}`);
+    } else {
+      let txs = await this.transferService.getAll({});
+      const promises = [];
+      do {
+        for (const tx of txs.list) {
+          promises.push(this.checkTypesAccount(tx._id.toString()));
+        }
+        txs = await this.transferService.getAll({
+          page: txs.nextPage,
+        });
+      } while (txs.nextPage != 1);
+
+      return Promise.all(promises);
+    }
+  }
+
+  @ApiExcludeEndpoint()
   @NoCache()
   @Get('deposit')
   // @CheckPoliciesAbility(new PolicyHandlerTransferRead())
@@ -138,6 +249,7 @@ export class TransferServiceController implements GenericServiceController {
     return this.transferService.getAll(query);
   }
 
+  @ApiExcludeEndpoint()
   @NoCache()
   @Get('credit')
   // @CheckPoliciesAbility(new PolicyHandlerTransferRead())
@@ -149,6 +261,7 @@ export class TransferServiceController implements GenericServiceController {
     return this.transferService.getAll(query);
   }
 
+  @ApiExcludeEndpoint()
   @NoCache()
   @Get('withdrawal')
   // @CheckPoliciesAbility(new PolicyHandlerTransferRead())
@@ -160,6 +273,7 @@ export class TransferServiceController implements GenericServiceController {
     return this.transferService.getAll(query);
   }
 
+  @ApiExcludeEndpoint()
   @NoCache()
   @Get('debit')
   // @CheckPoliciesAbility(new PolicyHandlerTransferRead())
@@ -171,6 +285,7 @@ export class TransferServiceController implements GenericServiceController {
     return this.transferService.getAll(query);
   }
 
+  @ApiExcludeEndpoint()
   @NoCache()
   @Get('chargeback')
   // @CheckPoliciesAbility(new PolicyHandlerTransferRead())
@@ -182,6 +297,7 @@ export class TransferServiceController implements GenericServiceController {
     return this.transferService.getAll(query);
   }
 
+  @ApiExcludeEndpoint()
   @NoCache()
   @Get('check-numeric-id')
   // @CheckPoliciesAbility(new PolicyHandlerTransferRead())
@@ -190,8 +306,7 @@ export class TransferServiceController implements GenericServiceController {
     //return this.transferService.checkNumericId();
   }
 
-  /* @NoCache()
-  @Get('deposit/:transferID')
+  /* @Get('deposit/:transferID')
   // @CheckPoliciesAbility(new PolicyHandlerTransferRead())
   async findOneDeposit(@Param('transferID') id: string) {
     const deposit = await this.transferService.getOne(id);
@@ -201,6 +316,7 @@ export class TransferServiceController implements GenericServiceController {
     throw new NotFoundException(`Not found deposit "${id}"`);
   } */
 
+  @ApiExcludeEndpoint()
   @NoCache()
   @Get('credit/:transferID')
   // @CheckPoliciesAbility(new PolicyHandlerTransferRead())
@@ -226,6 +342,7 @@ export class TransferServiceController implements GenericServiceController {
     throw new NotFoundException(`Not found withdrawal "${id}"`);
   }
 
+  @ApiExcludeEndpoint()
   @NoCache()
   @Get('debit/:transferID')
   // @CheckPoliciesAbility(new PolicyHandlerTransferRead())
@@ -237,6 +354,7 @@ export class TransferServiceController implements GenericServiceController {
     throw new NotFoundException(`Not found debit "${id}"`);
   }
 
+  @ApiExcludeEndpoint()
   @NoCache()
   @Get('chargeback/:transferID')
   // @CheckPoliciesAbility(new PolicyHandlerTransferRead())
@@ -253,6 +371,7 @@ export class TransferServiceController implements GenericServiceController {
 
   // TODO[hender - 30-01-2024] Add to endpoint list
 
+  @ApiExcludeEndpoint()
   @NoCache()
   @Get(':transferID')
   // @CheckPoliciesAbility(new PolicyHandlerTransferRead())
@@ -303,7 +422,6 @@ export class TransferServiceController implements GenericServiceController {
   @ApiQuery({
     name: 'identifier',
   })
-  @NoCache()
   @Get('deposit/link')
   // @CheckPoliciesAbility(new PolicyHandlerTransferCreate())
   async createOneDepositPaymentPage(
@@ -634,7 +752,7 @@ export class TransferServiceController implements GenericServiceController {
     return this.transferService.deleteTransfer(id);
   }
 
-  /*  @AllowAnon()
+  @AllowAnon()
   @EventPattern(EventsNamesTransferEnum.sendLast6hHistoryCardPurchases)
   // @CheckPoliciesAbility(new PolicyHandlerTransferCreate())
   async sendLast6hHistoryCardPurchasesEvent(
@@ -644,9 +762,9 @@ export class TransferServiceController implements GenericServiceController {
     CommonService.ack(ctx);
     await this.transferService.sendLast6hHistoryCardPurchases(!!shortData);
     return true;
-  } */
+  }
 
-  /*   @AllowAnon()
+  @AllowAnon()
   @EventPattern(EventsNamesTransferEnum.sendLast6hHistoryCardWalletDeposits)
   // @CheckPoliciesAbility(new PolicyHandlerTransferCreate())
   async sendLast6hHistoryCardWalletDepositsEvent(
@@ -656,9 +774,9 @@ export class TransferServiceController implements GenericServiceController {
     CommonService.ack(ctx);
     await this.transferService.sendLast6hHistoryCardWalletDeposits(!!shortData);
     return true;
-  } */ //TODO [Nestor]: errores no identificados
+  }
 
-  /*  @AllowAnon()
+  @AllowAnon()
   @EventPattern(EventsNamesTransferEnum.sendLast6hHistory)
   // @CheckPoliciesAbility(new PolicyHandlerTransferCreate())
   async sendLast6hHistory(
@@ -670,7 +788,7 @@ export class TransferServiceController implements GenericServiceController {
     await this.transferService.sendLast6hHistoryCardPurchases(!!shortData);
     return true;
   }
- */
+
   @AllowAnon()
   @MessagePattern(EventsNamesTransferEnum.findAll)
   findAllEvent(@Payload() query: QuerySearchAnyDto, @Ctx() ctx?: RmqContext) {
@@ -727,7 +845,6 @@ export class TransferServiceController implements GenericServiceController {
     const transfer = await this.transferService.newTransfer(createTransferDto);
     return transfer;
   }
-
   @AllowAnon()
   @MessagePattern(EventsNamesTransferEnum.createMany)
   createManyEvent(createsDto: CreateAnyDto[], ctx: RmqContext) {
@@ -949,70 +1066,7 @@ export class TransferServiceController implements GenericServiceController {
 
       await Promise.all(promises);
     } catch (error) {
-      Logger.error(error, 'WebhookTransfer createOne');
-    }
-  }
-
-  @AllowAnon()
-  @EventPattern(EventsNamesTransferEnum.createOneMigration)
-  async createOneMigration(
-    @Payload() migrationDto: any,
-    @Ctx() ctx: RmqContext,
-  ) {
-    try {
-      CommonService.ack(ctx);
-
-      const crm = await this.builder.getPromiseCrmEventClient(
-        EventsNamesCrmEnum.findOneByName,
-        migrationDto.integration,
-      );
-      if (!crm) {
-        Logger.error(
-          `CRM ${migrationDto.integration} was not found`,
-          'WebhookTransfer CRM',
-        );
-        return;
-      }
-
-      const status = await this.builder.getPromiseStatusEventClient(
-        EventsNamesStatusEnum.findOneByName,
-        migrationDto.status,
-      );
-      if (!status) {
-        Logger.error(
-          `Status ${migrationDto.status} was not found`,
-          'WebhookTransfer Status',
-        );
-        return;
-      }
-
-      const category = await this.builder.getPromiseCategoryEventClient(
-        EventsNamesCategoryEnum.findOneByNameType,
-        {
-          slug: CommonService.getSlug(migrationDto.movement),
-          type: TagEnum.MONETARY_TRANSACTION_TYPE,
-        },
-      );
-      if (!category) {
-        Logger.error(
-          `Category by slug ${migrationDto.movement} was not found`,
-          'WebhookTransfer Category',
-        );
-        return;
-      }
-
-      const transferDto: TransferCreateDto = new TransferCreateDto();
-      transferDto.crm = crm;
-      transferDto.status = status;
-      transferDto.typeTransaction = category;
-      transferDto.account = migrationDto?.account;
-      transferDto.userAccount = migrationDto?.account?.owner;
-      transferDto.amount = migrationDto?.account?.amount;
-      transferDto.confirmedAt = new Date();
-
-      await this.transferService.newTransfer(transferDto);
-    } catch (error) {
-      Logger.error(error, 'WebhookTransfer createOne');
+      Logger.error(error, 'WebhookTransfer');
     }
   }
 
@@ -1093,15 +1147,13 @@ export class TransferServiceController implements GenericServiceController {
   }
 
   private async getDepositLinkCategory() {
-    const category = await this.builder.getPromiseCategoryEventClient(
+    return this.builder.getPromiseCategoryEventClient(
       EventsNamesCategoryEnum.findOneByNameType,
       {
         slug: 'deposit-link',
         type: TagEnum.MONETARY_TRANSACTION_TYPE,
       },
     );
-
-    return category;
   }
 
   private async filterFromUserPermissions(
