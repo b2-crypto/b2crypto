@@ -177,6 +177,7 @@ export class IntegrationService {
         );
         break;
     }
+
     if (!cryptoType) {
       throw new RpcException(
         'The crypto "' + cryptoCategoryName + '" has not found',
