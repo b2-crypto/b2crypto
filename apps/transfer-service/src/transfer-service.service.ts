@@ -19,6 +19,7 @@ import { CrmDocument } from '@crm/crm/entities/mongoose/crm.schema';
 import { FileUpdateDto } from '@file/file/dto/file.update.dto';
 import { FileDocument } from '@file/file/entities/mongoose/file.schema';
 import { IntegrationService } from '@integration/integration';
+import IntegrationCryptoEnum from '@integration/integration/crypto/enums/IntegrationCryptoEnum';
 import { LeadUpdateDto } from '@lead/lead/dto/lead.update.dto';
 import { LeadInterface } from '@lead/lead/entities/lead.interface';
 import { LeadDocument } from '@lead/lead/entities/mongoose/lead.schema';
@@ -43,6 +44,7 @@ import { StatsDateCreateDto } from '@stats/stats/dto/stats.date.create.dto';
 import { StatusDocument } from '@status/status/entities/mongoose/status.schema';
 import { StatusInterface } from '@status/status/entities/status.interface';
 import { TransferServiceMongooseService } from '@transfer/transfer';
+import { DataTransferAccountResponse } from '@transfer/transfer/dto/transfer.account.response.dto';
 import { TransferCreateDto } from '@transfer/transfer/dto/transfer.create.dto';
 import { TransferUpdateDto } from '@transfer/transfer/dto/transfer.update.dto';
 import { TransferUpdateFromLatamCashierDto } from '@transfer/transfer/dto/transfer.update.from.latamcashier.dto';
@@ -257,11 +259,9 @@ export class TransferServiceService
       if (!transfer.account) {
         throw new BadRequestException('Account is mandatory');
       }
-
       const account: AccountDocument = await this.accountService.findOneById(
         transfer.account,
       );
-
       if (!account) {
         throw new BadRequestException('Not found account');
       }
@@ -290,52 +290,52 @@ export class TransferServiceService
       transfer.userCreator = transfer.userCreator ?? account.owner;
       transfer.userAccount = account.owner ?? transfer.userCreator;
       transfer.accountPrevBalance = account.amount;
-
+      console.log('transfer =>', transfer);
       const transferSaved = await this.lib.create(transfer);
       if (
         transferSaved.typeTransaction?.toString() === depositLinkCategory._id
       ) {
         try {
-          // const url = transfer.account.url ?? 'https://api.b2binpay.com';
-          // Logger.log(url, 'URL B2BinPay');
-          // const integration =
-          //   await this.integrationService.getCryptoIntegration(
-          //     account,
-          //     IntegrationCryptoEnum.B2BINPAY,
-          //     url,
-          //   );
-          // const deposit = await integration.createDeposit({
-          //   data: {
-          //     type: 'deposit',
-          //     attributes: {
-          //       target_amount_requested: transferSaved.amount.toString(),
-          //       label: transferSaved.name,
-          //       tracking_id: transferSaved._id,
-          //       confirmations_needed: 2,
-          //       // TODO[hender-2024/05/30] Change callback_url to environment params
-          //       callback_url:
-          //         process.env.ENVIRONMENT === 'PROD'
-          //           ? 'https://api.b2fintech.com/b2binpay/status'
-          //           : 'https://stage.b2fintech.com/b2binpay/status',
-          //     },
-          //     relationships: {
-          //       wallet: {
-          //         data: {
-          //           type: 'wallet',
-          //           id: account.accountId,
-          //         },
-          //       },
-          //     },
-          //   },
-          // });
-          // if (!deposit.data) {
-          //   Logger.error(deposit, 'Error B2BinPay Deposit');
-          //   throw new BadRequestException(deposit['errors']);
-          // }
-          // transferSaved.responseAccount = {
-          //   data: deposit.data as unknown as DataTransferAccountResponse,
-          // };
-          // await this.updateTransfer(transferSaved);
+          const url = transfer.account.url ?? 'https://api.b2binpay.com';
+          Logger.log(url, 'URL B2BinPay');
+          const integration =
+            await this.integrationService.getCryptoIntegration(
+              account,
+              IntegrationCryptoEnum.B2BINPAY,
+              url,
+            );
+          const deposit = await integration.createDeposit({
+            data: {
+              type: 'deposit',
+              attributes: {
+                target_amount_requested: transferSaved.amount.toString(),
+                label: transferSaved.name,
+                tracking_id: transferSaved._id,
+                confirmations_needed: 2,
+                // TODO[hender-2024/05/30] Change callback_url to environment params
+                callback_url:
+                  process.env.ENVIRONMENT === 'PROD'
+                    ? 'https://api.b2fintech.com/b2binpay/status'
+                    : 'https://stage.b2fintech.com/b2binpay/status',
+              },
+              relationships: {
+                wallet: {
+                  data: {
+                    type: 'wallet',
+                    id: account.accountId,
+                  },
+                },
+              },
+            },
+          });
+          if (!deposit.data) {
+            Logger.error(deposit, 'Error B2BinPay Deposit');
+            throw new BadRequestException(deposit['errors']);
+          }
+          transferSaved.responseAccount = {
+            data: deposit.data as unknown as DataTransferAccountResponse,
+          };
+          await this.updateTransfer(transferSaved);
         } catch (err) {
           await this.lib.remove(transferSaved._id);
           Logger.error(err, 'Error Transfer creation');
@@ -650,35 +650,36 @@ export class TransferServiceService
     brand: BrandInterface;
     crm: CrmInterface;
   }> {
-    const promisesByIds = {
-      account: this.getAccountById(transfer.account),
-      pspAccount: this.getPspAccountById(transfer.pspAccount),
-      // TODO[hender] Buscar agregando el tipo de category
-      typeTransaction: this.getCategoryById(transfer.typeTransaction),
-      status: this.getStatusById(transfer.status),
-      department:
-        transfer.department && this.getCategoryById(transfer.department),
-      bank: transfer.bank && this.getCategoryById(transfer.bank),
-      brand: transfer.brand && this.getBrandById(transfer.brand),
-      crm: transfer.crm && this.getCrmById(transfer.crm),
-    };
-    const data = {
-      account: null as AccountInterface,
-      pspAccount: null as PspAccountInterface,
-      typeTransaction: null as CategoryInterface,
-      status: null as StatusInterface,
-      department: null as CategoryInterface,
-      bank: null as CategoryInterface,
-      brand: null as BrandInterface,
-      crm: null as CrmInterface,
-    };
-    const keys = Object.keys(data);
+    const [
+      account,
+      pspAccount,
+      typeTransaction,
+      status,
+      department,
+      bank,
+      brand,
+      crm,
+    ] = await Promise.all([
+      this.getAccountById(transfer.account),
+      this.getPspAccountById(transfer.pspAccount),
+      this.getCategoryById(transfer.typeTransaction),
+      this.getStatusById(transfer.status),
+      transfer.department && this.getCategoryById(transfer.department),
+      transfer.bank && this.getCategoryById(transfer.bank),
+      transfer.brand && this.getBrandById(transfer.brand),
+      transfer.crm && this.getCrmById(transfer.crm),
+    ]);
 
-    const valuesIds = await Promise.all(Object.values(promisesByIds));
-    valuesIds.forEach((entry, idx) => {
-      data[keys[idx]] = entry;
-    });
-    return data;
+    return {
+      account: account as unknown as AccountInterface,
+      pspAccount: pspAccount as unknown as PspAccountInterface,
+      typeTransaction,
+      status,
+      department,
+      bank,
+      brand,
+      crm: crm as unknown as CrmInterface,
+    };
   }
 
   private async queryData(transfer: TransferCreateDto): Promise<{
@@ -831,7 +832,7 @@ export class TransferServiceService
     return this.lib.createMany(createTransfersDto);
   }
 
-  async updateTransfer(transfer: any) {
+  async updateTransfer(transfer: TransferUpdateDto) {
     const rta = await this.lib.update(transfer.id, transfer);
     if (transfer.approvedAt || transfer.isApprove) {
       this.updateAccount(
