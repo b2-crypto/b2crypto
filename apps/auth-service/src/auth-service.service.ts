@@ -1,27 +1,32 @@
-import { Injectable, Inject, BadRequestException, Logger } from '@nestjs/common';
-import { Cache } from '@nestjs/cache-manager';
 import { BuildersService } from '@builder/builders';
 import { CommonService } from '@common/common';
-import { UserRegisterDto } from '@user/user/dto/user.register.dto';
+import ResourcesEnum from '@common/common/enums/ResourceEnum';
+import { Cache, CACHE_MANAGER } from '@nestjs/cache-manager';
+import {
+  BadRequestException,
+  Inject,
+  Injectable,
+  Logger,
+} from '@nestjs/common';
+import { PersonCreateDto } from '@person/person/dto/person.create.dto';
+import { UserServiceMongooseService } from '@user/user';
 import { UserPreRegisterDto } from '@user/user/dto/user.pre.register.dto';
+import { UserRegisterDto } from '@user/user/dto/user.register.dto';
+import { UserDocument } from '@user/user/entities/mongoose/user.schema';
+import EventsNamesCategoryEnum from 'apps/category-service/src/enum/events.names.category.enum';
 import EventsNamesMessageEnum from 'apps/message-service/src/enum/events.names.message.enum';
 import EventsNamesPersonEnum from 'apps/person-service/src/enum/events.names.person.enum';
-import { PersonCreateDto } from '@person/person/dto/person.create.dto';
-import { UserDocument } from '@user/user/entities/mongoose/user.schema';
-import ResourcesEnum from '@common/common/enums/ResourceEnum';
-import EventsNamesCategoryEnum from 'apps/category-service/src/enum/events.names.category.enum';
 import EventsNamesUserEnum from 'apps/user-service/src/enum/events.names.user.enum';
-import { UserServiceMongooseService } from '@user/user';
 
 @Injectable()
 export class AuthService {
   constructor(
     @Inject(BuildersService)
     private builder: BuildersService,
-    @Inject('CACHE_MANAGER')
+    @Inject(CACHE_MANAGER)
     private cacheManager: Cache,
     @Inject(UserServiceMongooseService)
-    private lib: UserServiceMongooseService
+    private lib: UserServiceMongooseService,
   ) {}
 
   async newUser(user: UserRegisterDto) {
@@ -51,14 +56,17 @@ export class AuthService {
   }
 
   async newPreRegisterUser(createUserDto: UserPreRegisterDto) {
-    createUserDto.name = createUserDto.name ?? createUserDto.username ?? createUserDto.email.split('@')[0];
-    createUserDto.slugEmail = CommonService.getSlug(createUserDto.email); 
+    createUserDto.name =
+      createUserDto.name ??
+      createUserDto.username ??
+      createUserDto.email.split('@')[0];
+    createUserDto.slugEmail = CommonService.getSlug(createUserDto.email);
     createUserDto.username = createUserDto.username ?? createUserDto.name;
     createUserDto.slugUsername = CommonService.getSlug(createUserDto.username);
 
     const user = await this.builder.getPromiseUserEventClient(
       EventsNamesUserEnum.createOne,
-      createUserDto
+      createUserDto,
     );
 
     if (!user._id) {
@@ -78,7 +86,7 @@ export class AuthService {
           emails: [createUserDto.email],
           phoneNumber: createUserDto.phone,
           user: user._id.toString(),
-        } as unknown as PersonCreateDto
+        } as unknown as PersonCreateDto,
       );
 
       await this.builder.emitMessageEventClient(
@@ -88,9 +96,9 @@ export class AuthService {
           vars: {
             name: user.name,
             email: user.email,
-            clientName: createUserDto.description
+            clientName: createUserDto.description,
           },
-        }
+        },
       );
 
       this.builder.emitUserEventClient(EventsNamesUserEnum.updateOne, {
@@ -102,7 +110,7 @@ export class AuthService {
     } catch (error) {
       await this.builder.getPromiseUserEventClient(
         EventsNamesUserEnum.deleteOneById,
-        user._id.toString()
+        user._id.toString(),
       );
       throw new BadRequestException('Person already exists');
     }
@@ -135,7 +143,7 @@ export class AuthService {
     Logger.log(data, 'OTP Sended');
     this.builder.emitMessageEventClient(
       EventsNamesMessageEnum.sendEmailOtpNotification,
-      data
+      data,
     );
     return otpSended;
   }
