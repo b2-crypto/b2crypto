@@ -16,7 +16,6 @@ import {
   cloudwatchLogGroupOptlUi,
 } from './resources/aws/cloudwatch.log-group';
 import {
-  ec2SecurityGroup,
   ec2SecurityGroupOptlCollector,
   ec2SecurityGroupOptlUi,
 } from './resources/aws/ec2.security-group';
@@ -100,13 +99,6 @@ export const ec2VpcData = {
   vpcId: ec2Vpc.vpcId,
   publicSubnetIds: ec2Vpc.publicSubnetIds,
   privateSubnetIds: ec2Vpc.privateSubnetIds,
-};
-
-export const ec2SecurityGroupData = {
-  id: ec2SecurityGroup.id,
-  name: ec2SecurityGroup.name,
-  egress: ec2SecurityGroup.egress,
-  ingress: ec2SecurityGroup.ingress,
 };
 
 export const ec2SecurityGroupOptlCollectorData = {

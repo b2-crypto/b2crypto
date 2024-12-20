@@ -1,10 +1,13 @@
 import * as aws from '@pulumi/aws';
 import * as awsx from '@pulumi/awsx';
 import {
-  DESIRED_COUNT_TASK,
+  DESIRED_COUNT_TASK_OPTL_COLLECTOR,
+  DESIRED_COUNT_TASK_OPTL_UI,
+  DOMAIN,
   PROJECT_NAME,
   SECRETS,
   STACK,
+  SUBDOMAIN_PREFIX_OPENSEARCH,
   TAGS,
 } from '../../secrets';
 import {
@@ -21,7 +24,6 @@ import {
   lbApplicationLoadBalancerOptlCollector,
   lbApplicationLoadBalancerOptlUi,
 } from './lb.application-load-balancer';
-import { opensearchDomainOptl } from './opensearch.domain';
 
 export const ecsFargateServiceOptlCollector = new awsx.ecs.FargateService(
   `${PROJECT_NAME}-optl-collector-${STACK}`,
@@ -49,9 +51,7 @@ export const ecsFargateServiceOptlCollector = new awsx.ecs.FargateService(
           { name: 'SPAN_STORAGE_TYPE', value: 'elasticsearch' },
           {
             name: 'ES_SERVER_URLS',
-            value: opensearchDomainOptl.endpoint.apply(
-              (value) => `https://${value}`,
-            ),
+            value: `https://${SUBDOMAIN_PREFIX_OPENSEARCH}.${DOMAIN}`,
           },
           {
             name: 'ES_USERNAME',
@@ -96,7 +96,7 @@ export const ecsFargateServiceOptlCollector = new awsx.ecs.FargateService(
         },
       },
     },
-    desiredCount: DESIRED_COUNT_TASK,
+    desiredCount: DESIRED_COUNT_TASK_OPTL_COLLECTOR,
     deploymentMinimumHealthyPercent: 100,
     deploymentMaximumPercent: 200,
     enableEcsManagedTags: true,
@@ -130,9 +130,7 @@ export const ecsFargateServiceOptlUi = new awsx.ecs.FargateService(
           { name: 'SPAN_STORAGE_TYPE', value: 'elasticsearch' },
           {
             name: 'ES_SERVER_URLS',
-            value: opensearchDomainOptl.endpoint.apply(
-              (value) => `https://${value}`,
-            ),
+            value: `https://${SUBDOMAIN_PREFIX_OPENSEARCH}.${DOMAIN}`,
           },
           {
             name: 'ES_USERNAME',
@@ -176,7 +174,7 @@ export const ecsFargateServiceOptlUi = new awsx.ecs.FargateService(
         },
       },
     },
-    desiredCount: DESIRED_COUNT_TASK,
+    desiredCount: DESIRED_COUNT_TASK_OPTL_UI,
     deploymentMinimumHealthyPercent: 100,
     deploymentMaximumPercent: 200,
     enableEcsManagedTags: true,

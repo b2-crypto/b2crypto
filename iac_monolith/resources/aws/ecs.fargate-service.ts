@@ -29,21 +29,20 @@ import {
   SOCIAL_MEDIA_ICONS,
   SOCIAL_MEDIA_LINKS,
   STACK,
+  SUBDOMAIN_PREFIX_MONGODB,
   SUBDOMAIN_PREFIX_OPTL_COLLECTOR,
+  SUBDOMAIN_PREFIX_RABBITMQ,
   TAGS,
   TESTING,
   TZ,
   URL_API_EMAIL_APP,
 } from '../../secrets';
-import { mongoAtlasCluster } from '../mongoatlas/mongodbatlas.cluster';
-import { mongodbatlasServerlessInstance } from '../mongoatlas/mongodbatlas.serverless-instance';
 import { cloudwatchLogGroup } from './cloudwatch.log-group';
 import { ec2SecurityGroup } from './ec2.security-group';
 import { ec2PublicSubnets } from './ec2.subnet';
 import { ecrImage, TAG } from './ecr.image';
 import { ecsCluster } from './ecs.cluster';
 import { lbApplicationLoadBalancer } from './lb.application-load-balancer';
-import { mqBrokerRabbitMQ } from './mq.broker';
 
 export const ecsFargateService = new awsx.ecs.FargateService(
   `${PROJECT_NAME}-monolith-${STACK}`,
@@ -78,30 +77,14 @@ export const ecsFargateService = new awsx.ecs.FargateService(
           {
             name: 'DATABASE_URL',
             value: pulumi
-              .all([
-                mongoAtlasCluster?.connectionStrings.apply(
-                  (connections) => connections[0].standardSrv,
-                ) ??
-                  mongodbatlasServerlessInstance?.connectionStringsStandardSrv,
-                SECRETS.MONGOATLAS_USERNAME,
-                SECRETS.MONGOATLAS_PASSWORD,
-              ])
-              .apply(([standardSrv, username, password]) => {
-                const [protocol, domain] = standardSrv?.split('//') ?? [];
-
-                return `${protocol}//${username}:${password}@${domain}/?retryWrites=true&w=majority&appName=${mongoAtlasClusterName}`;
+              .all([SECRETS.MONGOATLAS_USERNAME, SECRETS.MONGOATLAS_PASSWORD])
+              .apply(([username, password]) => {
+                return `mongodb+srv://${username}:${password}@${SUBDOMAIN_PREFIX_MONGODB}.${DOMAIN}/?retryWrites=true&w=majority&appName=${mongoAtlasClusterName}`;
               }),
           },
           {
             name: 'RABBIT_MQ_HOST',
-            value: mqBrokerRabbitMQ?.instances?.apply(
-              (instances) =>
-                instances[0].endpoints[0]
-                  ?.split('//')
-                  .pop()
-                  ?.split(':')
-                  .shift() as string,
-            ),
+            value: `${SUBDOMAIN_PREFIX_RABBITMQ}.${DOMAIN}`,
           },
           { name: 'RABBIT_MQ_PORT', value: RABBIT_MQ_PORT },
           { name: 'RABBIT_MQ_QUEUE', value: RABBIT_MQ_QUEUE },

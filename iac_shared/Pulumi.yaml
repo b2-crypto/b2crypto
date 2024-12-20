@@ -1,9 +1,9 @@
-name: b2crypto-iac
+name: b2crypto-iac-shared
 runtime:
   name: nodejs
   options:
-    packagemanager: npm
-description: b2crypto iac
+    packagemanager: pnpm
+description: b2crypto iac shared
 config:
   pulumi:tags:
     value:

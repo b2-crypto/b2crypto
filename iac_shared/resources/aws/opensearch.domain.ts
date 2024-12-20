@@ -15,9 +15,9 @@ import { ec2SecurityGroupOptlOpensearch } from './ec2.security-group';
 import { ec2Vpc } from './ec2.vpc';
 
 export const opensearchDomainOptl = new aws.opensearch.Domain(
-  `${PROJECT_NAME}-optl-${STACK}`,
+  `${PROJECT_NAME}-op-${STACK}`,
   {
-    domainName: `${PROJECT_NAME}-optl-${STACK}`,
+    // domainName: `${PROJECT_NAME}-optl-${STACK}`,
     engineVersion: 'OpenSearch_2.15',
     clusterConfig: {
       instanceType: OPTL_OPEN_SEARCH_INSTANCE_TYPE,

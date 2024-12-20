@@ -26,7 +26,7 @@ export const mqBrokerRabbitMQ = isProduction()
   : new aws.mq.Broker(
       `${PROJECT_NAME}-rabbitmq-${STACK}`,
       {
-        brokerName: `${PROJECT_NAME}-rabbitmq-${STACK}`,
+        // brokerName: `${PROJECT_NAME}-rabbitmq-${STACK}`,
         engineType: 'RABBITMQ',
         engineVersion: '3.13',
         hostInstanceType: RABBIT_MQ_INSTANCE_TYPE,

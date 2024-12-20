@@ -1,8 +1,10 @@
 import * as aws from '@pulumi/aws';
 import * as pulumi from '@pulumi/pulumi';
 import {
-  OPTL_COLLECTOR_MAX_CAPACITY_AUTOSCALING,
-  OPTL_COLLECTOR_MIN_CAPACITY_AUTOSCALING,
+  MAX_CAPACITY_AUTOSCALING_OPTL_COLLECTOR,
+  MAX_CAPACITY_AUTOSCALING_OPTL_UI,
+  MIN_CAPACITY_AUTOSCALING_OPTL_COLLECTOR,
+  MIN_CAPACITY_AUTOSCALING_OPTL_UI,
   PROJECT_NAME,
   STACK,
 } from '../../secrets';
@@ -15,8 +17,8 @@ import {
 export const appautoscalingTargetOptlCollector = new aws.appautoscaling.Target(
   `${PROJECT_NAME}-optl-collector-${STACK}`,
   {
-    maxCapacity: OPTL_COLLECTOR_MAX_CAPACITY_AUTOSCALING,
-    minCapacity: OPTL_COLLECTOR_MIN_CAPACITY_AUTOSCALING,
+    maxCapacity: MAX_CAPACITY_AUTOSCALING_OPTL_COLLECTOR,
+    minCapacity: MIN_CAPACITY_AUTOSCALING_OPTL_COLLECTOR,
     resourceId: pulumi.interpolate`service/${ecsCluster.name}/${ecsFargateServiceOptlCollector.service.name}`,
     scalableDimension: 'ecs:service:DesiredCount',
     serviceNamespace: 'ecs',
@@ -26,8 +28,8 @@ export const appautoscalingTargetOptlCollector = new aws.appautoscaling.Target(
 export const appautoscalingTargetOptlUi = new aws.appautoscaling.Target(
   `${PROJECT_NAME}-optl-ui-${STACK}`,
   {
-    maxCapacity: OPTL_COLLECTOR_MAX_CAPACITY_AUTOSCALING,
-    minCapacity: OPTL_COLLECTOR_MIN_CAPACITY_AUTOSCALING,
+    maxCapacity: MAX_CAPACITY_AUTOSCALING_OPTL_UI,
+    minCapacity: MIN_CAPACITY_AUTOSCALING_OPTL_UI,
     resourceId: pulumi.interpolate`service/${ecsCluster.name}/${ecsFargateServiceOptlUi.service.name}`,
     scalableDimension: 'ecs:service:DesiredCount',
     serviceNamespace: 'ecs',

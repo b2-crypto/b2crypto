@@ -1,9 +1,0 @@
-config:
-  b2crypto-iac:AWS_SECRET_KEY:
-    secure: AAABAPohr68/WPcIzPNO1AMmRwFnq9lgYijPuCkeDHxxIwsscORv7TumIL/ZpqA9sFJ+V0yzokRHNj5u0NMruTxXGU9E+AGq
-  b2crypto-iac:AWS_ACCESS_KEY:
-    secure: AAABAHA8OL16agrwwrOsbAcSQsx50MMvMUucOqmTuvna4n78zliH9G4XHFgAp8y8IWMObQ==
-  b2crypto-iac:RABBIT_MQ_PASSWORD:
-    secure: AAABACh4LFwTilKmhMT20QYNreKwSGHHpdUVyBfMR05gIlMo1r6VFJgYWTBa6Zrjy8d30Qq/eLfCZ/CZByI=
-  b2crypto-iac:RABBIT_MQ_USERNAME:
-    secure: AAABANjZqLhIWr6vr+orFT/lW7VTGKPnVxcVDXU2a/SU8xlU2o+Jb4Mt/GYJKBTCW5e1TvDkHOIzNjwoXuxtWw==

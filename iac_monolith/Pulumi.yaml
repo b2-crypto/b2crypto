@@ -1,9 +1,9 @@
-name: b2crypto-cicd
+name: b2crypto-iac-monolith
 runtime:
   name: nodejs
   options:
-    packagemanager: npm
-description: b2crypto cicd
+    packagemanager: pnpm
+description: b2crypto iac monolith
 config:
   pulumi:tags:
     value:

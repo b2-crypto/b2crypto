@@ -63,7 +63,7 @@ jobs:
         with:
           filters: |
             src:
-              - 'shared_iac/**'
+              - 'iac_shared/**'
 
       - if: steps.changes.outputs.src == 'true'
         name: Get Commit SHA
@@ -92,7 +92,7 @@ jobs:
         with:
           command: preview
           stack-name: ${{ github.event.pull_request.base.ref == 'main' && 'b2fintech/production' || github.event.pull_request.base.ref == 'test' && 'b2fintech/testing' || 'b2fintech/staging' }}
-          work-dir: ./shared_iac
+          work-dir: ./iac_shared
           github-token: ${{ secrets.GITHUB_TOKEN }}
           comment-on-pr: true
           diff: true
@@ -136,7 +136,7 @@ jobs:
         with:
           command: preview
           stack-name: ${{ github.event.pull_request.base.ref == 'main' && 'b2fintech/production' || github.event.pull_request.base.ref == 'test' && 'b2fintech/testing' || 'b2fintech/staging' }}
-          work-dir: ./monolith_iac
+          work-dir: ./iac_monolith
           github-token: ${{ secrets.GITHUB_TOKEN }}
           comment-on-pr: true
           diff: true

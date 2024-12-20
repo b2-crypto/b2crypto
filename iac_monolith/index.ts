@@ -2,11 +2,19 @@ import { appautoscalingPolicy } from './resources/aws/appautoscaling.policy';
 import { appautoscalingTarget } from './resources/aws/appautoscaling.target';
 import { cloudwatchDashboard } from './resources/aws/cloudwatch.dashboard';
 import { cloudwatchLogGroup } from './resources/aws/cloudwatch.log-group';
+import { ec2SecurityGroup } from './resources/aws/ec2.security-group';
 import { ecrImage, TAG } from './resources/aws/ecr.image';
 import { ecrRepository } from './resources/aws/ecr.repository';
 import { ecsFargateService } from './resources/aws/ecs.fargate-service';
 import { lbApplicationLoadBalancer } from './resources/aws/lb.application-load-balancer';
 import { route53Record } from './resources/aws/route53.record';
+
+export const ec2SecurityGroupData = {
+  id: ec2SecurityGroup.id,
+  name: ec2SecurityGroup.name,
+  egress: ec2SecurityGroup.egress,
+  ingress: ec2SecurityGroup.ingress,
+};
 
 export const ecrRepositoryData = {
   id: ecrRepository.id,
