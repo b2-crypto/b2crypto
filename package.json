@@ -117,7 +117,7 @@
     "@fireblocks/ts-sdk": "^4.0.0",
     "@nestjs-modules/mailer": "^2.0.2",
     "@nestjs/axios": "^1.0.0",
-    "@nestjs/cache-manager": "^2.2.2",
+    "@nestjs/cache-manager": "^2.3.0",
     "@nestjs/common": "^9.0.0",
     "@nestjs/config": "^2.2.0",
     "@nestjs/core": "^9.0.0",
