@@ -1,11 +1,13 @@
 import { AuthModule } from '@auth/auth';
 import { BuildersModule } from '@builder/builders';
+import { EnvironmentEnum } from '@common/common/enums/environment.enum';
 import { ResponseHttpExceptionFilter } from '@common/common/exceptions/response.exception';
 import { B2CryptoCacheInterceptor } from '@common/common/interceptors/b-2-crypto-cache.interceptor';
 import { ResponseInterceptor } from '@common/common/interceptors/response.interceptor';
 import { IProvider } from '@common/common/interfaces/i.provider.interface';
 import { QueueAdminModule } from '@common/common/queue-admin-providers/queue.admin.provider.module';
-import { CacheModule, Logger } from '@nestjs/common';
+import { CacheModule } from '@nestjs/cache-manager';
+import { Logger } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { APP_FILTER, APP_INTERCEPTOR } from '@nestjs/core';
 import { ResponseB2CryptoModule } from '@response-b2crypto/response-b2crypto';
@@ -37,7 +39,6 @@ import configuration from 'config/configuration';
 import { RedisClientOptions } from 'redis';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { EnvironmentEnum } from '@common/common/enums/environment.enum';
 
 export const configApp = {
   imports: [

@@ -1,11 +1,8 @@
 import { AccountModule } from '@account/account/account.module';
 import { AuthModule } from '@auth/auth';
-import { JwtAuthGuard } from '@auth/auth/guards/jwt-auth.guard';
 import { BuildersModule } from '@builder/builders';
 import { CommonModule } from '@common/common';
-import { ResponseHttpExceptionFilter } from '@common/common/exceptions/response.exception';
-import { B2CryptoCacheInterceptor } from '@common/common/interceptors/b-2-crypto-cache.interceptor';
-import { ResponseInterceptor } from '@common/common/interceptors/response.interceptor';
+import { EnvironmentEnum } from '@common/common/enums/environment.enum';
 import { PomeloProcessConstants } from '@common/common/utils/pomelo.integration.process.constants';
 import { PomeloHttpUtils } from '@common/common/utils/pomelo.integration.process.http.utils';
 import { PomeloSignatureUtils } from '@common/common/utils/pomelo.integration.process.signature';
@@ -16,17 +13,15 @@ import { IntegrationModule } from '@integration/integration';
 import { PomeloRestClient } from '@integration/integration/client/pomelo.integration.client';
 import { PomeloCache } from '@integration/integration/util/pomelo.integration.process.cache';
 import { HttpModule } from '@nestjs/axios';
-import { CacheModule, Logger, Module } from '@nestjs/common';
+import { CacheModule } from '@nestjs/cache-manager';
+import { Logger, Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { MulterModule } from '@nestjs/platform-express';
-import { ScheduleModule } from '@nestjs/schedule';
 import { ResponseB2CryptoService } from '@response-b2crypto/response-b2crypto';
 import { UserModule } from '@user/user';
 import { AccountServiceService } from 'apps/account-service/src/account-service.service';
 import { UserServiceService } from 'apps/user-service/src/user-service.service';
 import { redisStore } from 'cache-manager-redis-store';
-import configuration from 'config/configuration';
 import { RedisClientOptions } from 'redis';
 import { B2BinPayNotificationsController } from './b2binpay.notifications.controller';
 import { B2CoreMigrationController } from './b2core.migration.controller';
@@ -48,6 +43,26 @@ import { SumsubNotificationIntegrationController } from './sumsub.notification.c
 
 @Module({
   imports: [
+    CacheModule.registerAsync({
+      imports: [ConfigModule],
+      useFactory: async (configService: ConfigService) => {
+        const config = {
+          store: redisStore,
+          username: configService.get('REDIS_USERNAME') ?? '',
+          password: configService.get('REDIS_PASSWORD') ?? '',
+          host: configService.get('REDIS_HOST') ?? 'localhost',
+          port: configService.get('REDIS_PORT') ?? 6379,
+          ttl: parseInt(configService.get('CACHE_TTL') ?? '20') * 1000,
+          max: parseInt(configService.get('CACHE_MAX_ITEMS') ?? '10'),
+          isGlobal: true,
+        } as RedisClientOptions;
+        if (configService.get('ENVIRONMENT') !== EnvironmentEnum.prod) {
+          Logger.log(config, 'Redis Config');
+        }
+        return config;
+      },
+      inject: [ConfigService],
+    }),
     MulterModule.register({
       dest: './upload',
     }),
