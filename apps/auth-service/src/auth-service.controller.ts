@@ -273,18 +273,16 @@ export class AuthServiceController {
   @Post('restore-password')
   async restorePassword(@Body() restorePasswordDto: RestorePasswordDto) {
     try {
-      const users = await this.builder.getPromiseUserEventClient(
-        EventsNamesUserEnum.findAll,
-        {
-          where: {
-            email: `/${restorePasswordDto.email}/gi`,
-          },
-        },
+      const user = await this.builder.getPromiseUserEventClient(
+        EventsNamesUserEnum.findOneByEmail,
+        restorePasswordDto.email,
       );
+
       // Validate user
-      if (!users.list[0]) {
+      if (!user) {
         throw new BadRequestException('User not found');
       }
+
       if (
         restorePasswordDto.otp &&
         restorePasswordDto.password &&
@@ -303,7 +301,6 @@ export class AuthServiceController {
         }
         await this.deleteOtpGenerated(restorePasswordDto.email);
         const psw = restorePasswordDto.password;
-        const user = users.list[0];
         const emailData = {
           name: `Actualizacion de clave`,
           body: `Tu clave ha sido actualizada exitosamente ${user.name}`,
@@ -324,7 +321,7 @@ export class AuthServiceController {
         await this.builder.getPromiseUserEventClient(
           EventsNamesUserEnum.updateOne,
           {
-            id: users.list[0]._id,
+            id: user._id,
             verifyEmail: false,
             password: CommonService.getHash(psw),
           },
@@ -685,31 +682,30 @@ export class AuthServiceController {
   }
 
   private async generateOtp(user: UserDocument, msOTP?: number) {
-    if (!msOTP) {
-      msOTP =
-        this.configService.get<number>('OTP_VALIDATION_TIME_SECONDS', 90) *
-        1000;
-    }
-    let otpSended = await this.getOtpGenerated(user.email);
-    if (!otpSended) {
-      otpSended = CommonService.getOTP();
-      await this.cacheManager.set(user.email, otpSended, msOTP);
-    }
+    const otpTTL =
+      msOTP ??
+      this.configService.get<number>('OTP_VALIDATION_TIME_SECONDS', 90) * 1000;
+
+    const otpSended =
+      (await this.getOtpGenerated(user.email)) ?? CommonService.getOTP();
+
+    await this.cacheManager.set(user.email, otpSended, otpTTL);
+
     const data = {
       destinyText: user.email,
-      destiny: null,
+      destiny: user?._id
+        ? {
+            resourceId: user?._id,
+            resourceName: ResourcesEnum.USER,
+          }
+        : null,
       vars: {
         name: user.name ?? user.email,
         lastname: '',
         otp: otpSended,
       },
     };
-    if (user._id) {
-      data.destiny = {
-        resourceId: user._id,
-        resourceName: ResourcesEnum.USER,
-      };
-    }
+
     Logger.log(data, 'OTP Sended');
     this.builder.emitMessageEventClient(
       EventsNamesMessageEnum.sendEmailOtpNotification,
@@ -719,7 +715,7 @@ export class AuthServiceController {
   }
 
   private async getOtpGenerated(email: string) {
-    return this.cacheManager.get(email);
+    return this.cacheManager.get<number>(email);
   }
 
   private async deleteOtpGenerated(email: string) {
