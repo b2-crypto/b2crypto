@@ -1,4 +1,9 @@
 config:
+  aws:region: us-east-2
+  aws:accessKey:
+    secure: AAABACoCO4Rgbo+r0J5ILv3HEtNWXCXPxZK+jTkpAqhRqPbIGTm7b7DCUTDDDIRWPbYgaw==
+  aws:secretKey:
+    secure: AAABAPTBlWiqlGe5Wys0HAmrgoFeKFGMLTcPL+x/WZSz3S8j4fLpHiFff1bVkzshfl4NRpWGTQLt9mK+mqb3OUAtbjeFrJsZ
   b2crypto-iac-shared:STACK: staging
   b2crypto-iac-shared:VPC_CIDR_BLOCK: 10.0.0.0/16
   b2crypto-iac-shared:DESIRED_COUNT_TASK_OPTL_COLLECTOR: '1'
@@ -37,8 +42,3 @@ config:
     secure: AAABAKB4rxWjmnEsEIU+OZ7I3Yq/WBIMKwRV5tEkYMT/zIcb8DUFy9gV
   b2crypto-iac-shared:OPTL_OPEN_SEARCH_PASSWORD:
     secure: AAABAGTDrQOKKldRLsjIQB6aHtGJlvSvGnI5tQYPJn97na60c4x+hZs3/Nibh82SZB8Vivn3IxMUgf+VSEM=
-  aws:region: us-east-2
-  aws:accessKey:
-    secure: AAABACoCO4Rgbo+r0J5ILv3HEtNWXCXPxZK+jTkpAqhRqPbIGTm7b7DCUTDDDIRWPbYgaw==
-  aws:secretKey:
-    secure: AAABAPTBlWiqlGe5Wys0HAmrgoFeKFGMLTcPL+x/WZSz3S8j4fLpHiFff1bVkzshfl4NRpWGTQLt9mK+mqb3OUAtbjeFrJsZ

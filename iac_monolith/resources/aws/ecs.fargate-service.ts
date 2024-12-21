@@ -33,7 +33,6 @@ import {
   SUBDOMAIN_PREFIX_OPTL_COLLECTOR,
   SUBDOMAIN_PREFIX_RABBITMQ,
   TAGS,
-  TESTING,
   TZ,
   URL_API_EMAIL_APP,
 } from '../../secrets';
@@ -128,7 +127,6 @@ export const ecsFargateService = new awsx.ecs.FargateService(
             name: 'URL_API_EMAIL_APP',
             value: URL_API_EMAIL_APP,
           },
-          { name: 'TESTING', value: TESTING },
           { name: 'TZ', value: TZ },
           {
             name: 'AWS_SES_FROM_DEFAULT',
