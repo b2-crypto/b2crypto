@@ -1,8 +1,8 @@
 import { AccountModule } from '@account/account/account.module';
+import { DistributedCacheModule } from '@app/distributed-cache';
 import { AuthModule } from '@auth/auth';
 import { BuildersModule } from '@builder/builders';
 import { CommonModule } from '@common/common';
-import { EnvironmentEnum } from '@common/common/enums/environment.enum';
 import { PomeloProcessConstants } from '@common/common/utils/pomelo.integration.process.constants';
 import { PomeloHttpUtils } from '@common/common/utils/pomelo.integration.process.http.utils';
 import { PomeloSignatureUtils } from '@common/common/utils/pomelo.integration.process.signature';
@@ -13,16 +13,12 @@ import { IntegrationModule } from '@integration/integration';
 import { PomeloRestClient } from '@integration/integration/client/pomelo.integration.client';
 import { PomeloCache } from '@integration/integration/util/pomelo.integration.process.cache';
 import { HttpModule } from '@nestjs/axios';
-import { CacheModule } from '@nestjs/cache-manager';
-import { Logger, Module } from '@nestjs/common';
-import { ConfigModule, ConfigService } from '@nestjs/config';
+import { Module } from '@nestjs/common';
 import { MulterModule } from '@nestjs/platform-express';
 import { ResponseB2CryptoService } from '@response-b2crypto/response-b2crypto';
 import { UserModule } from '@user/user';
 import { AccountServiceService } from 'apps/account-service/src/account-service.service';
 import { UserServiceService } from 'apps/user-service/src/user-service.service';
-import { redisStore } from 'cache-manager-redis-store';
-import { RedisClientOptions } from 'redis';
 import { B2BinPayNotificationsController } from './b2binpay.notifications.controller';
 import { B2CoreMigrationController } from './b2core.migration.controller';
 import { ClientsIntegrationController } from './clients.controller';
@@ -43,26 +39,7 @@ import { SumsubNotificationIntegrationController } from './sumsub.notification.c
 
 @Module({
   imports: [
-    CacheModule.registerAsync({
-      imports: [ConfigModule],
-      useFactory: async (configService: ConfigService) => {
-        const config = {
-          store: redisStore,
-          username: configService.getOrThrow('REDIS_USERNAME'),
-          password: configService.getOrThrow('REDIS_PASSWORD'),
-          host: configService.getOrThrow('REDIS_HOST'),
-          port: configService.getOrThrow<number>('REDIS_PORT'),
-          ttl: parseInt(configService.getOrThrow('CACHE_TTL') ?? '20') * 1000,
-          max: parseInt(configService.getOrThrow('CACHE_MAX_ITEMS')),
-          isGlobal: true,
-        } as RedisClientOptions;
-        if (configService.getOrThrow('ENVIRONMENT') !== EnvironmentEnum.prod) {
-          Logger.log(config, 'Redis Config');
-        }
-        return config;
-      },
-      inject: [ConfigService],
-    }),
+    DistributedCacheModule,
     MulterModule.register({
       dest: './upload',
     }),

@@ -458,6 +458,24 @@
       "compilerOptions": {
         "tsConfigPath": "apps/authentication/tsconfig.app.json"
       }
+    },
+    "cache": {
+      "type": "library",
+      "root": "libs/cache",
+      "entryFile": "index",
+      "sourceRoot": "libs/cache/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/cache/tsconfig.lib.json"
+      }
+    },
+    "distributed-cache": {
+      "type": "library",
+      "root": "libs/distributed-cache",
+      "entryFile": "index",
+      "sourceRoot": "libs/distributed-cache/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/distributed-cache/tsconfig.lib.json"
+      }
     }
   }
 }
