@@ -20,15 +20,15 @@ import { SecurityServiceService } from './security-service.service';
       useFactory: async (configService: ConfigService) => {
         const config = {
           store: redisStore,
-          username: configService.get('REDIS_USERNAME') ?? '',
-          password: configService.get('REDIS_PASSWORD') ?? '',
-          host: configService.get('REDIS_HOST') ?? 'localhost',
-          port: configService.get('REDIS_PORT') ?? 6379,
-          ttl: parseInt(configService.get('CACHE_TTL') ?? '20') * 1000,
-          max: parseInt(configService.get('CACHE_MAX_ITEMS') ?? '10'),
+          username: configService.getOrThrow('REDIS_USERNAME'),
+          password: configService.getOrThrow('REDIS_PASSWORD'),
+          host: configService.getOrThrow('REDIS_HOST'),
+          port: configService.getOrThrow<number>('REDIS_PORT'),
+          ttl: parseInt(configService.getOrThrow('CACHE_TTL') ?? '20') * 1000,
+          max: parseInt(configService.getOrThrow('CACHE_MAX_ITEMS')),
           isGlobal: true,
         } as RedisClientOptions;
-        if (configService.get('ENVIRONMENT') !== EnvironmentEnum.prod) {
+        if (configService.getOrThrow('ENVIRONMENT') !== EnvironmentEnum.prod) {
           Logger.log(config, 'Redis Config');
         }
         return config;
