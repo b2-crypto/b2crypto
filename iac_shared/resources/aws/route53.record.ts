@@ -25,6 +25,7 @@ export const route53RecordMongoDB = new aws.route53.Record(
     zoneId: route53Zone.id,
     name: SUBDOMAIN_PREFIX_MONGODB,
     type: 'CNAME',
+    ttl: 300,
     records: pulumi
       .all([
         mongoAtlasCluster?.connectionStrings.apply(
