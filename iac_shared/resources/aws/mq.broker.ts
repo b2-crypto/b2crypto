@@ -1,6 +1,5 @@
 import * as aws from '@pulumi/aws';
 import {
-  isProduction,
   MQ_DEPLOYMENT_MODE,
   PROJECT_NAME,
   RABBIT_MQ_INSTANCE_TYPE,
@@ -10,50 +9,35 @@ import {
 } from '../../secrets';
 import { ec2Vpc } from './ec2.vpc';
 
-export const mqBrokerRabbitMQ = isProduction()
-  ? aws.mq.getBrokerOutput(
+export const mqBrokerRabbitMQ = new aws.mq.Broker(
+  `${PROJECT_NAME}-rabbitmq-${STACK}`,
+  {
+    // brokerName: `${PROJECT_NAME}-rabbit-${STACK}`,
+    engineType: 'RABBITMQ',
+    engineVersion: '3.13',
+    hostInstanceType: RABBIT_MQ_INSTANCE_TYPE,
+    publiclyAccessible: true,
+    // securityGroups: [ec2SecurityGroup.id],
+    users: [
       {
-        brokerName: 'b2fintech',
+        username: SECRETS.RABBIT_MQ_USERNAME,
+        password: SECRETS.RABBIT_MQ_PASSWORD,
       },
-      {
-        provider: new aws.Provider('aws-us-west-1', {
-          region: 'us-west-1',
-          accessKey: SECRETS.AWS_ACCESS_KEY,
-          secretKey: SECRETS.AWS_SECRET_KEY,
-        }),
-      },
-    )
-  : new aws.mq.Broker(
-      `${PROJECT_NAME}-rabbitmq-${STACK}`,
-      {
-        // brokerName: `${PROJECT_NAME}-rabbit-${STACK}`,
-        engineType: 'RABBITMQ',
-        engineVersion: '3.13',
-        hostInstanceType: RABBIT_MQ_INSTANCE_TYPE,
-        publiclyAccessible: true,
-        // securityGroups: [ec2SecurityGroup.id],
-        users: [
-          {
-            username: SECRETS.RABBIT_MQ_USERNAME,
-            password: SECRETS.RABBIT_MQ_PASSWORD,
-          },
-        ],
-        subnetIds:
-          MQ_DEPLOYMENT_MODE === 'CLUSTER_MULTI_AZ'
-            ? ec2Vpc.publicSubnetIds
-            : ec2Vpc.publicSubnetIds.apply((subnets) =>
-                [...subnets].slice(0, 1),
-              ),
-        logs: {
-          general: true,
-          audit: false,
-        },
-        autoMinorVersionUpgrade: true,
-        deploymentMode: MQ_DEPLOYMENT_MODE,
-        authenticationStrategy: 'SIMPLE',
-        tags: TAGS,
-      },
-      {
-        // protect: isProduction(),
-      },
-    );
+    ],
+    subnetIds:
+      MQ_DEPLOYMENT_MODE === 'CLUSTER_MULTI_AZ'
+        ? ec2Vpc.publicSubnetIds
+        : ec2Vpc.publicSubnetIds.apply((subnets) => [...subnets].slice(0, 1)),
+    logs: {
+      general: true,
+      audit: false,
+    },
+    autoMinorVersionUpgrade: true,
+    deploymentMode: MQ_DEPLOYMENT_MODE,
+    authenticationStrategy: 'SIMPLE',
+    tags: { ...TAGS, Broker: `${PROJECT_NAME}-rabbit-${STACK}` },
+  },
+  {
+    // protect: isProduction(),
+  },
+);

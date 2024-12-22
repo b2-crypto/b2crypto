@@ -29,13 +29,13 @@ import {
   SOCIAL_MEDIA_ICONS,
   SOCIAL_MEDIA_LINKS,
   STACK,
-  SUBDOMAIN_PREFIX_MONGODB,
   SUBDOMAIN_PREFIX_OPTL_COLLECTOR,
-  SUBDOMAIN_PREFIX_RABBITMQ,
   TAGS,
   TZ,
   URL_API_EMAIL_APP,
 } from '../../secrets';
+import { mongoAtlasCluster } from '../mongoatlas/mongodbatlas.cluster';
+import { mongodbatlasServerlessInstance } from '../mongoatlas/mongodbatlas.serverless-instance';
 import { cloudwatchLogGroup } from './cloudwatch.log-group';
 import { ec2SecurityGroup } from './ec2.security-group';
 import { ec2PublicSubnets } from './ec2.subnet';
@@ -76,14 +76,29 @@ export const ecsFargateService = new awsx.ecs.FargateService(
           {
             name: 'DATABASE_URL',
             value: pulumi
-              .all([SECRETS.MONGOATLAS_USERNAME, SECRETS.MONGOATLAS_PASSWORD])
-              .apply(([username, password]) => {
-                return `mongodb+srv://${username}:${password}@${SUBDOMAIN_PREFIX_MONGODB}.${DOMAIN}/?retryWrites=true&w=majority&appName=${mongoAtlasClusterName}`;
+              .all([
+                mongodbatlasServerlessInstance?.connectionStringsStandardSrv.apply(
+                  (connection) => connection.split('//').pop(),
+                ) ??
+                  mongoAtlasCluster?.connectionStrings.apply((connections) =>
+                    connections[0].standardSrv.split('//').pop(),
+                  ),
+                SECRETS.MONGOATLAS_USERNAME,
+                SECRETS.MONGOATLAS_PASSWORD,
+              ])
+              .apply(([connection, username, password]) => {
+                return `mongodb+srv://${username}:${password}@${connection}/?retryWrites=true&w=majority&appName=${mongoAtlasClusterName}`;
               }),
           },
+          // {
+          //   name: 'RABBIT_MQ_HOST',
+          //   value: mqBrokerRabbitMQ.instances[0].endpoints[0].apply(
+          //     (endpoint) => endpoint.split('//').pop() as string,
+          //   ),
+          // },
           {
             name: 'RABBIT_MQ_HOST',
-            value: `${SUBDOMAIN_PREFIX_RABBITMQ}.${DOMAIN}`,
+            value: `rabbitmqstage.${DOMAIN}`,
           },
           { name: 'RABBIT_MQ_PORT', value: RABBIT_MQ_PORT },
           { name: 'RABBIT_MQ_QUEUE', value: RABBIT_MQ_QUEUE },

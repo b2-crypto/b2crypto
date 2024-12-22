@@ -18,8 +18,6 @@ config:
   b2crypto-iac-shared:MONGOATLAS_INSTANCE_MIN: ''
   b2crypto-iac-shared:MONGOATLAS_INSTANCE_MAX: ''
   b2crypto-iac-shared:MONGOATLAS_CLUSTER_TYPE: ''
-  b2crypto-iac-shared:SUBDOMAIN_PREFIX_MONGODB: mongostage
-  b2crypto-iac-shared:SUBDOMAIN_PREFIX_RABBITMQ: rabbitmqstage
   b2crypto-iac-shared:SUBDOMAIN_PREFIX_OPENSEARCH: opensearchstage
   b2crypto-iac-shared:SUBDOMAIN_PREFIX_OPTL_COLLECTOR: optlcollectorstage
   b2crypto-iac-shared:SUBDOMAIN_PREFIX_OPTL_UI: optluistage
@@ -46,3 +44,5 @@ config:
     secure: AAABACba488C9Vfc6G14SWKa3z/rtayzGeGQ++HvDo0N1BVjEBVI8g==
   mongodbatlas:privateKey:
     secure: AAABABDxZjLbsYVK8u6nf1Z6Du2gYvcDHGk4pWhYfh2Ft4krdMTH0FoOiAxsWerAcNhwDW6osWXgMtFhlTA3vzRKOvQ=
+  b2crypto-iac-shared:SUBDOMAIN_PREFIX_RABBITMQ: rabbitmqstage
+  b2crypto-iac-shared:SUBDOMAIN_PREFIX_MONGODB: mongostage

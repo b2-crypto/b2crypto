@@ -1,9 +1,9 @@
 config:
   aws:accessKey:
-    secure: AAABAMYOxLSpqeyzPNvz2n6l7Pd75RRu5gQYB8/EPOrM4PUArMpoDMDZTzFk1sOcU+00GQ==
+    secure: AAABABB7iLolwlOIwoNEgkLKY8KkNclK+uAhRX0YXEdqecu0rFmW3KpXZI1aSnTCgUUSKQ==
   aws:region: us-east-2
   aws:secretKey:
-    secure: AAABAHAqjRGJHPZML196tUc3r7ZomGi9b/ECjAufTcbpli4J4Ftp7Lwjf5+9s3QutawdCjXpsV1B7TClKM5/bEp4/H3+kCnr
+    secure: AAABAMwpbKSgiryRBnnnE557T3OVGWvybt+bGWIK0h7yOTD47h0Mz9gil1r8/7uh+xfILRZP8iLmxLCYRZCtJarvdFV3j+7P
   b2crypto-iac-monolith:API_KEY_EMAIL_APP: ''
   b2crypto-iac-monolith:APP_NAME: B2Crypto
   b2crypto-iac-monolith:AUTH_EXPIRE_IN: 8h
@@ -113,5 +113,9 @@ config:
     secure: AAABADTl11HtjwlrXxP1alThhHZbOif2bKLa1OWgC5w=
   b2crypto-iac-monolith:V1_DB_NAME:
     secure: AAABAMeyjrfcPtsBeuI1wsBhexjtt5OY8nsGwPiEvqU=
-  b2crypto-iac-monolith:SUBDOMAIN_PREFIX_MONGODB: mongostage
-  b2crypto-iac-monolith:SUBDOMAIN_PREFIX_RABBITMQ: rabbitmqstage
+  b2crypto-iac-monolith:MONGOATLAS_PROJECT_ID:
+    secure: AAABAIzf9dan84DfNbDW0zApaGrt4qMkG1doaCnSgoTiXF6scjONoorGPDYaRhdXHXFTlE2b3zs=
+  mongodbatlas:privateKey:
+    secure: AAABAPmvQsEK9FmPlKExUKiWe5Dc5ajw5qTyNBI0AXw5f6io4EloMTxg7pBZUKAeWt0BBZobxIzM+87vNd/JQEheY6M=
+  mongodbatlas:publicKey:
+    secure: AAABAIYQZ26LVuXE6WZbktT5ksutclURj4ssjNlgNdOT27YqkO3ymA==
