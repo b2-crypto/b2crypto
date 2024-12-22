@@ -63,6 +63,8 @@ export const route53RecordOpensearch = new aws.route53.Record(
     zoneId: route53Zone.id,
     name: SUBDOMAIN_PREFIX_OPENSEARCH,
     type: 'CNAME',
+    ttl: 300,
+    allowOverwrite: true,
     records: opensearchDomainOptl.endpoint.apply((endpoint) => [endpoint]),
   },
 );
