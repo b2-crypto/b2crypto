@@ -1,14 +1,12 @@
+import { DistributedCacheModule } from '@app/distributed-cache';
 import { AuthModule } from '@auth/auth';
 import { BuildersModule } from '@builder/builders';
-import { EnvironmentEnum } from '@common/common/enums/environment.enum';
 import { ResponseHttpExceptionFilter } from '@common/common/exceptions/response.exception';
 import { B2CryptoCacheInterceptor } from '@common/common/interceptors/b-2-crypto-cache.interceptor';
 import { ResponseInterceptor } from '@common/common/interceptors/response.interceptor';
 import { IProvider } from '@common/common/interfaces/i.provider.interface';
 import { QueueAdminModule } from '@common/common/queue-admin-providers/queue.admin.provider.module';
-import { CacheModule } from '@nestjs/cache-manager';
-import { Logger } from '@nestjs/common';
-import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ConfigModule } from '@nestjs/config';
 import { APP_FILTER, APP_INTERCEPTOR } from '@nestjs/core';
 import { ResponseB2CryptoModule } from '@response-b2crypto/response-b2crypto';
 import { AccountServiceModule } from 'apps/account-service/src/account-service.module';
@@ -34,34 +32,13 @@ import { StatusServiceModule } from 'apps/status-service/src/status-service.modu
 import { TrafficServiceModule } from 'apps/traffic-service/src/traffic-service.module';
 import { TransferServiceModule } from 'apps/transfer-service/src/transfer-service.module';
 import { UserServiceModule } from 'apps/user-service/src/user-service.module';
-import * as redisStore from 'cache-manager-redis-store';
 import configuration from 'config/configuration';
-import { RedisClientOptions } from 'redis';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 
 export const configApp = {
   imports: [
-    CacheModule.registerAsync({
-      imports: [ConfigModule],
-      useFactory: async (configService: ConfigService) => {
-        const config = {
-          store: redisStore,
-          username: configService.get('REDIS_USERNAME') ?? '',
-          password: configService.get('REDIS_PASSWORD') ?? '',
-          host: configService.get('REDIS_HOST') ?? 'localhost',
-          port: configService.get('REDIS_PORT') ?? 6379,
-          ttl: parseInt(configService.get('CACHE_TTL') ?? '20') * 1000,
-          max: parseInt(configService.get('CACHE_MAX_ITEMS') ?? '10'),
-          isGlobal: true,
-        } as RedisClientOptions;
-        if (configService.get('ENVIRONMENT') !== EnvironmentEnum.prod) {
-          Logger.log(config, 'Redis Config');
-        }
-        return config;
-      },
-      inject: [ConfigService],
-    }),
+    DistributedCacheModule,
     ConfigModule.forRoot({
       isGlobal: true,
       load: [configuration],
