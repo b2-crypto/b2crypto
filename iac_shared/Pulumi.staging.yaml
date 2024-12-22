@@ -1,9 +1,9 @@
 config:
   aws:region: us-east-2
   aws:accessKey:
-    secure: AAABACoCO4Rgbo+r0J5ILv3HEtNWXCXPxZK+jTkpAqhRqPbIGTm7b7DCUTDDDIRWPbYgaw==
+    secure: AAABANDQWYP7cWIhuIYccl89UWrx3kqcVMZZCELQfF+rH1WayNvOxp5n6IUtAzR6wT1apQ==
   aws:secretKey:
-    secure: AAABAPTBlWiqlGe5Wys0HAmrgoFeKFGMLTcPL+x/WZSz3S8j4fLpHiFff1bVkzshfl4NRpWGTQLt9mK+mqb3OUAtbjeFrJsZ
+    secure: AAABAH2V9OkLaTUi4U/eyOYsmddYwbudU17FFoxMbWmTzioQXXUjUx4hNErhN8um5sL0lxpLlJKdee4jS76+1V17qKwzUQec
   b2crypto-iac-shared:STACK: staging
   b2crypto-iac-shared:VPC_CIDR_BLOCK: 10.0.0.0/16
   b2crypto-iac-shared:DESIRED_COUNT_TASK_OPTL_COLLECTOR: '1'

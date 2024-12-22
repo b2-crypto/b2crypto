@@ -54,7 +54,7 @@ export const route53RecordRabbitMQ = new aws.route53.Record(
 );
 
 export const route53RecordOpensearch = new aws.route53.Record(
-  `${PROJECT_NAME}-rabbitmq-${STACK}`,
+  `${PROJECT_NAME}-opensearch-${STACK}`,
   {
     zoneId: route53Zone.id,
     name: SUBDOMAIN_PREFIX_OPENSEARCH,
