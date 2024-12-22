@@ -38,7 +38,7 @@ export const mqBrokerRabbitMQ = new aws.mq.Broker(
     tags: TAGS,
   },
   {
-    // ignoreChanges: ['authenticationStrategy', 'engineType'],
+    ignoreChanges: ['authenticationStrategy', 'engineType'],
     // protect: isProduction(),
   },
 );
