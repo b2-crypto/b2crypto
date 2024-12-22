@@ -1,24 +1,37 @@
 import * as aws from '@pulumi/aws';
 import * as pulumi from '@pulumi/pulumi';
 import {
-  MAX_CAPACITY_AUTOSCALING_OPTL_COLLECTOR,
-  MAX_CAPACITY_AUTOSCALING_OPTL_UI,
-  MIN_CAPACITY_AUTOSCALING_OPTL_COLLECTOR,
-  MIN_CAPACITY_AUTOSCALING_OPTL_UI,
+  isStressTest,
+  MAX_CAPACITY_AUTOSCALING,
+  MIN_CAPACITY_AUTOSCALING,
+  OPTL_COLLECTOR_MAX_CAPACITY_AUTOSCALING,
+  OPTL_COLLECTOR_MIN_CAPACITY_AUTOSCALING,
   PROJECT_NAME,
   STACK,
 } from '../../secrets';
 import { ecsCluster } from './ecs.cluster';
 import {
+  ecsFargateService,
   ecsFargateServiceOptlCollector,
   ecsFargateServiceOptlUi,
 } from './ecs.fargate-service';
 
+export const appautoscalingTarget = new aws.appautoscaling.Target(
+  `${PROJECT_NAME}-monolith-${STACK}`,
+  {
+    maxCapacity: isStressTest() ? 10 : MAX_CAPACITY_AUTOSCALING,
+    minCapacity: isStressTest() ? 3 : MIN_CAPACITY_AUTOSCALING,
+    resourceId: pulumi.interpolate`service/${ecsCluster.name}/${ecsFargateService.service.name}`,
+    scalableDimension: 'ecs:service:DesiredCount',
+    serviceNamespace: 'ecs',
+  },
+);
+
 export const appautoscalingTargetOptlCollector = new aws.appautoscaling.Target(
   `${PROJECT_NAME}-optl-collector-${STACK}`,
   {
-    maxCapacity: MAX_CAPACITY_AUTOSCALING_OPTL_COLLECTOR,
-    minCapacity: MIN_CAPACITY_AUTOSCALING_OPTL_COLLECTOR,
+    maxCapacity: OPTL_COLLECTOR_MAX_CAPACITY_AUTOSCALING,
+    minCapacity: OPTL_COLLECTOR_MIN_CAPACITY_AUTOSCALING,
     resourceId: pulumi.interpolate`service/${ecsCluster.name}/${ecsFargateServiceOptlCollector.service.name}`,
     scalableDimension: 'ecs:service:DesiredCount',
     serviceNamespace: 'ecs',
@@ -28,8 +41,8 @@ export const appautoscalingTargetOptlCollector = new aws.appautoscaling.Target(
 export const appautoscalingTargetOptlUi = new aws.appautoscaling.Target(
   `${PROJECT_NAME}-optl-ui-${STACK}`,
   {
-    maxCapacity: MAX_CAPACITY_AUTOSCALING_OPTL_UI,
-    minCapacity: MIN_CAPACITY_AUTOSCALING_OPTL_UI,
+    maxCapacity: OPTL_COLLECTOR_MAX_CAPACITY_AUTOSCALING,
+    minCapacity: OPTL_COLLECTOR_MIN_CAPACITY_AUTOSCALING,
     resourceId: pulumi.interpolate`service/${ecsCluster.name}/${ecsFargateServiceOptlUi.service.name}`,
     scalableDimension: 'ecs:service:DesiredCount',
     serviceNamespace: 'ecs',

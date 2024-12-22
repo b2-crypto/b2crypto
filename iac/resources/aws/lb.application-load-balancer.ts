@@ -1,11 +1,44 @@
 import * as awsx from '@pulumi/awsx';
-import { PROJECT_NAME, STACK, TAGS } from '../../secrets';
+import { PORT, PROJECT_NAME, STACK, TAGS } from '../../secrets';
 import { acmCertificate } from './acm.certificate';
 import {
+  ec2SecurityGroup,
   ec2SecurityGroupOptlCollector,
   ec2SecurityGroupOptlUi,
 } from './ec2.security-group';
 import { ec2Vpc } from './ec2.vpc';
+
+export const lbApplicationLoadBalancer = new awsx.lb.ApplicationLoadBalancer(
+  `${PROJECT_NAME}-monolith-${STACK}`,
+  {
+    name: `${PROJECT_NAME}-monolith-${STACK}`,
+    enableHttp2: true,
+    defaultTargetGroup: {
+      name: `${PROJECT_NAME}-monolith-${STACK}`,
+      protocol: 'HTTP',
+      port: parseInt(PORT),
+      vpcId: ec2Vpc.vpcId,
+      tags: TAGS,
+      healthCheck: {
+        path: '/health',
+        interval: 5,
+        timeout: 3,
+      },
+    },
+    securityGroups: [ec2SecurityGroup.id],
+    subnetIds: ec2Vpc.publicSubnetIds,
+    listeners: [
+      {
+        port: 443,
+        protocol: 'HTTPS',
+        certificateArn: acmCertificate.arn,
+        tags: TAGS,
+      },
+    ],
+    preserveHostHeader: true,
+    tags: TAGS,
+  },
+);
 
 export const lbApplicationLoadBalancerOptlCollector =
   new awsx.lb.ApplicationLoadBalancer(

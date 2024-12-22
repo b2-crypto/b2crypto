@@ -1,9 +1,9 @@
-name: b2crypto-iac-monolith
+name: b2crypto-iac
 runtime:
   name: nodejs
   options:
-    packagemanager: pnpm
-description: b2crypto iac monolith
+    packagemanager: npm
+description: b2crypto iac
 config:
   pulumi:tags:
     value:

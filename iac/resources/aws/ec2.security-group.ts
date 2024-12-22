@@ -1,6 +1,56 @@
 import * as aws from '@pulumi/aws';
-import { PROJECT_NAME, STACK, TAGS } from '../../secrets';
+import {
+  PORT,
+  PROJECT_NAME,
+  RABBIT_MQ_PORT,
+  REDIS_PORT,
+  STACK,
+  TAGS,
+} from '../../secrets';
 import { ec2Vpc } from './ec2.vpc';
+
+export const ec2SecurityGroup = new aws.ec2.SecurityGroup(
+  `${PROJECT_NAME}-monolith-${STACK}`,
+  {
+    name: `${PROJECT_NAME}-monolith-${STACK}`,
+    vpcId: ec2Vpc.vpcId,
+    ingress: [
+      {
+        fromPort: 443,
+        toPort: 443,
+        protocol: 'TCP',
+        cidrBlocks: ['0.0.0.0/0'],
+      },
+      {
+        fromPort: parseInt(PORT),
+        toPort: parseInt(PORT),
+        protocol: 'TCP',
+        cidrBlocks: ['0.0.0.0/0'],
+      },
+      {
+        fromPort: parseInt(RABBIT_MQ_PORT),
+        toPort: parseInt(RABBIT_MQ_PORT),
+        protocol: 'TCP',
+        cidrBlocks: ['0.0.0.0/0'],
+      },
+      {
+        fromPort: parseInt(REDIS_PORT),
+        toPort: parseInt(REDIS_PORT),
+        protocol: 'TCP',
+        cidrBlocks: ['0.0.0.0/0'],
+      },
+    ],
+    egress: [
+      {
+        protocol: '-1',
+        fromPort: 0,
+        toPort: 0,
+        cidrBlocks: ['0.0.0.0/0'],
+      },
+    ],
+    tags: TAGS,
+  },
+);
 
 export const ec2SecurityGroupOptlCollector = new aws.ec2.SecurityGroup(
   `${PROJECT_NAME}-optl-collector-${STACK}`,
@@ -101,9 +151,9 @@ export const ec2SecurityGroupOptlUi = new aws.ec2.SecurityGroup(
 );
 
 export const ec2SecurityGroupOptlOpensearch = new aws.ec2.SecurityGroup(
-  `${PROJECT_NAME}-optl-op-${STACK}`,
+  `${PROJECT_NAME}-optl-opensearch-${STACK}`,
   {
-    name: `${PROJECT_NAME}-optl-op-${STACK}`,
+    name: `${PROJECT_NAME}-optl-opensearch-${STACK}`,
     vpcId: ec2Vpc.vpcId,
     ingress: [
       {
