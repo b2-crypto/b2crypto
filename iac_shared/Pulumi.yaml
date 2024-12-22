@@ -1,0 +1,10 @@
+name: b2crypto-iac-shared
+runtime:
+  name: nodejs
+  options:
+    packagemanager: pnpm
+description: b2crypto iac shared
+config:
+  pulumi:tags:
+    value:
+      pulumi:template: aws-typescript

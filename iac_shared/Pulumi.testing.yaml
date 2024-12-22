@@ -1,0 +1,143 @@
+config:
+  aws:accessKey:
+    secure: AAABAJCHVEA83QP6v6DKVZBaGRXivJaXMrDf+ki04bpxwSLeVFGWSbkl2TixelMP7o7mbA==
+  aws:region: us-east-2
+  aws:secretKey:
+    secure: AAABAJI7ua8PG4e/PRRWPgheyc48CgGjq2kJSdNRpYjIXPP6bOWpSwHB2Ijt/DKcg0O3vLTi+aUJLRn2wpuiMCtyAH2a4Pi0
+  b2crypto-iac:API_KEY_EMAIL_APP: ""
+  b2crypto-iac:APP_NAME: B2Crypto
+  b2crypto-iac:AUTH_EXPIRE_IN: 8h
+  b2crypto-iac:AUTH_MAX_SECONDS_TO_REFRESH: "60"
+  b2crypto-iac:AUTH_SECRET:
+    secure: AAABAEaDgaUG99Q9nGHAe/XrkpvGbskEtPJsNxOF3P+3JpxbujxyYQ==
+  b2crypto-iac:AUTHORIZATIONS_BLOCK_BALANCE_PERCENTAGE: "0.1"
+  b2crypto-iac:AWS_SES_FROM_DEFAULT:
+    secure: AAABALKH9je8M/dIybSPo5t7WOcR60RUEVVNOu4bdy3V49HfVwpL4JZbCCWGhaPRQPWzql8=
+  b2crypto-iac:AWS_SES_HOST:
+    secure: AAABAM05QH75KamgxMNrcox3xeWzqhk4u/1DDPvhGQumtVARtkQEcxNX6/9qwfFiOXykDLY4/62qDVNqgSVpno0y
+  b2crypto-iac:AWS_SES_PASSWORD:
+    secure: AAABAJnPDRST+04yvMPEb9AeBeKoD2PUQCTesw3a82gW8zSmYUNGTLC/H1qMztvO14r8/lvQqnuyeOV+YalU8Jf4Fiu3PstjHxvKWw==
+  b2crypto-iac:AWS_SES_PORT: "587"
+  b2crypto-iac:AWS_SES_SMTP_PASSWORD:
+    secure: AAABAESlnGLcb8rA1bvo+BN70cshgscjEJyEyhLSS7GVvnGuMZEpaYLGRhJHbluzQ6UWu8rTaWMpqNYuhWwIlRCyA56KexOKu1Yo/g==
+  b2crypto-iac:AWS_SES_SMTP_USERNAME:
+    secure: AAABAEQX5V/axECd7Y1OaLrnK7rt9jQOmAxukuqiGqEM8j8XvCw9uXYgWkPUaiFS5uM6sg==
+  b2crypto-iac:AWS_SES_USERNAME:
+    secure: AAABAKM3LvlLHGBbztd7MG6vT8MraIMfDi6TPA5QL4Gr4oN7DhYDRRv3kygB2y2d5R6wBA==
+  b2crypto-iac:CACHE_MAX_ITEMS: "50"
+  b2crypto-iac:CACHE_TTL: "20"
+  b2crypto-iac:CURRENCY_CONVERSION_API_KEY:
+    secure: AAABACG+x8W05XiTW/KoI5caNPAi+icLvZJ8+UrYyeZz0diRC+XxBD7fLY2OJxFc7wcswcL+8HwzYxC/kkg5+Q==
+  b2crypto-iac:CURRENCY_CONVERSION_API_URL:
+    secure: AAABAOSYx5lyH81BowpiEHgZP2eQzxALADUm0meiI+Dkn902dJu3qjKGxdZzwnnaE4iVC6jV54sIryZ3gwcGWRgZG3Um8TyU9Wk=
+  b2crypto-iac:DATABASE_NAME: b2fintech
+  b2crypto-iac:DEFAULT_CURRENCY_CONVERSION_COIN: USD
+  b2crypto-iac:ENVIRONMENT: TEST
+  b2crypto-iac:GOOGLE_2FA: "false"
+  b2crypto-iac:POMELO_API_URL:
+    secure: AAABAK1UBhL2/AhRkkBs/YUlWoMlHbGLLv9G86bn5QdBqzvrv0GvbDFh1qycQ5LhY6141l7ZbdNsGwvEpg==
+  b2crypto-iac:POMELO_AUDIENCE:
+    secure: AAABAIkGN9OjqpAHSDybuw1BPAFQHNIRR1Ug/j6wxC1LCQqtLOAnT671DCNCtHqna6sXxhxfCbka9aea+Bo=
+  b2crypto-iac:POMELO_AUTH_GRANT_TYPE:
+    secure: AAABANZcvVrc63T0RJwrWxLY5agAHuh1Uqp4Aovt1R+HHkBLf/PYDk2h2OZuHpzK4GI=
+  b2crypto-iac:POMELO_CLIENT_ID:
+    secure: AAABAKnxzR0VASlrfBCxAENZWZ4X6G7AhAZH50MM/Qx0dPkpVCHFdH/pFFRn3PeaRt8T3KnggMc6bFlMTDzUcQ==
+  b2crypto-iac:POMELO_SECRET_ID:
+    secure: AAABAPeWEVWyU2vzqO9QhC3lwPDlJi7l0cGGPcA0UUxQDVlHZ+SKL90BeYDy7HSOZ/dQT0Fmd7ifDZsMxHtnG+HGprLpBjBXR/c2NeS36BC+C/e9OcGSVrHd4w6pEwLP
+  b2crypto-iac:POMELO_SFTP_HOST:
+    secure: AAABAB9UPzBhjbw2n1wa/wIVaGXCV12qJq6110V5bFsEPkoUjAvkbO2HCljibXQEhCc=
+  b2crypto-iac:POMELO_SFTP_PASSPHRASE:
+    secure: AAABAKFiw2qrtggIHWal2mFFo7pWqUrdwPVFWqCbSBdYct2al2tdKQ==
+  b2crypto-iac:POMELO_SFTP_PORT:
+    secure: AAABAEoLADgowFs039rNxytlBxcpHgRal0vCoKyVSGEicA==
+  b2crypto-iac:POMELO_SFTP_USR:
+    secure: AAABAPZqNtqyYcWnrxZ5N4umkVhCd/CvBsT/22uGZ3uxwUTO/VHR
+  b2crypto-iac:POMELO_SIGNATURE_SECRET_KEY_DIC:
+    secure: AAABADtyrR3iOwWSpoeQchnTjIoZH/ppbBVOiT+9SGMXJX7+WaCGugHnttBF2Ra3NV9l+qw3jUXg+e3XWZ8A7SovxqQcaC0uovLCA/GWQtswtL8dvQae17PM8a8xfc3R2A4i1W1EG8HjgtQGL3ldkeyCtr9jCmJe08KJGCrtpw==
+  b2crypto-iac:POMELO_WHITELISTED_IPS:
+    secure: AAABAHNF900bMEtCYrbOtHJncgXpWWl4UvEm6vG7IrA2JBN7YRt4GHINBC4Wo3DvohEA8jVLDWovV68iatC7+jYiidTCxWNNtLTEZtnurbDt5ZVE9QkMP+nU
+  b2crypto-iac:POMELO_WHITELISTED_IPS_CHECK: "ON"
+  b2crypto-iac:PORT: "80"
+  b2crypto-iac:RABBIT_MQ_PASSWORD:
+    secure: AAABAPKO5qeGsGA5ac/jCBjw8GqfP0JEU7TklB6Q/wkppY63iKDfkTD50v/GwJg6OIIskZniQs/UkZuv8E3SOw==
+  b2crypto-iac:RABBIT_MQ_PORT: "5671"
+  b2crypto-iac:RABBIT_MQ_QUEUE: TEST
+  b2crypto-iac:RABBIT_MQ_USERNAME:
+    secure: AAABADkR3kmGVfnW0z/+phbt8teK+0wZ3Ryg7fP58+0Ww5JBykPkPg==
+  b2crypto-iac:REDIS_HOST:
+    secure: AAABAH3MUmgt1ViNPD4xOgLSMVpW5ela5t1rCY4LN82pZIouoS4vKcgyU9xkhZAGMkQanwN4jjxOQY2V1L7ksMDSjT/Fvo+5CGzCnFPnfTxyOuvM0Uc=
+  b2crypto-iac:REDIS_PASSWORD:
+    secure: AAABAFrOzbkPwfvM0JO5tAiRRWH/BnVLpS7F2VXzWdOQgRgXTvE8Zkv/6+gTjWX0/50XBD53B045KviE2mjR2g==
+  b2crypto-iac:REDIS_PORT: "14419"
+  b2crypto-iac:REDIS_USERNAME:
+    secure: AAABADEntVBYG9VOcZlHjr4a3Th41Ldpm2uQii6se8mXLBGBHZmI
+  b2crypto-iac:STACK: testing
+  b2crypto-iac:TESTING: "false"
+  b2crypto-iac:TZ: UTC
+  b2crypto-iac:URL_API_EMAIL_APP: ""
+  b2crypto-iac:VPC_CIDR_BLOCK: 10.1.0.0/16
+  mongodbatlas:privateKey:
+    secure: AAABAHCZJxfajTE+fbc3c6ZMFaGvEZa2ssDQXTGfuUrMgW1HrUZo0RcC0Tk+DXlo6xD+NO7DwD1ZWPJyluc9gVvzkTY=
+  mongodbatlas:publicKey:
+    secure: AAABAD88QyMmLZn/e9huIvCqRu3TqMdUxGMMUmVXjJViBte5D/D4Ew==
+  b2crypto-iac:ETL_DATABASE_NAME:
+    secure: AAABAE1d97GVlQXihhgxTQm+w7bGF424vNBnrpnKn3PlzorUXIQ=
+  b2crypto-iac:ETL_DATABASE_USERNAME:
+    secure: AAABAJck/eHl69v788DZh6nWAM5f7sK7Ldo6RCDZO1Q11iwyz2Jmm7FuLDdu8vdB
+  b2crypto-iac:ETL_DATABASE_PASSWORD:
+    secure: AAABACqLJrx+VzT+zEZDuUltx+jYFFDuteYr1a6Zviefsc47o1/EXmpZRBlcP5nBDeiaWXydXbbK+7fTcBo=
+  b2crypto-iac:ETL_POSTGRE_PASSWORD:
+    secure: AAABAC2kCMXGwfuMup0gwQYBUVQAASDTRLBqiySxiVGcEJpUqxqL74lEGuBMWER/fzcoBt0tYfimR69D3HQ=
+  b2crypto-iac:ETL_POSTGRE_USERNAME:
+    secure: AAABAMNs/TP9xeDMIqRIUxB4TeBBhVXCnwOX3VSPYWEbNmQNbPd8i1FEiZ1cHgQq
+  b2crypto-iac:ETL_KESTRA_USERNAME:
+    secure: AAABAK571av1UqGfYgGHrRDkPca7JaFNPwB/bjUIXYpk72q90j0h5ClNe16uZA==
+  b2crypto-iac:ETL_KESTRA_PASSWORD:
+    secure: AAABAP3cTvInE1WRaMPwty2izUfci2aKXMvu+WI3r6qFUi2RhN3yQdOPHxs=
+  b2crypto-iac:ETL_POSTGRE_DATABASE:
+    secure: AAABAEcnFC7ufIzWuqhUTrpyprAiXytLiCeyFfLlINE6hv7KpcU=
+  b2crypto-iac:MAX_CAPACITY_AUTOSCALING: "3"
+  b2crypto-iac:MIN_CAPACITY_AUTOSCALING: "1"
+  b2crypto-iac:DESIRED_COUNT_TASK: "1"
+  b2crypto-iac:RABBIT_MQ_INSTANCE_TYPE: mq.t3.micro
+  b2crypto-iac:LOGO_URL: https://message-templates-resource.s3.eu-west-3.amazonaws.com/logo/b2pay.png
+  b2crypto-iac:SOCIAL_MEDIA_ICONS: '{"facebook":"https://message-templates-resource.s3.eu-west-3.amazonaws.com/social/facebook.png","instagram":"https://message-templates-resource.s3.eu-west-3.amazonaws.com/social/instagram.png","linkedin":"https://message-templates-resource.s3.eu-west-3.amazonaws.com/social/linkedin.png","youtube":"https://message-templates-resource.s3.eu-west-3.amazonaws.com/social/youtube.png"}'
+  b2crypto-iac:SOCIAL_MEDIA_LINKS: '{"facebook":"https://www.facebook.com/share/qT7RXDDgRqKigRnn/?mibextid=LQQJ4d","linkedin":"https://www.linkedin.com/company/b2fintech/?viewAsMember=true","instagram":"https://www.instagram.com/b2fintech/","youtube":"https://www.youtube.com"}'
+  b2crypto-iac:MQ_DEPLOYMENT_MODE: SINGLE_INSTANCE
+  b2crypto-iac:MONGOATLAS_PROJECT_ID:
+    secure: AAABALqDzND/v5V8ClDyazJ7ppOFCcF4VZ1EYqMwn4Bh45tBcMNJp/B6hu5yiQnsCi06I35g1Ec=
+  b2crypto-iac:MONGOATLAS_PASSWORD:
+    secure: AAABAAilkefgNui7el791VPIRv+6jyZ/UkVodTHcO4R6tKHuPS4gB+YrWGGSTxmj
+  b2crypto-iac:MONGOATLAS_USERNAME:
+    secure: AAABAMfeUmWht+q6hsH1rR1hP+sUdKUJWShQfgy1EJfcc6WG5AXowQ==
+  b2crypto-iac:TESTING_MODE: NORMAL
+  b2crypto-iac:MONGOATLAS_INSTANCE: M2
+  b2crypto-iac:MONGOATLAS_CLUSTER_TYPE: REPLICASET
+  b2crypto-iac:MONGOATLAS_INSTANCE_MIN: M2
+  b2crypto-iac:MONGOATLAS_INSTANCE_MAX: M5
+  b2crypto-iac:SUBDOMAIN_PREFIX: apitest
+  b2crypto-iac:OPTL_SERVICE_NAME: b2crypto_monolith
+  b2crypto-iac:OPTL_OPEN_SEARCH_USERNAME:
+    secure: AAABAMkkWSTE8eYcqYipDZr/AIahuuBM9uDJXmwlZX/b4sgMeOkgISKurtBNtQAweNjSBoZBq9cax/5dtg==
+  b2crypto-iac:OPTL_OPEN_SEARCH_PASSWORD:
+    secure: AAABAMgJ1pZw9p95tlOfj0H+CpvX0weIduXYAsBFaZ0IoETxDSdN2HI9xHeShBo1Xz8LpWBxjNEb8rf+4XojKqyve6oJagRn6wFTmO4w1r3qx//8C5wCn+HFjFzzx5M=
+  b2crypto-iac:SUBDOMAIN_PREFIX_OPTL_COLLECTOR: optlcollectortest
+  b2crypto-iac:SUBDOMAIN_PREFIX_OPTL_UI: optluitest
+  b2crypto-iac:OPTL_OPEN_SEARCH_INSTANCE_TYPE: t3.small.search
+  b2crypto-iac:OPTL_OPEN_SEARCH_INSTANCE_COUNT: "1"
+  b2crypto-iac:OPTL_COLLECTOR_MAX_CAPACITY_AUTOSCALING: "10"
+  b2crypto-iac:OPTL_COLLECTOR_MIN_CAPACITY_AUTOSCALING: "1"
+  b2crypto-iac:OPTL_OPEN_SEARCH_ZONE_AWARENESS_AVAILABILITY_COUNT: "1"
+  b2crypto-iac:OPTL_OPEN_SEARCH_EBS_VOLUME_SIZE: "10"
+  b2crypto-iac:OPTL_COLLECTOR_DESIRED_COUNT_TASK: "1"
+  b2crypto-iac:OPTL_OPEN_SEARCH_ZONE_AWARENESS_ENABLED: "false"
+  b2crypto-iac:V1_DB_USER:
+    secure: AAABAGS0pfgtjoCbTPmmrzUFvsRWRE7TdB1nC2SB61E=
+  b2crypto-iac:V1_DB_PWD:
+    secure: AAABAIaa6ogSl5x1GKtwAkrju2vbEb8aeesAv9lZdC0=
+  b2crypto-iac:V1_DB_HOST:
+    secure: AAABALEsqj8CzYMJmTjsnaPCIwioad/YR2WsYZjZsX8=
+  b2crypto-iac:V1_DB_PORT:
+    secure: AAABAMuWnjePhAn4lXsiC/xX3w3FZk3eZ37AMOuwf9s=
+  b2crypto-iac:V1_DB_NAME:
+    secure: AAABAC+qNWn78KxHh77QRKQ/TsihAnoYFTvrhAAcMAU=

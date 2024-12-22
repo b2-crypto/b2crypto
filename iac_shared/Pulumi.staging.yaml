@@ -1,0 +1,48 @@
+config:
+  aws:region: us-east-2
+  aws:accessKey:
+    secure: AAABALihrZo7++9YMkPNHt6VojWeNsr97w8xOs0GRz4xebgdlbf9mixvzpQtsyzcYg//0A==
+  aws:secretKey:
+    secure: AAABAKIe8+wSRjxA8MMFDp5bCaypLHCzaTM1moLKY62/KGxUbU8gAOQwG4FYHHvvOAHqntjCPet8Cti/U6Fv0vIIxHdpw7Fe
+  b2crypto-iac-shared:STACK: staging
+  b2crypto-iac-shared:VPC_CIDR_BLOCK: 10.0.0.0/16
+  b2crypto-iac-shared:DESIRED_COUNT_TASK_OPTL_COLLECTOR: '1'
+  b2crypto-iac-shared:DESIRED_COUNT_TASK_OPTL_UI: '1'
+  b2crypto-iac-shared:MAX_CAPACITY_AUTOSCALING_OPTL_COLLECTOR: '2'
+  b2crypto-iac-shared:MIN_CAPACITY_AUTOSCALING_OPTL_COLLECTOR: '1'
+  b2crypto-iac-shared:MAX_CAPACITY_AUTOSCALING_OPTL_UI: '2'
+  b2crypto-iac-shared:MIN_CAPACITY_AUTOSCALING_OPTL_UI: '1'
+  b2crypto-iac-shared:RABBIT_MQ_INSTANCE_TYPE: mq.t3.micro
+  b2crypto-iac-shared:MQ_DEPLOYMENT_MODE: SINGLE_INSTANCE
+  b2crypto-iac-shared:MONGOATLAS_INSTANCE: ''
+  b2crypto-iac-shared:MONGOATLAS_INSTANCE_MIN: ''
+  b2crypto-iac-shared:MONGOATLAS_INSTANCE_MAX: ''
+  b2crypto-iac-shared:MONGOATLAS_CLUSTER_TYPE: ''
+  b2crypto-iac-shared:SUBDOMAIN_PREFIX_MONGODB: mongostage
+  b2crypto-iac-shared:SUBDOMAIN_PREFIX_RABBITMQ: rabbitmqstage
+  b2crypto-iac-shared:SUBDOMAIN_PREFIX_OPENSEARCH: opensearchstage
+  b2crypto-iac-shared:SUBDOMAIN_PREFIX_OPTL_COLLECTOR: optlcollectorstage
+  b2crypto-iac-shared:SUBDOMAIN_PREFIX_OPTL_UI: optluistage
+  b2crypto-iac-shared:OPTL_OPEN_SEARCH_INSTANCE_TYPE: t3.small.search
+  b2crypto-iac-shared:OPTL_OPEN_SEARCH_INSTANCE_COUNT: '1'
+  b2crypto-iac-shared:OPTL_OPEN_SEARCH_ZONE_AWARENESS_ENABLED: 'false'
+  b2crypto-iac-shared:OPTL_OPEN_SEARCH_ZONE_AWARENESS_AVAILABILITY_COUNT: '1'
+  b2crypto-iac-shared:OPTL_OPEN_SEARCH_EBS_VOLUME_SIZE: '10'
+  b2crypto-iac-shared:AWS_SECRET_KEY:
+    secure: AAABADQ7Wtd2DTzAGiDL1yCfZ2NG60/DjDlPR1a+/cAsEDYNRJgAt9OrLCp6Q19UAwTFIPkvFIE3dZeMOKYDe8L3H4ZATZjE
+  b2crypto-iac-shared:AWS_ACCESS_KEY:
+    secure: AAABANrIUa+G6Dv5YP6e4/ZKxS2NkmN5qqwbb1ZsYqdCQegkrAq2Lxf8oPK/R8dbIfpMKA==
+  b2crypto-iac-shared:RABBIT_MQ_PASSWORD:
+    secure: AAABAOKTExSBjHhEPZw8BtR7Fm+E0vRaGYlU6auojC6cQ6InapcctuJgm+eRQ5yLu5wqHrmzyEVTmJeKhiGk9g==
+  b2crypto-iac-shared:RABBIT_MQ_USERNAME:
+    secure: AAABADSumM4gzafoRuAhH+bKTyrqDFvIeS1bJpbcAXQAeyGenKIYokXoWOqnlGLMqGbdhcMTOF6EPU1hZ959GQ==
+  b2crypto-iac-shared:MONGOATLAS_PROJECT_ID:
+    secure: AAABALjr3GNGL9t/8J3aD2K5wktK8G1vjHuFKhpLovt/cmG4+XgYnlcY3XsyRVKqA9dcnwhqBRs=
+  b2crypto-iac-shared:OPTL_OPEN_SEARCH_USERNAME:
+    secure: AAABAKB4rxWjmnEsEIU+OZ7I3Yq/WBIMKwRV5tEkYMT/zIcb8DUFy9gV
+  b2crypto-iac-shared:OPTL_OPEN_SEARCH_PASSWORD:
+    secure: AAABAGTDrQOKKldRLsjIQB6aHtGJlvSvGnI5tQYPJn97na60c4x+hZs3/Nibh82SZB8Vivn3IxMUgf+VSEM=
+  mongodbatlas:publicKey:
+    secure: AAABACba488C9Vfc6G14SWKa3z/rtayzGeGQ++HvDo0N1BVjEBVI8g==
+  mongodbatlas:privateKey:
+    secure: AAABABDxZjLbsYVK8u6nf1Z6Du2gYvcDHGk4pWhYfh2Ft4krdMTH0FoOiAxsWerAcNhwDW6osWXgMtFhlTA3vzRKOvQ=

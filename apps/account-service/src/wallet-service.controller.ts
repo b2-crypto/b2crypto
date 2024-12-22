@@ -1138,7 +1138,7 @@ export class WalletServiceController extends AccountServiceController {
         const url = `https://${host}/transfers/deposit/page/${depositAddress?._id}`;
         const data = depositAddress?.responseAccount?.data;
         const address = data?.attributes?.address ?? to.accountName;
-        console.log('depositAddress =>', depositAddress);
+
         return {
           statusCode: 200,
           data: {

@@ -1,0 +1,10 @@
+name: b2crypto-iac-monolith
+runtime:
+  name: nodejs
+  options:
+    packagemanager: pnpm
+description: b2crypto iac monolith
+config:
+  pulumi:tags:
+    value:
+      pulumi:template: aws-typescript
