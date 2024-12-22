@@ -42,6 +42,7 @@ import { ec2PublicSubnets } from './ec2.subnet';
 import { ecrImage, TAG } from './ecr.image';
 import { ecsCluster } from './ecs.cluster';
 import { lbApplicationLoadBalancer } from './lb.application-load-balancer';
+import { mqBrokerRabbitMQ } from './mq.broker';
 
 export const ecsFargateService = new awsx.ecs.FargateService(
   `${PROJECT_NAME}-monolith-${STACK}`,
@@ -90,15 +91,11 @@ export const ecsFargateService = new awsx.ecs.FargateService(
                 return `mongodb+srv://${username}:${password}@${connection}/?retryWrites=true&w=majority&appName=${mongoAtlasClusterName}`;
               }),
           },
-          // {
-          //   name: 'RABBIT_MQ_HOST',
-          //   value: mqBrokerRabbitMQ.instances[0].endpoints[0].apply(
-          //     (endpoint) => endpoint.split('//').pop() as string,
-          //   ),
-          // },
           {
             name: 'RABBIT_MQ_HOST',
-            value: `rabbitmqstage.${DOMAIN}`,
+            value: mqBrokerRabbitMQ.instances[0].endpoints[0].apply(
+              (endpoint) => endpoint.split('//').pop() as string,
+            ),
           },
           { name: 'RABBIT_MQ_PORT', value: RABBIT_MQ_PORT },
           { name: 'RABBIT_MQ_QUEUE', value: RABBIT_MQ_QUEUE },
