@@ -12,9 +12,9 @@ import { ec2Vpc } from './ec2.vpc';
 export const mqBrokerRabbitMQ = new aws.mq.Broker(
   `${PROJECT_NAME}-rabbitmq-${STACK}`,
   {
-    // brokerName: `${PROJECT_NAME}-rabbit-${STACK}`,
+    brokerName: `${PROJECT_NAME}-rabbit-${STACK}`,
     engineType: 'RABBITMQ',
-    engineVersion: '3.13',
+    engineVersion: '4.0.5',
     hostInstanceType: RABBIT_MQ_INSTANCE_TYPE,
     publiclyAccessible: true,
     // securityGroups: [ec2SecurityGroup.id],
@@ -32,12 +32,13 @@ export const mqBrokerRabbitMQ = new aws.mq.Broker(
       general: true,
       audit: false,
     },
-    autoMinorVersionUpgrade: true,
+    autoMinorVersionUpgrade: false,
     deploymentMode: MQ_DEPLOYMENT_MODE,
     authenticationStrategy: 'SIMPLE',
-    tags: { ...TAGS, Broker: `${PROJECT_NAME}-rabbit-${STACK}` },
+    tags: TAGS,
   },
   {
+    // ignoreChanges: ['authenticationStrategy', 'engineType'],
     // protect: isProduction(),
   },
 );
