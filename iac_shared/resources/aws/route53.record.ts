@@ -25,6 +25,7 @@ export const route53RecordMongoDB = new aws.route53.Record(
     zoneId: route53Zone.id,
     name: SUBDOMAIN_PREFIX_MONGODB,
     type: 'CNAME',
+    ttl: 300,
     records: pulumi
       .all([
         mongoAtlasCluster?.connectionStrings.apply(
@@ -45,6 +46,7 @@ export const route53RecordRabbitMQ = new aws.route53.Record(
     zoneId: route53Zone.id,
     name: SUBDOMAIN_PREFIX_RABBITMQ,
     type: 'CNAME',
+    ttl: 300,
     records: mqBrokerRabbitMQ.instances.apply((instances) =>
       instances[0].endpoints.map(
         (endpoint) => endpoint.split('//').pop() as string,
