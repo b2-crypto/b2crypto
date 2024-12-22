@@ -3,11 +3,9 @@ import * as awsx from '@pulumi/awsx';
 import {
   DESIRED_COUNT_TASK_OPTL_COLLECTOR,
   DESIRED_COUNT_TASK_OPTL_UI,
-  DOMAIN,
   PROJECT_NAME,
   SECRETS,
   STACK,
-  SUBDOMAIN_PREFIX_OPENSEARCH,
   TAGS,
 } from '../../secrets';
 import {
@@ -24,6 +22,7 @@ import {
   lbApplicationLoadBalancerOptlCollector,
   lbApplicationLoadBalancerOptlUi,
 } from './lb.application-load-balancer';
+import { opensearchDomainOptl } from './opensearch.domain';
 
 export const ecsFargateServiceOptlCollector = new awsx.ecs.FargateService(
   `${PROJECT_NAME}-optl-collector-${STACK}`,
@@ -51,7 +50,9 @@ export const ecsFargateServiceOptlCollector = new awsx.ecs.FargateService(
           { name: 'SPAN_STORAGE_TYPE', value: 'elasticsearch' },
           {
             name: 'ES_SERVER_URLS',
-            value: `https://${SUBDOMAIN_PREFIX_OPENSEARCH}.${DOMAIN}`,
+            value: opensearchDomainOptl.endpoint.apply(
+              (endpoint) => `https://${endpoint}`,
+            ),
           },
           {
             name: 'ES_USERNAME',
@@ -130,7 +131,9 @@ export const ecsFargateServiceOptlUi = new awsx.ecs.FargateService(
           { name: 'SPAN_STORAGE_TYPE', value: 'elasticsearch' },
           {
             name: 'ES_SERVER_URLS',
-            value: `https://${SUBDOMAIN_PREFIX_OPENSEARCH}.${DOMAIN}`,
+            value: opensearchDomainOptl.endpoint.apply(
+              (endpoint) => `https://${endpoint}`,
+            ),
           },
           {
             name: 'ES_USERNAME',

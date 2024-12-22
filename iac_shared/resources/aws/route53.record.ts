@@ -1,45 +1,17 @@
 import * as aws from '@pulumi/aws';
-import * as pulumi from '@pulumi/pulumi';
 import {
   PROJECT_NAME,
   STACK,
-  SUBDOMAIN_PREFIX_MONGODB,
-  SUBDOMAIN_PREFIX_OPENSEARCH,
   SUBDOMAIN_PREFIX_OPTL_COLLECTOR,
   SUBDOMAIN_PREFIX_OPTL_UI,
   SUBDOMAIN_PREFIX_RABBITMQ,
 } from '../../secrets';
-import { mongoAtlasCluster } from '../mongoatlas/mongodbatlas.cluster';
-import { mongodbatlasServerlessInstance } from '../mongoatlas/mongodbatlas.serverless-instance';
 import {
   lbApplicationLoadBalancerOptlCollector,
   lbApplicationLoadBalancerOptlUi,
 } from './lb.application-load-balancer';
 import { mqBrokerRabbitMQ } from './mq.broker';
-import { opensearchDomainOptl } from './opensearch.domain';
 import { route53Zone } from './route53.zone';
-
-export const route53RecordMongoDB = new aws.route53.Record(
-  `${PROJECT_NAME}-mongodb-${STACK}`,
-  {
-    zoneId: route53Zone.id,
-    name: SUBDOMAIN_PREFIX_MONGODB,
-    type: 'CNAME',
-    ttl: 300,
-    allowOverwrite: true,
-    records: pulumi
-      .all([
-        mongoAtlasCluster?.connectionStrings.apply(
-          (connections) => connections[0].standardSrv,
-        ) ?? mongodbatlasServerlessInstance?.connectionStringsStandardSrv,
-      ])
-      .apply(([standardSrv]) => {
-        const [, domain] = standardSrv?.split('//') ?? [];
-
-        return [domain];
-      }),
-  },
-);
 
 export const route53RecordRabbitMQ = new aws.route53.Record(
   `${PROJECT_NAME}-rabbitmq-${STACK}`,
@@ -49,23 +21,9 @@ export const route53RecordRabbitMQ = new aws.route53.Record(
     type: 'CNAME',
     ttl: 300,
     allowOverwrite: true,
-    records: mqBrokerRabbitMQ.instances.apply((instances) =>
-      instances[0].endpoints.map(
-        (endpoint) => endpoint.split('//').pop() as string,
-      ),
+    records: mqBrokerRabbitMQ.instances.apply(
+      (instances) => instances[0].endpoints,
     ),
-  },
-);
-
-export const route53RecordOpensearch = new aws.route53.Record(
-  `${PROJECT_NAME}-opensearch-${STACK}`,
-  {
-    zoneId: route53Zone.id,
-    name: SUBDOMAIN_PREFIX_OPENSEARCH,
-    type: 'CNAME',
-    ttl: 300,
-    allowOverwrite: true,
-    records: opensearchDomainOptl.endpoint.apply((endpoint) => [endpoint]),
   },
 );
 
