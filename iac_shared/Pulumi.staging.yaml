@@ -1,9 +1,9 @@
 config:
   aws:region: us-east-2
   aws:accessKey:
-    secure: AAABANDQWYP7cWIhuIYccl89UWrx3kqcVMZZCELQfF+rH1WayNvOxp5n6IUtAzR6wT1apQ==
+    secure: AAABALihrZo7++9YMkPNHt6VojWeNsr97w8xOs0GRz4xebgdlbf9mixvzpQtsyzcYg//0A==
   aws:secretKey:
-    secure: AAABAH2V9OkLaTUi4U/eyOYsmddYwbudU17FFoxMbWmTzioQXXUjUx4hNErhN8um5sL0lxpLlJKdee4jS76+1V17qKwzUQec
+    secure: AAABAKIe8+wSRjxA8MMFDp5bCaypLHCzaTM1moLKY62/KGxUbU8gAOQwG4FYHHvvOAHqntjCPet8Cti/U6Fv0vIIxHdpw7Fe
   b2crypto-iac-shared:STACK: staging
   b2crypto-iac-shared:VPC_CIDR_BLOCK: 10.0.0.0/16
   b2crypto-iac-shared:DESIRED_COUNT_TASK_OPTL_COLLECTOR: '1'
@@ -33,7 +33,7 @@ config:
   b2crypto-iac-shared:AWS_ACCESS_KEY:
     secure: AAABANrIUa+G6Dv5YP6e4/ZKxS2NkmN5qqwbb1ZsYqdCQegkrAq2Lxf8oPK/R8dbIfpMKA==
   b2crypto-iac-shared:RABBIT_MQ_PASSWORD:
-    secure: AAABADZ9wiNB5CgLHpB9okU82nxOMQ27zPKRPlMK03nVkdNTHXpFtYV4xPIYDIXXHIinuQQmF7ljtYVilpc=
+    secure: AAABAOKTExSBjHhEPZw8BtR7Fm+E0vRaGYlU6auojC6cQ6InapcctuJgm+eRQ5yLu5wqHrmzyEVTmJeKhiGk9g==
   b2crypto-iac-shared:RABBIT_MQ_USERNAME:
     secure: AAABADSumM4gzafoRuAhH+bKTyrqDFvIeS1bJpbcAXQAeyGenKIYokXoWOqnlGLMqGbdhcMTOF6EPU1hZ959GQ==
   b2crypto-iac-shared:MONGOATLAS_PROJECT_ID:
@@ -42,3 +42,7 @@ config:
     secure: AAABAKB4rxWjmnEsEIU+OZ7I3Yq/WBIMKwRV5tEkYMT/zIcb8DUFy9gV
   b2crypto-iac-shared:OPTL_OPEN_SEARCH_PASSWORD:
     secure: AAABAGTDrQOKKldRLsjIQB6aHtGJlvSvGnI5tQYPJn97na60c4x+hZs3/Nibh82SZB8Vivn3IxMUgf+VSEM=
+  mongodbatlas:publicKey:
+    secure: AAABACba488C9Vfc6G14SWKa3z/rtayzGeGQ++HvDo0N1BVjEBVI8g==
+  mongodbatlas:privateKey:
+    secure: AAABABDxZjLbsYVK8u6nf1Z6Du2gYvcDHGk4pWhYfh2Ft4krdMTH0FoOiAxsWerAcNhwDW6osWXgMtFhlTA3vzRKOvQ=
