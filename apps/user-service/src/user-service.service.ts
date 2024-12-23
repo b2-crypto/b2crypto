@@ -1,8 +1,15 @@
-import { UserChangePasswordDto } from '@user/user/dto/user.change-password.dto';
+import { AccountInterface } from '@account/account/entities/account.interface';
+import { Account } from '@account/account/entities/mongoose/account.schema';
+import CardTypesAccountEnum from '@account/account/enum/card.types.account.enum';
+import StatusAccountEnum from '@account/account/enum/status.account.enum';
+import TypesAccountEnum from '@account/account/enum/types.account.enum';
+import { BuildersService } from '@builder/builders';
+import { CategoryInterface } from '@category/category/entities/category.interface';
+import { CommonService } from '@common/common';
+import { StatusCashierEnum } from '@common/common/enums/StatusCashierEnum';
+import TagEnum from '@common/common/enums/TagEnum';
+import { ResponsePaginator } from '@common/common/interfaces/response-pagination.interface';
 import { QuerySearchAnyDto } from '@common/common/models/query_search-any.dto';
-import { UserRegisterDto } from '@user/user/dto/user.register.dto';
-import { UserUpdateDto } from '@user/user/dto/user.update.dto';
-import { UserServiceMongooseService } from '@user/user';
 import {
   BadRequestException,
   Inject,
@@ -10,34 +17,27 @@ import {
   Logger,
   NotFoundException,
 } from '@nestjs/common';
-import { ObjectId } from 'mongodb';
 import { ClientProxy } from '@nestjs/microservices';
-import { BuildersService } from '@builder/builders';
-import { CommonService } from '@common/common';
-import { isMongoId } from 'class-validator';
-import EventsNamesAccountEnum from 'apps/account-service/src/enum/events.names.account.enum';
+import { PspAccountInterface } from '@psp-account/psp-account/entities/psp-account.interface';
+import { OperationTransactionType } from '@transfer/transfer/enum/operation.transaction.type.enum';
+import { UserServiceMongooseService } from '@user/user';
+import { UserChangePasswordDto } from '@user/user/dto/user.change-password.dto';
+import { UserLevelUpDto } from '@user/user/dto/user.level.up.dto';
+import { UserRegisterDto } from '@user/user/dto/user.register.dto';
+import { UserUpdateDto } from '@user/user/dto/user.update.dto';
 import {
   UserBalanceGenericModel,
   UserBalanceGenericModelData,
   UserBalanceModel,
 } from '@user/user/entities/user.balance.model';
-import { ResponsePaginator } from '@common/common/interfaces/response-pagination.interface';
-import { Account } from '@account/account/entities/mongoose/account.schema';
-import TypesAccountEnum from '@account/account/enum/types.account.enum';
-import { UserLevelUpDto } from '@user/user/dto/user.level.up.dto';
+import EventsNamesAccountEnum from 'apps/account-service/src/enum/events.names.account.enum';
 import EventsNamesCategoryEnum from 'apps/category-service/src/enum/events.names.category.enum';
-import CardTypesAccountEnum from '@account/account/enum/card.types.account.enum';
-import { StatusCashierEnum } from '@common/common/enums/StatusCashierEnum';
-import EventsNamesTransferEnum from 'apps/transfer-service/src/enum/events.names.transfer.enum';
-import EventsNamesPspAccountEnum from 'apps/psp-service/src/enum/events.names.psp.acount.enum';
-import { OperationTransactionType } from '@transfer/transfer/enum/operation.transaction.type.enum';
-import { CategoryInterface } from '@category/category/entities/category.interface';
-import { AccountInterface } from '@account/account/entities/account.interface';
-import { PspAccountInterface } from '@psp-account/psp-account/entities/psp-account.interface';
-import TagEnum from '@common/common/enums/TagEnum';
-import EventsNamesUserEnum from './enum/events.names.user.enum';
 import EventsNamesPersonEnum from 'apps/person-service/src/enum/events.names.person.enum';
-import StatusAccountEnum from '@account/account/enum/status.account.enum';
+import EventsNamesPspAccountEnum from 'apps/psp-service/src/enum/events.names.psp.acount.enum';
+import EventsNamesTransferEnum from 'apps/transfer-service/src/enum/events.names.transfer.enum';
+import { isMongoId } from 'class-validator';
+import { ObjectId } from 'mongodb';
+import EventsNamesUserEnum from './enum/events.names.user.enum';
 
 @Injectable()
 export class UserServiceService {
@@ -511,7 +511,4 @@ export class UserServiceService {
     // TODO[hender] Not implemented download
     return Promise.resolve(undefined);
   }
-
-  
-  
 }
