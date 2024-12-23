@@ -325,6 +325,7 @@ export class SecurityServiceController {
     return createdUser;
   }
 
+  @NoCache()
   @IsRefresh()
   @ApiKeyCheck()
   @UseGuards(ApiKeyAuthGuard)
