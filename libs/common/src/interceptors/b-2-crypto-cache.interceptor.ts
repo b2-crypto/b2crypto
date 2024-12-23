@@ -1,4 +1,5 @@
-import { CacheInterceptor, ExecutionContext, Logger } from '@nestjs/common';
+import { CacheInterceptor } from '@nestjs/cache-manager';
+import { ExecutionContext, Logger } from '@nestjs/common';
 import * as crypto from 'crypto';
 
 export class B2CryptoCacheInterceptor extends CacheInterceptor {
