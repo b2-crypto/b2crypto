@@ -3,7 +3,7 @@ import { ExecutionContext, Logger } from '@nestjs/common';
 import * as crypto from 'crypto';
 
 export class B2CryptoCacheInterceptor extends CacheInterceptor {
-  protected isRequestCacheable(context: ExecutionContext): boolean {
+  isRequestCacheable(context: ExecutionContext): boolean {
     const http = context.switchToHttp();
     const request = http.getRequest();
 
@@ -23,7 +23,8 @@ export class B2CryptoCacheInterceptor extends CacheInterceptor {
       request.method === 'GET'
     );
   }
-  protected trackBy(context: ExecutionContext): string | undefined {
+
+  trackBy(context: ExecutionContext): string | undefined {
     const req = context.switchToHttp().getRequest();
     const bearerToken = req.headers['authorization'];
     const body = JSON.stringify(req.body);

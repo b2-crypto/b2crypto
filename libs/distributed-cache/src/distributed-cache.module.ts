@@ -16,6 +16,7 @@ import { redisStore } from 'cache-manager-redis-yet';
         const store = await redisStore({
           username: configService.getOrThrow('REDIS_USERNAME'),
           password: configService.getOrThrow('REDIS_PASSWORD'),
+          ttl: parseInt(configService.getOrThrow('CACHE_TTL') ?? '3') * 1000,
           socket: {
             host: configService.getOrThrow('REDIS_HOST'),
             port: configService.getOrThrow<number>('REDIS_PORT'),
@@ -24,7 +25,6 @@ import { redisStore } from 'cache-manager-redis-yet';
 
         return {
           store: store as unknown as CacheStore,
-          ttl: parseInt(configService.getOrThrow('CACHE_TTL') ?? '20') * 1000,
           isGlobal: true,
         };
       },
