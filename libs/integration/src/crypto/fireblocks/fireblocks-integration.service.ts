@@ -140,25 +140,23 @@ export class FireblocksIntegrationService extends IntegrationCryptoService<
       const data = {
         vaultAccountId: vaultId,
         assetId: assetId,
-        createAddressRequest: walletName
-          ? {
-              description: walletName,
-              customerRefId: customerId,
-            }
-          : undefined,
+        createAddressRequest: undefined,
       };
-
-      console.log('data =>', data);
-
-      const walletUser = walletName
-        ? await this.fireblocks.vaults.createVaultAccountAssetAddress(data)
-        : await this.fireblocks.vaults.createVaultAccountAsset(data);
+      let walletUser = null;
+      if (walletName) {
+        data.createAddressRequest = {
+          description: walletName,
+          customerRefId: customerId,
+        };
+        walletUser =
+          await this.fireblocks.vaults.createVaultAccountAssetAddress(data);
+      } else {
+        walletUser = await this.fireblocks.vaults.createVaultAccountAsset(data);
+      }
 
       Logger.debug(JSON.stringify(walletUser, null, 2), 'createWallet');
-
       return walletUser.data;
     } catch (e) {
-      console.log('error =>', e.message);
       if (e.message.indexOf('not found') > -1) {
         await this.createWallet(vaultId, assetId);
         return this.createWallet(vaultId, assetId, walletName, customerId);

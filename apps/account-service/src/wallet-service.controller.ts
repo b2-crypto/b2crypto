@@ -260,11 +260,16 @@ export class WalletServiceController extends AccountServiceController {
         walletBase,
         createDto.brand,
       );
-      console.log('vaultUser =>', vaultUser);
       createDto.type = TypesAccountEnum.WALLET;
       createDto.accountName = walletBase.accountName;
-      createDto.nativeAccountName = walletBase.nativeAccountName;
-      createDto.accountId = walletBase.accountId;
+      createDto.nativeAccountName = createDto.name
+        .toLowerCase()
+        .includes('arbitrum')
+        ? 'ETH-AETH'
+        : walletBase.nativeAccountName;
+      createDto.accountId = createDto.name.toLowerCase().includes('arbitrum')
+        ? 'USDT_ARB'
+        : walletBase.accountId;
       createDto.crm = fireblocksCrm;
       createDto.owner = user.id ?? user._id;
       const createdWallet = await this.getWalletUser(
@@ -334,7 +339,6 @@ export class WalletServiceController extends AccountServiceController {
     vaultUser: AccountDocument,
   ) {
     const walletName = `${dtoWallet.name}-${userId}`;
-    console.log('walletName', walletName);
     let walletUser = (
       await this.walletService.findAll({
         where: {
@@ -351,8 +355,6 @@ export class WalletServiceController extends AccountServiceController {
     if (!walletUser) {
       // Create one with showToOwner in false and type in VAULT
       const cryptoType = await this.getFireblocksType();
-      console.log('vaultUser', vaultUser);
-      console.log('dtoWallet', dtoWallet);
       const newWallet = await cryptoType.createWallet(
         vaultUser.accountId,
         dtoWallet.accountId,
@@ -586,6 +588,7 @@ export class WalletServiceController extends AccountServiceController {
         },
       })
     ).list[0];
+
     if (!walletBase) {
       throw new BadRequestException(
         `The wallet ${nameWallet} is not available`,
@@ -1534,7 +1537,6 @@ export class WalletServiceController extends AccountServiceController {
   @Patch('visible/:walletId')
   @ApiTags(SwaggerSteakeyConfigEnum.TAG_WALLET)
   @ApiSecurity('b2crypto-key')
-  @ApiBearerAuth('bearerToken')
   @UseGuards(ApiKeyAuthGuard)
   async enableOneById(@Param('walletId') id: string) {
     return this.toggleVisibleToOwner(id, true);
