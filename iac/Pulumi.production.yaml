@@ -149,3 +149,5 @@ config:
     secure: AAABANiFuO8c5fxFo6qKXeFsaueV2wR5IvsjpD8uE+ojy1e6IelF+d4mW0EyY82sTzgy+Q==
   b2crypto-iac:AWS_SECRET_KEY:
     secure: AAABAGabyp3icdJdarqH7JzJLAJ7wbF/O0/Pd1mia1AaDT7/YKZ1BnjLa9yn3I0lfQEMImIU6IuhsJCuHgwSfsmMZJ/hAnlY
+  b2crypto-iac:TASK_CPU_MONOLITH: "2048"
+  b2crypto-iac:TASK_MEMORY_MONOLITH: "4096"

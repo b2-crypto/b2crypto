@@ -233,6 +233,10 @@ export const OPTL_COLLECTOR_MAX_CAPACITY_AUTOSCALING = parseInt(
   config.require('OPTL_COLLECTOR_MAX_CAPACITY_AUTOSCALING'),
 );
 
+export const TASK_CPU_MONOLITH = config.require('TASK_CPU_MONOLITH');
+
+export const TASK_MEMORY_MONOLITH = config.require('TASK_MEMORY_MONOLITH');
+
 export const TAGS = {
   Company: COMPANY_NAME,
   Projects: PROJECT_NAME,
