@@ -873,7 +873,6 @@ export class WalletServiceService {
     user: User,
     host: string,
   ) {
-    console.log({ createDto, to, from, user, host });
     if (from.type != TypesAccountEnum.WALLET) {
       throw new BadRequestException('Wallet not found');
     }
