@@ -262,8 +262,14 @@ export class WalletServiceController extends AccountServiceController {
       );
       createDto.type = TypesAccountEnum.WALLET;
       createDto.accountName = walletBase.accountName;
-      createDto.nativeAccountName = walletBase.nativeAccountName;
-      createDto.accountId = walletBase.accountId;
+      createDto.nativeAccountName = createDto.name
+        .toLowerCase()
+        .includes('arbitrum')
+        ? 'ETH-AETH'
+        : walletBase.nativeAccountName;
+      createDto.accountId = createDto.name.toLowerCase().includes('arbitrum')
+        ? 'USDT_ARB'
+        : walletBase.accountId;
       createDto.crm = fireblocksCrm;
       createDto.owner = user.id ?? user._id;
       const createdWallet = await this.getWalletUser(
@@ -582,6 +588,7 @@ export class WalletServiceController extends AccountServiceController {
         },
       })
     ).list[0];
+
     if (!walletBase) {
       throw new BadRequestException(
         `The wallet ${nameWallet} is not available`,
@@ -1530,7 +1537,6 @@ export class WalletServiceController extends AccountServiceController {
   @Patch('visible/:walletId')
   @ApiTags(SwaggerSteakeyConfigEnum.TAG_WALLET)
   @ApiSecurity('b2crypto-key')
-  @ApiBearerAuth('bearerToken')
   @UseGuards(ApiKeyAuthGuard)
   async enableOneById(@Param('walletId') id: string) {
     return this.toggleVisibleToOwner(id, true);

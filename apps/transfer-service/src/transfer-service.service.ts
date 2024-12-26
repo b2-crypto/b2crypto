@@ -290,7 +290,6 @@ export class TransferServiceService
       transfer.userCreator = transfer.userCreator ?? account.owner;
       transfer.userAccount = account.owner ?? transfer.userCreator;
       transfer.accountPrevBalance = account.amount;
-      console.log('transfer =>', transfer);
       const transferSaved = await this.lib.create(transfer);
       if (
         transferSaved.typeTransaction?.toString() === depositLinkCategory._id
