@@ -260,6 +260,7 @@ export class WalletServiceController extends AccountServiceController {
         walletBase,
         createDto.brand,
       );
+      console.log('vaultUser =>', vaultUser);
       createDto.type = TypesAccountEnum.WALLET;
       createDto.accountName = walletBase.accountName;
       createDto.nativeAccountName = walletBase.nativeAccountName;
@@ -333,6 +334,7 @@ export class WalletServiceController extends AccountServiceController {
     vaultUser: AccountDocument,
   ) {
     const walletName = `${dtoWallet.name}-${userId}`;
+    console.log('walletName', walletName);
     let walletUser = (
       await this.walletService.findAll({
         where: {
@@ -349,6 +351,8 @@ export class WalletServiceController extends AccountServiceController {
     if (!walletUser) {
       // Create one with showToOwner in false and type in VAULT
       const cryptoType = await this.getFireblocksType();
+      console.log('vaultUser', vaultUser);
+      console.log('dtoWallet', dtoWallet);
       const newWallet = await cryptoType.createWallet(
         vaultUser.accountId,
         dtoWallet.accountId,
