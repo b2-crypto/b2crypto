@@ -7,8 +7,9 @@ import {
   TransferPeerPathType,
 } from '@fireblocks/ts-sdk';
 import { Cache } from '@nestjs/cache-manager';
-import { Logger } from '@nestjs/common';
+import { ConflictException, HttpStatus, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { FireblocksError } from '../errors';
 import { DepositDto } from '../generic/dto/deposit.dto';
 import { WalletDto } from '../generic/dto/wallet.dto';
 import { IntegrationCryptoService } from '../generic/integration.crypto.service';
@@ -162,7 +163,12 @@ export class FireblocksIntegrationService extends IntegrationCryptoService<
         return this.createWallet(vaultId, assetId, walletName, customerId);
       }
       Logger.error(e.message, 'createWallet');
-      throw e;
+
+      throw new ConflictException({
+        statusCode: HttpStatus.CONFLICT,
+        message: FireblocksError.get(String(e.response.data.code)),
+        description: `Conflict error: ${e.message}`,
+      });
     }
   }
 
