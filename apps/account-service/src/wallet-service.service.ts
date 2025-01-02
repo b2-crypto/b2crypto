@@ -1351,4 +1351,123 @@ export class WalletServiceService {
 
     return walletUser;
   }
+
+  // [Wallet Withdrawal]
+  async processWithdrawal(withdrawalDto: WalletDepositCreateDto, userId: string) {
+    const user = await this.validateAndGetUser(userId);
+    await this.validateWithdrawalRequest(withdrawalDto);
+    
+    const sourceWallet = await this.validateAndGetFromWallet(withdrawalDto.from.toString());
+    
+    const cryptoType = await this.getFireblocksType();
+    const fireblocksCrm = await this.ewalletBuilder.getPromiseCrmEventClient(
+      EventsNamesCrmEnum.findOneByName,
+      IntegrationCryptoEnum.FIREBLOCKS,
+    );
+  
+    const walletBase = await this.getWalletBase(fireblocksCrm._id, sourceWallet.name);
+    const vaultFrom = await this.getVaultUser(
+      sourceWallet.owner.toString(),
+      fireblocksCrm._id,
+      walletBase,
+      sourceWallet.brand.toString(),
+    );
+  
+    const gasFee = await this.calculateWithdrawalFees(sourceWallet);
+    
+    if (sourceWallet.amountCustodial < withdrawalDto.amount + gasFee) {
+      throw new BadRequestException(`Insufficient funds for withdrawal and fees (${gasFee} fee)`);
+    }
+  
+    try {
+      const withdrawalTx = await cryptoType.createTransaction(
+        sourceWallet.accountId,
+        withdrawalDto.amount.toString(),
+        vaultFrom.accountId,
+        withdrawalDto.to.toString(),
+        'Withdrawal',
+        true,
+      );
+  
+      await this.updateWalletBalances(sourceWallet._id, null, withdrawalDto.amount + gasFee);
+      await this.createWithdrawalTransferEvent(sourceWallet, withdrawalDto, withdrawalTx, user);
+  
+      return {
+        success: true,
+        transactionId: withdrawalTx.data.id,
+        fee: gasFee,
+        status: 'pending'
+      };
+    } catch (error) {
+      Logger.error(`Withdrawal failed: ${error.message}`, 'WalletServiceService');
+      throw new BadRequestException('Failed to process withdrawal');
+    }
+  }
+  
+  private async validateWithdrawalRequest(withdrawalDto: WalletDepositCreateDto) {
+    if (!withdrawalDto.amount || withdrawalDto.amount <= 10) {
+      throw new BadRequestException('Withdrawal amount must be greater than 10');
+    }
+  
+    if (!withdrawalDto.to) {
+      throw new BadRequestException('Destination address is required');
+    }
+  
+    if (!withdrawalDto.from) {
+      throw new BadRequestException('Source wallet is required');
+    }
+  }
+  
+  private async calculateWithdrawalFees(sourceWallet: AccountDocument) {
+    const baseFee = 5;
+    const percentageFee = sourceWallet.accountId.includes('arbitrum') ? 0.05 : 0.03; 
+    return baseFee + (sourceWallet.amountCustodial * percentageFee);
+  }
+  
+  private async createWithdrawalTransferEvent(
+    sourceWallet: AccountDocument,
+    withdrawalDto: WalletDepositCreateDto,
+    withdrawalResponse: any,
+    user: User,
+  ) {
+    const [withdrawalCategory, pendingStatus, internalPspAccount] = await Promise.all([
+      this.ewalletBuilder.getPromiseCategoryEventClient(
+        EventsNamesCategoryEnum.findOneByNameType,
+        { slug: 'withdrawal-wallet', type: TagEnum.MONETARY_TRANSACTION_TYPE },
+      ),
+      this.ewalletBuilder.getPromiseStatusEventClient(
+        EventsNamesStatusEnum.findOneByName,
+        'pending',
+      ),
+      this.ewalletBuilder.getPromisePspAccountEventClient(
+        EventsNamesPspAccountEnum.findOneByName,
+        'internal',
+      ),
+    ]);
+  
+    await this.ewalletBuilder.emitTransferEventClient(
+      EventsNamesTransferEnum.createOne,
+      {
+        name: `Withdrawal ${sourceWallet.name}`,
+        description: `Withdrawal to ${withdrawalDto.to}`,
+        currency: sourceWallet.currency,
+        idPayment: withdrawalResponse?.data?.id,
+        responsepayment: withdrawalResponse.data,
+        amount: withdrawalDto.amount,
+        currencyCustodial: sourceWallet.currencyCustodial,
+        amountCustodial: withdrawalDto.amount,
+        account: sourceWallet._id,
+        userCreator: user.id,
+        userAccount: sourceWallet.owner,
+        typeTransaction: withdrawalCategory._id,
+        psp: internalPspAccount.psp,
+        pspAccount: internalPspAccount._id,
+        operationType: OperationTransactionType.withdrawal,
+        statusPayment: StatusCashierEnum.PENDING,
+        status: pendingStatus._id,
+        brand: sourceWallet.brand,
+        crm: sourceWallet.crm,
+      } as unknown as TransferCreateDto,
+    );
+  }
 }
