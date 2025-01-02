@@ -63,6 +63,7 @@ import { isMongoId } from 'class-validator';
 import { SwaggerSteakeyConfigEnum } from 'libs/config/enum/swagger.stakey.config.enum';
 import { AccountServiceController } from './account-service.controller';
 import { AccountServiceService } from './account-service.service';
+import { WalletWithdrawalDto } from './dtos/WalletWithdrawalDto';
 import EventsNamesAccountEnum from './enum/events.names.account.enum';
 import { WalletServiceService } from './wallet-service.service';
 
@@ -71,12 +72,13 @@ import { WalletServiceService } from './wallet-service.service';
 export class WalletServiceController extends AccountServiceController {
   private cryptoType = null;
   constructor(
-    readonly walletService: AccountServiceService,
-    readonly walletServiceService: WalletServiceService,
+    private readonly walletService: AccountServiceService,
+    @Inject(WalletServiceService)
+    private readonly walletServiceService: WalletServiceService,
     @Inject(UserServiceService)
     private readonly userService: UserServiceService,
     @Inject(BuildersService)
-    readonly ewalletBuilder: BuildersService,
+    private readonly ewalletBuilder: BuildersService,
     private readonly integration: IntegrationService,
     private readonly configService: ConfigService,
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
@@ -1074,8 +1076,9 @@ export class WalletServiceController extends AccountServiceController {
         EventsNamesTransferEnum.createOne,
         {
           name: `Withdrawal wallet ${from.name}`,
-          description: `Withdrawal from ${from.name} to ${to?.name ?? createDto.to
-            }`,
+          description: `Withdrawal from ${from.name} to ${
+            to?.name ?? createDto.to
+          }`,
           currency: from.currency,
           idPayment: rta?.data?.id,
           responsepayment: rta?.data,
@@ -1561,21 +1564,18 @@ export class WalletServiceController extends AccountServiceController {
     CommonService.ack(ctx);
     return this.createOne(createDto);
   }
+
   @Post('external-withdraw')
   @ApiTags('wallet')
   @ApiSecurity('b2crypto-key')
   @ApiBearerAuth('bearerToken')
   @UseGuards(ApiKeyAuthGuard, JwtAuthGuard)
   async processWithdrawal(
-    @Body() withdrawalDto: WalletDepositCreateDto,
-    @Req() req: any
+    @Body() withdrawalDto: WalletWithdrawalDto,
+    @Req() req: any,
   ) {
     const userId = CommonService.getUserId(req);
 
-
-    return this.walletServiceService.processWithdrawal(
-      withdrawalDto,
-      userId,
-    );
+    return this.walletServiceService.processWithdrawal(withdrawalDto, userId);
   }
 }
