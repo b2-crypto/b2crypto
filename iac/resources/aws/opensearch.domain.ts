@@ -18,7 +18,7 @@ export const opensearchDomainOptl = new aws.opensearch.Domain(
   `${PROJECT_NAME}-optl-${STACK}`,
   {
     domainName: `${PROJECT_NAME}-optl-${STACK}`,
-    engineVersion: 'OpenSearch_2.15',
+    engineVersion: 'OpenSearch_2.17',
     clusterConfig: {
       instanceType: OPTL_OPEN_SEARCH_INSTANCE_TYPE,
       instanceCount: OPTL_OPEN_SEARCH_INSTANCE_COUNT,
