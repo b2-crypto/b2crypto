@@ -63,18 +63,22 @@ import { isMongoId } from 'class-validator';
 import { SwaggerSteakeyConfigEnum } from 'libs/config/enum/swagger.stakey.config.enum';
 import { AccountServiceController } from './account-service.controller';
 import { AccountServiceService } from './account-service.service';
+import { WalletWithdrawalDto } from './dtos/WalletWithdrawalDto';
 import EventsNamesAccountEnum from './enum/events.names.account.enum';
+import { WalletServiceService } from './wallet-service.service';
 
 @ApiTags(SwaggerSteakeyConfigEnum.TAG_WALLET)
 @Controller('wallets')
 export class WalletServiceController extends AccountServiceController {
   private cryptoType = null;
   constructor(
-    readonly walletService: AccountServiceService,
+    private readonly walletService: AccountServiceService,
+    @Inject(WalletServiceService)
+    private readonly walletServiceService: WalletServiceService,
     @Inject(UserServiceService)
     private readonly userService: UserServiceService,
     @Inject(BuildersService)
-    readonly ewalletBuilder: BuildersService,
+    private readonly ewalletBuilder: BuildersService,
     private readonly integration: IntegrationService,
     private readonly configService: ConfigService,
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
@@ -1559,5 +1563,19 @@ export class WalletServiceController extends AccountServiceController {
   ) {
     CommonService.ack(ctx);
     return this.createOne(createDto);
+  }
+
+  @Post('external-withdraw')
+  @ApiTags('wallet')
+  @ApiSecurity('b2crypto-key')
+  @ApiBearerAuth('bearerToken')
+  @UseGuards(ApiKeyAuthGuard, JwtAuthGuard)
+  async processWithdrawal(
+    @Body() withdrawalDto: WalletWithdrawalDto,
+    @Req() req: any,
+  ) {
+    const userId = CommonService.getUserId(req);
+
+    return this.walletServiceService.processWithdrawal(withdrawalDto, userId);
   }
 }
