@@ -46,7 +46,7 @@ export const opensearchDomainOptl = new aws.opensearch.Domain(
       tlsSecurityPolicy: 'Policy-Min-TLS-1-2-2019-07',
     },
     vpcOptions: {
-      subnetIds: ec2Vpc.privateSubnetIds.apply((subnets) =>
+      subnetIds: ec2Vpc.publicSubnetIds.apply((subnets) =>
         OPTL_OPEN_SEARCH_INSTANCE_COUNT >= subnets.length
           ? subnets
           : subnets.slice(0, OPTL_OPEN_SEARCH_INSTANCE_COUNT),
