@@ -266,4 +266,12 @@ export class TransferCreateDto extends CreateAnyDto {
 
   @IsBoolean()
   checkedOnCashier = false;
+
+  @IsMongoId()
+  @IsOptional()
+  _id?: ObjectId;
+
+  @IsMongoId()
+  @IsOptional()
+  parentTransaction?: ObjectId;
 }

@@ -16,6 +16,7 @@ import { OperationTransactionType } from '@transfer/transfer/enum/operation.tran
 import EventsNamesAccountEnum from 'apps/account-service/src/enum/events.names.account.enum';
 import EventsNamesMessageEnum from 'apps/message-service/src/enum/events.names.message.enum';
 import EventsNamesTransferEnum from 'apps/transfer-service/src/enum/events.names.transfer.enum';
+import { mongo } from 'mongoose';
 import { FiatIntegrationClient } from '../clients/fiat.integration.client';
 import { PomeloProcessEnum } from '../enums/pomelo.process.enum';
 
@@ -25,7 +26,7 @@ export class PomeloIntegrationProcessService {
     private readonly cache: PomeloCache,
     private readonly currencyConversion: FiatIntegrationClient,
     private readonly builder: BuildersService,
-  ) { }
+  ) {}
 
   private async process(
     process: any,
@@ -53,9 +54,13 @@ export class PomeloIntegrationProcessService {
     authorize?: boolean,
   ) {
     try {
+      const transactionId = new mongo.ObjectId();
+
       this.builder.emitTransferEventClient(
         EventsNamesTransferEnum.createOneWebhook,
         {
+          _id: transactionId,
+          parentTransaction: null,
           integration: 'Pomelo',
           requestBodyJson: process,
           requestHeadersJson: headers,
@@ -71,7 +76,12 @@ export class PomeloIntegrationProcessService {
           currencyCustodial: amount.to === 'USD' ? 'USDT' : amount.to,
         },
       );
-      const commision = 0.03;
+
+      const commision =
+        process?.transaction?.origin?.toLowerCase() === 'international'
+          ? 0.04
+          : 0.03;
+
       if (authorize && amount.amount * commision > 0) {
         Logger.log(
           `${response?.message} - $${amount.amount * commision}`,
@@ -80,6 +90,8 @@ export class PomeloIntegrationProcessService {
         this.builder.emitTransferEventClient(
           EventsNamesTransferEnum.createOneWebhook,
           {
+            _id: new mongo.ObjectId(),
+            parentTransaction: transactionId,
             integration: 'Sales',
             requestBodyJson: process,
             requestHeadersJson: headers,
@@ -339,9 +351,9 @@ export class PomeloIntegrationProcessService {
           day: '2-digit',
           hour: '2-digit',
           minute: '2-digit',
-          second: '2-digit'
+          second: '2-digit',
         }),
-        customerName: "",
+        customerName: '',
         transactionStatus: process.status,
         transactionType: authorization.transaction?.type,
         merchantName: authorization.merchant?.name,
@@ -358,6 +370,4 @@ export class PomeloIntegrationProcessService {
 
     return process;
   }
-
-
 }
