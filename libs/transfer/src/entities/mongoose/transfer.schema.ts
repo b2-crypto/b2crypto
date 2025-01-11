@@ -198,6 +198,9 @@ export class Transfer extends TransferEntity {
 
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'users' })
   userRejecter: User;
+
+  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'transfers' })
+  parentTransaction: Transfer;
 }
 
 export const TransferSchema = SchemaFactory.createForClass(Transfer);
