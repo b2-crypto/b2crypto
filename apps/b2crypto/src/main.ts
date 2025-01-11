@@ -1,12 +1,17 @@
 /* eslint-disable */
-import { tracingConfig } from './opentelemetry';
+import { logger, sdk } from './opentelemetry';
+
+sdk.start();
 /* eslint-disable */
 
-import { Tracing } from '@amplication/opentelemetry-nestjs';
 import { QueueAdminModule } from '@common/common/queue-admin-providers/queue.admin.provider.module';
 import { INestApplication, Logger, ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
+import {
+  FastifyAdapter,
+  NestFastifyApplication,
+} from '@nestjs/platform-fastify';
 import { DocumentBuilder, OpenAPIObject, SwaggerModule } from '@nestjs/swagger';
 import { PathsObject } from '@nestjs/swagger/dist/interfaces/open-api-spec.interface';
 import { AccountServiceModule } from 'apps/account-service/src/account-service.module';
@@ -21,17 +26,23 @@ import { StatusServiceModule } from 'apps/status-service/src/status-service.modu
 import { TransferServiceModule } from 'apps/transfer-service/src/transfer-service.module';
 import * as basicAuth from 'express-basic-auth';
 import { SwaggerSteakeyConfigEnum } from 'libs/config/enum/swagger.stakey.config.enum';
+import { WinstonModule } from 'nest-winston';
 import { UserServiceModule } from '../../user-service/src/user-service.module';
-import { AppHttpModule } from './app.http.module';
+import { AppModule } from './app.module';
 
 async function bootstrap() {
-  Tracing.init(tracingConfig);
   Logger.log(process.env.TZ, 'Timezone');
 
-  const app = await NestFactory.create(AppHttpModule, {
-    // logger: false,
-    cors: true,
-  });
+  const app = await NestFactory.create<NestFastifyApplication>(
+    AppModule,
+    new FastifyAdapter(),
+    {
+      logger: WinstonModule.createLogger({
+        instance: logger,
+      }),
+    },
+  );
+
   const configService = app.get(ConfigService);
 
   const validationPipes = new ValidationPipe({
@@ -59,7 +70,14 @@ async function bootstrap() {
     credentials: true,
     allowedHeaders: 'b2crypto-affiliate-key b2crypto-key Content-Type Accept',
   });
-  app.getHttpAdapter().getInstance().disable('x-powered-by');
+
+  app
+    .getHttpAdapter()
+    .getInstance()
+    .addHook('onSend', (request, reply, payload, done) => {
+      reply.header('x-powered-by', '');
+      done();
+    });
 
   app.connectMicroservice(
     await QueueAdminModule.getClientProvider(
