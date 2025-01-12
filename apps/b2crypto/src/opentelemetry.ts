@@ -14,8 +14,8 @@ import { utilities } from 'nest-winston';
 import { createLogger, format, transports } from 'winston';
 
 const resource = new Resource({
-  [ATTR_SERVICE_NAME]: process.env.APP_NAME,
-  [ATTR_SERVICE_VERSION]: process.env.APP_VERSION,
+  [ATTR_SERVICE_NAME]: process.env.APP_NAME || 'b2crypto',
+  [ATTR_SERVICE_VERSION]: process.env.APP_VERSION || '1.0.0',
 });
 
 const tracesExporter = new OTLPTraceExporter({
