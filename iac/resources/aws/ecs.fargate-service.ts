@@ -4,6 +4,7 @@ import * as pulumi from '@pulumi/pulumi';
 import {
   API_KEY_EMAIL_APP,
   APP_NAME,
+  APP_VERSION,
   AUTH_EXPIRE_IN,
   AUTH_MAX_SECONDS_TO_REFRESH,
   AUTHORIZATIONS_BLOCK_BALANCE_PERCENTAGE,
@@ -87,6 +88,7 @@ export const ecsFargateService = new awsx.ecs.FargateService(
         environment: [
           { name: 'ENVIRONMENT', value: ENVIRONMENT },
           { name: 'APP_NAME', value: APP_NAME },
+          { name: 'APP_VERSION', value: APP_VERSION },
           { name: 'GOOGLE_2FA', value: GOOGLE_2FA },
           { name: 'PORT', value: PORT },
           { name: 'DATABASE_NAME', value: DATABASE_NAME },
@@ -259,8 +261,16 @@ export const ecsFargateService = new awsx.ecs.FargateService(
             value: SOCIAL_MEDIA_LINKS,
           },
           {
-            name: 'OPTL_API_URL',
+            name: 'OTLP_HOST_TRACES',
             value: `https://${SUBDOMAIN_PREFIX_OPTL_COLLECTOR}.${DOMAIN}/v1/traces`,
+          },
+          {
+            name: 'OTLP_HOST_LOGS',
+            value: `https://${SUBDOMAIN_PREFIX_OPTL_COLLECTOR}.${DOMAIN}/v1/logs`,
+          },
+          {
+            name: 'OTLP_HOST_METRICS',
+            value: `https://${SUBDOMAIN_PREFIX_OPTL_COLLECTOR}.${DOMAIN}/v1/metrics`,
           },
           {
             name: 'OPTL_SERVICE_NAME',

@@ -16,6 +16,11 @@ import { Aggregate, Model } from 'mongoose';
 import { ApproveOrRejectDepositDto } from './dto/approve.or.reject.deposit.dto';
 import { OperationTransactionType } from './enum/operation.transaction.type.enum';
 
+import { Traceable } from '@amplication/opentelemetry-nestjs';
+import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
+import { Logger } from 'winston';
+
+@Traceable()
 @Injectable()
 export class TransferServiceMongooseService extends BasicServiceModel<
   TransferDocument,
@@ -24,10 +29,11 @@ export class TransferServiceMongooseService extends BasicServiceModel<
   TransferUpdateDto
 > {
   constructor(
+    @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
     @Inject('TRANSFER_MODEL_MONGOOSE')
     private transferModel: Model<TransferDocument>,
   ) {
-    super(transferModel);
+    super(logger, transferModel);
   }
 
   async update(id: string, updateTransferDto: TransferUpdateDto) {

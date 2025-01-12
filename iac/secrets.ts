@@ -133,6 +133,7 @@ export const CREATED_BY = 'Pulumi IaC';
 export const ENVIRONMENT = config.require('ENVIRONMENT');
 export const PORT = config.require('PORT');
 export const APP_NAME = config.require('APP_NAME');
+export const APP_VERSION = config.require('APP_VERSION');
 export const GOOGLE_2FA = config.require('GOOGLE_2FA');
 export const DATABASE_NAME = config.require('DATABASE_NAME');
 export const RABBIT_MQ_PORT = config.require('RABBIT_MQ_PORT');

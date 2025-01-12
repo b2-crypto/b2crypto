@@ -1,9 +1,12 @@
-import { IpAddressCreateDto } from '@ip-address/ip-address/dto/ip-address.create.dto';
-import { IpAddressUpdateDto } from '@ip-address/ip-address/dto/ip-address.update.dto';
 import { QuerySearchAnyDto } from '@common/common/models/query_search-any.dto';
 import { IpAddressServiceMongooseService } from '@ip-address/ip-address';
+import { IpAddressCreateDto } from '@ip-address/ip-address/dto/ip-address.create.dto';
+import { IpAddressUpdateDto } from '@ip-address/ip-address/dto/ip-address.update.dto';
 import { Inject, Injectable } from '@nestjs/common';
 
+import { Traceable } from '@amplication/opentelemetry-nestjs';
+
+@Traceable()
 @Injectable()
 export class IpAddressServiceService {
   constructor(

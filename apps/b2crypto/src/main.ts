@@ -5,7 +5,7 @@ sdk.start();
 /* eslint-disable */
 
 import { QueueAdminModule } from '@common/common/queue-admin-providers/queue.admin.provider.module';
-import { INestApplication, Logger, ValidationPipe } from '@nestjs/common';
+import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 import {
@@ -26,13 +26,11 @@ import { StatusServiceModule } from 'apps/status-service/src/status-service.modu
 import { TransferServiceModule } from 'apps/transfer-service/src/transfer-service.module';
 import * as basicAuth from 'express-basic-auth';
 import { SwaggerSteakeyConfigEnum } from 'libs/config/enum/swagger.stakey.config.enum';
-import { WinstonModule } from 'nest-winston';
+import { WINSTON_MODULE_PROVIDER, WinstonModule } from 'nest-winston';
 import { UserServiceModule } from '../../user-service/src/user-service.module';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
-  Logger.log(process.env.TZ, 'Timezone');
-
   const app = await NestFactory.create<NestFastifyApplication>(
     AppModule,
     new FastifyAdapter(),
@@ -44,6 +42,7 @@ async function bootstrap() {
   );
 
   const configService = app.get(ConfigService);
+  const loggerService = app.get(WINSTON_MODULE_PROVIDER);
 
   const validationPipes = new ValidationPipe({
     whitelist: true,
@@ -87,7 +86,9 @@ async function bootstrap() {
   );
   await app.startAllMicroservices();
   await app.listen(configService.get('PORT') ?? 3000);
-  Logger.log('Listening on port ' + configService.get('PORT'));
+
+  loggerService.info('Timezone', process.env.TZ);
+  loggerService.info('Listening on port ' + configService.get('PORT'));
   if (typeof process.send === 'function') {
     process.send('ready');
   }

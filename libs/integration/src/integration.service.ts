@@ -22,10 +22,16 @@ import { IntegrationCryptoService } from './crypto/generic/integration.crypto.se
 import { IntegrationIdentityEnum } from './identity/generic/domain/integration.identity.enum';
 import { IntegrationIdentityService } from './identity/generic/integration.identity.service';
 
+import { Traceable } from '@amplication/opentelemetry-nestjs';
+import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
+import { Logger } from 'winston';
+
+@Traceable()
 @Injectable()
 export class IntegrationService {
   private env: string;
   constructor(
+    @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
     @Inject(CACHE_MANAGER)
     private cacheManager: Cache,
     private readonly configService: ConfigService,
@@ -99,10 +105,18 @@ export class IntegrationService {
     let crmType: IntegrationCrmService;
     switch (crmCategoryName.toUpperCase()) {
       case IntegrationCrmEnum.ANTELOPE:
-        crmType = new AntelopeIntegrationService(crm, this.configService);
+        crmType = new AntelopeIntegrationService(
+          this.logger,
+          crm,
+          this.configService,
+        );
         break;
       case IntegrationCrmEnum.LEVERATE:
-        crmType = new LeverateIntegrationService(crm, this.configService);
+        crmType = new LeverateIntegrationService(
+          this.logger,
+          crm,
+          this.configService,
+        );
         break;
     }
     if (!crmType) {
@@ -118,6 +132,7 @@ export class IntegrationService {
     switch (identityCategoryName.toUpperCase()) {
       case IntegrationIdentityEnum.SUMSUB:
         identityType = new IntegrationIdentityService(
+          this.logger,
           {
             urlApi: 'https://api.sumsub.com',
             token:
@@ -143,7 +158,11 @@ export class IntegrationService {
     let cardType: IntegrationCardService;
     switch (cardCategoryName.toUpperCase()) {
       case IntegrationCardEnum.POMELO:
-        cardType = new PomeloIntegrationService(this.configService, card);
+        cardType = new PomeloIntegrationService(
+          this.logger,
+          this.configService,
+          card,
+        );
         break;
     }
     if (!cardType) {
@@ -165,12 +184,14 @@ export class IntegrationService {
         break;
       case IntegrationCryptoEnum.FIREBLOCKS:
         cryptoType = new FireblocksIntegrationService(
+          this.logger,
           this.configService,
           this.cacheManager,
         );
         break;
       case IntegrationCryptoEnum.B2BINPAY:
         cryptoType = new B2BinPayIntegrationService(
+          this.logger,
           crypto,
           this.configService,
           this.cacheManager,

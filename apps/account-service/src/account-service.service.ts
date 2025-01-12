@@ -39,6 +39,9 @@ import * as fs from 'fs';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 
+import { Traceable } from '@amplication/opentelemetry-nestjs';
+
+@Traceable()
 @Injectable()
 export class AccountServiceService
   implements BasicMicroserviceService<AccountDocument>

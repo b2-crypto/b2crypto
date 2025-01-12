@@ -151,3 +151,4 @@ config:
     secure: AAABAGabyp3icdJdarqH7JzJLAJ7wbF/O0/Pd1mia1AaDT7/YKZ1BnjLa9yn3I0lfQEMImIU6IuhsJCuHgwSfsmMZJ/hAnlY
   b2crypto-iac:TASK_CPU_MONOLITH: "2048"
   b2crypto-iac:TASK_MEMORY_MONOLITH: "4096"
+  b2crypto-iac:APP_VERSION: 0.9.0

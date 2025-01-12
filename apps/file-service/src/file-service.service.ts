@@ -1,13 +1,14 @@
-import { isString } from 'class-validator';
 import { QuerySearchAnyDto } from '@common/common/models/query_search-any.dto';
 import { FileServiceMongooseService } from '@file/file';
 import { FileCreateDto } from '@file/file/dto/file.create.dto';
 import { FileUpdateDto } from '@file/file/dto/file.update.dto';
-import { Inject, Injectable, Logger } from '@nestjs/common';
-import * as XLSX from 'xlsx';
+import { Inject, Injectable } from '@nestjs/common';
 import * as fs from 'fs';
-import path from 'path';
+import * as XLSX from 'xlsx';
 
+import { Traceable } from '@amplication/opentelemetry-nestjs';
+
+@Traceable()
 @Injectable()
 export class FileServiceService {
   constructor(

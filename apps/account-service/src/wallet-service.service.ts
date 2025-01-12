@@ -34,6 +34,9 @@ import { AccountServiceService } from './account-service.service';
 import { WalletWithdrawalDto } from './dtos/WalletWithdrawalDto';
 import EventsNamesAccountEnum from './enum/events.names.account.enum';
 
+import { Traceable } from '@amplication/opentelemetry-nestjs';
+
+@Traceable()
 @Injectable()
 export class WalletServiceService {
   private cryptoType: any = null;
