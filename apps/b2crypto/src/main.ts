@@ -62,13 +62,7 @@ async function bootstrap() {
     allowedHeaders: 'b2crypto-affiliate-key b2crypto-key Content-Type Accept',
   });
 
-  app
-    .getHttpAdapter()
-    .getInstance()
-    .addHook('onSend', (request, reply, payload, done) => {
-      reply.header('x-powered-by', '');
-      done();
-    });
+  app.getHttpAdapter().getInstance().disable('x-powered-by');
 
   app.connectMicroservice(
     await QueueAdminModule.getClientProvider(
