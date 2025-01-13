@@ -8,10 +8,6 @@ import { QueueAdminModule } from '@common/common/queue-admin-providers/queue.adm
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
-import {
-  FastifyAdapter,
-  NestFastifyApplication,
-} from '@nestjs/platform-fastify';
 import { DocumentBuilder, OpenAPIObject, SwaggerModule } from '@nestjs/swagger';
 import { PathsObject } from '@nestjs/swagger/dist/interfaces/open-api-spec.interface';
 import { AccountServiceModule } from 'apps/account-service/src/account-service.module';
@@ -28,18 +24,14 @@ import * as basicAuth from 'express-basic-auth';
 import { SwaggerSteakeyConfigEnum } from 'libs/config/enum/swagger.stakey.config.enum';
 import { WINSTON_MODULE_PROVIDER, WinstonModule } from 'nest-winston';
 import { UserServiceModule } from '../../user-service/src/user-service.module';
-import { AppModule } from './app.module';
+import { AppHttpModule } from './app.http.module';
 
 async function bootstrap() {
-  const app = await NestFactory.create<NestFastifyApplication>(
-    AppModule,
-    new FastifyAdapter(),
-    {
-      logger: WinstonModule.createLogger({
-        instance: logger,
-      }),
-    },
-  );
+  const app = await NestFactory.create(AppHttpModule, {
+    logger: WinstonModule.createLogger({
+      instance: logger,
+    }),
+  });
 
   const configService = app.get(ConfigService);
   const loggerService = app.get(WINSTON_MODULE_PROVIDER);

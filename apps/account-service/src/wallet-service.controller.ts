@@ -1342,7 +1342,7 @@ export class WalletServiceController extends AccountServiceController {
     const valuts = {};
     const wallets = {};
     const promises = [];
-    this.logger.info('Start sweep omnibus');
+    this.logger.debug('Start sweep omnibus');
     do {
       walletList = await this.ewalletBuilder.getPromiseAccountEventClient(
         EventsNamesAccountEnum.findAll,
@@ -1484,7 +1484,7 @@ export class WalletServiceController extends AccountServiceController {
       }
     } while (walletList.nextPage != 1);
     await Promise.all(promises);
-    this.logger.info('Finish sweep omnibus');
+    this.logger.debug('Finish sweep omnibus');
   }
 
   private async getWallet(

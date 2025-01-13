@@ -256,7 +256,7 @@ export class CrmServiceService {
               data.leadDto._id,
             );
           } else {
-            this.logger.info(msg, leadRta);
+            this.logger.debug(msg, leadRta);
             await this.builder.getPromiseLeadEventClient(
               EventsNamesLeadEnum.deleteOneById,
               lead._id,
@@ -290,7 +290,7 @@ export class CrmServiceService {
         }
       }
     } catch (err) {
-      this.logger.info(CrmServiceService.name, err);
+      this.logger.debug(CrmServiceService.name, err);
       return err;
     }
     return null;
@@ -313,7 +313,7 @@ export class CrmServiceService {
     try {
       task = this.schedulerRegistry.getTimeout(taskName);
     } catch (err) {
-      this.logger.info('Save lead schedulerRegistry', err);
+      this.logger.debug('Save lead schedulerRegistry', err);
     }
     return new Promise((resolve) => {
       if (task) {
@@ -463,7 +463,10 @@ export class CrmServiceService {
         !isArray(tpAccountInfo) ||
         !tpAccountInfo[0].lv_tpaccountid
       ) {
-        this.logger.info(CrmServiceService.name, JSON.stringify(tpAccountInfo));
+        this.logger.debug(
+          CrmServiceService.name,
+          JSON.stringify(tpAccountInfo),
+        );
         throw new BadRequestException(
           `Can't get the account trading platform id`,
         );
@@ -551,7 +554,7 @@ export class CrmServiceService {
   }
 
   async checkStatsTransfer(configCheckStats: ConfigCheckStatsDto) {
-    this.logger.info('CHECK STATS CRMS TRANSFER', configCheckStats);
+    this.logger.debug('CHECK STATS CRMS TRANSFER', configCheckStats);
   }
 
   async checkCrmLeadStatus(data: CheckLeadStatusOnCrmDto) {
@@ -660,21 +663,21 @@ export class CrmServiceService {
               } else {
                 result.error.count++;
                 result.error.leads.push(leadCrm.tpAccount);
-                this.logger.info(
+                this.logger.debug(
                   'No update lead',
                   `Status ${leadCrm.leadStatus} not found for ${leadCrm.tpAccount}`,
                 );
               }
             }
           }
-          this.logger.info(
+          this.logger.debug(
             `Result status update ${result.total} crm leads`,
             `${
               crmType.crm.name
             } - ${affiliateId} start ${data.start.toUTCString()} - ${base}`,
           );
         } catch (error) {
-          this.logger.info(
+          this.logger.debug(
             `Error get lead statuses from CRM ${crmType.crm.name} - ${affiliateId}`,
             { error, where: base },
           );
@@ -747,7 +750,7 @@ export class CrmServiceService {
             }
           }
         } catch (error) {
-          this.logger.info(error.message, error);
+          this.logger.debug(error.message, error);
           continue;
         }
       }

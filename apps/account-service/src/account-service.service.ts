@@ -48,7 +48,7 @@ export class AccountServiceService
 {
   async cleanWallet(query: QuerySearchAnyDto) {
     throw new NotImplementedException();
-    // this.logger.info('Start', `Clean wallet`);
+    // this.logger.debug('Start', `Clean wallet`);
     // query = query || new QuerySearchAnyDto();
     // query.where = query.where || {};
     // query.where.type = TypesAccountEnum.WALLET;
@@ -59,7 +59,7 @@ export class AccountServiceService
     // await this.cleanWalletsWithTransfers(query, 'LOCK');
     // query.where.statusText = StatusAccountEnum.UNLOCK;
     // await this.cleanWalletsWithTransfers(query, 'UNLOCK');
-    // this.logger.info('End', `Clean wallet`);
+    // this.logger.debug('End', `Clean wallet`);
     // return {
     //   statusCode: 200,
     //   message: 'ok',
@@ -110,7 +110,7 @@ export class AccountServiceService
       );
     if (transfersAccounts.totalElements) {
       const accountWithTx = transfersAccounts.list.map((t) => t.account);
-      this.logger.info(
+      this.logger.debug(
         `${accountWithTx.length}/${walletsClean.list.length}`,
         `Filter wallets with transfers page ${query.page}`,
       );
@@ -130,7 +130,7 @@ export class AccountServiceService
         (w) => !accountWithTx.includes(w._id.toString()),
       );
     } else {
-      this.logger.info(
+      this.logger.debug(
         'Not found transfers',
         `Filter wallets with transfers page ${query.page}`,
       );
@@ -144,7 +144,7 @@ export class AccountServiceService
       `Removed ${walletsClean.list.length} wallets`,
       `Filter wallets with transfers page ${query.page}`,
     );
-    this.logger.info(
+    this.logger.debug(
       `${walletsClean.list.length}/${walletsClean.totalElements}`,
       `Total ${msg} wallets to clean ${walletsClean.currentPage}/${walletsClean.lastPage}`,
     );
@@ -347,7 +347,7 @@ export class AccountServiceService
         },
       };
 
-      this.logger.info('Account Request Confirmation Email Prepared', data);
+      this.logger.debug('Account Request Confirmation Email Prepared', data);
       this.builder.emitMessageEventClient(
         EventsNamesMessageEnum.sendCardRequestConfirmationEmail,
         data,
@@ -442,7 +442,7 @@ export class AccountServiceService
   }
   getBalanceReport(query: QuerySearchAnyDto) {
     // TODO[hender - 2024/09/26] Receive 3 events but trigger only 1 from job
-    this.logger.info('Start balance report', AccountServiceService.name);
+    this.logger.debug('Start balance report', AccountServiceService.name);
     Promise.all([
       this.getBalanceByAccountTypeCard(query),
       //this.getBalanceByAccountTypeWallet(query),
@@ -451,7 +451,7 @@ export class AccountServiceService
       this.getBalanceByAccountByCard(query),
       //this.getBalanceByAccountByWallet(query),
     ]).then(async (results) => {
-      this.logger.info('Report filter finish', AccountServiceService.name);
+      this.logger.debug('Report filter finish', AccountServiceService.name);
       const [
         cardTotalAccumulated,
         //walletTotalAccumulated,
@@ -526,7 +526,7 @@ export class AccountServiceService
       },
     ];
     const attachments = await Promise.all(promisesAttachments);
-    this.logger.info('Report finish', AccountServiceService.name);
+    this.logger.debug('Report finish', AccountServiceService.name);
     destiny.forEach((destiny) => {
       this.sendEmail({
         destinyText: destiny.email,
@@ -573,7 +573,7 @@ export class AccountServiceService
     const objBase = this.getCustomObj(headers);
     // File created
     this.addDataToFile(objBase, filename, true, true);
-    this.logger.info('File created', AccountServiceService.name);
+    this.logger.debug('File created', AccountServiceService.name);
     return new Promise((res) => {
       // Wait file creation
       setTimeout(async () => {

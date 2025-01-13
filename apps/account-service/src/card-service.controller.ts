@@ -1413,7 +1413,7 @@ export class CardServiceController extends AccountServiceController {
     const rtaGetShipping = await cardIntegration.getShippingPhysicalCard(
       card.responseShipping.id,
     );
-    this.logger.info('Shipping', rtaGetShipping);
+    this.logger.debug('Shipping', rtaGetShipping);
     return card.responseShipping;
   }
 
@@ -1580,7 +1580,7 @@ export class CardServiceController extends AccountServiceController {
       );
     if (valueToPay > 0) {
       // Pay transfer between cards
-      this.logger.info('Pay transfer between cards', 'Make');
+      this.logger.debug('Pay transfer between cards', 'Make');
     }
     this.cardBuilder.emitTransferEventClient(
       EventsNamesTransferEnum.createOne,
@@ -1964,7 +1964,10 @@ export class CardServiceController extends AccountServiceController {
             id: card.cardConfig.id,
             affinity_group_id: afg.valueGroup,
           });
-          this.logger.info(`Updated AFG Card-${card._id.toString()}`, rta.data);
+          this.logger.debug(
+            `Updated AFG Card-${card._id.toString()}`,
+            rta.data,
+          );
           this.cardBuilder.emitAccountEventClient(
             EventsNamesAccountEnum.updateOne,
             {
@@ -2041,7 +2044,7 @@ export class CardServiceController extends AccountServiceController {
     CommonService.ack(ctx);
     try {
       let txnAmount = 0;
-      this.logger.info(`Looking for card: ${data.id}`, 'proccessPomeloTx');
+      this.logger.debug(`Looking for card: ${data.id}`, 'proccessPomeloTx');
       const cardList = await this.cardService.findAll({
         where: {
           statusText: StatusAccountEnum.UNLOCK,
@@ -2052,7 +2055,7 @@ export class CardServiceController extends AccountServiceController {
       if (!card) {
         return CardsEnum.CARD_PROCESS_CARD_NOT_FOUND;
       }
-      this.logger.info(
+      this.logger.debug(
         `Card balance: ${card.amount} | Movement amount: ${data.amount}`,
         `CardService.ProcessPomeloTransaction.Authorize: ${data.authorize}`,
       );
@@ -2086,7 +2089,7 @@ export class CardServiceController extends AccountServiceController {
   async findByCardId(@Ctx() ctx: RmqContext, @Payload() data: any) {
     CommonService.ack(ctx);
     try {
-      this.logger.info(`Looking for card: ${data.id}`, 'findByCardId');
+      this.logger.debug(`Looking for card: ${data.id}`, 'findByCardId');
       const cardList = await this.getCardById(data.id);
       if (!cardList || !cardList.list[0]) {
         throw new NotFoundException(`Card ${data.id} was not found`);
@@ -2099,7 +2102,7 @@ export class CardServiceController extends AccountServiceController {
 
   private async getCardById(cardId: string) {
     try {
-      this.logger.info(`Looking for card: ${cardId}`, 'getByCardId');
+      this.logger.debug(`Looking for card: ${cardId}`, 'getByCardId');
       const cardList = await this.cardService.findAll({
         where: {
           'cardConfig.id': cardId,
@@ -2118,7 +2121,7 @@ export class CardServiceController extends AccountServiceController {
   ) {
     CommonService.ack(ctx);
     try {
-      this.logger.info(`Start`, CardServiceController.name);
+      this.logger.debug(`Start`, CardServiceController.name);
       const paginator: ResponsePaginator<User> = new ResponsePaginator<User>();
       paginator.currentPage = 1;
       paginator.firstPage = 1;
@@ -2255,7 +2258,7 @@ export class CardServiceController extends AccountServiceController {
   async setBalanceByCard(@Ctx() ctx: RmqContext, @Payload() data: any) {
     CommonService.ack(ctx);
     try {
-      this.logger.info(`Looking for card: ${data.id}`, 'setBalanceByCard');
+      this.logger.debug(`Looking for card: ${data.id}`, 'setBalanceByCard');
       const cardList = await this.cardService.findAll({
         where: {
           'cardConfig.id': data.id,

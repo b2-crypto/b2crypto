@@ -141,7 +141,7 @@ export class AuthService {
         resourceName: ResourcesEnum.USER,
       };
     }
-    this.logger.info('OTP Sended', data);
+    this.logger.debug('OTP Sended', data);
     this.builder.emitMessageEventClient(
       EventsNamesMessageEnum.sendEmailOtpNotification,
       data,
