@@ -19,15 +19,15 @@ const resource = new Resource({
 });
 
 const tracesExporter = new OTLPTraceExporter({
-  url: process.env.OTLP_HOST_TRACES,
+  url: process.env.OTLP_HOST_TRACES || 'http://localhost:4318/v1/traces',
 });
 
 const metricsExporter = new OTLPMetricExporter({
-  url: process.env.OTLP_HOST_METRICS,
+  url: process.env.OTLP_HOST_METRICS || 'http://localhost:4318/v1/metrics',
 });
 
 const logsExporter = new OTLPLogExporter({
-  url: process.env.OTLP_HOST_LOGS,
+  url: process.env.OTLP_HOST_LOGS || 'http://localhost:4318/v1/logs',
 });
 
 export const sdk = new NodeSDK({
@@ -57,7 +57,7 @@ process.on('SIGTERM', async () => {
 
 export const logger = createLogger({
   level: 'info',
-  // format: winston.format.json(),
+  format: format.json(),
   transports: [
     new transports.Console({
       format: format.combine(

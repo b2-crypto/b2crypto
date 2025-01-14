@@ -61,11 +61,16 @@ export class PomeloIntegrationProcessService {
   ) {
     try {
       const transactionId = new mongo.ObjectId();
+      const childTransactionId = new mongo.ObjectId();
+
+      this.logger.debug('Transaction ID', transactionId);
+      this.logger.debug('Child Transaction ID', childTransactionId);
 
       this.builder.emitTransferEventClient(
         EventsNamesTransferEnum.createOneWebhook,
         {
           _id: transactionId,
+          id: transactionId,
           parentTransaction: null,
           integration: 'Pomelo',
           requestBodyJson: process,
@@ -96,7 +101,8 @@ export class PomeloIntegrationProcessService {
         this.builder.emitTransferEventClient(
           EventsNamesTransferEnum.createOneWebhook,
           {
-            _id: new mongo.ObjectId(),
+            _id: childTransactionId,
+            id: childTransactionId,
             parentTransaction: transactionId,
             integration: 'Sales',
             requestBodyJson: process,
