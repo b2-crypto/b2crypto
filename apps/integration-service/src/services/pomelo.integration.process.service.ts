@@ -55,34 +55,36 @@ export class PomeloIntegrationProcessService {
   ) {
     try {
       const transactionId = new mongo.ObjectId();
+      const childTransactionId = new mongo.ObjectId();
+      const transaction = {
+        _id: transactionId,
+        parentTransaction: null,
+        integration: 'Pomelo',
+        requestBodyJson: process,
+        requestHeadersJson: headers,
+        operationType:
+          OperationTransactionType[process?.transaction?.type?.toLowerCase()],
+        status: response?.status ?? CardsEnum.CARD_PROCESS_OK,
+        descriptionStatusPayment:
+          response?.status_detail ?? CardsEnum.CARD_PROCESS_OK,
+        description: response?.message ?? '',
+        amount: amount.amount,
+        amountCustodial: amount.usd,
+        currency: amount.from === 'USD' ? 'USDT' : amount.from,
+        currencyCustodial: amount.to === 'USD' ? 'USDT' : amount.to,
+      };
 
       this.builder.emitTransferEventClient(
         EventsNamesTransferEnum.createOneWebhook,
-        {
-          _id: transactionId,
-          parentTransaction: null,
-          integration: 'Pomelo',
-          requestBodyJson: process,
-          requestHeadersJson: headers,
-          operationType:
-            OperationTransactionType[process?.transaction?.type?.toLowerCase()],
-          status: response?.status ?? CardsEnum.CARD_PROCESS_OK,
-          descriptionStatusPayment:
-            response?.status_detail ?? CardsEnum.CARD_PROCESS_OK,
-          description: response?.message ?? '',
-          amount: amount.amount,
-          amountCustodial: amount.usd,
-          currency: amount.from === 'USD' ? 'USDT' : amount.from,
-          currencyCustodial: amount.to === 'USD' ? 'USDT' : amount.to,
-        },
+        transaction,
       );
 
       const commision =
         process?.transaction?.origin?.toLowerCase() === 'international'
-          ? 0.04
-          : 0.03;
+          ? process.env.COMMISION_INTERNATIONAL
+          : process.env.COMMISION_NATIONAL;
 
-      if (authorize && amount.amount * commision > 0) {
+      if (authorize && Number(amount.amount) * commision > 0) {
         Logger.log(
           `${response?.message} - $${amount.amount * commision}`,
           'Commision to B2Fintech',
@@ -90,7 +92,7 @@ export class PomeloIntegrationProcessService {
         this.builder.emitTransferEventClient(
           EventsNamesTransferEnum.createOneWebhook,
           {
-            _id: new mongo.ObjectId(),
+            _id: childTransactionId,
             parentTransaction: transactionId,
             integration: 'Sales',
             requestBodyJson: process,

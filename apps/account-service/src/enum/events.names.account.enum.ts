@@ -24,7 +24,7 @@ enum EventsNamesAccountEnum {
   findOneById = 'CARD.FIND.ONE.BY.ID',
   findOneByCardId = 'CARD.FIND.ONE.BY.CARD.ID',
   findOneByTpId = 'CARD.FIND.ONE.BY.TP.ID',
-  
+
   // Migration
   mingrateOne = 'CARD.MIGRATE.ONE',
   findAllCardsToMigrate = 'FIND.CARD.ALL',
@@ -37,7 +37,7 @@ enum EventsNamesAccountEnum {
   // Affiliate Related
   getAffiliatesFromCards = 'CARD.FIND.AFFILIATES',
   addCardFromAffiliate = 'CARD.CREATE.FROM.AFFILIATE',
-  
+
   // Stats & Checks
   checkCardsCreatedInPomelo = 'CARD.CHECK.CREATED.IN.POMELO',
   checkCardsForAffiliateStats = 'CARD.CHECK.FOR.AFFILIATE.STATS',
@@ -51,7 +51,7 @@ enum EventsNamesAccountEnum {
   athorizationTx = 'CARD.AUTHORIZATION.TX',
   pomeloTransaction = 'CARD.POMELO.TRANSACTION',
   sendBalanceReport = 'ACCOUNT.SEND.BALANCE.REPORT',
-  levelUpCards = 'CARD.LEVEL.UP'
+  levelUpCards = 'CARD.LEVEL.UP',
 }
 
 export default EventsNamesAccountEnum;
