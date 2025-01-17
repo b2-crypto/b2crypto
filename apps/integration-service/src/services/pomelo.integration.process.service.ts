@@ -74,6 +74,36 @@ export class PomeloIntegrationProcessService {
         currencyCustodial: amount.to === 'USD' ? 'USDT' : amount.to,
       };
 
+<<<<<<< Updated upstream
+=======
+      const isTransactionRefund =
+        pretransaction.operationType === OperationTransactionType.refund;
+
+      const [originalTransaction, originalCommision] = isTransactionRefund
+        ? await this.builder.getPromiseTransferEventClient<Transfer[]>(
+            EventsNamesTransferEnum.findAll,
+            {
+              'requestBodyJson.transaction.id':
+                process?.transaction?.original_transaction_id,
+            },
+          )
+        : [null, null];
+
+      const transaction = isTransactionRefund
+        ? {
+            ...pretransaction,
+            amount: originalTransaction?.amount ?? pretransaction.amount,
+            currency: originalTransaction?.currency ?? pretransaction.currency,
+            amountCustodial:
+              originalTransaction?.amountCustodial ??
+              pretransaction.amountCustodial,
+            currencyCustodial:
+              originalTransaction?.currencyCustodial ??
+              pretransaction.currencyCustodial,
+          }
+        : pretransaction;
+
+>>>>>>> Stashed changes
       this.builder.emitTransferEventClient(
         EventsNamesTransferEnum.createOneWebhook,
         transaction,
