@@ -12,6 +12,7 @@ import {
   InternalServerErrorException,
   Logger,
 } from '@nestjs/common';
+import { Transfer } from '@transfer/transfer/entities/mongoose/transfer.schema';
 import { OperationTransactionType } from '@transfer/transfer/enum/operation.transaction.type.enum';
 import EventsNamesAccountEnum from 'apps/account-service/src/enum/events.names.account.enum';
 import EventsNamesMessageEnum from 'apps/message-service/src/enum/events.names.message.enum';
@@ -41,12 +42,18 @@ export class PomeloIntegrationProcessService {
       const amount = await this.getAmount(process);
       response = await this.executeProcess(process, authorize, amount.usd);
       await this.cache.setResponse(idempotency, response);
-      this.createTransferRecord(process, headers, response, amount, authorize);
+      await this.createTransferRecord(
+        process,
+        headers,
+        response,
+        amount,
+        authorize,
+      );
     }
     return response;
   }
 
-  private createTransferRecord(
+  private async createTransferRecord(
     process: any,
     headers: any,
     response: any,
@@ -56,7 +63,7 @@ export class PomeloIntegrationProcessService {
     try {
       const transactionId = new mongo.ObjectId();
       const childTransactionId = new mongo.ObjectId();
-      const transaction = {
+      const pretransaction = {
         _id: transactionId,
         parentTransaction: null,
         integration: 'Pomelo',
@@ -74,8 +81,6 @@ export class PomeloIntegrationProcessService {
         currencyCustodial: amount.to === 'USD' ? 'USDT' : amount.to,
       };
 
-<<<<<<< Updated upstream
-=======
       const isTransactionRefund =
         pretransaction.operationType === OperationTransactionType.refund;
 
@@ -103,7 +108,6 @@ export class PomeloIntegrationProcessService {
           }
         : pretransaction;
 
->>>>>>> Stashed changes
       this.builder.emitTransferEventClient(
         EventsNamesTransferEnum.createOneWebhook,
         transaction,
@@ -127,16 +131,32 @@ export class PomeloIntegrationProcessService {
             integration: 'Sales',
             requestBodyJson: process,
             requestHeadersJson: headers,
-            operationType: OperationTransactionType.purchase,
+            operationType: isTransactionRefund
+              ? OperationTransactionType.refund
+              : OperationTransactionType.purchase,
             status: response?.status ?? CardsEnum.CARD_PROCESS_OK,
             descriptionStatusPayment:
               response?.status_detail ?? CardsEnum.CARD_PROCESS_OK,
             description: response?.message ?? '',
-            page: 'Commision to B2Fintech',
-            amount: amount.amount * commision,
-            amountCustodial: amount.usd * commision,
-            currency: amount.from === 'USD' ? 'USDT' : amount.from,
-            currencyCustodial: amount.to === 'USD' ? 'USDT' : amount.to,
+            page: isTransactionRefund
+              ? 'Refund commision to User'
+              : 'Commision to B2Fintech',
+            amount: isTransactionRefund
+              ? originalCommision?.amount
+              : amount.amount * commision,
+            amountCustodial: isTransactionRefund
+              ? originalCommision?.amountCustodial
+              : amount.usd * commision,
+            currency: isTransactionRefund
+              ? originalCommision?.currency
+              : amount.from === 'USD'
+              ? 'USDT'
+              : amount.from,
+            currencyCustodial: isTransactionRefund
+              ? originalCommision?.currencyCustodial
+              : amount.to === 'USD'
+              ? 'USDT'
+              : amount.to,
           },
         );
       }
@@ -302,7 +322,7 @@ export class PomeloIntegrationProcessService {
       cachedResult = await this.cache.setResponseReceived(
         notification.idempotency_key,
       );
-      this.createTransferRecord(
+      await this.createTransferRecord(
         notification?.event_detail,
         headers,
         cachedResult,
