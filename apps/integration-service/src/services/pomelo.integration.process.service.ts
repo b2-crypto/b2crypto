@@ -98,6 +98,13 @@ export class PomeloIntegrationProcessService {
         ? {
             ...pretransaction,
             amount: originalTransaction?.amount ?? pretransaction.amount,
+            currency: originalTransaction?.currency ?? pretransaction.currency,
+            amountCustodial:
+              originalTransaction?.amountCustodial ??
+              pretransaction.amountCustodial,
+            currencyCustodial:
+              originalTransaction?.currencyCustodial ??
+              pretransaction.currencyCustodial,
           }
         : pretransaction;
 
