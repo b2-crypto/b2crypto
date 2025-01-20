@@ -61,6 +61,10 @@ export class PomeloIntegrationProcessService {
     authorize?: boolean,
   ) {
     try {
+      const commisionNational = parseFloat(process.env.COMMISION_NATIONAL);
+      const commisionInternational = parseFloat(
+        process.env.COMMISION_INTERNATIONAL,
+      );
       const transactionId = new mongo.ObjectId();
       const childTransactionId = new mongo.ObjectId();
       const pretransaction = {
@@ -84,7 +88,7 @@ export class PomeloIntegrationProcessService {
       const isTransactionRefund =
         pretransaction.operationType === OperationTransactionType.refund;
 
-      const [originalTransaction, originalCommision] = isTransactionRefund
+      const transactions = isTransactionRefund
         ? await this.builder.getPromiseTransferEventClient<Transfer[]>(
             EventsNamesTransferEnum.findAll,
             {
@@ -92,7 +96,27 @@ export class PomeloIntegrationProcessService {
                 process?.transaction?.original_transaction_id,
             },
           )
-        : [null, null];
+        : [];
+
+      if (!transactions.length && isTransactionRefund) {
+        throw new Error('No transaction found');
+      }
+
+      const originalTransaction = transactions.find(
+        (tx) => tx.parentTransaction == null,
+      );
+      const originalCommisionNational = transactions.find(
+        (tx) =>
+          tx.parentTransaction != null &&
+          tx.requestBodyJson?.['transaction']?.origin?.toLowerCase() !==
+            'international',
+      );
+      const originalCommisionInternational = transactions.find(
+        (tx) =>
+          tx.parentTransaction != null &&
+          tx.requestBodyJson?.['transaction']?.origin?.toLowerCase() ===
+            'international',
+      );
 
       const transaction = isTransactionRefund
         ? {
@@ -113,14 +137,9 @@ export class PomeloIntegrationProcessService {
         transaction,
       );
 
-      const commision =
-        process?.transaction?.origin?.toLowerCase() === 'international'
-          ? process.env.COMMISION_INTERNATIONAL
-          : process.env.COMMISION_NATIONAL;
-
-      if (authorize && Number(amount.amount) * commision > 0) {
+      if (authorize && Number(amount.amount) * commisionNational > 0) {
         Logger.log(
-          `${response?.message} - $${amount.amount * commision}`,
+          `${response?.message} - $${amount.amount * commisionNational}`,
           'Commision to B2Fintech',
         );
         this.builder.emitTransferEventClient(
@@ -142,18 +161,65 @@ export class PomeloIntegrationProcessService {
               ? 'Refund commision to User'
               : 'Commision to B2Fintech',
             amount: isTransactionRefund
-              ? originalCommision?.amount
-              : amount.amount * commision,
+              ? originalCommisionNational?.amount
+              : amount.amount * commisionNational,
             amountCustodial: isTransactionRefund
-              ? originalCommision?.amountCustodial
-              : amount.usd * commision,
+              ? originalCommisionNational?.amountCustodial
+              : amount.usd * commisionNational,
             currency: isTransactionRefund
-              ? originalCommision?.currency
+              ? originalCommisionNational?.currency
               : amount.from === 'USD'
               ? 'USDT'
               : amount.from,
             currencyCustodial: isTransactionRefund
-              ? originalCommision?.currencyCustodial
+              ? originalCommisionNational?.currencyCustodial
+              : amount.to === 'USD'
+              ? 'USDT'
+              : amount.to,
+          },
+        );
+      }
+
+      if (
+        authorize &&
+        Number(amount.amount) * commisionInternational > 0 &&
+        process.transaction.origin.toLowerCase() === 'international'
+      ) {
+        Logger.log(
+          `${response?.message} - $${amount.amount * commisionInternational}`,
+          'Commision to B2Fintech',
+        );
+        this.builder.emitTransferEventClient(
+          EventsNamesTransferEnum.createOneWebhook,
+          {
+            _id: childTransactionId,
+            parentTransaction: transactionId,
+            integration: 'Sales',
+            requestBodyJson: process,
+            requestHeadersJson: headers,
+            operationType: isTransactionRefund
+              ? OperationTransactionType.refund
+              : OperationTransactionType.purchase,
+            status: response?.status ?? CardsEnum.CARD_PROCESS_OK,
+            descriptionStatusPayment:
+              response?.status_detail ?? CardsEnum.CARD_PROCESS_OK,
+            description: response?.message ?? '',
+            page: isTransactionRefund
+              ? 'Refund commision to User'
+              : 'Commision to B2Fintech',
+            amount: isTransactionRefund
+              ? originalCommisionInternational?.amount
+              : amount.amount * commisionInternational,
+            amountCustodial: isTransactionRefund
+              ? originalCommisionInternational?.amountCustodial
+              : amount.usd * commisionInternational,
+            currency: isTransactionRefund
+              ? originalCommisionInternational?.currency
+              : amount.from === 'USD'
+              ? 'USDT'
+              : amount.from,
+            currencyCustodial: isTransactionRefund
+              ? originalCommisionInternational?.currencyCustodial
               : amount.to === 'USD'
               ? 'USDT'
               : amount.to,
