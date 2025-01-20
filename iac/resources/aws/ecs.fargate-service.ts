@@ -81,7 +81,6 @@ export const ecsFargateService = new awsx.ecs.FargateService(
         image: ecrImage.imageUri.apply(
           (imageUri) => `${imageUri.split('@').at(0)}:${TAG}`,
         ),
-        // image: 'nginxdemos/hello:latest',
         cpu: parseInt(TASK_CPU_MONOLITH),
         memory: parseInt(TASK_MEMORY_MONOLITH),
         essential: true,
