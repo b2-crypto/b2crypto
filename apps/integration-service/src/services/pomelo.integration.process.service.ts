@@ -20,6 +20,10 @@ import EventsNamesTransferEnum from 'apps/transfer-service/src/enum/events.names
 import { mongo } from 'mongoose';
 import { FiatIntegrationClient } from '../clients/fiat.integration.client';
 import { PomeloProcessEnum } from '../enums/pomelo.process.enum';
+import {
+  CommissionsTypeMap,
+  CommissionsTypePreviousMap,
+} from '../maps/commisions-type.map';
 
 @Injectable()
 export class PomeloIntegrationProcessService {
@@ -87,18 +91,22 @@ export class PomeloIntegrationProcessService {
 
       const isTransactionRefund =
         pretransaction.operationType === OperationTransactionType.refund;
+      const isTransactionReversalRefund =
+        pretransaction.operationType ===
+        OperationTransactionType.reversal_refund;
 
-      const transactions = isTransactionRefund
-        ? await this.builder.getPromiseTransferEventClient<Transfer[]>(
-            EventsNamesTransferEnum.findAll,
-            {
-              'requestBodyJson.transaction.id':
-                process?.transaction?.original_transaction_id,
-            },
-          )
-        : [];
+      const transactions =
+        isTransactionRefund || isTransactionReversalRefund
+          ? await this.builder.getPromiseTransferEventClient<Transfer[]>(
+              EventsNamesTransferEnum.findAll,
+              {
+                'requestBodyJson.transaction.id':
+                  process?.transaction?.original_transaction_id,
+              },
+            )
+          : [];
 
-      if (!transactions.length && isTransactionRefund) {
+      if (!transactions.length) {
         throw new Error('No transaction found');
       }
 
@@ -109,28 +117,34 @@ export class PomeloIntegrationProcessService {
         (tx) =>
           tx.parentTransaction != null &&
           tx.requestBodyJson?.['transaction']?.origin?.toLowerCase() !==
-            'international',
+            'international' &&
+          tx.operationType ===
+            CommissionsTypePreviousMap.get(pretransaction.operationType),
       );
       const originalCommisionInternational = transactions.find(
         (tx) =>
           tx.parentTransaction != null &&
           tx.requestBodyJson?.['transaction']?.origin?.toLowerCase() ===
-            'international',
+            'international' &&
+          tx.operationType ===
+            CommissionsTypePreviousMap.get(pretransaction.operationType),
       );
 
-      const transaction = isTransactionRefund
-        ? {
-            ...pretransaction,
-            amount: originalTransaction?.amount ?? pretransaction.amount,
-            currency: originalTransaction?.currency ?? pretransaction.currency,
-            amountCustodial:
-              originalTransaction?.amountCustodial ??
-              pretransaction.amountCustodial,
-            currencyCustodial:
-              originalTransaction?.currencyCustodial ??
-              pretransaction.currencyCustodial,
-          }
-        : pretransaction;
+      const transaction =
+        isTransactionRefund || isTransactionReversalRefund
+          ? {
+              ...pretransaction,
+              amount: originalTransaction?.amount ?? pretransaction.amount,
+              currency:
+                originalTransaction?.currency ?? pretransaction.currency,
+              amountCustodial:
+                originalTransaction?.amountCustodial ??
+                pretransaction.amountCustodial,
+              currencyCustodial:
+                originalTransaction?.currencyCustodial ??
+                pretransaction.currencyCustodial,
+            }
+          : pretransaction;
 
       this.builder.emitTransferEventClient(
         EventsNamesTransferEnum.createOneWebhook,
@@ -150,32 +164,37 @@ export class PomeloIntegrationProcessService {
             integration: 'Sales',
             requestBodyJson: process,
             requestHeadersJson: headers,
-            operationType: isTransactionRefund
-              ? OperationTransactionType.refund
-              : OperationTransactionType.purchase,
+            operationType:
+              CommissionsTypeMap.get(transaction.operationType) ??
+              OperationTransactionType.purchase,
             status: response?.status ?? CardsEnum.CARD_PROCESS_OK,
             descriptionStatusPayment:
               response?.status_detail ?? CardsEnum.CARD_PROCESS_OK,
             description: response?.message ?? '',
-            page: isTransactionRefund
-              ? 'Refund commision to User'
-              : 'Commision to B2Fintech',
-            amount: isTransactionRefund
-              ? originalCommisionNational?.amount
-              : amount.amount * commisionNational,
-            amountCustodial: isTransactionRefund
-              ? originalCommisionNational?.amountCustodial
-              : amount.usd * commisionNational,
-            currency: isTransactionRefund
-              ? originalCommisionNational?.currency
-              : amount.from === 'USD'
-              ? 'USDT'
-              : amount.from,
-            currencyCustodial: isTransactionRefund
-              ? originalCommisionNational?.currencyCustodial
-              : amount.to === 'USD'
-              ? 'USDT'
-              : amount.to,
+            page:
+              isTransactionRefund || isTransactionReversalRefund
+                ? 'Refund commision to User'
+                : 'Commision to B2Fintech',
+            amount:
+              isTransactionRefund || isTransactionReversalRefund
+                ? originalCommisionNational?.amount
+                : amount.amount * commisionNational,
+            amountCustodial:
+              isTransactionRefund || isTransactionReversalRefund
+                ? originalCommisionNational?.amountCustodial
+                : amount.usd * commisionNational,
+            currency:
+              isTransactionRefund || isTransactionReversalRefund
+                ? originalCommisionNational?.currency
+                : amount.from === 'USD'
+                ? 'USDT'
+                : amount.from,
+            currencyCustodial:
+              isTransactionRefund || isTransactionReversalRefund
+                ? originalCommisionNational?.currencyCustodial
+                : amount.to === 'USD'
+                ? 'USDT'
+                : amount.to,
           },
         );
       }
@@ -197,9 +216,9 @@ export class PomeloIntegrationProcessService {
             integration: 'Sales',
             requestBodyJson: process,
             requestHeadersJson: headers,
-            operationType: isTransactionRefund
-              ? OperationTransactionType.refund
-              : OperationTransactionType.purchase,
+            operationType:
+              CommissionsTypeMap.get(transaction.operationType) ??
+              OperationTransactionType.purchase,
             status: response?.status ?? CardsEnum.CARD_PROCESS_OK,
             descriptionStatusPayment:
               response?.status_detail ?? CardsEnum.CARD_PROCESS_OK,
@@ -207,22 +226,26 @@ export class PomeloIntegrationProcessService {
             page: isTransactionRefund
               ? 'Refund commision to User'
               : 'Commision to B2Fintech',
-            amount: isTransactionRefund
-              ? originalCommisionInternational?.amount
-              : amount.amount * commisionInternational,
-            amountCustodial: isTransactionRefund
-              ? originalCommisionInternational?.amountCustodial
-              : amount.usd * commisionInternational,
-            currency: isTransactionRefund
-              ? originalCommisionInternational?.currency
-              : amount.from === 'USD'
-              ? 'USDT'
-              : amount.from,
-            currencyCustodial: isTransactionRefund
-              ? originalCommisionInternational?.currencyCustodial
-              : amount.to === 'USD'
-              ? 'USDT'
-              : amount.to,
+            amount:
+              isTransactionRefund || isTransactionReversalRefund
+                ? originalCommisionInternational?.amount
+                : amount.amount * commisionInternational,
+            amountCustodial:
+              isTransactionRefund || isTransactionReversalRefund
+                ? originalCommisionInternational?.amountCustodial
+                : amount.usd * commisionInternational,
+            currency:
+              isTransactionRefund || isTransactionReversalRefund
+                ? originalCommisionInternational?.currency
+                : amount.from === 'USD'
+                ? 'USDT'
+                : amount.from,
+            currencyCustodial:
+              isTransactionRefund || isTransactionReversalRefund
+                ? originalCommisionInternational?.currencyCustodial
+                : amount.to === 'USD'
+                ? 'USDT'
+                : amount.to,
           },
         );
       }
