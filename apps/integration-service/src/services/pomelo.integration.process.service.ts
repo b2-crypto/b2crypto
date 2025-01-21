@@ -215,7 +215,7 @@ export class PomeloIntegrationProcessService {
       );
 
       if (authorize && Number(amount.amount) * commisionNational > 0) {
-        Logger.log(
+        this.logger.debug(
           `${response?.message} - $${amount.amount * commisionNational}`,
           'Commision to B2Fintech',
         );
@@ -248,7 +248,7 @@ export class PomeloIntegrationProcessService {
         Number(amount.amount) * commisionInternational > 0 &&
         process.transaction.origin.toLowerCase() === 'international'
       ) {
-        Logger.log(
+        this.logger.debug(
           `${response?.message} - $${amount.amount * commisionInternational}`,
           'Commision to B2Fintech',
         );
