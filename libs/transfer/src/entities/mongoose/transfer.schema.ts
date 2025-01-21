@@ -1,4 +1,5 @@
 import { Account } from '@account/account/entities/mongoose/account.schema';
+import { CommisionTypeEnum } from '@account/account/enum/commision-type.enum';
 import TypesAccountEnum from '@account/account/enum/types.account.enum';
 import { Affiliate } from '@affiliate/affiliate/infrastructure/mongoose/affiliate.schema';
 import { Brand } from '@brand/brand/entities/mongoose/brand.schema';
@@ -23,6 +24,40 @@ import { User } from '@user/user/entities/mongoose/user.schema';
 import mongoose, { Document, ObjectId } from 'mongoose';
 
 export type TransferDocument = Transfer & Document;
+
+export class TransactionDetail {
+  @Prop()
+  _id: ObjectId;
+
+  @Prop()
+  amount: number;
+
+  @Prop()
+  currency: string;
+
+  @Prop()
+  amountCustodial: number;
+
+  @Prop()
+  currencyCustodial: string;
+}
+
+export class CommisionDetail {
+  @Prop()
+  _id: ObjectId;
+
+  @Prop()
+  amount: number;
+
+  @Prop()
+  currency: string;
+
+  @Prop()
+  amountCustodial: number;
+
+  @Prop()
+  currencyCustodial: string;
+}
 
 @Schema({
   timestamps: true,
@@ -150,6 +185,15 @@ export class Transfer extends TransferEntity {
   @Prop()
   accountPrevBalance: number;
 
+  @Prop({ default: true })
+  showToOwner: boolean;
+
+  @Prop({
+    type: String,
+    enum: CommisionTypeEnum,
+  })
+  commisionType?: CommisionTypeEnum;
+
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'leads' })
   lead: Lead;
 
@@ -200,7 +244,13 @@ export class Transfer extends TransferEntity {
   userRejecter: User;
 
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'transfers' })
-  parentTransaction: Transfer;
+  parentTransaction?: Transfer;
+
+  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'transfers' })
+  commisions: Transfer[];
+
+  @Prop({ type: [CommisionDetail] })
+  commisionsDetails: CommisionDetail[];
 }
 
 export const TransferSchema = SchemaFactory.createForClass(Transfer);
