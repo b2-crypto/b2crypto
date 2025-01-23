@@ -43,6 +43,9 @@ export class CommisionDetail {
   currencyCustodial: string;
 }
 
+export const CommisionDetailSchema =
+  SchemaFactory.createForClass(CommisionDetail);
+
 @Schema({
   timestamps: true,
 })
@@ -233,7 +236,7 @@ export class Transfer extends TransferEntity {
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'transfers' })
   commisions: Transfer[];
 
-  @Prop({ type: [CommisionDetail] })
+  @Prop({ type: [CommisionDetailSchema] })
   commisionsDetails: CommisionDetail[];
 }
 
