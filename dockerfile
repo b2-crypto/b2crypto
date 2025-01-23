@@ -1,20 +1,19 @@
 FROM public.ecr.aws/docker/library/node:20.17.0-alpine3.20 AS build
 WORKDIR /app
 COPY . .
-RUN npm ci
-RUN apk update && apk add tree && apk add grep && apk add findutils
-RUN tree -fi | grep -P "(dockerfile|Dockerfile|\.dockerignore|docker-compose).*\$" | xargs -d"\n" rm
-RUN npm run build
+RUN corepack enable pnpm
+RUN pnpm install
+RUN pnpm run build
 
 FROM public.ecr.aws/docker/library/node:20.17.0-alpine3.20 AS deploy
 WORKDIR /app
 COPY --from=build /app/dist/apps/b2crypto ./dist/apps/b2crypto
 COPY --from=build /app/package*.json ./
 COPY --from=build /app/sftp ./sftp
-RUN npm ci --only=production
+COPY --from=build /app/libs/message/src/templates ./libs/message/src/templates
+RUN corepack enable pnpm
+RUN pnpm install --production
 RUN apk add --update curl
-RUN apk add tree && apk add grep && apk add findutils
-RUN tree -fi | grep -P "(dockerfile|Dockerfile|\.dockerignore|docker-compose).*\$" | xargs -d"\n" rm
 
 ENV ENVIRONMENT=""
 ENV APP_NAME=""
@@ -41,6 +40,7 @@ ENV CACHE_MAX_ITEMS=5
 ENV AUTH_MAX_SECONDS_TO_REFRESH=60
 ENV AUTH_SECRET=""
 ENV AUTH_EXPIRE_IN=8h
+ENV OTP_VALIDATION_TIME_SECONDS=90
 ENV API_KEY_EMAIL_APP=""
 ENV URL_API_EMAIL_APP=""
 
@@ -69,10 +69,23 @@ ENV POMELO_API_URL=""
 ENV CURRENCY_CONVERSION_API_KEY=""
 ENV CURRENCY_CONVERSION_API_URL=""
 
+ENV V1_DB_USER=""
+ENV V1_DB_PWD=""
+ENV V1_DB_HOST=""
+ENV V1_DB_PORT=
+ENV V1_DB_NAME=""
+
 ENV POMELO_SFTP_HOST=""
 ENV POMELO_SFTP_PORT=""
 ENV POMELO_SFTP_USR=""
 ENV POMELO_SFTP_PASSPHRASE=""
+
+ENV LOGO_URL=""
+ENV SOCIAL_MEDIA_ICONS=""
+ENV SOCIAL_MEDIA_LINKS=""
+
+ENV OPTL_API_URL=""
+ENV OPTL_SERVICE_NAME=""
 
 ENTRYPOINT [ "node", "./dist/apps/b2crypto/main.js" ]
 CMD [""]

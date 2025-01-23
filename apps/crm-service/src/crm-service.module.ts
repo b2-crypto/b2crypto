@@ -1,3 +1,4 @@
+import { DistributedCacheModule } from '@app/distributed-cache';
 import { BuildersModule } from '@builder/builders';
 import { CrmModule } from '@crm/crm';
 import { IntegrationModule } from '@integration/integration';
@@ -9,6 +10,7 @@ import { IntegrationsServiceController } from './integrations-service.controller
 
 @Module({
   imports: [
+    DistributedCacheModule,
     CrmModule,
     BuildersModule,
     IntegrationModule,

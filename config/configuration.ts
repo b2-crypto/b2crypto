@@ -7,52 +7,19 @@ export default registerAs('config', () => ({
   GOOGLE_2FA: process.env.GOOGLE_2FA === 'true',
   MAX_SECOND_TO_REFRESH: process.env.MAX_SECOND_TO_REFRESH || 60,
   ENVIRONMENT: (process.env.ENVIRONMENT || EnvironmentEnum.prod).toLowerCase(),
-  AUTH_SECRET:
-    process.env.ENVIRONMENT == EnvironmentEnum.prod
-      ? process.env.AUTH_SECRET
-      : 'B2CRYPTO 2',
-  AUTH_EXPIRE_IN:
-    process.env.ENVIRONMENT == EnvironmentEnum.prod
-      ? process.env.AUTH_EXPIRE_IN || '60m'
-      : '8h',
-  AUTH_MAX_SECONDS_TO_REFRESH:
-    process.env.ENVIRONMENT == EnvironmentEnum.prod
-      ? process.env.AUTH_MAX_SECONDS_TO_REFRESH || '60'
-      : '60',
-  PORT:
-    process.env.ENVIRONMENT == EnvironmentEnum.prod ? process.env.PORT : 3000,
-  DATABASE_NAME:
-    process.env.ENVIRONMENT == EnvironmentEnum.prod
-      ? process.env.DATABASE_NAME
-      : 'b2crypto',
+  AUTH_SECRET: process.env.AUTH_SECRET ?? 'B2CRYPTO 2',
+  AUTH_EXPIRE_IN: process.env.AUTH_EXPIRE_IN ?? '8h',
+  AUTH_MAX_SECONDS_TO_REFRESH: process.env.AUTH_MAX_SECONDS_TO_REFRESH ?? '60',
+  PORT: process.env.PORT ?? 3000,
+  DATABASE_NAME: process.env.DATABASE_NAME ?? 'b2crypto',
   DATABASE_URL:
-    process.env.ENVIRONMENT == EnvironmentEnum.prod
-      ? process.env.DATABASE_URL
-      : 'mongodb://localhost:27017/b2crypto',
-  REDIS_HOST:
-    process.env.ENVIRONMENT == EnvironmentEnum.prod
-      ? process.env.REDIS_HOST
-      : 'localhost',
-  REDIS_USERNAME:
-    process.env.ENVIRONMENT == EnvironmentEnum.prod
-      ? process.env.REDIS_USERNAME
-      : 'b2crypto',
-  REDIS_PASSWORD:
-    process.env.ENVIRONMENT == EnvironmentEnum.prod
-      ? process.env.REDIS_PASSWORD
-      : null,
-  REDIS_PORT:
-    process.env.ENVIRONMENT == EnvironmentEnum.prod
-      ? process.env.REDIS_PORT
-      : 6379,
-  CACHE_TTL:
-    process.env.ENVIRONMENT == EnvironmentEnum.prod
-      ? process.env.CACHE_TTL
-      : 10,
-  CACHE_MAX_ITEMS:
-    process.env.ENVIRONMENT == EnvironmentEnum.prod
-      ? process.env.CACHE_MAX_ITEMS
-      : 5,
+    process.env.DATABASE_URL ?? 'mongodb://localhost:27017/b2crypto',
+  REDIS_HOST: process.env.REDIS_HOST ?? 'localhost',
+  REDIS_USERNAME: process.env.REDIS_USERNAME ?? 'b2crypto',
+  REDIS_PASSWORD: process.env.REDIS_PASSWORD ?? '',
+  REDIS_PORT: process.env.REDIS_PORT ?? 6379,
+  CACHE_TTL: process.env.CACHE_TTL ?? 10,
+  CACHE_MAX_ITEMS: process.env.CACHE_MAX_ITEMS ?? 5,
   RABBIT_MQ_HOST: process.env.RABBIT_MQ_HOST ?? 'localhost',
   RABBIT_MQ_PORT: process.env.RABBIT_MQ_PORT ?? '5672',
   RABBIT_MQ_QUEUE: process.env.RABBIT_MQ_QUEUE ?? 'DEV',
@@ -91,5 +58,4 @@ export default registerAs('config', () => ({
   LOGO_URL: process.env.LOGO_URL,
   SOCIAL_MEDIA_ICONS: process.env.SOCIAL_MEDIA_ICONS,
   SOCIAL_MEDIA_LINKS: process.env.SOCIAL_MEDIA_LINKS,
-
 }));

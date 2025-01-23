@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -30,6 +31,7 @@ import { NoCache } from '@common/common/decorators/no-cache.decorator';
 import ActionsEnum from '@common/common/enums/ActionEnum';
 import TransportEnum from '@common/common/enums/TransportEnum';
 import GenericServiceController from '@common/common/interfaces/controller.generic.interface';
+import { ResponsePaginator } from '@common/common/interfaces/response-pagination.interface';
 import { QuerySearchAnyDto } from '@common/common/models/query_search-any.dto';
 import { UpdateAnyDto } from '@common/common/models/update-any.dto';
 import {
@@ -41,6 +43,7 @@ import {
 } from '@nestjs/microservices';
 import ResponseB2Crypto from '@response-b2crypto/response-b2crypto/models/ResponseB2Crypto';
 import { UserChangePasswordDto } from '@user/user/dto/user.change-password.dto';
+import { UserLevelUpDto } from '@user/user/dto/user.level.up.dto';
 import { UserRegisterDto } from '@user/user/dto/user.register.dto';
 import { UserUpdateDto } from '@user/user/dto/user.update.dto';
 import { UserEntity } from '@user/user/entities/user.entity';
@@ -250,9 +253,12 @@ export class UserServiceController implements GenericServiceController {
     CommonService.ack(ctx);
     const users = await this.userService.getAll({
       where: {
-        slugEmail: CommonService.getSlug(email),
+        email: {
+          $regex: new RegExp(email, 'ig'),
+        },
       },
     });
+
     return users.list[0];
   }
 
@@ -410,5 +416,90 @@ export class UserServiceController implements GenericServiceController {
       },
     };
     return await this.userService.getAll(query);
+  }
+  @Patch('level-up')
+  async levelUp(@Body() userLevelUpDto: UserLevelUpDto, @Req() req?: any) {
+    try {
+      userLevelUpDto.user = req?.user.id;
+      return this.userService.levelUp(userLevelUpDto);
+    } catch (error) {
+      throw new BadRequestException(error);
+    }
+  }
+  @Patch('verify-by-card')
+  async verifyUsersWithCard() {
+    const query = new QuerySearchAnyDto();
+    query.where = query.where ?? {};
+    query.where.verifyIdentity = false;
+    query.page = 0;
+    query.take = 10;
+    let users: ResponsePaginator<UserEntity> = null;
+    const promises = [];
+    do {
+      ++query.page;
+      users = await this.userService.getAll({
+        ...query,
+      });
+      for (const user of users.list) {
+        promises.push(
+          this.userService.verifyUsersWithCard(user._id.toString()),
+        );
+      }
+    } while (query.page < users.lastPage);
+    return Promise.all(promises);
+  }
+  @Patch('rules/me')
+  async getRulesMe(@Req() req?: any) {
+    return this.getRules(req);
+  }
+
+  @Patch('rules')
+  async getRules(@Req() req?: any) {
+    const user = req?.user;
+    const query = new QuerySearchAnyDto();
+    query.where = query.where ?? {};
+    query.page = 0;
+    query.take = 10;
+    query.relations = ['level'];
+    if (user.id) {
+      query.where._id = user.id;
+    }
+    let users: ResponsePaginator<UserEntity> = null;
+    const promises = [];
+    do {
+      ++query.page;
+      users = await this.userService.getAll({
+        ...query,
+      });
+      for (const user of users.list) {
+        promises.push(
+          this.userService
+            .applyAndGetRules({
+              id: user._id,
+              level: user.level,
+            } as unknown as UserUpdateDto)
+            .then((usr) => {
+              Logger.log(
+                `Apply level ${user.level?.name} to user ${user.email}`,
+                `page ${query.page}/${users.lastPage}`,
+              );
+              return {
+                user: usr._id,
+                level: usr.level._id,
+                email: usr.email,
+                rules: usr.rules,
+              };
+            }),
+        );
+      }
+    } while (query.page < users.lastPage);
+    return Promise.all(promises);
+  }
+  @AllowAnon()
+  @EventPattern(EventsNamesUserEnum.checkBalanceUser)
+  async checkBalanceEvent(@Payload() id: string, @Ctx() ctx: RmqContext) {
+    CommonService.ack(ctx);
+    id = id ?? '0';
+    await this.userService.updateBalance(id);
   }
 }

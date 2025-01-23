@@ -117,7 +117,7 @@
     "@fireblocks/ts-sdk": "^4.0.0",
     "@nestjs-modules/mailer": "^2.0.2",
     "@nestjs/axios": "^1.0.0",
-    "@nestjs/cache-manager": "^2.2.2",
+    "@nestjs/cache-manager": "^2.3.0",
     "@nestjs/common": "^9.0.0",
     "@nestjs/config": "^2.2.0",
     "@nestjs/core": "^9.0.0",
@@ -152,6 +152,7 @@
     "bcrypt": "^5.1.0",
     "cache-manager": "^5.7.3",
     "cache-manager-redis-store": "^3.0.1",
+    "cache-manager-redis-yet": "^5.1.5",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.13.2",
     "crypto": "^1.0.1",
@@ -190,10 +191,10 @@
     "@nestjs/cli": "^9.0.0",
     "@nestjs/schematics": "^9.0.0",
     "@nestjs/testing": "^9.0.0",
-    "@pulumi/aws": "^6.52.0",
-    "@pulumi/awsx": "^2.15.0",
-    "@pulumi/mongodbatlas": "^3.20.2",
-    "@pulumi/pulumi": "^3.133.0",
+    "@pulumi/aws": "^6.66.3",
+    "@pulumi/awsx": "^2.21.0",
+    "@pulumi/mongodbatlas": "^3.25.0",
+    "@pulumi/pulumi": "^3.146.0",
     "@types/aws-lambda": "^8.10.108",
     "@types/bcrypt": "^5.0.0",
     "@types/cron": "^2.4.3",
@@ -296,7 +297,9 @@
       "^apps/person-service/src/(.*)$": "<rootDir>/apps/person-service/src/$1",
       "^libs/stats/src/(.*)$": "<rootDir>/libs/stats/src/$1",
       "^apps/(.*)$": "<rootDir>/apps/$1",
-      "^@common/(.*)$": "<rootDir>/libs/common/src/$1"
+      "^@common/(.*)$": "<rootDir>/libs/common/src/$1",
+      "^@app/distributed-cache(|/.*)$": "<rootDir>/libs/distributed-cache/src/$1"
     }
-  }
+  },
+  "packageManager": "pnpm@9.15.0+sha512.76e2379760a4328ec4415815bcd6628dee727af3779aaa4c914e3944156c4299921a89f976381ee107d41f12cfa4b66681ca9c718f0668fa0831ed4c6d8ba56c"
 }

@@ -1,5 +1,6 @@
 import { AccountModule } from '@account/account/account.module';
 import { AffiliateModule } from '@affiliate/affiliate';
+import { DistributedCacheModule } from '@app/distributed-cache';
 import { BuildersModule } from '@builder/builders';
 import { CategoryModule } from '@category/category';
 import { CrmModule } from '@crm/crm';
@@ -26,6 +27,7 @@ import { TransferServiceWebsocketGateway } from './transfer-service.websocket.ga
 
 @Module({
   imports: [
+    DistributedCacheModule,
     CrmModule,
     LeadModule,
     StatusModule,

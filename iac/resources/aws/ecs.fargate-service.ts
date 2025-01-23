@@ -31,6 +31,8 @@ import {
   STACK,
   SUBDOMAIN_PREFIX_OPTL_COLLECTOR,
   TAGS,
+  TASK_CPU_MONOLITH,
+  TASK_MEMORY_MONOLITH,
   TESTING,
   TZ,
   URL_API_EMAIL_APP,
@@ -72,15 +74,15 @@ export const ecsFargateService = new awsx.ecs.FargateService(
     },
     taskDefinitionArgs: {
       family: `${PROJECT_NAME}-monolith-${STACK}`,
-      cpu: '1024',
-      memory: '2048',
+      cpu: TASK_CPU_MONOLITH,
+      memory: TASK_MEMORY_MONOLITH,
       container: {
         name: `${PROJECT_NAME}-monolith-${STACK}`,
         image: ecrImage.imageUri.apply(
           (imageUri) => `${imageUri.split('@').at(0)}:${TAG}`,
         ),
-        cpu: 1024,
-        memory: 2048,
+        cpu: parseInt(TASK_CPU_MONOLITH),
+        memory: parseInt(TASK_MEMORY_MONOLITH),
         essential: true,
         environment: [
           { name: 'ENVIRONMENT', value: ENVIRONMENT },

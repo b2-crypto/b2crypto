@@ -1,24 +1,20 @@
+import TypesAccountEnum from '@account/account/enum/types.account.enum';
 import dbIntegrationEnum from '@builder/builders/enums/db-integration.enum';
 import { CommonService } from '@common/common';
 import { BasicServiceModel } from '@common/common/models/basic-service.model';
-import {
-  BadRequestException,
-  Inject,
-  Injectable
-} from '@nestjs/common';
+import { QuerySearchAnyDto } from '@common/common/models/query_search-any.dto';
+import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { TransferCreateDto } from '@transfer/transfer/dto/transfer.create.dto';
 import { TransferUpdateDto } from '@transfer/transfer/dto/transfer.update.dto';
 import {
   Transfer,
   TransferDocument,
 } from '@transfer/transfer/entities/mongoose/transfer.schema';
-import { Aggregate, Model } from 'mongoose';
-import { ObjectId } from 'mongodb';
-import { ApproveOrRejectDepositDto } from './dto/approve.or.reject.deposit.dto';
-import { QuerySearchAnyDto } from '@common/common/models/query_search-any.dto';
-import { OperationTransactionType } from './enum/operation.transaction.type.enum';
-import TypesAccountEnum from '@account/account/enum/types.account.enum';
 import { isArray, isMongoId } from 'class-validator';
+import { ObjectId } from 'mongodb';
+import { Aggregate, Model } from 'mongoose';
+import { ApproveOrRejectDepositDto } from './dto/approve.or.reject.deposit.dto';
+import { OperationTransactionType } from './enum/operation.transaction.type.enum';
 
 @Injectable()
 export class TransferServiceMongooseService extends BasicServiceModel<
@@ -45,9 +41,8 @@ export class TransferServiceMongooseService extends BasicServiceModel<
   async updateSearchText(id: string): Promise<TransferDocument> {
     const transfer = await this.getTransferData(id);
     transfer.searchText = this.getSearchText(transfer);
-    return await super.update(id, {
-      id: transfer.id,
-    });
+
+    return await super.update(id, transfer);
   }
 
   async getTransferData(id: string): Promise<Transfer> {
@@ -79,9 +74,11 @@ export class TransferServiceMongooseService extends BasicServiceModel<
           createAnyDto[h].numericId = null;
         }
         const rta = await this.model.create(createAnyDto);
-        return rta.map(
-          async (transfer: TransferDocument) =>
-            await this.updateSearchText(transfer.id),
+
+        return Promise.all(
+          rta.map((transfer: TransferDocument) =>
+            this.updateSearchText(transfer._id),
+          ),
         );
       } catch (err) {
         console.error(err);
@@ -95,7 +92,7 @@ export class TransferServiceMongooseService extends BasicServiceModel<
     const transfers = await this.transferModel.find();
     for (let h = 0; h < transfers.length; h++) {
       transferUpdate.push({
-        id: transfers[h]._id
+        id: transfers[h]._id,
       });
     }
     return this.updateMany(

@@ -1,11 +1,13 @@
 import { ActivityModule } from '@activity/activity';
+import { DistributedCacheModule } from '@app/distributed-cache';
 import { BuildersModule } from '@builder/builders';
 import { CommonModule } from '@common/common';
 import { ResponseHttpExceptionFilter } from '@common/common/exceptions/response.exception';
 import { ResponseInterceptor } from '@common/common/interceptors/response.interceptor';
 import { IProvider } from '@common/common/interfaces/i.provider.interface';
 import configuration from '@config/config';
-import { CacheInterceptor, CacheModule, Module } from '@nestjs/common';
+import { CacheInterceptor } from '@nestjs/cache-manager';
+import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { APP_FILTER, APP_INTERCEPTOR } from '@nestjs/core';
 import { ResponseB2CryptoModule } from '@response-b2crypto/response-b2crypto';
@@ -15,11 +17,7 @@ import { ActivityServiceWebsocketGateway } from './activity-service.websocket.ga
 
 @Module({
   imports: [
-    CacheModule.register({
-      isGlobal: true,
-      ttl: 10,
-      max: 5,
-    }),
+    DistributedCacheModule,
     ConfigModule.forRoot({
       isGlobal: true,
       load: [configuration],

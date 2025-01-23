@@ -1,40 +1,60 @@
-import { NoCache } from '@common/common/decorators/no-cache.decorator';
-import { SecurityServiceService } from './security-service.service';
-import { 
-  Controller, Get, Post, Body, Param, UseGuards, Req, Res, Query, 
-  BadRequestException, NotFoundException, UnauthorizedException, 
-  BadGatewayException, HttpStatus, Inject, Logger
-} from '@nestjs/common';
-import { ApiTags, ApiSecurity, ApiBearerAuth, ApiParam, ApiQuery, ApiResponse } from '@nestjs/swagger';
+import { AuthService } from '@auth/auth';
 import { AllowAnon } from '@auth/auth/decorators/allow-anon.decorator';
 import { ApiKeyCheck } from '@auth/auth/decorators/api-key-check.decorator';
 import { IsRefresh } from '@auth/auth/decorators/refresh.decorator';
 import { RestorePasswordDto } from '@auth/auth/dto/restore.password.dto';
 import { ApiKeyAuthGuard } from '@auth/auth/guards/api.key.guard';
 import { LocalAuthGuard } from '@auth/auth/guards/local.auth.guard';
-import { UserRegisterDto } from '@user/user/dto/user.register.dto';
-import { UserSignInDto } from '@user/user/dto/user.signin.dto';
-import { SumsubIssueTokenDto } from '@integration/integration/identity/generic/domain/sumsub.issue.token.dto';
-import { SwaggerSteakeyConfigEnum } from 'libs/config/enum/swagger.stakey.config.enum';
-import { CACHE_MANAGER, Cache } from '@nestjs/cache-manager';
-import { AuthService } from '@auth/auth';
 import { BuildersService } from '@builder/builders';
-import { IntegrationService } from '@integration/integration';
-import { ConfigService } from '@nestjs/config';
 import { CommonService } from '@common/common';
-import { SumsubApplicantLevels } from '@integration/integration/identity/generic/domain/sumsub.enum';
-import { IntegrationIdentityEnum } from '@integration/integration/identity/generic/domain/integration.identity.enum';
-import { UserDocument } from '@user/user/entities/mongoose/user.schema';
-import { UserEntity } from '@user/user/entities/user.entity';
-import EventsNamesMessageEnum from 'apps/message-service/src/enum/events.names.message.enum';
-import EventsNamesActivityEnum from 'apps/activity-service/src/enum/events.names.activity.enum';
+import { NoCache } from '@common/common/decorators/no-cache.decorator';
 import ActionsEnum from '@common/common/enums/ActionEnum';
 import ResourcesEnum from '@common/common/enums/ResourceEnum';
 import TransportEnum from '@common/common/enums/TransportEnum';
-import { isBoolean } from 'class-validator';
-import ResponseB2Crypto from '@response-b2crypto/response-b2crypto/models/ResponseB2Crypto';
+import { IntegrationService } from '@integration/integration';
+import { IntegrationIdentityEnum } from '@integration/integration/identity/generic/domain/integration.identity.enum';
+import { SumsubApplicantLevels } from '@integration/integration/identity/generic/domain/sumsub.enum';
+import { SumsubIssueTokenDto } from '@integration/integration/identity/generic/domain/sumsub.issue.token.dto';
+import { CACHE_MANAGER, Cache } from '@nestjs/cache-manager';
+import {
+  BadGatewayException,
+  BadRequestException,
+  Body,
+  Controller,
+  Get,
+  HttpStatus,
+  Inject,
+  Logger,
+  NotFoundException,
+  Param,
+  Post,
+  Query,
+  Req,
+  Res,
+  UnauthorizedException,
+  UseGuards,
+} from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { ClientProxy } from '@nestjs/microservices';
+import {
+  ApiBearerAuth,
+  ApiParam,
+  ApiQuery,
+  ApiResponse,
+  ApiSecurity,
+  ApiTags,
+} from '@nestjs/swagger';
+import ResponseB2Crypto from '@response-b2crypto/response-b2crypto/models/ResponseB2Crypto';
+import { UserRegisterDto } from '@user/user/dto/user.register.dto';
+import { UserSignInDto } from '@user/user/dto/user.signin.dto';
+import { UserDocument } from '@user/user/entities/mongoose/user.schema';
+import { UserEntity } from '@user/user/entities/user.entity';
+import EventsNamesActivityEnum from 'apps/activity-service/src/enum/events.names.activity.enum';
+import EventsNamesMessageEnum from 'apps/message-service/src/enum/events.names.message.enum';
 import EventsNamesUserEnum from 'apps/user-service/src/enum/events.names.user.enum';
+import { isBoolean } from 'class-validator';
+import { SwaggerSteakeyConfigEnum } from 'libs/config/enum/swagger.stakey.config.enum';
+import { SecurityServiceService } from './security-service.service';
 
 @ApiTags('AUTHENTICATION')
 @Controller('auth')
@@ -63,7 +83,10 @@ export class SecurityServiceController {
   @ApiBearerAuth('bearerToken')
   @ApiSecurity('b2crypto-key')
   @Post('identity/url')
-  async sumsubGenerateUrl(@Body() identityDto: SumsubIssueTokenDto, @Req() req) {
+  async sumsubGenerateUrl(
+    @Body() identityDto: SumsubIssueTokenDto,
+    @Req() req,
+  ) {
     const client = await this.getClientFromPublicKey(req.clientApi, false);
     const user = req.user;
     if (!user) {
@@ -89,7 +112,10 @@ export class SecurityServiceController {
   @ApiTags(SwaggerSteakeyConfigEnum.TAG_SECURITY)
   @ApiBearerAuth('bearerToken')
   @ApiSecurity('b2crypto-key')
-  async sumsubGeneratetoken(@Body() identityDto: SumsubIssueTokenDto, @Req() req) {
+  async sumsubGeneratetoken(
+    @Body() identityDto: SumsubIssueTokenDto,
+    @Req() req,
+  ) {
     const user = req.user;
     if (!user) {
       throw new BadRequestException('User not found');
@@ -107,7 +133,11 @@ export class SecurityServiceController {
   @ApiParam({ name: 'userId', type: String, required: true })
   @ApiQuery({ name: 'apiKey', type: String, required: true })
   @Get('identity/page/:userId')
-  async sumsubGetPage(@Param('userId') userId, @Query('apiKey') clientId, @Res() res) {
+  async sumsubGetPage(
+    @Param('userId') userId,
+    @Query('apiKey') clientId,
+    @Res() res,
+  ) {
     const client = await this.getClientFromPublicKey(clientId);
     if (!client.isClientAPI) {
       throw new UnauthorizedException();
@@ -295,6 +325,7 @@ export class SecurityServiceController {
     return createdUser;
   }
 
+  @NoCache()
   @IsRefresh()
   @ApiKeyCheck()
   @UseGuards(ApiKeyAuthGuard)

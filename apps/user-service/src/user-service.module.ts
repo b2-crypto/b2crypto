@@ -1,14 +1,21 @@
+import { DistributedCacheModule } from '@app/distributed-cache';
 import { AuthModule } from '@auth/auth';
 import { BuildersModule } from '@builder/builders';
 import { IntegrationModule } from '@integration/integration';
 import { Module } from '@nestjs/common';
 import { UserModule } from '@user/user';
+import { AuthServiceController } from 'apps/auth-service/src/auth-service.controller';
 import { UserServiceController } from './user-service.controller';
 import { UserServiceService } from './user-service.service';
-import { AuthServiceController } from 'apps/auth-service/src/auth-service.controller';
 
 @Module({
-  imports: [UserModule, BuildersModule, AuthModule, IntegrationModule],
+  imports: [
+    DistributedCacheModule,
+    UserModule,
+    BuildersModule,
+    AuthModule,
+    IntegrationModule,
+  ],
   controllers: [UserServiceController, AuthServiceController],
   providers: [UserServiceService],
 })

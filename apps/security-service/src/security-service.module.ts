@@ -1,17 +1,19 @@
-import { Module } from '@nestjs/common';
-import { SecurityServiceController } from './security-service.controller';
-import { SecurityServiceService } from './security-service.service';
+import { DistributedCacheModule } from '@app/distributed-cache';
+import { AuthModule } from '@auth/auth'; // Asegúrate de que esta ruta de importación sea correcta
 import { BuildersModule } from '@builder/builders'; // Asegúrate de que esta ruta de importación sea correcta
 import { IntegrationModule } from '@integration/integration'; // Asegúrate de que esta ruta de importación sea correcta
-import { AuthModule } from '@auth/auth'; // Asegúrate de que esta ruta de importación sea correcta
+import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { CacheModule } from '@nestjs/cache-manager';
+import { SecurityServiceController } from './security-service.controller';
+import { SecurityServiceService } from './security-service.service';
 @Module({
-  imports: [BuildersModule,
+  imports: [
+    BuildersModule,
     IntegrationModule,
     AuthModule,
     ConfigModule,
-    CacheModule.register(),],
+    DistributedCacheModule,
+  ],
   controllers: [SecurityServiceController],
   providers: [SecurityServiceService],
 })

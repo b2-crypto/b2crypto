@@ -17,4 +17,8 @@ export class CategoryQueryEventsDto extends CreateAnyDto {
   @IsOptional()
   @IsString()
   valueText?: string;
+
+  @IsOptional()
+  @IsString()
+  slug?: string;
 }

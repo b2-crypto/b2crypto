@@ -176,6 +176,12 @@
       ],
       "@account/account/*": [
         "libs/account/src/*"
+      ],
+      "@app/distributed-cache": [
+        "libs/distributed-cache/src"
+      ],
+      "@app/distributed-cache/*": [
+        "libs/distributed-cache/src/*"
       ]
     }
   }

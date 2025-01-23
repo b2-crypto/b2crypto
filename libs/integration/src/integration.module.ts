@@ -1,11 +1,12 @@
+import { DistributedCacheModule } from '@app/distributed-cache';
 import { BuildersModule } from '@builder/builders';
-import { IntegrationService } from './integration.service';
 import { HttpModule } from '@nestjs/axios';
 import { Module } from '@nestjs/common';
+import { IntegrationService } from './integration.service';
 
 @Module({
   imports: [
-    HttpModule,
+    DistributedCacheModule,
     BuildersModule,
     HttpModule.registerAsync({
       useFactory: () => ({
