@@ -25,23 +25,7 @@ import mongoose, { Document, ObjectId } from 'mongoose';
 
 export type TransferDocument = Transfer & Document;
 
-export class TransactionDetail {
-  @Prop()
-  _id: ObjectId;
-
-  @Prop()
-  amount: number;
-
-  @Prop()
-  currency: string;
-
-  @Prop()
-  amountCustodial: number;
-
-  @Prop()
-  currencyCustodial: string;
-}
-
+@Schema()
 export class CommisionDetail {
   @Prop()
   _id: ObjectId;
