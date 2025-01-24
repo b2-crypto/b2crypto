@@ -34,12 +34,13 @@ import { TransferCreateButtonDto } from 'apps/transfer-service/src/dto/transfer.
 import EventsNamesTransferEnum from 'apps/transfer-service/src/enum/events.names.transfer.enum';
 import { UserServiceService } from 'apps/user-service/src/user-service.service';
 import { isMongoId } from 'class-validator';
-import { AccountServiceService } from './account-service.service';
-import EventsNamesAccountEnum from './enum/events.names.account.enum';
-import { WalletWithdrawalPreorderDto } from './dtos/WalletWithdrawalPreorderDto';
-import { WalletWithdrawalConfirmDto } from './dtos/WalletWithdrawalConfirmDto';
 import { v4 as uuidv4 } from 'uuid';
+import { AccountServiceService } from './account-service.service';
+import { WalletWithdrawalConfirmDto } from './dtos/WalletWithdrawalConfirmDto';
+import { WalletWithdrawalPreorderDto } from './dtos/WalletWithdrawalPreorderDto';
+import EventsNamesAccountEnum from './enum/events.names.account.enum';
 import { NetworkType } from './enum/networkTypeDto';
+import { WITHDRAWAL_CONFIG } from './withdrawal.config';
 @Injectable()
 export class WalletServiceService {
   private cryptoType: any = null;
@@ -1358,30 +1359,45 @@ export class WalletServiceService {
   }
 
   // [Wallet Withdrawal]
-  async handleWithdrawalProcess(dto: WalletWithdrawalPreorderDto | WalletWithdrawalConfirmDto, userId: string, isPreorder = true) {
+  async handleWithdrawalProcess(
+    dto: WalletWithdrawalPreorderDto | WalletWithdrawalConfirmDto,
+    userId: string,
+    isPreorder = true,
+  ) {
     if (isPreorder) {
       return this.processPreorder(dto as WalletWithdrawalPreorderDto, userId);
     } else {
-      return this.processConfirmation(dto as WalletWithdrawalConfirmDto, userId);
+      return this.processConfirmation(
+        dto as WalletWithdrawalConfirmDto,
+        userId,
+      );
     }
   }
 
-  private async processPreorder(withdrawalDto: WalletWithdrawalPreorderDto, userId: string) {
+  private async processPreorder(
+    withdrawalDto: WalletWithdrawalPreorderDto,
+    userId: string,
+  ) {
     const user = await this.validateAndGetUser(userId);
     if (!user) {
       throw new UnauthorizedException('User not found');
     }
-    const sourceWallet = await this.validateAndGetWallet(withdrawalDto.from, userId);
+    const sourceWallet = await this.validateAndGetWallet(
+      withdrawalDto.from,
+      userId,
+    );
     await this.validateWithdrawalRequest(withdrawalDto);
 
     const gasFee = await this.calculateWithdrawalFees(sourceWallet);
-    const gasWallet = await this.getGasWallet(withdrawalDto.network || NetworkType.ARBITRUM);
-    
+    const gasWallet = await this.getGasWallet(
+      withdrawalDto.network || NetworkType.ARBITRUM,
+    );
+
     const totalAmount = withdrawalDto.amount + gasFee;
-    
+
     if (sourceWallet.amountCustodial < totalAmount) {
       throw new BadRequestException(
-        `Insufficient funds for withdrawal and fees (${gasFee} fee)`
+        `Insufficient funds for withdrawal and fees (${gasFee} fee)`,
       );
     }
 
@@ -1397,14 +1413,16 @@ export class WalletServiceService {
       totalAmount,
       network: withdrawalDto.network || NetworkType.ARBITRUM,
       timestamp: Date.now(),
-      minConfirmationTime: Date.now() + (WITHDRAWAL_CONFIG.timing.minConfirmationTime * 1000),
-      maxConfirmationTime: Date.now() + (WITHDRAWAL_CONFIG.timing.maxConfirmationTime * 1000)
+      minConfirmationTime:
+        Date.now() + WITHDRAWAL_CONFIG.timing.minConfirmationTime * 1000,
+      maxConfirmationTime:
+        Date.now() + WITHDRAWAL_CONFIG.timing.maxConfirmationTime * 1000,
     };
 
     await this.cacheManager.store.set(
       `withdrawal:preorder:${preorderId}`,
       JSON.stringify(preorderData),
-      { ttl: WITHDRAWAL_CONFIG.timing.maxConfirmationTime }
+      { ttl: WITHDRAWAL_CONFIG.timing.maxConfirmationTime },
     );
 
     return {
@@ -1413,29 +1431,54 @@ export class WalletServiceService {
       totalAmount,
       minConfirmationTime: WITHDRAWAL_CONFIG.timing.minConfirmationTime,
       maxConfirmationTime: WITHDRAWAL_CONFIG.timing.maxConfirmationTime,
-      expiresAt: new Date(preorderData.maxConfirmationTime).toISOString()
+      expiresAt: new Date(preorderData.maxConfirmationTime).toISOString(),
     };
   }
 
-  private async processConfirmation(withdrawalConfirmDto: WalletWithdrawalConfirmDto, userId: string) {
-    const preorderData = await this.validatePreorder(withdrawalConfirmDto.preorderId, userId);
-    const sourceWallet = await this.validateAndGetFromWallet(preorderData.sourceWallet);
-    const gasWallet = await this.validateAndGetFromWallet(preorderData.gasWallet);
-    
+  private async processConfirmation(
+    withdrawalConfirmDto: WalletWithdrawalConfirmDto,
+    userId: string,
+  ) {
+    const preorderData = await this.validatePreorder(
+      withdrawalConfirmDto.preorderId,
+      userId,
+    );
+    const sourceWallet = await this.validateAndGetFromWallet(
+      preorderData.sourceWallet,
+    );
+    const gasWallet = await this.validateAndGetFromWallet(
+      preorderData.gasWallet,
+    );
+
     try {
-      const withdrawalTx = await this.executeWithdrawal(sourceWallet, gasWallet, preorderData);
-      await this.updateWalletBalances(sourceWallet._id, null, preorderData.totalAmount);
-      
+      const withdrawalTx = await this.executeWithdrawal(
+        sourceWallet,
+        gasWallet,
+        preorderData,
+      );
+      await this.updateWalletBalances(
+        sourceWallet._id,
+        null,
+        preorderData.totalAmount,
+      );
+
       const user = await this.validateAndGetUser(userId);
-      await this.createWithdrawalTransferEvent(sourceWallet, preorderData, withdrawalTx, user);
-      
-      await this.cacheManager.store.del(`withdrawal:preorder:${withdrawalConfirmDto.preorderId}`);
+      await this.createWithdrawalTransferEvent(
+        sourceWallet,
+        preorderData,
+        withdrawalTx,
+        user,
+      );
+
+      await this.cacheManager.store.del(
+        `withdrawal:preorder:${withdrawalConfirmDto.preorderId}`,
+      );
 
       return {
         success: true,
         transactionId: withdrawalTx.data.id,
         fee: preorderData.gasFee,
-        status: 'pending'
+        status: 'pending',
       };
     } catch (error) {
       Logger.error(`Withdrawal failed: ${error.message}`, 'WithdrawalService');
@@ -1445,7 +1488,7 @@ export class WalletServiceService {
 
   private async validatePreorder(preorderId: string, userId: string) {
     const preorderData = await this.cacheManager.store.get(
-      `withdrawal:preorder:${preorderId}`
+      `withdrawal:preorder:${preorderId}`,
     );
 
     if (!preorderData) {
@@ -1456,7 +1499,9 @@ export class WalletServiceService {
     const currentTime = Date.now();
 
     if (currentTime < parsedPreorder.minConfirmationTime) {
-      const waitTime = Math.ceil((parsedPreorder.minConfirmationTime - currentTime) / 1000);
+      const waitTime = Math.ceil(
+        (parsedPreorder.minConfirmationTime - currentTime) / 1000,
+      );
       throw new BadRequestException(`Please wait ${waitTime} seconds`);
     }
 
@@ -1471,7 +1516,11 @@ export class WalletServiceService {
     return parsedPreorder;
   }
 
-  private async executeWithdrawal(sourceWallet: AccountDocument, gasWallet: AccountDocument, preorderData: any) {
+  private async executeWithdrawal(
+    sourceWallet: AccountDocument,
+    gasWallet: AccountDocument,
+    preorderData: any,
+  ) {
     const fireblocksCrm = await this.ewalletBuilder.getPromiseCrmEventClient(
       EventsNamesCrmEnum.findOneByName,
       IntegrationCryptoEnum.FIREBLOCKS,
@@ -1481,7 +1530,7 @@ export class WalletServiceService {
       fireblocksCrm._id,
       sourceWallet.name,
     );
-    
+
     const vaultFrom = await this.getVaultUser(
       sourceWallet.owner.toString(),
       fireblocksCrm._id,
@@ -1497,13 +1546,18 @@ export class WalletServiceService {
       preorderData.to,
       'Withdrawal',
       true,
-      gasWallet.accountId
+      gasWallet.accountId,
     );
   }
 
   private async calculateWithdrawalFees(sourceWallet: AccountDocument) {
-    const network = sourceWallet.accountId.toLowerCase().includes('arbitrum') ? 'arbitrum' : 'tron';
-    return WITHDRAWAL_CONFIG.fees.base + (sourceWallet.amountCustodial * WITHDRAWAL_CONFIG.fees.networks[network]);
+    const network = sourceWallet.accountId.toLowerCase().includes('arbitrum')
+      ? 'arbitrum'
+      : 'tron';
+    return (
+      WITHDRAWAL_CONFIG.fees.base +
+      sourceWallet.amountCustodial * WITHDRAWAL_CONFIG.fees.networks[network]
+    );
   }
 
   private async getGasWallet(network: string): Promise<AccountDocument> {
@@ -1514,26 +1568,32 @@ export class WalletServiceService {
 
     const fireblocksCrm = await this.ewalletBuilder.getPromiseCrmEventClient(
       EventsNamesCrmEnum.findOneByName,
-      IntegrationCryptoEnum.FIREBLOCKS
+      IntegrationCryptoEnum.FIREBLOCKS,
     );
 
     const gasWallet = await this.getVaultUser(
       gasConfig.address,
       fireblocksCrm._id,
       await this.getWalletBase(fireblocksCrm._id, `gas-wallet-${network}`),
-      'system'
+      'system',
     );
 
     if (!gasWallet || gasWallet.amountCustodial < gasConfig.minBalance) {
-      throw new BadRequestException(`Gas wallet for ${network} unavailable or insufficient balance`);
+      throw new BadRequestException(
+        `Gas wallet for ${network} unavailable or insufficient balance`,
+      );
     }
 
     return gasWallet;
   }
 
-  private async validateWithdrawalRequest(withdrawalDto: WalletWithdrawalPreorderDto) {
+  private async validateWithdrawalRequest(
+    withdrawalDto: WalletWithdrawalPreorderDto,
+  ) {
     if (!withdrawalDto.amount || withdrawalDto.amount <= 10) {
-      throw new BadRequestException('Withdrawal amount must be greater than 10');
+      throw new BadRequestException(
+        'Withdrawal amount must be greater than 10',
+      );
     }
     if (!withdrawalDto.to) {
       throw new BadRequestException('Destination address is required');
@@ -1547,15 +1607,18 @@ export class WalletServiceService {
     const user = await this.validateAndGetUser(userId);
     const fireblocksCrm = await this.ewalletBuilder.getPromiseCrmEventClient(
       EventsNamesCrmEnum.findOneByName,
-      IntegrationCryptoEnum.FIREBLOCKS
+      IntegrationCryptoEnum.FIREBLOCKS,
     );
 
-    const walletBase = await this.getWalletBase(fireblocksCrm._id, user.personalData.name);
+    const walletBase = await this.getWalletBase(
+      fireblocksCrm._id,
+      user.personalData.name,
+    );
     const wallet = await this.getVaultUser(
       walletAddress,
       fireblocksCrm._id,
       walletBase,
-      user.brand.toString()
+      user.brand.toString(),
     );
 
     if (!wallet) {
@@ -1565,42 +1628,54 @@ export class WalletServiceService {
     return wallet;
   }
 
-  private async createWithdrawalTransferEvent(sourceWallet: AccountDocument, preorderData: any, withdrawalTx: any, user: User) {
-    const [withdrawalCategory, pendingStatus, internalPspAccount] = await Promise.all([
-      this.ewalletBuilder.getPromiseCategoryEventClient(
-        EventsNamesCategoryEnum.findOneByNameType,
-        { slug: 'withdrawal-wallet', type: TagEnum.MONETARY_TRANSACTION_TYPE }
-      ),
-      this.ewalletBuilder.getPromiseStatusEventClient(
-        EventsNamesStatusEnum.findOneByName,
-        'pending'
-      ),
-      this.ewalletBuilder.getPromisePspAccountEventClient(
-        EventsNamesPspAccountEnum.findOneByName,
-        'internal'
-      )
-    ]);
+  private async createWithdrawalTransferEvent(
+    sourceWallet: AccountDocument,
+    preorderData: any,
+    withdrawalTx: any,
+    user: User,
+  ) {
+    const [withdrawalCategory, pendingStatus, internalPspAccount] =
+      await Promise.all([
+        this.ewalletBuilder.getPromiseCategoryEventClient(
+          EventsNamesCategoryEnum.findOneByNameType,
+          {
+            slug: 'withdrawal-wallet',
+            type: TagEnum.MONETARY_TRANSACTION_TYPE,
+          },
+        ),
+        this.ewalletBuilder.getPromiseStatusEventClient(
+          EventsNamesStatusEnum.findOneByName,
+          'pending',
+        ),
+        this.ewalletBuilder.getPromisePspAccountEventClient(
+          EventsNamesPspAccountEnum.findOneByName,
+          'internal',
+        ),
+      ]);
 
-    await this.ewalletBuilder.emitTransferEventClient(EventsNamesTransferEnum.createOne, {
-      name: `Withdrawal ${sourceWallet.name}`,
-      description: `Withdrawal from ${preorderData.from} to ${preorderData.to}`,
-      currency: sourceWallet.currency,
-      idPayment: withdrawalTx?.data?.id,
-      responsepayment: withdrawalTx.data,
-      amount: preorderData.amount,
-      currencyCustodial: sourceWallet.currencyCustodial,
-      amountCustodial: preorderData.amount,
-      account: sourceWallet._id,
-      userCreator: user.id,
-      userAccount: sourceWallet.owner,
-      typeTransaction: withdrawalCategory._id,
-      psp: internalPspAccount.psp,
-      pspAccount: internalPspAccount._id,
-      operationType: OperationTransactionType.withdrawal,
-      statusPayment: StatusCashierEnum.PENDING,
-      status: pendingStatus._id,
-      brand: sourceWallet.brand,
-      crm: sourceWallet.crm
-    } as unknown as TransferCreateDto);
+    await this.ewalletBuilder.emitTransferEventClient(
+      EventsNamesTransferEnum.createOne,
+      {
+        name: `Withdrawal ${sourceWallet.name}`,
+        description: `Withdrawal from ${preorderData.from} to ${preorderData.to}`,
+        currency: sourceWallet.currency,
+        idPayment: withdrawalTx?.data?.id,
+        responsepayment: withdrawalTx.data,
+        amount: preorderData.amount,
+        currencyCustodial: sourceWallet.currencyCustodial,
+        amountCustodial: preorderData.amount,
+        account: sourceWallet._id,
+        userCreator: user.id,
+        userAccount: sourceWallet.owner,
+        typeTransaction: withdrawalCategory._id,
+        psp: internalPspAccount.psp,
+        pspAccount: internalPspAccount._id,
+        operationType: OperationTransactionType.withdrawal,
+        statusPayment: StatusCashierEnum.PENDING,
+        status: pendingStatus._id,
+        brand: sourceWallet.brand,
+        crm: sourceWallet.crm,
+      } as unknown as TransferCreateDto,
+    );
   }
 }
