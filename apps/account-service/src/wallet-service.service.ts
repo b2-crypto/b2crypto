@@ -40,6 +40,7 @@ import { WalletWithdrawalPreorderDto } from './dtos/WalletWithdrawalPreorderDto'
 import { WalletWithdrawalConfirmDto } from './dtos/WalletWithdrawalConfirmDto';
 import { v4 as uuidv4 } from 'uuid';
 import { NetworkType } from './enum/networkTypeDto';
+import { WITHDRAWAL_CONFIG } from './withdrawal.config';
 @Injectable()
 export class WalletServiceService {
   private cryptoType: any = null;

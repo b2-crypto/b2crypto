@@ -1,4 +1,4 @@
-const WITHDRAWAL_CONFIG = {
+export const WITHDRAWAL_CONFIG = {
     timing: {
       minConfirmationTime: 120,  // [2 minutes]
       maxConfirmationTime: 240,  // [4 minutes]
