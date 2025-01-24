@@ -152,3 +152,4 @@ config:
   b2crypto-iac:TASK_CPU_MONOLITH: "2048"
   b2crypto-iac:TASK_MEMORY_MONOLITH: "4096"
   b2crypto-iac:MQ_UUID: 019499df-063c-7052-ab3b-7175606fde15
+  b2crypto-iac:SUBDOMAIN_PREFIX_RABBITMQ: rabbitmq
