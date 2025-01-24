@@ -1,6 +1,7 @@
 import * as aws from '@pulumi/aws';
 import {
   MQ_DEPLOYMENT_MODE,
+  MQ_UUID,
   PROJECT_NAME,
   RABBIT_MQ_INSTANCE_TYPE,
   SECRETS,
@@ -82,7 +83,7 @@ export const mqBrokerRabbitMQ = new aws.mq.Broker(
     autoMinorVersionUpgrade: false,
     deploymentMode: MQ_DEPLOYMENT_MODE,
     authenticationStrategy: 'SIMPLE',
-    tags: TAGS,
+    tags: { ...TAGS, Uuid: MQ_UUID },
   },
   {
     ignoreChanges: ['authenticationStrategy', 'engineType'],
