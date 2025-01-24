@@ -44,6 +44,8 @@ import { Ctx, EventPattern, Payload, RmqContext } from '@nestjs/microservices';
 import {
   ApiBearerAuth,
   ApiExcludeEndpoint,
+  ApiOperation,
+  ApiResponse,
   ApiSecurity,
   ApiTags,
 } from '@nestjs/swagger';
@@ -63,9 +65,10 @@ import { isMongoId } from 'class-validator';
 import { SwaggerSteakeyConfigEnum } from 'libs/config/enum/swagger.stakey.config.enum';
 import { AccountServiceController } from './account-service.controller';
 import { AccountServiceService } from './account-service.service';
-import { WalletWithdrawalDto } from './dtos/WalletWithdrawalDto';
+import { WalletWithdrawalPreorderDto } from './dtos/WalletWithdrawalPreorderDto';
 import EventsNamesAccountEnum from './enum/events.names.account.enum';
 import { WalletServiceService } from './wallet-service.service';
+import { WalletWithdrawalConfirmDto } from './dtos/WalletWithdrawalConfirmDto';
 
 @ApiTags(SwaggerSteakeyConfigEnum.TAG_WALLET)
 @Controller('wallets')
@@ -1565,17 +1568,37 @@ export class WalletServiceController extends AccountServiceController {
     return this.createOne(createDto);
   }
 
-  @Post('external-withdraw')
+  @Post('external-withdraw-preorder')
   @ApiTags('wallet')
+  @ApiOperation({ summary: 'Create withdrawal preorder' })
+  @ApiResponse({ status: 201, description: 'Preorder created successfully' })
+  @ApiResponse({ status: 400, description: 'Invalid request data' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiSecurity('b2crypto-key')
   @ApiBearerAuth('bearerToken')
   @UseGuards(ApiKeyAuthGuard, JwtAuthGuard)
-  async processWithdrawal(
-    @Body() withdrawalDto: WalletWithdrawalDto,
-    @Req() req: any,
+  async externalWithdrawPreorder(
+    @Body() withdrawalDto: WalletWithdrawalPreorderDto,
+    @Req() req: Request,
   ) {
     const userId = CommonService.getUserId(req);
+    return this.walletServiceService.handleWithdrawalProcess(withdrawalDto, userId, true);
+  }
 
-    return this.walletServiceService.processWithdrawal(withdrawalDto, userId);
+  @Post('external-withdraw-confirm')
+  @ApiTags('wallet')
+  @ApiOperation({ summary: 'Confirm withdrawal' })
+  @ApiResponse({ status: 201, description: 'Withdrawal confirmed successfully' })
+  @ApiResponse({ status: 400, description: 'Invalid preorder or confirmation failed' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiSecurity('b2crypto-key')
+  @ApiBearerAuth('bearerToken')
+  @UseGuards(ApiKeyAuthGuard, JwtAuthGuard)
+  async confirmWithdrawal(
+    @Body() withdrawalConfirmDto: WalletWithdrawalConfirmDto,
+    @Req() req: Request,
+  ) {
+    const userId = CommonService.getUserId(req);
+    return this.walletServiceService.handleWithdrawalProcess(withdrawalConfirmDto, userId, false);
   }
 }
