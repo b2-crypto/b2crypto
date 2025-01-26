@@ -241,8 +241,6 @@ export const TASK_CPU_MONOLITH = config.require('TASK_CPU_MONOLITH');
 
 export const TASK_MEMORY_MONOLITH = config.require('TASK_MEMORY_MONOLITH');
 
-export const MQ_UUID = config.require('MQ_UUID');
-
 export const TAGS = {
   Company: COMPANY_NAME,
   Projects: PROJECT_NAME,
