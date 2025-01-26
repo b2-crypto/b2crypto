@@ -202,6 +202,10 @@ export const SUBDOMAIN_PREFIX_OPTL_UI = config.require(
   'SUBDOMAIN_PREFIX_OPTL_UI',
 );
 
+export const SUBDOMAIN_PREFIX_RABBITMQ = config.require(
+  'SUBDOMAIN_PREFIX_RABBITMQ',
+);
+
 export const OPTL_OPEN_SEARCH_INSTANCE_TYPE = config.require(
   'OPTL_OPEN_SEARCH_INSTANCE_TYPE',
 );
@@ -236,8 +240,6 @@ export const OPTL_COLLECTOR_MAX_CAPACITY_AUTOSCALING = parseInt(
 export const TASK_CPU_MONOLITH = config.require('TASK_CPU_MONOLITH');
 
 export const TASK_MEMORY_MONOLITH = config.require('TASK_MEMORY_MONOLITH');
-
-export const MQ_UUID = config.require('MQ_UUID');
 
 export const TAGS = {
   Company: COMPANY_NAME,
