@@ -1,8 +1,14 @@
-import { IsEnum, IsNumberString, IsOptional, IsString, Length } from 'class-validator';
-import TypesAccountEnum from '../enum/types.account.enum';
-import { AccountCreateDto } from './account.create.dto';
 import { ApiProperty } from '@nestjs/swagger';
+import {
+  IsEnum,
+  IsNumberString,
+  IsOptional,
+  IsString,
+  Length,
+} from 'class-validator';
+import TypesAccountEnum from '../enum/types.account.enum';
 import WalletTypesAccountEnum from '../enum/wallet.types.account.enum';
+import { AccountCreateDto } from './account.create.dto';
 
 export class WalletCreateDto extends AccountCreateDto {
   @IsString()

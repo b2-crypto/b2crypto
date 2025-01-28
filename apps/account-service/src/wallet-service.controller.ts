@@ -1,5 +1,6 @@
 import { WalletDepositCreateDto } from '@account/account/dto/wallet-deposit.create.dto';
 import { WalletCreateDto } from '@account/account/dto/wallet.create.dto';
+import { WalletUpsertOneMeDto } from '@account/account/dto/wallet.upsert.dto';
 import { AccountEntity } from '@account/account/entities/account.entity';
 import { AccountDocument } from '@account/account/entities/mongoose/account.schema';
 import StatusAccountEnum from '@account/account/enum/status.account.enum';
@@ -34,6 +35,7 @@ import {
   Param,
   Patch,
   Post,
+  Put,
   Query,
   Req,
   UnauthorizedException,
@@ -63,12 +65,13 @@ import { UserServiceService } from 'apps/user-service/src/user-service.service';
 import { Cache } from 'cache-manager';
 import { isMongoId } from 'class-validator';
 import { SwaggerSteakeyConfigEnum } from 'libs/config/enum/swagger.stakey.config.enum';
+import { mongo } from 'mongoose';
 import { AccountServiceController } from './account-service.controller';
 import { AccountServiceService } from './account-service.service';
+import { WalletWithdrawalConfirmDto } from './dtos/WalletWithdrawalConfirmDto';
 import { WalletWithdrawalPreorderDto } from './dtos/WalletWithdrawalPreorderDto';
 import EventsNamesAccountEnum from './enum/events.names.account.enum';
 import { WalletServiceService } from './wallet-service.service';
-import { WalletWithdrawalConfirmDto } from './dtos/WalletWithdrawalConfirmDto';
 
 @ApiTags(SwaggerSteakeyConfigEnum.TAG_WALLET)
 @Controller('wallets')
@@ -242,6 +245,99 @@ export class WalletServiceController extends AccountServiceController {
     return rta;
   }
 
+  @ApiTags(SwaggerSteakeyConfigEnum.TAG_WALLET)
+  @ApiBearerAuth('bearerToken')
+  @ApiSecurity('b2crypto-key')
+  @Put('upsert/me')
+  @UseGuards(ApiKeyAuthGuard, JwtAuthGuard)
+  async upsertOneMe(
+    @Body() upsertOneMe: WalletUpsertOneMeDto,
+    @Req() req?: any,
+  ) {
+    const userId = req?.user.id;
+
+    const result = await this.walletService.findAll({
+      where: {
+        owner: new mongo.ObjectId(userId),
+        type: TypesAccountEnum.WALLET,
+        showToOwner: true,
+        accountId: upsertOneMe.accountId,
+      },
+    });
+
+    const [walletFound] = result.list;
+
+    if (walletFound) {
+      const walletForUpdate = {
+        ...walletFound.toObject(),
+        id: walletFound._id,
+        ...upsertOneMe,
+      };
+
+      return this.walletService.updateOne(walletForUpdate);
+    }
+
+    const accountMap = new Map<string, string>([
+      ['TRX_USDT_S2UZ', 'USD Theter (Tron)'],
+      ['USDT_ARB', 'Tether USD (Arbitrum)'],
+    ]);
+
+    const walletName = accountMap.get(upsertOneMe.accountId);
+
+    if (!walletName) {
+      throw new BadRequestException('Account id not valid');
+    }
+
+    const walletForCreate = {
+      ...upsertOneMe,
+      owner: userId,
+      name: walletName,
+      accountType: WalletTypesAccountEnum.VAULT,
+      type: TypesAccountEnum.WALLET,
+      pin: CommonService.getNumberDigits(
+        CommonService.randomIntNumber(9999),
+        4,
+      ),
+      id: undefined,
+      slug: '',
+      searchText: '',
+      docId: '',
+      secret: '',
+      address: null,
+      email: '',
+      telephone: '',
+      description: '',
+      decimals: 0,
+      hasSendDisclaimer: false,
+      totalTransfer: 0,
+      quantityTransfer: 0,
+      showToOwner: false,
+      statusText: StatusAccountEnum.UNLOCK,
+      accountStatus: [],
+      createdAt: undefined,
+      updatedAt: undefined,
+      cardConfig: undefined,
+      amount: 0,
+      currency: CurrencyCodeB2cryptoEnum.USDT,
+      amountCustodial: 0,
+      currencyCustodial: CurrencyCodeB2cryptoEnum.USDT,
+      amountBlocked: 0,
+      currencyBlocked: CurrencyCodeB2cryptoEnum.USDT,
+      amountBlockedCustodial: 0,
+      currencyBlockedCustodial: CurrencyCodeB2cryptoEnum.USDT,
+      afgId: '', // TODO: AFG ID
+      brand: req.user.brand,
+    };
+
+    if (walletForCreate.accountType === WalletTypesAccountEnum.VAULT) {
+      return this.createWalletFireblocks(walletForCreate, req);
+    }
+
+    throw new BadRequestException(
+      `The accountType ${walletForCreate.accountType} is not valid`,
+    );
+  }
+
   private async createWalletFireblocks(createDto: WalletCreateDto, req?: any) {
     const userId = createDto.owner ?? req?.user.id;
     if (!userId) {
@@ -259,6 +355,7 @@ export class WalletServiceController extends AccountServiceController {
       fireblocksCrm._id,
       createDto.name,
     );
+
     if (EnvironmentEnum.prod === this.configService.get('ENVIRONMENT')) {
       const vaultUser = await this.getVaultUser(
         // req.clientApi,
@@ -583,18 +680,18 @@ export class WalletServiceController extends AccountServiceController {
   }
 
   private async getWalletBase(fireblocksCrmId: string, nameWallet: string) {
-    const walletBase = (
-      await this.walletService.availableWalletsFireblocks({
-        where: {
-          crm: fireblocksCrmId,
-          name: nameWallet,
-          showToOwner: false,
-          owner: {
-            $exists: false,
-          },
+    const wallets = await this.walletService.availableWalletsFireblocks({
+      where: {
+        crm: fireblocksCrmId,
+        name: nameWallet,
+        showToOwner: false,
+        owner: {
+          $exists: false,
         },
-      })
-    ).list[0];
+      },
+    });
+
+    const [walletBase] = wallets.list;
 
     if (!walletBase) {
       throw new BadRequestException(
@@ -1582,14 +1679,24 @@ export class WalletServiceController extends AccountServiceController {
     @Req() req: Request,
   ) {
     const userId = CommonService.getUserId(req);
-    return this.walletServiceService.handleWithdrawalProcess(withdrawalDto, userId, true);
+    return this.walletServiceService.handleWithdrawalProcess(
+      withdrawalDto,
+      userId,
+      true,
+    );
   }
 
   @Post('external-withdraw-confirm')
   @ApiTags('wallet')
   @ApiOperation({ summary: 'Confirm withdrawal' })
-  @ApiResponse({ status: 201, description: 'Withdrawal confirmed successfully' })
-  @ApiResponse({ status: 400, description: 'Invalid preorder or confirmation failed' })
+  @ApiResponse({
+    status: 201,
+    description: 'Withdrawal confirmed successfully',
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Invalid preorder or confirmation failed',
+  })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiSecurity('b2crypto-key')
   @ApiBearerAuth('bearerToken')
@@ -1599,6 +1706,10 @@ export class WalletServiceController extends AccountServiceController {
     @Req() req: Request,
   ) {
     const userId = CommonService.getUserId(req);
-    return this.walletServiceService.handleWithdrawalProcess(withdrawalConfirmDto, userId, false);
+    return this.walletServiceService.handleWithdrawalProcess(
+      withdrawalConfirmDto,
+      userId,
+      false,
+    );
   }
 }

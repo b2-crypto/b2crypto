@@ -34,7 +34,7 @@ import { TransferCreateButtonDto } from 'apps/transfer-service/src/dto/transfer.
 import EventsNamesTransferEnum from 'apps/transfer-service/src/enum/events.names.transfer.enum';
 import { UserServiceService } from 'apps/user-service/src/user-service.service';
 import { isMongoId } from 'class-validator';
-import { v4 as uuidv4 } from 'uuid';
+import { randomUUID } from 'crypto';
 import { AccountServiceService } from './account-service.service';
 import { WalletWithdrawalConfirmDto } from './dtos/WalletWithdrawalConfirmDto';
 import { WalletWithdrawalPreorderDto } from './dtos/WalletWithdrawalPreorderDto';
@@ -1401,7 +1401,7 @@ export class WalletServiceService {
       );
     }
 
-    const preorderId = uuidv4();
+    const preorderId = randomUUID();
     const preorderData = {
       userId,
       sourceWallet: sourceWallet._id,
