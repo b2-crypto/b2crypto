@@ -16,6 +16,7 @@ import { IntegrationService } from '@integration/integration';
 import IntegrationCryptoEnum from '@integration/integration/crypto/enums/IntegrationCryptoEnum';
 import {
   BadRequestException,
+  CACHE_MANAGER,
   Inject,
   Injectable,
   Logger,
@@ -41,11 +42,13 @@ import { WalletWithdrawalConfirmDto } from './dtos/WalletWithdrawalConfirmDto';
 import { v4 as uuidv4 } from 'uuid';
 import { NetworkType } from './enum/networkTypeDto';
 import { WITHDRAWAL_CONFIG } from './withdrawal.config';
+import { Cache } from 'cache-manager';
+
 @Injectable()
 export class WalletServiceService {
   private cryptoType: any = null;
-  cacheManager: any;
   constructor(
+    @Inject(CACHE_MANAGER) private cacheManager: Cache,
     @Inject(UserServiceService)
     private readonly userService: UserServiceService,
     @Inject(AccountServiceService)
@@ -1359,12 +1362,42 @@ export class WalletServiceService {
   }
 
   // [Wallet Withdrawal]
-  async handleWithdrawalProcess(dto: WalletWithdrawalPreorderDto | WalletWithdrawalConfirmDto, userId: string, isPreorder = true) {
-    if (isPreorder) {
-      return this.processPreorder(dto as WalletWithdrawalPreorderDto, userId);
-    } else {
-      return this.processConfirmation(dto as WalletWithdrawalConfirmDto, userId);
+  async handleWithdrawalProcess(
+    dto: WalletWithdrawalPreorderDto | WalletWithdrawalConfirmDto,
+    userId: string,
+    isPreorder = true,
+  ) {
+    if (!userId) {
+      throw new UnauthorizedException('User ID is required');
     }
+
+    if (isPreorder) {
+      const preorderDto = dto as WalletWithdrawalPreorderDto;
+      if (!this.validatePreorderDto(preorderDto)) {
+        throw new BadRequestException('Invalid withdrawal preorder data');
+      }
+      return this.processPreorder(preorderDto, userId);
+    } else {
+      const confirmDto = dto as WalletWithdrawalConfirmDto;
+      if (!this.validateConfirmDto(confirmDto)) {
+        throw new BadRequestException('Invalid withdrawal confirmation data');
+      }
+      return this.processConfirmation(confirmDto, userId);
+    }
+  }
+
+  private validatePreorderDto(dto: WalletWithdrawalPreorderDto): boolean {
+    return !!(
+      dto.from &&
+      dto.to &&
+      dto.amount &&
+      dto.amount > 10 &&
+      (!dto.network || Object.values(NetworkType).includes(dto.network))
+    );
+  }
+
+  private validateConfirmDto(dto: WalletWithdrawalConfirmDto): boolean {
+    return !!dto.preorderId;
   }
 
   private async processPreorder(withdrawalDto: WalletWithdrawalPreorderDto, userId: string) {
@@ -1405,9 +1438,8 @@ export class WalletServiceService {
     await this.cacheManager.store.set(
       `withdrawal:preorder:${preorderId}`,
       JSON.stringify(preorderData),
-      { ttl: WITHDRAWAL_CONFIG.timing.maxConfirmationTime }
+      WITHDRAWAL_CONFIG.timing.maxConfirmationTime
     );
-
     return {
       preorderId,
       estimatedGasFee: gasFee,
