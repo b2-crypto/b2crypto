@@ -16,6 +16,7 @@ import { IntegrationService } from '@integration/integration';
 import IntegrationCryptoEnum from '@integration/integration/crypto/enums/IntegrationCryptoEnum';
 import {
   BadRequestException,
+  CACHE_MANAGER,
   Inject,
   Injectable,
   Logger,
@@ -33,6 +34,7 @@ import EventsNamesStatusEnum from 'apps/status-service/src/enum/events.names.sta
 import { TransferCreateButtonDto } from 'apps/transfer-service/src/dto/transfer.create.button.dto';
 import EventsNamesTransferEnum from 'apps/transfer-service/src/enum/events.names.transfer.enum';
 import { UserServiceService } from 'apps/user-service/src/user-service.service';
+import { Cache } from 'cache-manager';
 import { isMongoId } from 'class-validator';
 import { randomUUID } from 'crypto';
 import { AccountServiceService } from './account-service.service';
@@ -41,11 +43,12 @@ import { WalletWithdrawalPreorderDto } from './dtos/WalletWithdrawalPreorderDto'
 import EventsNamesAccountEnum from './enum/events.names.account.enum';
 import { NetworkType } from './enum/networkTypeDto';
 import { WITHDRAWAL_CONFIG } from './withdrawal.config';
+
 @Injectable()
 export class WalletServiceService {
   private cryptoType: any = null;
-  cacheManager: any;
   constructor(
+    @Inject(CACHE_MANAGER) private cacheManager: Cache,
     @Inject(UserServiceService)
     private readonly userService: UserServiceService,
     @Inject(AccountServiceService)
@@ -1364,14 +1367,37 @@ export class WalletServiceService {
     userId: string,
     isPreorder = true,
   ) {
-    if (isPreorder) {
-      return this.processPreorder(dto as WalletWithdrawalPreorderDto, userId);
-    } else {
-      return this.processConfirmation(
-        dto as WalletWithdrawalConfirmDto,
-        userId,
-      );
+    if (!userId) {
+      throw new UnauthorizedException('User ID is required');
     }
+
+    if (isPreorder) {
+      const preorderDto = dto as WalletWithdrawalPreorderDto;
+      if (!this.validatePreorderDto(preorderDto)) {
+        throw new BadRequestException('Invalid withdrawal preorder data');
+      }
+      return this.processPreorder(preorderDto, userId);
+    } else {
+      const confirmDto = dto as WalletWithdrawalConfirmDto;
+      if (!this.validateConfirmDto(confirmDto)) {
+        throw new BadRequestException('Invalid withdrawal confirmation data');
+      }
+      return this.processConfirmation(confirmDto, userId);
+    }
+  }
+
+  private validatePreorderDto(dto: WalletWithdrawalPreorderDto): boolean {
+    return !!(
+      dto.from &&
+      dto.to &&
+      dto.amount &&
+      dto.amount > 10 &&
+      (!dto.network || Object.values(NetworkType).includes(dto.network))
+    );
+  }
+
+  private validateConfirmDto(dto: WalletWithdrawalConfirmDto): boolean {
+    return !!dto.preorderId;
   }
 
   private async processPreorder(
@@ -1422,9 +1448,8 @@ export class WalletServiceService {
     await this.cacheManager.store.set(
       `withdrawal:preorder:${preorderId}`,
       JSON.stringify(preorderData),
-      { ttl: WITHDRAWAL_CONFIG.timing.maxConfirmationTime },
+      WITHDRAWAL_CONFIG.timing.maxConfirmationTime,
     );
-
     return {
       preorderId,
       estimatedGasFee: gasFee,
