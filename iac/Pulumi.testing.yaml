@@ -151,3 +151,4 @@ config:
   b2crypto-iac:OTLP_API_KEY:
     secure: AAABAK5+BpTwAkg6vhuWO19wqRK6IDG/XTO26N0dKYQ6TFXxmqXBsNzGQLyF598/q1//XSXTgAult3rN8wIPwBd/t+A=
   b2crypto-iac:TASK_CPU_MONOLITH: "1024"
+  b2crypto-iac:TASK_MEMORY_MONOLITH: "2048"
