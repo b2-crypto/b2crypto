@@ -1,14 +1,14 @@
 import * as mongodbatlas from '@pulumi/mongodbatlas';
 import {
-  isProduction,
-  isStressTest,
+  isStage,
+  isTest,
   mongoAtlasClusterName,
   SECRETS,
   TAGS,
 } from '../../secrets';
 
 export const mongodbatlasServerlessInstance =
-  !isStressTest() && !isProduction()
+  isTest() || isStage()
     ? new mongodbatlas.ServerlessInstance(mongoAtlasClusterName, {
         name: mongoAtlasClusterName,
         projectId: SECRETS.MONGOATLAS_PROJECT_ID,
