@@ -152,3 +152,7 @@ config:
   b2crypto-iac:TASK_CPU_MONOLITH: '2048'
   b2crypto-iac:TASK_MEMORY_MONOLITH: '4096'
   b2crypto-iac:APP_VERSION: 0.9.0
+  b2crypto-iac:OTLP_HOST:
+    secure: AAABACpu4seEBcbTIg7CjcxQSrOLcADnHYjhU46DW3G3Gsr/hwx2v+PB87G0D3WlATt5+cDpApBofgPNRrs=
+  b2crypto-iac:OTLP_API_KEY:
+    secure: AAABAKsDggxgNXssGuu4svhwawzAFp3wgMvgHKEV7QI3gRU4QOjyJ9AvRrZ5q/cyUtO8Wp5CvH4P6khH+Nvv3BEdJpU=

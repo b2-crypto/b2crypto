@@ -14,19 +14,30 @@ import { utilities } from 'nest-winston';
 import { createLogger, format, transports } from 'winston';
 
 const resource = new Resource({
-  [ATTR_SERVICE_NAME]: process.env.APP_NAME || 'b2crypto',
+  [ATTR_SERVICE_NAME]: `${process.env.APP_NAME || 'b2crypto'}.${
+    process.env.STACK || 'dev'
+  }`,
   [ATTR_SERVICE_VERSION]: process.env.APP_VERSION || '1.0.0',
 });
 
 const tracesExporter = new OTLPTraceExporter({
+  headers: {
+    'signoz-ingestion-key': process.env.OTLP_API_KEY || '',
+  },
   url: process.env.OTLP_HOST_TRACES || 'http://localhost:4318/v1/traces',
 });
 
 const metricsExporter = new OTLPMetricExporter({
+  headers: {
+    'signoz-ingestion-key': process.env.OTLP_API_KEY || '',
+  },
   url: process.env.OTLP_HOST_METRICS || 'http://localhost:4318/v1/metrics',
 });
 
 const logsExporter = new OTLPLogExporter({
+  headers: {
+    'signoz-ingestion-key': process.env.OTLP_API_KEY || '',
+  },
   url: process.env.OTLP_HOST_LOGS || 'http://localhost:4318/v1/logs',
 });
 

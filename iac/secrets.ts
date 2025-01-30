@@ -42,6 +42,8 @@ export const SECRETS = pulumi
     config.requireSecret('V1_DB_HOST'),
     config.requireSecret('V1_DB_PORT'),
     config.requireSecret('V1_DB_NAME'),
+    config.requireSecret('OTLP_HOST'),
+    config.requireSecret('OTLP_API_KEY'),
   ])
   .apply(
     ([
@@ -83,6 +85,8 @@ export const SECRETS = pulumi
       V1_DB_HOST,
       V1_DB_PORT,
       V1_DB_NAME,
+      OTLP_HOST,
+      OTLP_API_KEY,
     ]) => ({
       ACCESS_KEY,
       SECRET_KEY,
@@ -122,6 +126,8 @@ export const SECRETS = pulumi
       V1_DB_HOST,
       V1_DB_PORT,
       V1_DB_NAME,
+      OTLP_HOST,
+      OTLP_API_KEY,
     }),
   );
 
