@@ -14,13 +14,13 @@ import { StatusCashierEnum } from '@common/common/enums/StatusCashierEnum';
 import TagEnum from '@common/common/enums/TagEnum';
 import { IntegrationService } from '@integration/integration';
 import IntegrationCryptoEnum from '@integration/integration/crypto/enums/IntegrationCryptoEnum';
+import { v4 as uuid } from 'uuid';
 import {
   BadRequestException,
   CACHE_MANAGER,
   Inject,
   Injectable,
-  Logger,
-  UnauthorizedException,
+  Logger
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { TransferCreateDto } from '@transfer/transfer/dto/transfer.create.dto';
@@ -36,17 +36,38 @@ import EventsNamesTransferEnum from 'apps/transfer-service/src/enum/events.names
 import { UserServiceService } from 'apps/user-service/src/user-service.service';
 import { Cache } from 'cache-manager';
 import { isMongoId } from 'class-validator';
-import { randomUUID } from 'crypto';
 import { AccountServiceService } from './account-service.service';
-import { WalletWithdrawalConfirmDto } from './dtos/WalletWithdrawalConfirmDto';
-import { WalletWithdrawalPreorderDto } from './dtos/WalletWithdrawalPreorderDto';
 import EventsNamesAccountEnum from './enum/events.names.account.enum';
-import { NetworkType } from './enum/networkTypeDto';
+import { WithdrawalError } from './utils/errors';
+import { AxiosResponse } from 'axios';
 import { WITHDRAWAL_CONFIG } from './withdrawal.config';
+import { WithdrawalExecuteDto } from './dtos/WithdrawalExecuteDto';
+import { WithdrawalPreorderDto } from './dtos/WithdrawalPreorderDto';
+import { IntegrationCryptoService } from '@integration/integration/crypto/generic/integration.crypto.service';
+import { DepositDto, DataCreateDepositDto, AttributesDepositDto, RelationshipsDepositDto, WalletDepositDto, DataWalletDepositDto } from './dtos/deposit.dto';
 
+interface WalletResponse {
+  data: {
+    amount: string;
+  };
+}
+
+interface AddressValidationResponse {
+  data: {
+    isValid: boolean;
+  };
+}
+
+interface TransactionResponse {
+  data: {
+    id: string;
+    status: string;
+  };
+}
 @Injectable()
 export class WalletServiceService {
   private cryptoType: any = null;
+  private readonly logger = new Logger(WalletServiceService.name)
   constructor(
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
     @Inject(UserServiceService)
@@ -57,6 +78,7 @@ export class WalletServiceService {
     private readonly ewalletBuilder: BuildersService,
     private readonly integration: IntegrationService,
     private readonly configService: ConfigService,
+    private readonly builder: BuildersService,
   ) {}
 
   async rechargeWallet(
@@ -1362,345 +1384,295 @@ export class WalletServiceService {
   }
 
   // [Wallet Withdrawal]
-  async handleWithdrawalProcess(
-    dto: WalletWithdrawalPreorderDto | WalletWithdrawalConfirmDto,
-    userId: string,
-    isPreorder = true,
-  ) {
-    if (!userId) {
-      throw new UnauthorizedException('User ID is required');
-    }
-
-    if (isPreorder) {
-      const preorderDto = dto as WalletWithdrawalPreorderDto;
-      if (!this.validatePreorderDto(preorderDto)) {
-        throw new BadRequestException('Invalid withdrawal preorder data');
-      }
-      return this.processPreorder(preorderDto, userId);
-    } else {
-      const confirmDto = dto as WalletWithdrawalConfirmDto;
-      if (!this.validateConfirmDto(confirmDto)) {
-        throw new BadRequestException('Invalid withdrawal confirmation data');
-      }
-      return this.processConfirmation(confirmDto, userId);
-    }
-  }
-
-  private validatePreorderDto(dto: WalletWithdrawalPreorderDto): boolean {
-    return !!(
-      dto.from &&
-      dto.to &&
-      dto.amount &&
-      dto.amount > 10 &&
-      (!dto.network || Object.values(NetworkType).includes(dto.network))
-    );
-  }
-
-  private validateConfirmDto(dto: WalletWithdrawalConfirmDto): boolean {
-    return !!dto.preorderId;
-  }
-
-  private async processPreorder(
-    withdrawalDto: WalletWithdrawalPreorderDto,
-    userId: string,
-  ) {
-    const user = await this.validateAndGetUser(userId);
-    if (!user) {
-      throw new UnauthorizedException('User not found');
-    }
-    const sourceWallet = await this.validateAndGetWallet(
-      withdrawalDto.from,
-      userId,
-    );
-    await this.validateWithdrawalRequest(withdrawalDto);
-
-    const gasFee = await this.calculateWithdrawalFees(sourceWallet);
-    const gasWallet = await this.getGasWallet(
-      withdrawalDto.network || NetworkType.ARBITRUM,
-    );
-
-    const totalAmount = withdrawalDto.amount + gasFee;
-
-    if (sourceWallet.amountCustodial < totalAmount) {
-      throw new BadRequestException(
-        `Insufficient funds for withdrawal and fees (${gasFee} fee)`,
-      );
-    }
-
-    const preorderId = randomUUID();
-    const preorderData = {
-      userId,
-      sourceWallet: sourceWallet._id,
-      gasWallet: gasWallet._id,
-      amount: withdrawalDto.amount,
-      to: withdrawalDto.to,
-      from: withdrawalDto.from,
-      gasFee,
-      totalAmount,
-      network: withdrawalDto.network || NetworkType.ARBITRUM,
-      timestamp: Date.now(),
-      minConfirmationTime:
-        Date.now() + WITHDRAWAL_CONFIG.timing.minConfirmationTime * 1000,
-      maxConfirmationTime:
-        Date.now() + WITHDRAWAL_CONFIG.timing.maxConfirmationTime * 1000,
-    };
-
-    await this.cacheManager.store.set(
-      `withdrawal:preorder:${preorderId}`,
-      JSON.stringify(preorderData),
-      WITHDRAWAL_CONFIG.timing.maxConfirmationTime,
-    );
-    return {
-      preorderId,
-      estimatedGasFee: gasFee,
-      totalAmount,
-      minConfirmationTime: WITHDRAWAL_CONFIG.timing.minConfirmationTime,
-      maxConfirmationTime: WITHDRAWAL_CONFIG.timing.maxConfirmationTime,
-      expiresAt: new Date(preorderData.maxConfirmationTime).toISOString(),
-    };
-  }
-
-  private async processConfirmation(
-    withdrawalConfirmDto: WalletWithdrawalConfirmDto,
-    userId: string,
-  ) {
-    const preorderData = await this.validatePreorder(
-      withdrawalConfirmDto.preorderId,
-      userId,
-    );
-    const sourceWallet = await this.validateAndGetFromWallet(
-      preorderData.sourceWallet,
-    );
-    const gasWallet = await this.validateAndGetFromWallet(
-      preorderData.gasWallet,
-    );
-
+  private async getAccountFromRequest(): Promise<AccountDocument> {
     try {
-      const withdrawalTx = await this.executeWithdrawal(
-        sourceWallet,
-        gasWallet,
-        preorderData,
+      const account = await this.accountService.findOneById('account-id-from-context');
+      
+      if (!account) {
+        throw new WithdrawalError('Account not found', 'ACCOUNT_NOT_FOUND');
+      }
+
+      return account;
+    } catch (error) {
+      this.logger.error('Error getting account from request', error);
+      throw new WithdrawalError(
+        'Error retrieving account information',
+        'ACCOUNT_RETRIEVAL_ERROR',
+        { originalError: error.message }
       );
-      await this.updateWalletBalances(
-        sourceWallet._id,
+    }
+  }
+
+  private async validateAccountStatus(account: AccountDocument) {
+    try {
+      if (account.type !== TypesAccountEnum.WALLET) {
+        throw new WithdrawalError(
+          'Invalid account type - must be a wallet',
+          'INVALID_ACCOUNT_TYPE',
+          { currentType: account.type }
+        );
+      }
+
+      if (account.accountType !== WalletTypesAccountEnum.VAULT) {
+        throw new WithdrawalError(
+          'Invalid wallet type - must be a vault',
+          'INVALID_WALLET_TYPE',
+          { currentType: account.accountType }
+        );
+      }
+
+      if (account.statusText === StatusAccountEnum.LOCK) {
+        throw new WithdrawalError(
+          'Account is locked',
+          'ACCOUNT_LOCKED',
+          { status: account.statusText }
+        );
+      }
+
+      return true;
+    } catch (error) {
+      this.logger.error('Error validating account status', error);
+      throw error;
+    }
+  }
+
+  private async getFireblocksIntegration(): Promise<IntegrationCryptoService> {
+    try {
+      const fireblocksCrm = await this.builder.getPromiseCrmEventClient(
+        EventsNamesCrmEnum.findOneByName,
+        IntegrationCryptoEnum.FIREBLOCKS,
+      );
+
+      const cryptoIntegration = await this.integration.getCryptoIntegration(
         null,
-        preorderData.totalAmount,
+        IntegrationCryptoEnum.FIREBLOCKS,
+        fireblocksCrm._id
       );
 
-      const user = await this.validateAndGetUser(userId);
-      await this.createWithdrawalTransferEvent(
-        sourceWallet,
-        preorderData,
-        withdrawalTx,
-        user,
+      return cryptoIntegration;
+    } catch (error) {
+      this.logger.error('Error getting Fireblocks integration', error);
+      throw new WithdrawalError(
+        'Error connecting to Fireblocks',
+        'FIREBLOCKS_INTEGRATION_ERROR',
+        { originalError: error.message }
+      );
+    }
+  }
+
+  private async validateGasWallet(fireblocksIntegration: IntegrationCryptoService) {
+    try {
+      const gasWallet = await fireblocksIntegration.getWallet(WITHDRAWAL_CONFIG.gasWallet.address) as unknown as AxiosResponse<WalletResponse>;
+      const gasWalletBalance = Number(gasWallet?.data?.data?.amount || 0);
+
+      if (gasWalletBalance < WITHDRAWAL_CONFIG.gasWallet.minBalance) {
+        throw new WithdrawalError(
+          'Insufficient gas wallet balance',
+          'INSUFFICIENT_GAS_BALANCE',
+          { 
+            currentBalance: gasWalletBalance,
+            requiredBalance: WITHDRAWAL_CONFIG.gasWallet.minBalance 
+          }
+        );
+      }
+
+      return true;
+    } catch (error) {
+      this.logger.error('Error validating gas wallet', error);
+      throw error;
+    }
+  }
+
+  private calculateFees(networkId?: string): { networkFee: number; totalFee: number } {
+    try {
+      const networkFee = WITHDRAWAL_CONFIG.fees.networks[networkId?.toLowerCase()] || 0;
+      const totalFee = WITHDRAWAL_CONFIG.fees.base + networkFee;
+      
+      return { networkFee, totalFee };
+    } catch (error) {
+      this.logger.error('Error calculating fees', error);
+      throw new WithdrawalError(
+        'Error calculating withdrawal fees',
+        'FEE_CALCULATION_ERROR',
+        { originalError: error.message }
+      );
+    }
+  }
+
+  private async validateBalance(
+    fireblocksIntegration: IntegrationCryptoService,
+    accountId: string,
+    assetId: string,
+    amount: number,
+    totalFee: number
+  ) {
+    try {
+      const wallet = await fireblocksIntegration.getWallet(accountId) as unknown as AxiosResponse<WalletResponse>;
+      const availableBalance = Number(wallet?.data?.data?.amount || 0);
+
+      if (amount + totalFee > availableBalance) {
+        throw new WithdrawalError(
+          'Insufficient funds including fees',
+          'INSUFFICIENT_FUNDS',
+          { 
+            required: amount + totalFee,
+            available: availableBalance,
+            amount,
+            fee: totalFee
+          }
+        );
+      }
+
+      return true;
+    } catch (error) {
+      this.logger.error('Error validating balance', error);
+      throw error;
+    }
+  }
+
+  async validatePreorder(dto: WithdrawalPreorderDto) {
+    try {
+      const account = await this.getAccountFromRequest();
+      await this.validateAccountStatus(account);
+      
+      const fireblocksIntegration = await this.getFireblocksIntegration();
+      await this.validateGasWallet(fireblocksIntegration);
+      
+      const { totalFee } = this.calculateFees(dto.networkId);
+      await this.validateBalance(
+        fireblocksIntegration,
+        account.accountId,
+        dto.assetId,
+        dto.amount,
+        totalFee
       );
 
-      await this.cacheManager.store.del(
-        `withdrawal:preorder:${withdrawalConfirmDto.preorderId}`,
-      );
+      const addressValidation = await fireblocksIntegration.http.get(
+        `/addresses/validate/${dto.destinationAddress}/${dto.assetId}`
+      ) as AxiosResponse<AddressValidationResponse>;
+      
+      const isValidAddress = addressValidation?.data?.data?.isValid || false;
+
+      if (!isValidAddress) {
+        throw new WithdrawalError(
+          'Invalid destination address',
+          'INVALID_ADDRESS',
+          { 
+            address: dto.destinationAddress,
+            asset: dto.assetId,
+            network: dto.networkId 
+          }
+        );
+      }
+
+      const preorderId = uuid();
+      const preorder = {
+        id: preorderId,
+        accountId: account.accountId,
+        assetId: dto.assetId,
+        amount: dto.amount,
+        destinationAddress: dto.destinationAddress,
+        networkId: dto.networkId,
+        fee: totalFee,
+        totalAmount: dto.amount + totalFee,
+        status: 'pending',
+        createdAt: new Date(),
+        expiresAt: new Date(Date.now() + WITHDRAWAL_CONFIG.timing.maxConfirmationTime * 1000)
+      };
 
       return {
-        success: true,
-        transactionId: withdrawalTx.data.id,
-        fee: preorderData.gasFee,
-        status: 'pending',
+        preorderId,
+        expiresAt: preorder.expiresAt,
+        fee: totalFee,
+        totalAmount: preorder.totalAmount
       };
     } catch (error) {
-      Logger.error(`Withdrawal failed: ${error.message}`, 'WithdrawalService');
-      throw new BadRequestException('Failed to process withdrawal');
-    }
-  }
-
-  private async validatePreorder(preorderId: string, userId: string) {
-    const preorderData = await this.cacheManager.store.get(
-      `withdrawal:preorder:${preorderId}`,
-    );
-
-    if (!preorderData) {
-      throw new BadRequestException('Preorder expired or invalid');
-    }
-
-    const parsedPreorder = JSON.parse(preorderData as string);
-    const currentTime = Date.now();
-
-    if (currentTime < parsedPreorder.minConfirmationTime) {
-      const waitTime = Math.ceil(
-        (parsedPreorder.minConfirmationTime - currentTime) / 1000,
-      );
-      throw new BadRequestException(`Please wait ${waitTime} seconds`);
-    }
-
-    if (currentTime > parsedPreorder.maxConfirmationTime) {
-      throw new BadRequestException('Withdrawal confirmation window expired');
-    }
-
-    if (parsedPreorder.userId !== userId) {
-      throw new BadRequestException('Unauthorized withdrawal attempt');
-    }
-
-    return parsedPreorder;
-  }
-
-  private async executeWithdrawal(
-    sourceWallet: AccountDocument,
-    gasWallet: AccountDocument,
-    preorderData: any,
-  ) {
-    const fireblocksCrm = await this.ewalletBuilder.getPromiseCrmEventClient(
-      EventsNamesCrmEnum.findOneByName,
-      IntegrationCryptoEnum.FIREBLOCKS,
-    );
-
-    const walletBase = await this.getWalletBase(
-      fireblocksCrm._id,
-      sourceWallet.name,
-    );
-
-    const vaultFrom = await this.getVaultUser(
-      sourceWallet.owner.toString(),
-      fireblocksCrm._id,
-      walletBase,
-      sourceWallet.brand.toString(),
-    );
-
-    const cryptoType = await this.getFireblocksType();
-    return cryptoType.createTransaction(
-      sourceWallet.accountId,
-      preorderData.amount.toString(),
-      vaultFrom.accountId,
-      preorderData.to,
-      'Withdrawal',
-      true,
-      gasWallet.accountId,
-    );
-  }
-
-  private async calculateWithdrawalFees(sourceWallet: AccountDocument) {
-    const network = sourceWallet.accountId.toLowerCase().includes('arbitrum')
-      ? 'arbitrum'
-      : 'tron';
-    return (
-      WITHDRAWAL_CONFIG.fees.base +
-      sourceWallet.amountCustodial * WITHDRAWAL_CONFIG.fees.networks[network]
-    );
-  }
-
-  private async getGasWallet(network: string): Promise<AccountDocument> {
-    const gasConfig = WITHDRAWAL_CONFIG.gasWallet[network];
-    if (!gasConfig) {
-      throw new BadRequestException(`Unsupported network: ${network}`);
-    }
-
-    const fireblocksCrm = await this.ewalletBuilder.getPromiseCrmEventClient(
-      EventsNamesCrmEnum.findOneByName,
-      IntegrationCryptoEnum.FIREBLOCKS,
-    );
-
-    const gasWallet = await this.getVaultUser(
-      gasConfig.address,
-      fireblocksCrm._id,
-      await this.getWalletBase(fireblocksCrm._id, `gas-wallet-${network}`),
-      'system',
-    );
-
-    if (!gasWallet || gasWallet.amountCustodial < gasConfig.minBalance) {
-      throw new BadRequestException(
-        `Gas wallet for ${network} unavailable or insufficient balance`,
+      this.logger.error('Error in validatePreorder', error);
+      if (error instanceof WithdrawalError) {
+        throw error;
+      }
+      throw new WithdrawalError(
+        'Error processing withdrawal preorder',
+        'PREORDER_ERROR',
+        { originalError: error.message }
       );
     }
-
-    return gasWallet;
   }
 
-  private async validateWithdrawalRequest(
-    withdrawalDto: WalletWithdrawalPreorderDto,
-  ) {
-    if (!withdrawalDto.amount || withdrawalDto.amount <= 10) {
-      throw new BadRequestException(
-        'Withdrawal amount must be greater than 10',
-      );
-    }
-    if (!withdrawalDto.to) {
-      throw new BadRequestException('Destination address is required');
-    }
-    if (!withdrawalDto.from) {
-      throw new BadRequestException('Source wallet address is required');
-    }
-  }
+  async executeWithdrawal(dto: WithdrawalExecuteDto) {
+    try {
+      const account = await this.getAccountFromRequest();
+      await this.validateAccountStatus(account);
 
-  private async validateAndGetWallet(walletAddress: string, userId: string) {
-    const user = await this.validateAndGetUser(userId);
-    const fireblocksCrm = await this.ewalletBuilder.getPromiseCrmEventClient(
-      EventsNamesCrmEnum.findOneByName,
-      IntegrationCryptoEnum.FIREBLOCKS,
-    );
+      const fireblocksIntegration = await this.getFireblocksIntegration();
 
-    const walletBase = await this.getWalletBase(
-      fireblocksCrm._id,
-      user.personalData.name,
-    );
-    const wallet = await this.getVaultUser(
-      walletAddress,
-      fireblocksCrm._id,
-      walletBase,
-      user.brand.toString(),
-    );
+      const preorder = {
+        createdAt: new Date(Date.now() - 60000),
+        fee: 0,
+        totalAmount: dto.amount
+      };
 
-    if (!wallet) {
-      throw new BadRequestException('Invalid source wallet');
-    }
-
-    return wallet;
-  }
-
-  private async createWithdrawalTransferEvent(
-    sourceWallet: AccountDocument,
-    preorderData: any,
-    withdrawalTx: any,
-    user: User,
-  ) {
-    const [withdrawalCategory, pendingStatus, internalPspAccount] =
-      await Promise.all([
-        this.ewalletBuilder.getPromiseCategoryEventClient(
-          EventsNamesCategoryEnum.findOneByNameType,
+      const elapsedTime = Date.now() - preorder.createdAt.getTime();
+      
+      if (elapsedTime < WITHDRAWAL_CONFIG.timing.minConfirmationTime * 1000) {
+        throw new WithdrawalError(
+          'Withdrawal cannot be executed yet',
+          'MIN_TIME_NOT_REACHED',
           {
-            slug: 'withdrawal-wallet',
-            type: TagEnum.MONETARY_TRANSACTION_TYPE,
-          },
-        ),
-        this.ewalletBuilder.getPromiseStatusEventClient(
-          EventsNamesStatusEnum.findOneByName,
-          'pending',
-        ),
-        this.ewalletBuilder.getPromisePspAccountEventClient(
-          EventsNamesPspAccountEnum.findOneByName,
-          'internal',
-        ),
-      ]);
+            currentTime: elapsedTime / 1000,
+            requiredTime: WITHDRAWAL_CONFIG.timing.minConfirmationTime,
+            remainingTime: WITHDRAWAL_CONFIG.timing.minConfirmationTime - Math.floor(elapsedTime / 1000)
+          }
+        );
+      }
 
-    await this.ewalletBuilder.emitTransferEventClient(
-      EventsNamesTransferEnum.createOne,
-      {
-        name: `Withdrawal ${sourceWallet.name}`,
-        description: `Withdrawal from ${preorderData.from} to ${preorderData.to}`,
-        currency: sourceWallet.currency,
-        idPayment: withdrawalTx?.data?.id,
-        responsepayment: withdrawalTx.data,
-        amount: preorderData.amount,
-        currencyCustodial: sourceWallet.currencyCustodial,
-        amountCustodial: preorderData.amount,
-        account: sourceWallet._id,
-        userCreator: user.id,
-        userAccount: sourceWallet.owner,
-        typeTransaction: withdrawalCategory._id,
-        psp: internalPspAccount.psp,
-        pspAccount: internalPspAccount._id,
-        operationType: OperationTransactionType.withdrawal,
-        statusPayment: StatusCashierEnum.PENDING,
-        status: pendingStatus._id,
-        brand: sourceWallet.brand,
-        crm: sourceWallet.crm,
-      } as unknown as TransferCreateDto,
-    );
+      if (elapsedTime > WITHDRAWAL_CONFIG.timing.maxConfirmationTime * 1000) {
+        throw new WithdrawalError(
+          'Preorder expired',
+          'PREORDER_EXPIRED',
+          {
+            expirationTime: WITHDRAWAL_CONFIG.timing.maxConfirmationTime,
+            elapsedTime: elapsedTime / 1000
+          }
+        );
+      }
+
+      const depositDto = new DepositDto();
+      depositDto.data = new DataCreateDepositDto();
+      depositDto.data.type = 'deposit';
+      
+      depositDto.data.attributes = new AttributesDepositDto();
+      depositDto.data.attributes.label = `Withdrawal ${dto.preorderId}`;
+      depositDto.data.attributes.tracking_id = dto.preorderId;
+      depositDto.data.attributes.target_amount_requested = dto.amount.toString();
+      depositDto.data.attributes.confirmations_needed = 1;
+      depositDto.data.attributes.callback_url = ''; 
+      
+      depositDto.data.relationships = new RelationshipsDepositDto();
+      depositDto.data.relationships.wallet = new WalletDepositDto();
+      depositDto.data.relationships.wallet.data = new DataWalletDepositDto();
+      depositDto.data.relationships.wallet.data.type = 'wallet';
+      depositDto.data.relationships.wallet.data.id = account.accountId;
+
+      const response = await fireblocksIntegration.createDeposit(depositDto) as unknown as AxiosResponse<TransactionResponse>;
+
+      return {
+        transactionId: response?.data?.data?.id,
+        status: response?.data?.data?.status,
+        amount: dto.amount,
+        fee: preorder.fee,
+        totalAmount: preorder.totalAmount
+      };
+    } catch (error) {
+      this.logger.error('Error in executeWithdrawal', error);
+      if (error instanceof WithdrawalError) {
+        throw error;
+      }
+      throw new WithdrawalError(
+        'Error executing withdrawal',
+        'EXECUTION_ERROR',
+        { originalError: error.message }
+      );
+    }
   }
 }
