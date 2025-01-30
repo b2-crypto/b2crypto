@@ -1,5 +1,6 @@
 import { WalletDepositCreateDto } from '@account/account/dto/wallet-deposit.create.dto';
 import { WalletCreateDto } from '@account/account/dto/wallet.create.dto';
+import { WalletUpsertOneMeDto } from '@account/account/dto/wallet.upsert.dto';
 import { AccountEntity } from '@account/account/entities/account.entity';
 import { AccountDocument } from '@account/account/entities/mongoose/account.schema';
 import StatusAccountEnum from '@account/account/enum/status.account.enum';
@@ -33,16 +34,20 @@ import {
   Param,
   Patch,
   Post,
+  Put,
   Query,
   Req,
   UnauthorizedException,
   UseGuards,
+  ValidationPipe,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Ctx, EventPattern, Payload, RmqContext } from '@nestjs/microservices';
 import {
   ApiBearerAuth,
   ApiExcludeEndpoint,
+  ApiOperation,
+  ApiResponse,
   ApiSecurity,
   ApiTags,
 } from '@nestjs/swagger';
@@ -60,18 +65,24 @@ import { UserServiceService } from 'apps/user-service/src/user-service.service';
 import { Cache } from 'cache-manager';
 import { isMongoId } from 'class-validator';
 import { SwaggerSteakeyConfigEnum } from 'libs/config/enum/swagger.stakey.config.enum';
+import { mongo } from 'mongoose';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { AccountServiceController } from './account-service.controller';
 import { AccountServiceService } from './account-service.service';
-import { WalletWithdrawalDto } from './dtos/WalletWithdrawalDto';
+import { WithdrawalExecuteDto } from './dtos/WithdrawalExecuteDto';
+import { WithdrawalPreorderDto } from './dtos/WithdrawalPreorderDto';
 import EventsNamesAccountEnum from './enum/events.names.account.enum';
+import { PreorderResponse } from './interfaces/preorderResponse';
+import { WithdrawalResponse } from './interfaces/withdrawalResponse';
+import { WithdrawalError } from './utils/errors';
 import { WalletServiceService } from './wallet-service.service';
 
 @ApiTags(SwaggerSteakeyConfigEnum.TAG_WALLET)
 @Controller('wallets')
 export class WalletServiceController extends AccountServiceController {
   private cryptoType = null;
+
   constructor(
     @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
     private readonly walletService: AccountServiceService,
@@ -241,6 +252,99 @@ export class WalletServiceController extends AccountServiceController {
     return rta;
   }
 
+  @ApiTags(SwaggerSteakeyConfigEnum.TAG_WALLET)
+  @ApiBearerAuth('bearerToken')
+  @ApiSecurity('b2crypto-key')
+  @Put('upsert/me')
+  @UseGuards(ApiKeyAuthGuard, JwtAuthGuard)
+  async upsertOneMe(
+    @Body() upsertOneMe: WalletUpsertOneMeDto,
+    @Req() req?: any,
+  ) {
+    const userId = req?.user.id;
+
+    const result = await this.walletService.findAll({
+      where: {
+        owner: new mongo.ObjectId(userId),
+        type: TypesAccountEnum.WALLET,
+        showToOwner: true,
+        accountId: upsertOneMe.accountId,
+      },
+    });
+
+    const [walletFound] = result.list;
+
+    if (walletFound) {
+      const walletForUpdate = {
+        ...walletFound.toObject(),
+        id: walletFound._id,
+        ...upsertOneMe,
+      };
+
+      return this.walletService.updateOne(walletForUpdate);
+    }
+
+    const accountMap = new Map<string, string>([
+      ['TRX_USDT_S2UZ', 'USD Theter (Tron)'],
+      ['USDT_ARB', 'Tether USD (Arbitrum)'],
+    ]);
+
+    const walletName = accountMap.get(upsertOneMe.accountId);
+
+    if (!walletName) {
+      throw new BadRequestException('Account id not valid');
+    }
+
+    const walletForCreate = {
+      ...upsertOneMe,
+      owner: userId,
+      name: walletName,
+      accountType: WalletTypesAccountEnum.VAULT,
+      type: TypesAccountEnum.WALLET,
+      pin: CommonService.getNumberDigits(
+        CommonService.randomIntNumber(9999),
+        4,
+      ),
+      id: undefined,
+      slug: '',
+      searchText: '',
+      docId: '',
+      secret: '',
+      address: null,
+      email: '',
+      telephone: '',
+      description: '',
+      decimals: 0,
+      hasSendDisclaimer: false,
+      totalTransfer: 0,
+      quantityTransfer: 0,
+      showToOwner: false,
+      statusText: StatusAccountEnum.UNLOCK,
+      accountStatus: [],
+      createdAt: undefined,
+      updatedAt: undefined,
+      cardConfig: undefined,
+      amount: 0,
+      currency: CurrencyCodeB2cryptoEnum.USDT,
+      amountCustodial: 0,
+      currencyCustodial: CurrencyCodeB2cryptoEnum.USDT,
+      amountBlocked: 0,
+      currencyBlocked: CurrencyCodeB2cryptoEnum.USDT,
+      amountBlockedCustodial: 0,
+      currencyBlockedCustodial: CurrencyCodeB2cryptoEnum.USDT,
+      afgId: '', // TODO: AFG ID
+      brand: req.user.brand,
+    };
+
+    if (walletForCreate.accountType === WalletTypesAccountEnum.VAULT) {
+      return this.createWalletFireblocks(walletForCreate, req);
+    }
+
+    throw new BadRequestException(
+      `The accountType ${walletForCreate.accountType} is not valid`,
+    );
+  }
+
   private async createWalletFireblocks(createDto: WalletCreateDto, req?: any) {
     const userId = createDto.owner ?? req?.user.id;
     if (!userId) {
@@ -258,6 +362,7 @@ export class WalletServiceController extends AccountServiceController {
       fireblocksCrm._id,
       createDto.name,
     );
+
     if (EnvironmentEnum.prod === this.configService.get('ENVIRONMENT')) {
       const vaultUser = await this.getVaultUser(
         // req.clientApi,
@@ -582,18 +687,18 @@ export class WalletServiceController extends AccountServiceController {
   }
 
   private async getWalletBase(fireblocksCrmId: string, nameWallet: string) {
-    const walletBase = (
-      await this.walletService.availableWalletsFireblocks({
-        where: {
-          crm: fireblocksCrmId,
-          name: nameWallet,
-          showToOwner: false,
-          owner: {
-            $exists: false,
-          },
+    const wallets = await this.walletService.availableWalletsFireblocks({
+      where: {
+        crm: fireblocksCrmId,
+        name: nameWallet,
+        showToOwner: false,
+        owner: {
+          $exists: false,
         },
-      })
-    ).list[0];
+      },
+    });
+
+    const [walletBase] = wallets.list;
 
     if (!walletBase) {
       throw new BadRequestException(
@@ -1579,17 +1684,75 @@ export class WalletServiceController extends AccountServiceController {
     return this.createOne(createDto);
   }
 
-  @Post('external-withdraw')
-  @ApiTags('wallet')
-  @ApiSecurity('b2crypto-key')
-  @ApiBearerAuth('bearerToken')
-  @UseGuards(ApiKeyAuthGuard, JwtAuthGuard)
-  async processWithdrawal(
-    @Body() withdrawalDto: WalletWithdrawalDto,
-    @Req() req: any,
-  ) {
-    const userId = CommonService.getUserId(req);
+  @Post('external-withdrawal-preorder')
+  @ApiOperation({
+    summary: 'Create withdrawal preorder',
+    description:
+      'Creates a preorder for withdrawing funds. Validates account, balance, and fees.',
+  })
+  @ApiResponse({
+    status: 201,
+    description: 'Preorder created successfully',
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Bad Request - Invalid parameters or business rules violation',
+  })
+  @ApiResponse({
+    status: 500,
+    description: 'Internal server error',
+  })
+  async createPreorder(
+    @Body(new ValidationPipe({ whitelist: true })) dto: WithdrawalPreorderDto,
+  ): Promise<PreorderResponse> {
+    try {
+      return await this.walletServiceService.validatePreorder(dto);
+    } catch (error) {
+      this.logger.error('Error in createPreorder endpoint', error);
+      if (error instanceof WithdrawalError) {
+        throw new BadRequestException({
+          code: error.code,
+          message: error.message,
+          details: error.details,
+        });
+      }
+      throw error;
+    }
+  }
 
-    return this.walletServiceService.processWithdrawal(withdrawalDto, userId);
+  @Post('external-withdrawal-confirm')
+  @ApiOperation({
+    summary: 'Execute withdrawal',
+    description:
+      'Executes a previously created withdrawal preorder after validations.',
+  })
+  @ApiResponse({
+    status: 201,
+    description: 'Withdrawal executed successfully',
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Bad Request - Invalid preorder or business rules violation',
+  })
+  @ApiResponse({
+    status: 500,
+    description: 'Internal server error',
+  })
+  async executeWithdrawal(
+    @Body(new ValidationPipe({ whitelist: true })) dto: WithdrawalExecuteDto,
+  ): Promise<WithdrawalResponse> {
+    try {
+      return await this.walletServiceService.executeWithdrawal(dto);
+    } catch (error) {
+      this.logger.error('Error in executeWithdrawal endpoint', error);
+      if (error instanceof WithdrawalError) {
+        throw new BadRequestException({
+          code: error.code,
+          message: error.message,
+          details: error.details,
+        });
+      }
+      throw error;
+    }
   }
 }

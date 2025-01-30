@@ -203,6 +203,10 @@ export const SUBDOMAIN_PREFIX_OPTL_UI = config.require(
   'SUBDOMAIN_PREFIX_OPTL_UI',
 );
 
+export const SUBDOMAIN_PREFIX_RABBITMQ = config.require(
+  'SUBDOMAIN_PREFIX_RABBITMQ',
+);
+
 export const OPTL_OPEN_SEARCH_INSTANCE_TYPE = config.require(
   'OPTL_OPEN_SEARCH_INSTANCE_TYPE',
 );
@@ -245,8 +249,9 @@ export const TAGS = {
   CreatedBy: CREATED_BY,
 };
 
-export const isProduction = () => ENVIRONMENT === 'PROD';
-export const isTesting = () => ENVIRONMENT === 'TEST';
-export const isStressTest = () => ENVIRONMENT === 'TEST_STRESS';
+export const isProduction = () => STACK === 'prod';
+export const isStressTest = () => STACK === 'stress';
+export const isTest = () => STACK === 'testing';
+export const isStage = () => STACK === 'staging';
 
 export const mongoAtlasClusterName = `${PROJECT_NAME}-monolith-${STACK}`;

@@ -294,7 +294,7 @@ export class AuthServiceController {
         if (restorePasswordDto.password !== restorePasswordDto.password2) {
           throw new BadRequestException('Bad password');
         }
-        const otpSended = await this.getOtpGenerated(restorePasswordDto.email);
+        const otpSended = await this.getOtpGenerated(user.email);
         // Validate OTP
         if (!otpSended) {
           throw new BadRequestException('Expired OTP');

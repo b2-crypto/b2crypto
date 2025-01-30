@@ -13,7 +13,6 @@ import {
   IntegrationService,
 } from '@integration/integration';
 import { HttpModule } from '@nestjs/axios';
-import { CacheInterceptor } from '@nestjs/cache-manager';
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { APP_FILTER, APP_INTERCEPTOR } from '@nestjs/core';
@@ -66,10 +65,10 @@ import { WalletServiceService } from './wallet-service.service';
     FiatIntegrationClient,
     IntegrationService,
     AccountServiceService,
-    {
-      provide: APP_INTERCEPTOR,
-      useClass: CacheInterceptor,
-    },
+    // {
+    //   provide: APP_INTERCEPTOR,
+    //   useClass: CacheInterceptor,
+    // },
     {
       provide: APP_INTERCEPTOR,
       useClass: ResponseInterceptor,

@@ -11,7 +11,6 @@ import {
   IsEmpty,
   IsEnum,
   IsMongoId,
-  IsNumber,
   IsObject,
   IsOptional,
   IsString,
@@ -67,6 +66,7 @@ export class PersonCreateDto extends CreateAnyDto {
   })
   @IsString()
   lastName: string;
+
   @ApiProperty({
     required: true,
     enum: GenderEnum,
@@ -85,8 +85,8 @@ export class PersonCreateDto extends CreateAnyDto {
   taxIdentificationType: string;
 
   @IsOptional()
-  @IsNumber()
-  taxIdentificationValue: number;
+  @IsString()
+  taxIdentificationValue: string;
 
   @IsDate()
   birth: Date;

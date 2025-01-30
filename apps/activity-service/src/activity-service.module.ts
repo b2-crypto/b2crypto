@@ -6,7 +6,6 @@ import { ResponseHttpExceptionFilter } from '@common/common/exceptions/response.
 import { ResponseInterceptor } from '@common/common/interceptors/response.interceptor';
 import { IProvider } from '@common/common/interfaces/i.provider.interface';
 import configuration from '@config/config';
-import { CacheInterceptor } from '@nestjs/cache-manager';
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { APP_FILTER, APP_INTERCEPTOR } from '@nestjs/core';
@@ -31,10 +30,10 @@ import { ActivityServiceWebsocketGateway } from './activity-service.websocket.ga
   providers: [
     ActivityServiceService,
     ActivityServiceWebsocketGateway,
-    {
-      provide: APP_INTERCEPTOR,
-      useClass: CacheInterceptor,
-    },
+    // {
+    //   provide: APP_INTERCEPTOR,
+    //   useClass: CacheInterceptor,
+    // },
     {
       provide: APP_INTERCEPTOR,
       useClass: ResponseInterceptor,

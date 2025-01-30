@@ -25,23 +25,7 @@ import mongoose, { Document, ObjectId } from 'mongoose';
 
 export type TransferDocument = Transfer & Document;
 
-export class TransactionDetail {
-  @Prop()
-  _id: ObjectId;
-
-  @Prop()
-  amount: number;
-
-  @Prop()
-  currency: string;
-
-  @Prop()
-  amountCustodial: number;
-
-  @Prop()
-  currencyCustodial: string;
-}
-
+@Schema()
 export class CommisionDetail {
   @Prop()
   _id: ObjectId;
@@ -58,6 +42,9 @@ export class CommisionDetail {
   @Prop()
   currencyCustodial: string;
 }
+
+export const CommisionDetailSchema =
+  SchemaFactory.createForClass(CommisionDetail);
 
 @Schema({
   timestamps: true,
@@ -249,7 +236,7 @@ export class Transfer extends TransferEntity {
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'transfers' })
   commisions: Transfer[];
 
-  @Prop({ type: [CommisionDetail] })
+  @Prop({ type: [CommisionDetailSchema] })
   commisionsDetails: CommisionDetail[];
 }
 
