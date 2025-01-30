@@ -32,6 +32,7 @@ import {
   Payload,
   RmqContext,
 } from '@nestjs/microservices';
+import LocationDto from '@person/person/dto/location.dto';
 import { PersonCreateDto } from '@person/person/dto/person.create.dto';
 import { PersonUpdateDto } from '@person/person/dto/person.update.dto';
 import { AddressSchema } from '@person/person/entities/mongoose/address.schema';
@@ -40,7 +41,6 @@ import { SwaggerSteakeyConfigEnum } from 'libs/config/enum/swagger.stakey.config
 import { BadRequestError } from 'passport-headerapikey';
 import EventsNamesPersonEnum from './enum/events.names.person.enum';
 import { PersonServiceService } from './person-service.service';
-import LocationDto from '@person/person/dto/location.dto';
 
 @ApiTags(SwaggerSteakeyConfigEnum.TAG_PROFILE)
 @Controller('persons')
