@@ -145,10 +145,6 @@ config:
     secure: AAABANaXFHwmmoCr9CPJ35MMRuTxQF2YRfLos9yZIQB8UO97
   b2crypto-iac:V1_DB_NAME:
     secure: AAABAC0quouX6Rjufyvr7hg6YD1+COPOUNKY07KZYr+h2Q5ZJn0CJO7v2YfttrH+2w==
-  b2crypto-iac:AWS_ACCESS_KEY:
-    secure: AAABANiFuO8c5fxFo6qKXeFsaueV2wR5IvsjpD8uE+ojy1e6IelF+d4mW0EyY82sTzgy+Q==
-  b2crypto-iac:AWS_SECRET_KEY:
-    secure: AAABAGabyp3icdJdarqH7JzJLAJ7wbF/O0/Pd1mia1AaDT7/YKZ1BnjLa9yn3I0lfQEMImIU6IuhsJCuHgwSfsmMZJ/hAnlY
   b2crypto-iac:TASK_CPU_MONOLITH: '2048'
   b2crypto-iac:TASK_MEMORY_MONOLITH: '4096'
   b2crypto-iac:APP_VERSION: 0.9.0
