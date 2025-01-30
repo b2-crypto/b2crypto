@@ -34,7 +34,7 @@ config:
   b2crypto-iac:DATABASE_URL:
     secure: AAABAKP/g2uKwubiYPzrvrjLqf3Q+Wr7hzFDoAF8O18zJzeEvYMHtOICf1zeA2VcfX5QPUNUEZ3ejvmTlH8TNM2kdudlu6HkBx/o3Bwu2ZcnjepM5/HO5Xf0PSju8JqO9VDS3Sy8feVXeJ0cyB1BrN6kdQGlVYtPF+I4Uh3rq3oZQoFRIPLhjiXQhurmoPhOHzWZZi62LfVGPJIppNE=
   b2crypto-iac:DEFAULT_CURRENCY_CONVERSION_COIN: USD
-  b2crypto-iac:ENVIRONMENT: TEST
+  b2crypto-iac:ENVIRONMENT: PROD
   b2crypto-iac:GOOGLE_2FA: "false"
   b2crypto-iac:POMELO_API_URL:
     secure: AAABAP22z4Koc4rDw4kajPGmDev1Uu9jQVX9XnJGSFsqJtBEUopaukPHvaFfCfpawmYec8v9Q8FGVgvIWQ==
