@@ -2,7 +2,6 @@ import { DistributedCacheModule } from '@app/distributed-cache';
 import { AuthModule } from '@auth/auth';
 import { BuildersModule } from '@builder/builders';
 import { ResponseHttpExceptionFilter } from '@common/common/exceptions/response.exception';
-import { B2CryptoCacheInterceptor } from '@common/common/interceptors/b-2-crypto-cache.interceptor';
 import { ResponseInterceptor } from '@common/common/interceptors/response.interceptor';
 import { IProvider } from '@common/common/interfaces/i.provider.interface';
 import { QueueAdminModule } from '@common/common/queue-admin-providers/queue.admin.provider.module';
@@ -81,10 +80,10 @@ export const configApp = {
       provide: APP_INTERCEPTOR,
       useClass: ResponseInterceptor,
     },
-    {
-      provide: APP_INTERCEPTOR,
-      useClass: B2CryptoCacheInterceptor,
-    },
+    // {
+    //   provide: APP_INTERCEPTOR,
+    //   useClass: B2CryptoCacheInterceptor,
+    // },
     {
       provide: APP_FILTER,
       useClass: ResponseHttpExceptionFilter,
