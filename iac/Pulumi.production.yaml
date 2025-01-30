@@ -119,7 +119,7 @@ config:
   b2crypto-iac:MONGOATLAS_CLUSTER_TYPE: REPLICASET
   b2crypto-iac:MONGOATLAS_INSTANCE_MIN: M10
   b2crypto-iac:MONGOATLAS_INSTANCE_MAX: M30
-  b2crypto-iac:SUBDOMAIN_PREFIX: apiprod
+  b2crypto-iac:SUBDOMAIN_PREFIX: api
   b2crypto-iac:SUBDOMAIN_PREFIX_OPTL_COLLECTOR: optlcollector
   b2crypto-iac:SUBDOMAIN_PREFIX_OPTL_UI: optlui
   b2crypto-iac:OPTL_OPEN_SEARCH_INSTANCE_TYPE: t3.medium.search
