@@ -262,15 +262,15 @@ export const ecsFargateService = new awsx.ecs.FargateService(
           { name: 'OTLP_API_KEY', value: SECRETS.OTLP_API_KEY },
           {
             name: 'OTLP_HOST_TRACES',
-            value: `${SECRETS.OTLP_HOST}/v1/traces`,
+            value: SECRETS.OTLP_HOST.apply((host) => `${host}/v1/traces`),
           },
           {
             name: 'OTLP_HOST_LOGS',
-            value: `${SECRETS.OTLP_HOST}/v1/logs`,
+            value: SECRETS.OTLP_HOST.apply((host) => `${host}/v1/logs`),
           },
           {
             name: 'OTLP_HOST_METRICS',
-            value: `${SECRETS.OTLP_HOST}/v1/metrics`,
+            value: SECRETS.OTLP_HOST.apply((host) => `${host}/v1/metrics`),
           },
           {
             name: 'OPTL_SERVICE_NAME',
