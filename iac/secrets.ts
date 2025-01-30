@@ -248,8 +248,9 @@ export const TAGS = {
   CreatedBy: CREATED_BY,
 };
 
-export const isProduction = () => ENVIRONMENT === 'PROD';
-export const isTesting = () => ENVIRONMENT === 'TEST';
-export const isStressTest = () => ENVIRONMENT === 'TEST_STRESS';
+export const isProduction = () => STACK === 'prod';
+export const isStressTest = () => STACK === 'stress';
+export const isTest = () => STACK === 'testing';
+export const isStage = () => STACK === 'staging';
 
 export const mongoAtlasClusterName = `${PROJECT_NAME}-monolith-${STACK}`;
