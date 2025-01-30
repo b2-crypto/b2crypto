@@ -253,9 +253,7 @@ export class UserServiceController implements GenericServiceController {
     CommonService.ack(ctx);
     const users = await this.userService.getAll({
       where: {
-        email: {
-          $regex: new RegExp(email, 'ig'),
-        },
+        slug: CommonService.getSlug(email),
       },
     });
 

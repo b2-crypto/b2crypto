@@ -59,7 +59,7 @@ import { ec2Vpc } from './ec2.vpc';
 export const mqBrokerRabbitMQ = new aws.mq.Broker(
   `${PROJECT_NAME}-rabbitmq-${STACK}`,
   {
-    // brokerName: `${PROJECT_NAME}-rabbit-${STACK}`,
+    brokerName: `${PROJECT_NAME}-rabbit-${STACK}`,
     engineType: 'RABBITMQ',
     engineVersion: '3.12.13',
     hostInstanceType: RABBIT_MQ_INSTANCE_TYPE,
