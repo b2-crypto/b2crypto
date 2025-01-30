@@ -6,7 +6,7 @@ import { StatusCashierEnum } from '@common/common/enums/StatusCashierEnum';
 import TagEnum from '@common/common/enums/TagEnum';
 import { ResponsePaginator } from '@common/common/interfaces/response-pagination.interface';
 import { IntegrationService } from '@integration/integration';
-import { Body, Controller, Inject, Logger, Post, Req } from '@nestjs/common';
+import { Body, Controller, Inject, Post, Req } from '@nestjs/common';
 import { Ctx, EventPattern, Payload, RmqContext } from '@nestjs/microservices';
 import { TransferCreateDto } from '@transfer/transfer/dto/transfer.create.dto';
 import { OperationTransactionType } from '@transfer/transfer/enum/operation.transaction.type.enum';
@@ -15,11 +15,14 @@ import EventsNamesCategoryEnum from 'apps/category-service/src/enum/events.names
 import EventsNamesPspAccountEnum from 'apps/psp-service/src/enum/events.names.psp.acount.enum';
 import EventsNamesStatusEnum from 'apps/status-service/src/enum/events.names.status.enum';
 import EventsNamesTransferEnum from 'apps/transfer-service/src/enum/events.names.transfer.enum';
+import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
+import { Logger } from 'winston';
 
 @Controller('b2binpay')
 //@UseGuards(ApiKeyAuthGuard)
 export class B2BinPayNotificationsController {
   constructor(
+    @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     private readonly builder: BuildersService,
     @Inject(IntegrationService)
     private integrationService: IntegrationService,
@@ -31,14 +34,14 @@ export class B2BinPayNotificationsController {
   @Post('status-deposit')
   // @CheckPoliciesAbility(new PolicyHandlerTransferRead())
   async statusDeposit(@Req() req: any, @Body() data: any) {
-    Logger.debug(data, 'B2BinPayNotificationsController.statusDeposit');
-    Logger.debug(
-      req.headers,
+    this.logger.debug('B2BinPayNotificationsController.statusDeposit', data);
+    this.logger.debug(
       'B2BinPayNotificationsController.statusDeposit:request.headers',
+      req.headers,
     );
-    Logger.debug(
-      req.body,
+    this.logger.debug(
       'B2BinPayNotificationsController.statusDeposit:request.body',
+      req.body,
     );
     return {
       statusCode: 200,
@@ -50,15 +53,18 @@ export class B2BinPayNotificationsController {
   @Post('status')
   // @CheckPoliciesAbility(new PolicyHandlerTransferRead())
   async status(@Req() req: any, @Body() data: any) {
-    Logger.debug(data, 'B2BinPayNotificationsController.status');
+    this.logger.debug('B2BinPayNotificationsController.status', data);
     const headers = req?.headers;
     const body = req?.body;
-    Logger.debug(
-      headers,
+    this.logger.debug(
       'B2BinPayNotificationsController.status:request.headers',
+      headers,
     );
-    Logger.debug(body, 'B2BinPayNotificationsController.status:request.body');
-    Logger.debug(data, 'B2BinPayNotificationsController.status:body');
+    this.logger.debug(
+      'B2BinPayNotificationsController.status:request.body',
+      body,
+    );
+    this.logger.debug('B2BinPayNotificationsController.status:body', data);
     /* const attributes = data.data.attributes;
     const relationships = data.data.relationships;
     const transferId = relationships.transfer?.data?.id;
@@ -179,7 +185,7 @@ export class B2BinPayNotificationsController {
     @Ctx() ctx: RmqContext,
   ) {
     CommonService.ack(ctx);
-    Logger.log(typeIntegration, 'checkTransferInB2BinPay');
+    this.logger.debug('checkTransferInB2BinPay', typeIntegration);
     let accounts: ResponsePaginator<AccountDocument> = {
       nextPage: 1,
       prevPage: 0,
@@ -202,9 +208,9 @@ export class B2BinPayNotificationsController {
           },
         },
       );
-      Logger.log(
-        accounts.list.length,
+      this.logger.debug(
         `checkTransferInB2BinPay.totalElements - page ${accounts.currentPage}`,
+        accounts.list.length,
       );
       promises.push(this.checkAccounts(accounts));
     } while (accounts.nextPage !== accounts.firstPage);
@@ -238,10 +244,10 @@ export class B2BinPayNotificationsController {
           //     promises.push(this.checkTransfer(account, transfer));
           //   }
           // } else {
-          //   Logger.error(listTransfers, `checkAccounts-${responseAccount.id}`);
+          //   this.logger.error(listTransfers, `checkAccounts-${responseAccount.id}`);
           // }
         } catch (err) {
-          Logger.error(err, `checkAccounts-${responseAccount.id}`);
+          this.logger.error(`checkAccounts-${responseAccount.id}`, err);
         }
       }
     }
@@ -304,7 +310,7 @@ export class B2BinPayNotificationsController {
           isApprove: true,
           approvedAt: attributes.updated_at,
         } as unknown as TransferCreateDto;
-        Logger.log(dto.name, `checkTransfer-save-${transfer.id}`);
+        this.logger.debug(`checkTransfer-save-${transfer.id}`, dto.name);
         this.builder.emitTransferEventClient(
           EventsNamesTransferEnum.createOne,
           dto,

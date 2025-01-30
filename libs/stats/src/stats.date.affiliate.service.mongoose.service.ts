@@ -1,14 +1,18 @@
+import { Traceable } from '@amplication/opentelemetry-nestjs';
 import { CommonService } from '@common/common';
 import { BasicServiceModel } from '@common/common/models/basic-service.model';
 import { QuerySearchAnyDto } from '@common/common/models/query_search-any.dto';
-import { Inject, Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { StatsDateCreateDto } from '@stats/stats/dto/stats.date.create.dto';
 import { StatsDateUpdateDto } from '@stats/stats/dto/stats.date.update.dto';
 import { StatsDateAffiliateDocument } from '@stats/stats/entities/mongoose/stats.date.affiliate.schema';
-import { isArray, isDateString, isMongoId } from 'class-validator';
+import { isArray, isMongoId } from 'class-validator';
 import { ObjectId } from 'mongodb';
 import { Model, isObjectIdOrHexString } from 'mongoose';
+import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
+import { Logger } from 'winston';
 
+@Traceable()
 @Injectable()
 export class StatsDateAffiliateServiceMongooseService extends BasicServiceModel<
   StatsDateAffiliateDocument,
@@ -17,10 +21,11 @@ export class StatsDateAffiliateServiceMongooseService extends BasicServiceModel<
   StatsDateUpdateDto
 > {
   constructor(
+    @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
     @Inject('STATS_DATE_AFFILIATE_MODEL_MONGOOSE')
     private statsDateAffiliateModel: Model<StatsDateAffiliateDocument>,
   ) {
-    super(statsDateAffiliateModel);
+    super(logger, statsDateAffiliateModel);
   }
 
   async globalStats(query: QuerySearchAnyDto) {

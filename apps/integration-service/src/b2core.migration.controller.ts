@@ -1,17 +1,22 @@
 import {
   Controller,
-  Logger,
+  Inject,
   NotImplementedException,
   Post,
   UploadedFile,
   UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
+import { Logger } from 'winston';
 import { B2CoreMigrationService } from './services/b2core.migration.service';
 
 @Controller('b2core-migration')
 export class B2CoreMigrationController {
-  constructor(private readonly migrationService: B2CoreMigrationService) {}
+  constructor(
+    @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
+    private readonly migrationService: B2CoreMigrationService,
+  ) {}
 
   @Post('ignate')
   @UseInterceptors(FileInterceptor('file'))
@@ -25,7 +30,7 @@ export class B2CoreMigrationController {
   async migrationB2CoreVerification(@UploadedFile() file: Express.Multer.File) {
     //return new NotImplementedException('Method not implemented.');
 
-    Logger.log(`File: ${file.path}`);
+    this.logger.debug(`File: ${file.path}`);
     return this.migrationService.migrateB2CoreVerification(file);
   }
 }

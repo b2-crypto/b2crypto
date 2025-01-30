@@ -2,12 +2,7 @@ import { BuildersService } from '@builder/builders';
 import { CommonService } from '@common/common';
 import ResourcesEnum from '@common/common/enums/ResourceEnum';
 import { Cache, CACHE_MANAGER } from '@nestjs/cache-manager';
-import {
-  BadRequestException,
-  Inject,
-  Injectable,
-  Logger,
-} from '@nestjs/common';
+import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { PersonCreateDto } from '@person/person/dto/person.create.dto';
 import { UserServiceMongooseService } from '@user/user';
 import { UserPreRegisterDto } from '@user/user/dto/user.pre.register.dto';
@@ -17,10 +12,16 @@ import EventsNamesCategoryEnum from 'apps/category-service/src/enum/events.names
 import EventsNamesMessageEnum from 'apps/message-service/src/enum/events.names.message.enum';
 import EventsNamesPersonEnum from 'apps/person-service/src/enum/events.names.person.enum';
 import EventsNamesUserEnum from 'apps/user-service/src/enum/events.names.user.enum';
+import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
+import { Logger } from 'winston';
 
+import { Traceable } from '@amplication/opentelemetry-nestjs';
+
+@Traceable()
 @Injectable()
 export class AuthService {
   constructor(
+    @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     @Inject(BuildersService)
     private builder: BuildersService,
     @Inject(CACHE_MANAGER)
@@ -140,7 +141,7 @@ export class AuthService {
         resourceName: ResourcesEnum.USER,
       };
     }
-    Logger.log(data, 'OTP Sended');
+    this.logger.debug('OTP Sended', data);
     this.builder.emitMessageEventClient(
       EventsNamesMessageEnum.sendEmailOtpNotification,
       data,

@@ -145,11 +145,10 @@ config:
     secure: AAABANaXFHwmmoCr9CPJ35MMRuTxQF2YRfLos9yZIQB8UO97
   b2crypto-iac:V1_DB_NAME:
     secure: AAABAC0quouX6Rjufyvr7hg6YD1+COPOUNKY07KZYr+h2Q5ZJn0CJO7v2YfttrH+2w==
-  b2crypto-iac:AWS_ACCESS_KEY:
-    secure: AAABANiFuO8c5fxFo6qKXeFsaueV2wR5IvsjpD8uE+ojy1e6IelF+d4mW0EyY82sTzgy+Q==
-  b2crypto-iac:AWS_SECRET_KEY:
-    secure: AAABAGabyp3icdJdarqH7JzJLAJ7wbF/O0/Pd1mia1AaDT7/YKZ1BnjLa9yn3I0lfQEMImIU6IuhsJCuHgwSfsmMZJ/hAnlY
-  b2crypto-iac:TASK_CPU_MONOLITH: "2048"
-  b2crypto-iac:TASK_MEMORY_MONOLITH: "4096"
-  b2crypto-iac:MQ_UUID: 019499df-063c-7052-ab3b-7175606fde15
-  b2crypto-iac:SUBDOMAIN_PREFIX_RABBITMQ: rabbitmq
+  b2crypto-iac:TASK_CPU_MONOLITH: '2048'
+  b2crypto-iac:TASK_MEMORY_MONOLITH: '4096'
+  b2crypto-iac:APP_VERSION: 0.9.0
+  b2crypto-iac:OTLP_HOST:
+    secure: AAABACpu4seEBcbTIg7CjcxQSrOLcADnHYjhU46DW3G3Gsr/hwx2v+PB87G0D3WlATt5+cDpApBofgPNRrs=
+  b2crypto-iac:OTLP_API_KEY:
+    secure: AAABAKsDggxgNXssGuu4svhwawzAFp3wgMvgHKEV7QI3gRU4QOjyJ9AvRrZ5q/cyUtO8Wp5CvH4P6khH+Nvv3BEdJpU=

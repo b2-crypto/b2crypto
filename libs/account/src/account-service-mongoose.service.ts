@@ -9,6 +9,11 @@ import { AccountCreateDto } from './dto/account.create.dto';
 import { AccountUpdateDto } from './dto/account.update.dto';
 import { Account, AccountDocument } from './entities/mongoose/account.schema';
 
+import { Traceable } from '@amplication/opentelemetry-nestjs';
+import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
+import { Logger } from 'winston';
+
+@Traceable()
 @Injectable()
 export class AccountServiceMongooseService extends BasicServiceModel<
   AccountDocument,
@@ -17,10 +22,11 @@ export class AccountServiceMongooseService extends BasicServiceModel<
   AccountUpdateDto
 > {
   constructor(
+    @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
     @Inject('ACCOUNT_MODEL_MONGOOSE')
     private accountModel: Model<AccountDocument>,
   ) {
-    super(accountModel);
+    super(logger, accountModel);
   }
 
   getSearchText(account: Account) {

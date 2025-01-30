@@ -2,12 +2,17 @@ import { BasicServiceModel } from '@common/common/models/basic-service.model';
 import { FileCreateDto } from '@file/file//dto/file.create.dto';
 import { FileUpdateDto } from '@file/file//dto/file.update.dto';
 import { FileDocument } from '@file/file/entities/mongoose/file.schema';
-import { Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import * as fs from 'fs';
 import { Model } from 'mongoose';
+import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import * as path from 'path';
 import { promisify } from 'util';
+import { Logger } from 'winston';
 
+import { Traceable } from '@amplication/opentelemetry-nestjs';
+
+@Traceable()
 @Injectable()
 export class FileServiceMongooseService extends BasicServiceModel<
   FileDocument,
@@ -17,8 +22,11 @@ export class FileServiceMongooseService extends BasicServiceModel<
 > {
   // TODO[hender-19/10/2023] Define folderPath in environments params
   private folderPath = `storage/`;
-  constructor(@Inject('FILE_MODEL_MONGOOSE') fileModel: Model<FileDocument>) {
-    super(fileModel);
+  constructor(
+    @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
+    @Inject('FILE_MODEL_MONGOOSE') fileModel: Model<FileDocument>,
+  ) {
+    super(logger, fileModel);
   }
 
   arrayToCSV(data: Array<any>, writeToEnd = true, onlyHeaders = false) {

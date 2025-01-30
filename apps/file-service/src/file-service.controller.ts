@@ -3,7 +3,7 @@ import {
   Controller,
   Delete,
   Get,
-  Logger,
+  Inject,
   Param,
   ParseArrayPipe,
   Patch,
@@ -14,15 +14,10 @@ import {
 import { ApiTags } from '@nestjs/swagger';
 
 import { AllowAnon } from '@auth/auth/decorators/allow-anon.decorator';
-import { PolicyHandlerFileCreate } from '@auth/auth/policy/file/policity.handler.file.create';
-import { PolicyHandlerFileDelete } from '@auth/auth/policy/file/policity.handler.file.delete';
-import { PolicyHandlerFileRead } from '@auth/auth/policy/file/policity.handler.file.read';
-import { PolicyHandlerFileUpdate } from '@auth/auth/policy/file/policity.handler.file.update';
-import { CheckPoliciesAbility } from '@auth/auth/policy/policy.handler.ability';
 import { CommonService } from '@common/common';
+import { NoCache } from '@common/common/decorators/no-cache.decorator';
 import GenericServiceController from '@common/common/interfaces/controller.generic.interface';
 import { QuerySearchAnyDto } from '@common/common/models/query_search-any.dto';
-import { UpdateAnyDto } from '@common/common/models/update-any.dto';
 import { FileCreateDto } from '@file/file/dto/file.create.dto';
 import { FileUpdateDto } from '@file/file/dto/file.update.dto';
 import {
@@ -33,14 +28,18 @@ import {
   RmqContext,
 } from '@nestjs/microservices';
 import { Response as ExpressResponse } from 'express';
+import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
+import { Logger } from 'winston';
 import EventsNamesFileEnum from './enum/events.names.file.enum';
 import { FileServiceService } from './file-service.service';
-import { NoCache } from '@common/common/decorators/no-cache.decorator';
 
 @ApiTags('FILE')
 @Controller('file')
 export class FileServiceController implements GenericServiceController {
-  constructor(private readonly fileService: FileServiceService) {}
+  constructor(
+    @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
+    private readonly fileService: FileServiceService,
+  ) {}
 
   @Get('all')
   @NoCache()
@@ -140,7 +139,7 @@ export class FileServiceController implements GenericServiceController {
     try {
       await this.fileService.addDataToFile(dto);
     } catch (err) {
-      Logger.error(err);
+      this.logger.error(err.message, err);
     }
     CommonService.ack(ctx);
   }

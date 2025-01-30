@@ -16,7 +16,6 @@ import {
   Delete,
   Get,
   Inject,
-  Logger,
   Param,
   ParseArrayPipe,
   Patch,
@@ -35,6 +34,8 @@ import {
 import { ApiExcludeEndpoint, ApiTags } from '@nestjs/swagger';
 import EventsNamesStatusEnum from 'apps/status-service/src/enum/events.names.status.enum';
 import EventsNamesUserEnum from 'apps/user-service/src/enum/events.names.user.enum';
+import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
+import { Logger } from 'winston';
 import { AccountServiceService } from './account-service.service';
 import EventsNamesAccountEnum from './enum/events.names.account.enum';
 
@@ -42,6 +43,7 @@ import EventsNamesAccountEnum from './enum/events.names.account.enum';
 @Controller('accounts')
 export class AccountServiceController implements GenericServiceController {
   constructor(
+    @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
     private readonly accountService: AccountServiceService,
     @Inject(BuildersService)
     private readonly builder: BuildersService,
@@ -254,7 +256,7 @@ export class AccountServiceController implements GenericServiceController {
     @Ctx() ctx: RmqContext,
   ) {
     CommonService.ack(ctx);
-    Logger.log('Get balance report', AccountServiceController.name);
+    this.logger.debug('Get balance report', AccountServiceController.name);
     this.accountService.getBalanceReport(query);
     return true;
   }

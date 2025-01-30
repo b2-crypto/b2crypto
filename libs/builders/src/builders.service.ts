@@ -1,5 +1,5 @@
 import EventClientEnum from '@common/common/enums/EventsNameEnum';
-import { Inject, Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import EventsNamesAccountEnum from 'apps/account-service/src/enum/events.names.account.enum';
 import EventsNamesActivityEnum from 'apps/activity-service/src/enum/events.names.activity.enum';
@@ -21,11 +21,17 @@ import EventsNamesStatusEnum from 'apps/status-service/src/enum/events.names.sta
 import EventsNamesTrafficEnum from 'apps/traffic-service/src/enum/events.names.traffic.enum';
 import EventsNamesTransferEnum from 'apps/transfer-service/src/enum/events.names.transfer.enum';
 import EventsNamesUserEnum from 'apps/user-service/src/enum/events.names.user.enum';
+import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Observable, lastValueFrom, startWith } from 'rxjs';
+import { Logger } from 'winston';
 
+import { Traceable } from '@amplication/opentelemetry-nestjs';
+
+@Traceable()
 @Injectable()
 export class BuildersService {
   constructor(
+    @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     @Inject(EventClientEnum.SERVICE_NAME)
     private eventClient: ClientProxy,
     @Inject(EventClientEnum.ACCOUNT)
@@ -313,7 +319,7 @@ export class BuildersService {
       this.getPspAccountEventClient(),
       eventName,
       data,
-    ).catch((err) => Logger.error(err, `Event ${eventName}`));
+    ).catch((err) => this.logger.error(`Event ${eventName}`, err));
   }
   async getPromisePspEventClient<TResponse = any>(
     eventName: EventsNamesPspEnum,

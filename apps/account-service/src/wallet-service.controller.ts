@@ -30,7 +30,6 @@ import {
   Delete,
   Get,
   Inject,
-  Logger,
   NotImplementedException,
   Param,
   Patch,
@@ -67,22 +66,25 @@ import { Cache } from 'cache-manager';
 import { isMongoId } from 'class-validator';
 import { SwaggerSteakeyConfigEnum } from 'libs/config/enum/swagger.stakey.config.enum';
 import { mongo } from 'mongoose';
+import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
+import { Logger } from 'winston';
 import { AccountServiceController } from './account-service.controller';
 import { AccountServiceService } from './account-service.service';
 import { WithdrawalExecuteDto } from './dtos/WithdrawalExecuteDto';
 import { WithdrawalPreorderDto } from './dtos/WithdrawalPreorderDto';
 import EventsNamesAccountEnum from './enum/events.names.account.enum';
-import { WalletServiceService } from './wallet-service.service';
-import { WithdrawalError } from './utils/errors';
-import { WithdrawalResponse } from './interfaces/withdrawalResponse';
 import { PreorderResponse } from './interfaces/preorderResponse';
+import { WithdrawalResponse } from './interfaces/withdrawalResponse';
+import { WithdrawalError } from './utils/errors';
+import { WalletServiceService } from './wallet-service.service';
 
 @ApiTags(SwaggerSteakeyConfigEnum.TAG_WALLET)
 @Controller('wallets')
 export class WalletServiceController extends AccountServiceController {
   private cryptoType = null;
-  private readonly logger = new Logger(WalletServiceController.name);
+
   constructor(
+    @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
     private readonly walletService: AccountServiceService,
     @Inject(WalletServiceService)
     private readonly walletServiceService: WalletServiceService,
@@ -94,7 +96,7 @@ export class WalletServiceController extends AccountServiceController {
     private readonly configService: ConfigService,
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) {
-    super(walletService, ewalletBuilder);
+    super(logger, walletService, ewalletBuilder);
     this.getFireblocksType();
   }
 
@@ -396,7 +398,7 @@ export class WalletServiceController extends AccountServiceController {
   }
 
   private async sendNotification(createdWallet: any, user: User) {
-    Logger.debug('Sending notification new wallet');
+    this.logger.debug('Sending notification new wallet');
     const emailData = {
       destinyText: user.email,
       vars: {
@@ -977,7 +979,10 @@ export class WalletServiceController extends AccountServiceController {
                 vaultTo.accountId,
               );
             }
-            Logger.debug(JSON.stringify(rta.data, null, 2), 'rta from -> to');
+            this.logger.debug(
+              'rta from -> to',
+              JSON.stringify(rta.data, null, 2),
+            );
             promisesTx.push(
               this.walletService.customUpdateOne({
                 id: to._id,
@@ -997,7 +1002,10 @@ export class WalletServiceController extends AccountServiceController {
                 true,
               );
             }
-            Logger.debug(JSON.stringify(rta.data, null, 2), 'rta from -> to?');
+            this.logger.debug(
+              'rta from -> to?',
+              JSON.stringify(rta.data, null, 2),
+            );
           }
           promisesTx.push(
             this.walletService.customUpdateOne({
@@ -1017,9 +1025,9 @@ export class WalletServiceController extends AccountServiceController {
             ),
           );
           const rtaProm = await Promise.all(promisesTx);
-          Logger.debug(
-            JSON.stringify(rtaProm, null, 2),
+          this.logger.debug(
             'Update amount custodial',
+            JSON.stringify(rtaProm, null, 2),
           );
         } else {
           if (isProd) {
@@ -1057,9 +1065,9 @@ export class WalletServiceController extends AccountServiceController {
               vaultFrom.accountId,
               vaultBrandWithdraw.accountId,
             );
-            Logger.debug(
-              JSON.stringify(rta.data, null, 2),
+            this.logger.debug(
               'rta from -> brand',
+              JSON.stringify(rta.data, null, 2),
             );
             const promisesTx = [];
             promisesTx.push(
@@ -1097,9 +1105,9 @@ export class WalletServiceController extends AccountServiceController {
                   },
                 }),
               );
-              Logger.debug(
-                JSON.stringify(rta.data, null, 2),
+              this.logger.debug(
                 'rta brand -> to',
+                JSON.stringify(rta.data, null, 2),
               );
             } else {
               rta = await cryptoType.createTransaction(
@@ -1118,9 +1126,9 @@ export class WalletServiceController extends AccountServiceController {
                   },
                 }),
               );
-              Logger.debug(
-                JSON.stringify(rta.data, null, 2),
+              this.logger.debug(
                 'rta brand -> to?',
+                JSON.stringify(rta.data, null, 2),
               );
             }
             promisesTx.push(
@@ -1133,18 +1141,24 @@ export class WalletServiceController extends AccountServiceController {
               ),
             );
             const rtaProm = await Promise.all(promisesTx);
-            Logger.debug(
-              JSON.stringify(rtaProm, null, 2),
+            this.logger.debug(
               'Update amount custodial to? -> brand',
+              JSON.stringify(rtaProm, null, 2),
             );
           }
         }
       } catch (error) {
-        Logger.error(error.message, 'Error creating transaction on Fireblocks');
+        this.logger.error(
+          'Error creating transaction on Fireblocks',
+          error.message,
+        );
         throw new BadRequestException('Sorry, something went wrong');
       }
       if (!rta && isProd) {
-        Logger.error(JSON.stringify(rta, null, 2), 'Error rta on Fireblocks');
+        this.logger.error(
+          'Error rta on Fireblocks',
+          JSON.stringify(rta, null, 2),
+        );
         throw new BadRequestException('Sorry, something went wrong');
       }
       if (to?._id) {
@@ -1433,7 +1447,7 @@ export class WalletServiceController extends AccountServiceController {
     const valuts = {};
     const wallets = {};
     const promises = [];
-    Logger.log('Start sweep omnibus');
+    this.logger.debug('Start sweep omnibus');
     do {
       walletList = await this.ewalletBuilder.getPromiseAccountEventClient(
         EventsNamesAccountEnum.findAll,
@@ -1510,16 +1524,16 @@ export class WalletServiceController extends AccountServiceController {
               valuts[brandId].deposit.accountId,
             )
             .catch((err) => {
-              Logger.error(
-                err,
+              this.logger.error(
                 `Catch sweep error deposit ${vaultFrom.name}_${from.name}`,
+                err,
               );
               return null;
             })
             .then((rta) => {
-              Logger.debug(
-                JSON.stringify(rta?.data, null, 2),
+              this.logger.debug(
                 `rta sweep deposit ${vaultFrom.name}_${from.name}`,
+                JSON.stringify(rta?.data, null, 2),
               );
               return Promise.all([
                 this.walletService.customUpdateOne({
@@ -1545,16 +1559,16 @@ export class WalletServiceController extends AccountServiceController {
               valuts[brandId].withdraw.accountId,
             )
             .catch((err) => {
-              Logger.error(
-                err,
+              this.logger.error(
                 `Catch sweep error withdrawal ${vaultFrom.name}_${from.name}`,
+                err,
               );
               return null;
             })
             .then((rta) => {
-              Logger.debug(
-                JSON.stringify(rta?.data, null, 2),
+              this.logger.debug(
                 `rta sweep withdrawal ${vaultFrom.name}_${from.name}`,
+                JSON.stringify(rta?.data, null, 2),
               );
               return Promise.all([
                 this.walletService.customUpdateOne({
@@ -1575,7 +1589,7 @@ export class WalletServiceController extends AccountServiceController {
       }
     } while (walletList.nextPage != 1);
     await Promise.all(promises);
-    Logger.log('Finish sweep omnibus');
+    this.logger.debug('Finish sweep omnibus');
   }
 
   private async getWallet(
@@ -1671,24 +1685,25 @@ export class WalletServiceController extends AccountServiceController {
   }
 
   @Post('external-withdrawal-preorder')
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Create withdrawal preorder',
-    description: 'Creates a preorder for withdrawing funds. Validates account, balance, and fees.'
+    description:
+      'Creates a preorder for withdrawing funds. Validates account, balance, and fees.',
   })
-  @ApiResponse({ 
-    status: 201, 
+  @ApiResponse({
+    status: 201,
     description: 'Preorder created successfully',
   })
-  @ApiResponse({ 
-    status: 400, 
-    description: 'Bad Request - Invalid parameters or business rules violation' 
+  @ApiResponse({
+    status: 400,
+    description: 'Bad Request - Invalid parameters or business rules violation',
   })
-  @ApiResponse({ 
-    status: 500, 
-    description: 'Internal server error' 
+  @ApiResponse({
+    status: 500,
+    description: 'Internal server error',
   })
   async createPreorder(
-    @Body(new ValidationPipe({ whitelist: true })) dto: WithdrawalPreorderDto
+    @Body(new ValidationPipe({ whitelist: true })) dto: WithdrawalPreorderDto,
   ): Promise<PreorderResponse> {
     try {
       return await this.walletServiceService.validatePreorder(dto);
@@ -1698,7 +1713,7 @@ export class WalletServiceController extends AccountServiceController {
         throw new BadRequestException({
           code: error.code,
           message: error.message,
-          details: error.details
+          details: error.details,
         });
       }
       throw error;
@@ -1706,24 +1721,25 @@ export class WalletServiceController extends AccountServiceController {
   }
 
   @Post('external-withdrawal-confirm')
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Execute withdrawal',
-    description: 'Executes a previously created withdrawal preorder after validations.' 
+    description:
+      'Executes a previously created withdrawal preorder after validations.',
   })
-  @ApiResponse({ 
-    status: 201, 
-    description: 'Withdrawal executed successfully'
+  @ApiResponse({
+    status: 201,
+    description: 'Withdrawal executed successfully',
   })
-  @ApiResponse({ 
-    status: 400, 
-    description: 'Bad Request - Invalid preorder or business rules violation' 
+  @ApiResponse({
+    status: 400,
+    description: 'Bad Request - Invalid preorder or business rules violation',
   })
-  @ApiResponse({ 
-    status: 500, 
-    description: 'Internal server error' 
+  @ApiResponse({
+    status: 500,
+    description: 'Internal server error',
   })
   async executeWithdrawal(
-    @Body(new ValidationPipe({ whitelist: true })) dto: WithdrawalExecuteDto
+    @Body(new ValidationPipe({ whitelist: true })) dto: WithdrawalExecuteDto,
   ): Promise<WithdrawalResponse> {
     try {
       return await this.walletServiceService.executeWithdrawal(dto);
@@ -1733,7 +1749,7 @@ export class WalletServiceController extends AccountServiceController {
         throw new BadRequestException({
           code: error.code,
           message: error.message,
-          details: error.details
+          details: error.details,
         });
       }
       throw error;

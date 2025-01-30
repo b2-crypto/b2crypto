@@ -10,6 +10,11 @@ import { StatsDateAllCreateDto } from './dto/stats.date.all.create.dto';
 import { StatsDateAllUpdateDto } from './dto/stats.date.all.update.dto';
 import { StatsDateDocument } from './entities/mongoose/stats.date.schema';
 
+import { Traceable } from '@amplication/opentelemetry-nestjs';
+import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
+import { Logger } from 'winston';
+
+@Traceable()
 @Injectable()
 export class StatsDateServiceMongooseService extends BasicServiceModel<
   StatsDateDocument,
@@ -18,12 +23,13 @@ export class StatsDateServiceMongooseService extends BasicServiceModel<
   StatsDateAllUpdateDto
 > {
   constructor(
+    @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
     @Inject('STATS_DATE_MODEL_MONGOOSE')
     private statsDateModel: Model<StatsDateDocuments>,
     @Inject('MONGOOSE_CONNECTION')
     private readonly connection: Connection,
   ) {
-    super(statsDateModel);
+    super(logger, statsDateModel);
   }
 
   async startSession(): Promise<ClientSession> {

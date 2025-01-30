@@ -2,6 +2,9 @@ import { SumsubProcessHeaderDto } from '@integration/integration/identity/generi
 import { SumsubEnum } from '@integration/integration/identity/generic/domain/sumsub.enum';
 import { ExecutionContext, Injectable } from '@nestjs/common';
 
+import { Traceable } from '@amplication/opentelemetry-nestjs';
+
+@Traceable()
 @Injectable()
 export class SumsubHttpUtils {
   extractRequestHeaders(context: ExecutionContext): SumsubProcessHeaderDto {

@@ -1,8 +1,7 @@
 import { AffiliateServiceMongooseService } from '@affiliate/affiliate';
+import { BrandDocument } from '@brand/brand/entities/mongoose/brand.schema';
 import { BuildersService } from '@builder/builders';
 import dbIntegrationEnum from '@builder/builders/enums/db-integration.enum';
-import { BrandServiceMongooseService } from 'libs/brand/src';
-import { BrandDocument } from '@brand/brand/entities/mongoose/brand.schema';
 import { CategoryServiceMongooseService } from '@category/category';
 import { CategoryDocument } from '@category/category/entities/mongoose/category.schema';
 import { CommonService } from '@common/common';
@@ -20,6 +19,7 @@ import { PersonServiceMongooseService } from '@person/person';
 import { PersonDocument } from '@person/person/entities/mongoose/person.schema';
 import { StatusServiceMongooseService } from '@status/status';
 import { StatusDocument } from '@status/status/entities/mongoose/status.schema';
+import { BrandServiceMongooseService } from 'libs/brand/src';
 import { Model, isValidObjectId } from 'mongoose';
 import { AffiliateDocument } from '../../affiliate/src/infrastructure/mongoose/affiliate.schema';
 import { PersonCreateDto } from '../../person/src/dto/person.create.dto';
@@ -27,6 +27,11 @@ import { LeadCreateDto } from './dto/lead.create.dto';
 import { LeadUpdateDto } from './dto/lead.update.dto';
 import { Lead, LeadDocument } from './entities/mongoose/lead.schema';
 
+import { Traceable } from '@amplication/opentelemetry-nestjs';
+import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
+import { Logger } from 'winston';
+
+@Traceable()
 @Injectable()
 export class LeadServiceMongooseService extends BasicServiceModel<
   LeadDocument,
@@ -35,6 +40,7 @@ export class LeadServiceMongooseService extends BasicServiceModel<
   LeadUpdateDto
 > {
   constructor(
+    @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
     @Inject(BuildersService)
     private builder: BuildersService,
     @Inject('LEAD_MODEL_MONGOOSE')
@@ -52,7 +58,7 @@ export class LeadServiceMongooseService extends BasicServiceModel<
     @Inject(CategoryServiceMongooseService)
     private categoryService: CategoryServiceMongooseService,
   ) {
-    super(leadModel);
+    super(logger, leadModel);
   }
 
   async findAll(query) {

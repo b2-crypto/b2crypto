@@ -9,11 +9,13 @@ import {
   Body,
   Controller,
   HttpCode,
-  Logger,
+  Inject,
   Post,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
+import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
+import { Logger } from 'winston';
 import { PomeloIntegrationShippingService } from './services/pomelo.integration.shipping.service';
 
 @Controller()
@@ -21,6 +23,7 @@ import { PomeloIntegrationShippingService } from './services/pomelo.integration.
 @UseInterceptors(PomeloSignatureInterceptor)
 export class PomeloShippingController {
   constructor(
+    @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     private readonly shippingService: PomeloIntegrationShippingService,
   ) {}
 
@@ -29,7 +32,7 @@ export class PomeloShippingController {
   async handleShippingNotification(
     @Body() notification: ShippingNotifications,
   ): Promise<any> {
-    Logger.log(
+    this.logger.debug(
       `Idempotency: ${notification.idempotency_key}`,
       'NotificationHandler - handleShippingNotification',
     );
@@ -39,7 +42,7 @@ export class PomeloShippingController {
   @Post(PomeloEnum.POMELO_SHIPPING_CARD_EVENTS)
   @HttpCode(204)
   async handleCardEvents(@Body() event: CardEvents): Promise<any> {
-    Logger.log(`Idempotency: ${event.idempotency_key}`, 'EventHandler');
+    this.logger.debug(`Idempotency: ${event.idempotency_key}`, 'EventHandler');
     return await this.shippingService.handleCardEvents(event);
   }
 }

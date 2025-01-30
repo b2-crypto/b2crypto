@@ -8,7 +8,7 @@ import { MessageServiceMongooseService } from '@message/message';
 import { MessageCreateDto } from '@message/message/dto/message.create.dto';
 import { MessageUpdateDto } from '@message/message/dto/message.update.dto';
 import { MailerService } from '@nestjs-modules/mailer';
-import { Inject, Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import EventsNamesAccountEnum from 'apps/account-service/src/enum/events.names.account.enum';
 import EventsNamesCrmEnum from 'apps/crm-service/src/enum/events.names.crm.enum';
@@ -16,16 +16,22 @@ import EventsNamesLeadEnum from 'apps/lead-service/src/enum/events.names.lead.en
 import EventsNamesUserEnum from 'apps/user-service/src/enum/events.names.user.enum';
 import axios from 'axios';
 import { isEmail } from 'class-validator';
+import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import * as pug from 'pug';
+import { Logger } from 'winston';
 import { EmailMessageBuilder } from './email-message.builder';
 import TemplatesMessageEnum from './enum/templates.message.enum';
 
+import { Traceable } from '@amplication/opentelemetry-nestjs';
+
+@Traceable()
 @Injectable()
 export class MessageServiceService {
   private apiKey: string;
   private url: string;
 
   constructor(
+    @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     @Inject(ConfigService)
     readonly configService: ConfigService,
     @Inject(BuildersService)
@@ -268,7 +274,6 @@ export class MessageServiceService {
       // if (
       //   this.configService.get<string>('ENVIRONMENT') !== EnvironmentEnum.stage
       // ) {
-      //   Logger.debug(message.destinyText, 'Sended email');
       //   return { success: true };
       // }
 
@@ -297,7 +302,7 @@ export class MessageServiceService {
 
       return { success: true };
     } catch (error) {
-      Logger.error(error, 'Error sending email:');
+      this.logger.error('Error sending email:', error);
       return { success: false, error: error.message };
     }
   }
@@ -348,7 +353,7 @@ export class MessageServiceService {
       }
       return null;
     } catch (err) {
-      Logger.error(err, 'Error sending email');
+      this.logger.error('Error sending email', err);
       return null;
     }
   }

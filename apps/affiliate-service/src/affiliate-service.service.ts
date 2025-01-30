@@ -10,11 +10,9 @@ import {
   BadRequestException,
   Inject,
   Injectable,
-  Logger,
   NotImplementedException,
 } from '@nestjs/common';
 import { ConfigCheckStatsDto } from '@stats/stats/dto/config.check.stats.dto';
-import CheckStatsType from '../../../libs/stats/src/enum/check.stats.type';
 import { TrafficCreateDto } from '@traffic/traffic/dto/traffic.create.dto';
 import { TransferInterface } from '@transfer/transfer/entities/transfer.interface';
 import EventsNamesBrandEnum from 'apps/brand-service/src/enum/events.names.brand.enum';
@@ -22,12 +20,19 @@ import EventsNamesLeadEnum from 'apps/lead-service/src/enum/events.names.lead.en
 import EventsNamesTrafficEnum from 'apps/traffic-service/src/enum/events.names.traffic.enum';
 import EventsNamesUserEnum from 'apps/user-service/src/enum/events.names.user.enum';
 import { isMongoId } from 'class-validator';
+import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
+import { Logger } from 'winston';
+import CheckStatsType from '../../../libs/stats/src/enum/check.stats.type';
 import { MoveTrafficAffiliateDto } from './dto/move.traffic.affiliate.dto';
 import EventsNamesAffiliateEnum from './enum/events.names.affiliate.enum';
 
+import { Traceable } from '@amplication/opentelemetry-nestjs';
+
+@Traceable()
 @Injectable()
 export class AffiliateServiceService {
   constructor(
+    @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     @Inject(BuildersService)
     private readonly builder: BuildersService,
     @Inject(AffiliateServiceMongooseService)
@@ -237,14 +242,14 @@ export class AffiliateServiceService {
             affiliate._id,
           );
         }
-        Logger.debug(
-          `Sended Page ${affiliates.currentPage}/${affiliates.lastPage}`,
+        this.logger.debug(
           'Check all affiliates',
+          `Sended Page ${affiliates.currentPage}/${affiliates.lastPage}`,
         );
         nextPage = affiliates.nextPage;
       } while (nextPage != 1);
     } else {
-      Logger.debug(affiliateId, AffiliateServiceService.name);
+      this.logger.debug(affiliateId, AffiliateServiceService.name);
       // TODO[hender - 2024/02/21] Update stats affiliate
       this.builder.emitLeadEventClient(
         EventsNamesLeadEnum.checkLeadsForAffiliateStats,
@@ -257,7 +262,7 @@ export class AffiliateServiceService {
   }
 
   async checkStatsTransfer(transfer: TransferInterface) {
-    Logger.debug(transfer, AffiliateServiceService.name);
+    this.logger.debug(AffiliateServiceService.name, transfer);
     this.checkStats({
       affiliateId: transfer.affiliate,
       checkType: CheckStatsType.LEAD,

@@ -1,9 +1,12 @@
 import { QuerySearchAnyDto } from '@common/common/models/query_search-any.dto';
+import { GroupServiceMongooseService } from '@group/group';
 import { GroupCreateDto } from '@group/group/dto/group.create.dto';
 import { GroupUpdateDto } from '@group/group/dto/group.update.dto';
-import { GroupServiceMongooseService } from '@group/group';
 import { Inject, Injectable } from '@nestjs/common';
 
+import { Traceable } from '@amplication/opentelemetry-nestjs';
+
+@Traceable()
 @Injectable()
 export class GroupServiceService {
   constructor(

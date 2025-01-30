@@ -4,8 +4,6 @@ const config = new pulumi.Config();
 
 export const SECRETS = pulumi
   .all([
-    config.requireSecret('AWS_ACCESS_KEY'),
-    config.requireSecret('AWS_SECRET_KEY'),
     config.requireSecret('DATABASE_URL'),
     config.requireSecret('RABBIT_MQ_HOST'),
     config.requireSecret('RABBIT_MQ_USERNAME'),
@@ -42,11 +40,11 @@ export const SECRETS = pulumi
     config.requireSecret('V1_DB_HOST'),
     config.requireSecret('V1_DB_PORT'),
     config.requireSecret('V1_DB_NAME'),
+    config.requireSecret('OTLP_HOST'),
+    config.requireSecret('OTLP_API_KEY'),
   ])
   .apply(
     ([
-      ACCESS_KEY,
-      SECRET_KEY,
       DATABASE_URL,
       RABBIT_MQ_HOST,
       RABBIT_MQ_USERNAME,
@@ -83,9 +81,9 @@ export const SECRETS = pulumi
       V1_DB_HOST,
       V1_DB_PORT,
       V1_DB_NAME,
+      OTLP_HOST,
+      OTLP_API_KEY,
     ]) => ({
-      ACCESS_KEY,
-      SECRET_KEY,
       DATABASE_URL,
       RABBIT_MQ_HOST,
       RABBIT_MQ_USERNAME,
@@ -122,6 +120,8 @@ export const SECRETS = pulumi
       V1_DB_HOST,
       V1_DB_PORT,
       V1_DB_NAME,
+      OTLP_HOST,
+      OTLP_API_KEY,
     }),
   );
 
@@ -133,6 +133,7 @@ export const CREATED_BY = 'Pulumi IaC';
 export const ENVIRONMENT = config.require('ENVIRONMENT');
 export const PORT = config.require('PORT');
 export const APP_NAME = config.require('APP_NAME');
+export const APP_VERSION = config.require('APP_VERSION');
 export const GOOGLE_2FA = config.require('GOOGLE_2FA');
 export const DATABASE_NAME = config.require('DATABASE_NAME');
 export const RABBIT_MQ_PORT = config.require('RABBIT_MQ_PORT');
@@ -200,10 +201,6 @@ export const SUBDOMAIN_PREFIX_OPTL_COLLECTOR = config.require(
 
 export const SUBDOMAIN_PREFIX_OPTL_UI = config.require(
   'SUBDOMAIN_PREFIX_OPTL_UI',
-);
-
-export const SUBDOMAIN_PREFIX_RABBITMQ = config.require(
-  'SUBDOMAIN_PREFIX_RABBITMQ',
 );
 
 export const OPTL_OPEN_SEARCH_INSTANCE_TYPE = config.require(

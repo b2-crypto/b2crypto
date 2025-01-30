@@ -1,10 +1,18 @@
-
-import { Injectable, Logger } from '@nestjs/common';
-import * as sftpClient from 'ssh2-sftp-client';
+import { Inject, Injectable } from '@nestjs/common';
 import * as fs from 'fs';
+import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
+import * as sftpClient from 'ssh2-sftp-client';
+import { Logger } from 'winston';
 
+import { Traceable } from '@amplication/opentelemetry-nestjs';
+
+@Traceable()
 @Injectable()
 export class PomeloIntegrationSFTPService {
+  constructor(
+    @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
+  ) {}
+
   private client = new sftpClient();
   private sshKey = fs.readFileSync(
     `./sftp/pomelo-${process.env.ENVIRONMENT?.toLocaleLowerCase()}`,
@@ -20,11 +28,11 @@ export class PomeloIntegrationSFTPService {
   };
 
   private async connect() {
-    Logger.log(`About to connect`, PomeloIntegrationSFTPService.name);
+    this.logger.debug(`About to connect`, PomeloIntegrationSFTPService.name);
     try {
       await this.client.connect(this.sftpProps);
     } catch (error) {
-      Logger.error(error, PomeloIntegrationSFTPService.name);
+      this.logger.error(PomeloIntegrationSFTPService.name, error);
     }
   }
 
@@ -36,23 +44,26 @@ export class PomeloIntegrationSFTPService {
   }
 
   private async storeFile(remoteFile: string, localFile: string) {
-    Logger.log(
-      `Storing remote file ${remoteFile} to ${localFile}`,
+    this.logger.debug(
       PomeloIntegrationSFTPService.name,
+      `Storing remote file ${remoteFile} to ${localFile}`,
     );
     try {
       await this.client.get(remoteFile, localFile);
     } catch (error) {
-      Logger.error(error, PomeloIntegrationSFTPService.name);
+      this.logger.error(PomeloIntegrationSFTPService.name, error);
     }
   }
 
   private async endConnection() {
-    Logger.log(`Closing SFTP connection`, PomeloIntegrationSFTPService.name);
+    this.logger.debug(
+      `Closing SFTP connection`,
+      PomeloIntegrationSFTPService.name,
+    );
     try {
       await this.client.end();
     } catch (error) {
-      Logger.error(error, PomeloIntegrationSFTPService.name);
+      this.logger.error(PomeloIntegrationSFTPService.name, error);
     }
   }
 
@@ -71,7 +82,7 @@ export class PomeloIntegrationSFTPService {
       );
       this.endConnection();
     } catch (error) {
-      Logger.error(error, PomeloIntegrationSFTPService.name);
+      this.logger.error(PomeloIntegrationSFTPService.name, error);
     }
   }
 }

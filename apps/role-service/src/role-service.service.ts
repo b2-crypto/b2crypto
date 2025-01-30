@@ -1,9 +1,12 @@
 import { QuerySearchAnyDto } from '@common/common/models/query_search-any.dto';
+import { Inject, Injectable } from '@nestjs/common';
+import { RoleServiceMongooseService } from '@role/role';
 import { RoleCreateDto } from '@role/role/dto/role.create.dto';
 import { RoleUpdateDto } from '@role/role/dto/role.update.dto';
-import { RoleServiceMongooseService } from '@role/role';
-import { Inject, Injectable } from '@nestjs/common';
 
+import { Traceable } from '@amplication/opentelemetry-nestjs';
+
+@Traceable()
 @Injectable()
 export class RoleServiceService {
   constructor(
