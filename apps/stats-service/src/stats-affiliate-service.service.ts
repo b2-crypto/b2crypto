@@ -40,6 +40,9 @@ import { isArray, isDate, isDateString, isEmpty } from 'class-validator';
 import { firstValueFrom } from 'rxjs';
 import { StatsDateDocuments, StatsDateMongoose } from './enum/stats.date.type';
 
+import { Traceable } from '@amplication/opentelemetry-nestjs';
+
+@Traceable()
 @Injectable()
 export class StatsAffiliateServiceService
   implements BasicMicroserviceService<StatsDateDocuments>

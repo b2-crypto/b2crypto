@@ -14,9 +14,9 @@ import { AppHttpModule } from './app.http.module';
 
 import { OpenAPIObject } from '@nestjs/swagger';
 import { PathsObject } from '@nestjs/swagger/dist/interfaces/open-api-spec.interface';
-import { TransferServiceModule } from 'apps/transfer-service/src/transfer-service.module';
-import { PersonServiceModule } from 'apps/person-service/src/person-service.module';
 import { AccountServiceModule } from 'apps/account-service/src/account-service.module';
+import { PersonServiceModule } from 'apps/person-service/src/person-service.module';
+import { TransferServiceModule } from 'apps/transfer-service/src/transfer-service.module';
 import { SwaggerSteakeyConfigEnum } from 'libs/config/enum/swagger.stakey.config.enum';
 
 async function bootstrap(port?: number | string) {

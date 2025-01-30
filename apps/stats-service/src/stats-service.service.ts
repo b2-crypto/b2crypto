@@ -1,19 +1,12 @@
 import { BuildersService } from '@builder/builders';
 import { CategoryDocument } from '@category/category/entities/mongoose/category.schema';
 import { CommonService } from '@common/common';
-import EventClientEnum from '@common/common/enums/EventsNameEnum';
 import PeriodEnum from '@common/common/enums/PeriodEnum';
 import TagEnum from '@common/common/enums/TagEnum';
 import { ResponsePaginator } from '@common/common/interfaces/response-pagination.interface';
 import { QuerySearchAnyDto } from '@common/common/models/query_search-any.dto';
 import { LeadDocument } from '@lead/lead/entities/mongoose/lead.schema';
-import {
-  BadRequestException,
-  Inject,
-  Injectable,
-  Logger,
-} from '@nestjs/common';
-import { ClientProxy } from '@nestjs/microservices';
+import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { PspAccountDocument } from '@psp-account/psp-account/entities/mongoose/psp-account.schema';
 import { PspDocument } from '@psp/psp/entities/mongoose/psp.schema';
 import { StatsDateAllCreateDto } from '@stats/stats/dto/stats.date.all.create.dto';
@@ -39,16 +32,23 @@ import EventsNamesStatusEnum from 'apps/status-service/src/enum/events.names.sta
 import EventsNamesTransferEnum from 'apps/transfer-service/src/enum/events.names.transfer.enum';
 import { isArray, isDateString, isEmpty } from 'class-validator';
 import { ClientSession } from 'mongoose';
+import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
+import { Logger } from 'winston';
 import { StatsDateMongoose } from './enum/stats.date.type';
 import StatsParamNameEnum from './enum/stats.param.names.enum';
 import StatusLeadEnum from './enum/status.lead.enum';
 import StatusTransferEnum from './enum/status.transfer.enum';
 
+import { Traceable } from '@amplication/opentelemetry-nestjs';
+
+@Traceable()
 @Injectable()
 export class StatsServiceService {
   private builder: BuildersService;
   private statusFtd: StatusDocument;
   constructor(
+    @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
+
     @Inject(BuildersService)
     builder: BuildersService,
 
@@ -124,11 +124,14 @@ export class StatsServiceService {
           lead.dateRetention,
           StatusLeadEnum.RET,
         );
-        Logger.debug(`${++_i} / ${leadsPage.totalElements}`, 'Progress lead');
+        this.logger.debug(
+          'Progress lead',
+          `${++_i} / ${leadsPage.totalElements}`,
+        );
       }
-      Logger.debug(
-        `${query.page} / ${leadsPage.lastPage}`,
+      this.logger.debug(
         'Progress lead page',
+        `${query.page} / ${leadsPage.lastPage}`,
       );
       query.page = leadsPage.nextPage;
     } while (query.page != 1);
@@ -568,7 +571,7 @@ export class StatsServiceService {
         r[a.lead?._id].push(a);
       } else {
         //r['null'].push(a);
-        Logger.debug(a, 'No lead');
+        this.logger.debug('No lead', a);
       }
       return r;
     }, Object.create(null));
@@ -775,9 +778,8 @@ export class StatsServiceService {
         break;
     }
     const amount = transfer.amount * sign;
-    //Logger.debug(lead.email, 'Lead email before counted');
+
     if (!hasCountedLead) {
-      //Logger.debug(lead.email, 'Lead email counted');
       documentStats.quantityLeads++;
       if (transfer.isApprove) {
         if (lead?.crmDepartment.toString() === retentionDpt._id.toString()) {
@@ -1106,7 +1108,7 @@ export class StatsServiceService {
     try {
       return documentStats.save();
     } catch (error) {
-      Logger.error(error, 'Error to create stats');
+      this.logger.error('Error to create stats', error);
       return null;
     }
   }
@@ -1134,7 +1136,7 @@ export class StatsServiceService {
     try {
       return documentStats.save();
     } catch (error) {
-      Logger.error(error, 'Error to create stats');
+      this.logger.error('Error to create stats', error);
       return null;
     }
   }

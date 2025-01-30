@@ -8,11 +8,13 @@ import {
   Body,
   Controller,
   HttpCode,
-  Logger,
+  Inject,
   Post,
   Req,
   UseGuards,
 } from '@nestjs/common';
+import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
+import { Logger } from 'winston';
 import { SumsubApplicantReviewed } from './../../../libs/integration/src/identity/generic/domain/process/sumsub.applicant.reviewed.dto';
 import { SumsubNotificationIntegrationService } from './services/sumsub.notification.integration.service';
 
@@ -21,6 +23,7 @@ import { SumsubNotificationIntegrationService } from './services/sumsub.notifica
 //@UseInterceptors(SumsubSignatureInterceptor)
 export class SumsubNotificationIntegrationController {
   constructor(
+    @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     private readonly sumsubService: SumsubNotificationIntegrationService,
   ) {}
 
@@ -32,8 +35,8 @@ export class SumsubNotificationIntegrationController {
     @Body() notification: SumsubApplicantReviewed,
   ) {
     await this.sumsubService.validateClient(req.clientApi);
-    Logger.log(notification, 'Notification Reviewed body');
-    Logger.log(req.headers, 'Notification Reviewed headers');
+    this.logger.debug('Notification Reviewed body', notification);
+    this.logger.debug('Notification Reviewed headers', req.headers);
     await this.sumsubService.updateUserByReviewed(notification);
     return {
       statusCode: 200,
@@ -48,8 +51,8 @@ export class SumsubNotificationIntegrationController {
     @Req() req: Request,
     @Body() notification: SumsubApplicantPending,
   ): Promise<any> {
-    Logger.log(notification, 'Notification Reviewed body');
-    Logger.log(req.headers, 'Notification Reviewed headers');
+    this.logger.debug('Notification Reviewed body', notification);
+    this.logger.debug('Notification Reviewed headers', req.headers);
     await this.sumsubService.updateUserByPending(notification);
     return {
       statusCode: 200,
@@ -64,8 +67,8 @@ export class SumsubNotificationIntegrationController {
     @Req() req: Request,
     @Body() notification: SumsubApplicantOnHold,
   ): Promise<any> {
-    Logger.log(notification, 'Notification Reviewed body');
-    Logger.log(req.headers, 'Notification Reviewed headers');
+    this.logger.debug('Notification Reviewed body', notification);
+    this.logger.debug('Notification Reviewed headers', req.headers);
     await this.sumsubService.updateUserByOnHold(notification);
     return {
       statusCode: 200,

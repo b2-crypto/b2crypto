@@ -3,9 +3,8 @@ import { SumsubApplicantOnHold } from '@integration/integration/identity/generic
 import { SumsubApplicantPending } from '@integration/integration/identity/generic/domain/process/sumsub.applicant.pending.dto';
 import { SumsubApplicantReviewed } from '@integration/integration/identity/generic/domain/process/sumsub.applicant.reviewed.dto';
 import {
-  BadRequestException,
+  Inject,
   Injectable,
-  Logger,
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -13,10 +12,18 @@ import { UserVerifyIdentitySchema } from '@user/user/entities/mongoose/user.veri
 import { UserEntity } from '@user/user/entities/user.entity';
 import EventsNamesUserEnum from 'apps/user-service/src/enum/events.names.user.enum';
 import { isMongoId } from 'class-validator';
+import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
+import { Logger } from 'winston';
 
+import { Traceable } from '@amplication/opentelemetry-nestjs';
+
+@Traceable()
 @Injectable()
 export class SumsubNotificationIntegrationService {
-  constructor(private readonly builder: BuildersService) {}
+  constructor(
+    @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
+    private readonly builder: BuildersService,
+  ) {}
 
   async validateClient(clientId: string) {
     const client = await this.builder.getPromiseUserEventClient(
@@ -33,9 +40,9 @@ export class SumsubNotificationIntegrationService {
   }
   async updateUserByReviewed(notification: SumsubApplicantReviewed) {
     if (!isMongoId(notification.externalUserId)) {
-      Logger.error(
-        `User id "${notification.externalUserId}" isn't valid`,
+      this.logger.error(
         'Reviewed.SumsubNotificationIntegrationService',
+        `User id "${notification.externalUserId}" isn't valid`,
       );
       return null;
     }
@@ -44,9 +51,9 @@ export class SumsubNotificationIntegrationService {
       notification.externalUserId,
     );
     if (!user) {
-      Logger.error(
-        'User not found',
+      this.logger.error(
         'Reviewed.SumsubNotificationIntegrationService',
+        'User not found',
       );
       return null;
     }
@@ -63,15 +70,18 @@ export class SumsubNotificationIntegrationService {
       verifyIdentityLevelName: notification.levelName,
       verifyIdentity: user.verifyIdentity,
     });
-    Logger.log('User Updated', 'Reviewed.SumsubNotificationIntegrationService');
+    this.logger.debug(
+      'User Updated',
+      'Reviewed.SumsubNotificationIntegrationService',
+    );
 
     return user;
   }
   async updateUserByPending(notification: SumsubApplicantPending) {
     if (!isMongoId(notification.externalUserId)) {
-      Logger.error(
-        `User id "${notification.externalUserId}" isn't valid`,
+      this.logger.error(
         'Reviewed.SumsubNotificationIntegrationService',
+        `User id "${notification.externalUserId}" isn't valid`,
       );
       return null;
     }
@@ -80,9 +90,9 @@ export class SumsubNotificationIntegrationService {
       notification.externalUserId,
     );
     if (!user) {
-      Logger.error(
-        'User not found',
+      this.logger.error(
         'Pending.SumsubNotificationIntegrationService',
+        'User not found',
       );
       return null;
     }
@@ -94,15 +104,18 @@ export class SumsubNotificationIntegrationService {
       verifyIdentityResponse: user.verifyIdentityResponse,
       verifyIdentityStatus: notification.reviewStatus,
     });
-    Logger.log('User Updated', 'Pending.SumsubNotificationIntegrationService');
+    this.logger.debug(
+      'Pending.SumsubNotificationIntegrationService',
+      'User Updated',
+    );
 
     return user;
   }
   async updateUserByOnHold(notification: SumsubApplicantOnHold) {
     if (!isMongoId(notification.externalUserId)) {
-      Logger.error(
-        `User id "${notification.externalUserId}" isn't valid`,
+      this.logger.error(
         'Reviewed.SumsubNotificationIntegrationService',
+        `User id "${notification.externalUserId}" isn't valid`,
       );
       return null;
     }
@@ -111,9 +124,9 @@ export class SumsubNotificationIntegrationService {
       notification.externalUserId,
     );
     if (!user) {
-      Logger.error(
-        'User not found',
+      this.logger.error(
         'OnHold.SumsubNotificationIntegrationService',
+        'User not found',
       );
       return null;
     }
@@ -126,7 +139,10 @@ export class SumsubNotificationIntegrationService {
       verifyIdentityStatus: notification.reviewStatus,
       verifyIdentityLevelName: notification.levelName,
     });
-    Logger.log('User Updated', 'OnHold.SumsubNotificationIntegrationService');
+    this.logger.debug(
+      'OnHold.SumsubNotificationIntegrationService',
+      'User Updated',
+    );
 
     return user;
   }

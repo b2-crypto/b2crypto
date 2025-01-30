@@ -1,5 +1,5 @@
 import { CacheInterceptor } from '@nestjs/cache-manager';
-import { ExecutionContext, Logger } from '@nestjs/common';
+import { ExecutionContext } from '@nestjs/common';
 import * as crypto from 'crypto';
 
 export class B2CryptoCacheInterceptor extends CacheInterceptor {
@@ -12,11 +12,7 @@ export class B2CryptoCacheInterceptor extends CacheInterceptor {
       context.getHandler(),
     );
     const req = context.switchToHttp().getRequest();
-    Logger.log(`Ignore Caching: ${!ignoreCaching}`, 'B2CryptoCacheInterceptor');
-    Logger.log(
-      `Authorization: ${!!req.headers['authorization']}`,
-      'B2CryptoCacheInterceptor',
-    );
+
     return (
       !ignoreCaching ||
       !!req.headers['authorization'] ||

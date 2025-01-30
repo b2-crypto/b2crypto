@@ -1,15 +1,16 @@
-import { Injectable, BadRequestException } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
 import { BankDepositCreateDto } from '@account/account/dto/bank-deposit.create.dto';
 import { BankCreateDto } from '@account/account/dto/bank.create.dto';
 import TypesAccountEnum from '@account/account/enum/types.account.enum';
 import { CommonService } from '@common/common';
 import { QuerySearchAnyDto } from '@common/common/models/query_search-any.dto';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { User } from '@user/user/entities/mongoose/user.schema';
-import { AccountServiceService } from './account-service.service';
 import { UserServiceService } from 'apps/user-service/src/user-service.service';
+import { AccountServiceService } from './account-service.service';
 
+import { Traceable } from '@amplication/opentelemetry-nestjs';
+
+@Traceable()
 @Injectable()
 export class BankServiceService {
   constructor(
@@ -77,7 +78,9 @@ export class BankServiceService {
     if (to.type != TypesAccountEnum.BANK) {
       throw new BadRequestException('Bank account not found');
     }
-    const from = await this.accountService.findOneById(createDto.from.toString());
+    const from = await this.accountService.findOneById(
+      createDto.from.toString(),
+    );
     if (from.type != TypesAccountEnum.WALLET) {
       throw new BadRequestException('Wallet not found');
     }

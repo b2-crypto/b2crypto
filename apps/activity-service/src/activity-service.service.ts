@@ -11,6 +11,9 @@ import { UpdateAnyDto } from '@common/common/models/update-any.dto';
 import { Inject, Injectable, NotImplementedException } from '@nestjs/common';
 import { Ctx, RmqContext } from '@nestjs/microservices';
 
+import { Traceable } from '@amplication/opentelemetry-nestjs';
+
+@Traceable()
 @Injectable()
 export class ActivityServiceService
   implements BasicMicroserviceService<ActivityDocument>

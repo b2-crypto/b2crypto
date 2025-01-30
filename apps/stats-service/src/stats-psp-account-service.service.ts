@@ -36,6 +36,9 @@ import { isDate, isDateString } from 'class-validator';
 import { firstValueFrom } from 'rxjs';
 import { StatsDateDocuments, StatsDateMongoose } from './enum/stats.date.type';
 
+import { Traceable } from '@amplication/opentelemetry-nestjs';
+
+@Traceable()
 @Injectable()
 export class StatsPspAccountServiceService
   implements BasicMicroserviceService<StatsDateDocuments>

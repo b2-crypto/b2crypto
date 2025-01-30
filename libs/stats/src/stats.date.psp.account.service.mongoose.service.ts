@@ -9,6 +9,11 @@ import { isArray, isDateString, isMongoId } from 'class-validator';
 import { ObjectId } from 'mongodb';
 import { Model } from 'mongoose';
 
+import { Traceable } from '@amplication/opentelemetry-nestjs';
+import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
+import { Logger } from 'winston';
+
+@Traceable()
 @Injectable()
 export class StatsDatePspAccountServiceMongooseService extends BasicServiceModel<
   StatsDatePspAccountDocument,
@@ -17,10 +22,11 @@ export class StatsDatePspAccountServiceMongooseService extends BasicServiceModel
   StatsDateUpdateDto
 > {
   constructor(
+    @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
     @Inject('STATS_DATE_PSP_ACCOUNT_MODEL_MONGOOSE')
     private statsDatePspAccountModel: Model<StatsDatePspAccountDocument>,
   ) {
-    super(statsDatePspAccountModel);
+    super(logger, statsDatePspAccountModel);
   }
 
   async globalStats(query: QuerySearchAnyDto) {

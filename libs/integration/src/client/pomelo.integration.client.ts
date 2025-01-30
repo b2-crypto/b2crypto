@@ -1,11 +1,17 @@
 import { HttpService } from '@nestjs/axios';
-import { Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { lastValueFrom } from 'rxjs';
+import { Logger } from 'winston';
 
+import { Traceable } from '@amplication/opentelemetry-nestjs';
+
+@Traceable()
 @Injectable()
 export class PomeloRestClient {
   constructor(
+    @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     private httpService: HttpService,
     private readonly configService: ConfigService,
   ) {}
@@ -37,7 +43,7 @@ export class PomeloRestClient {
       const data = await (await lastValueFrom(obsResponse)).data;
       return data.access_token;
     } catch (error) {
-      Logger.error(error);
+      this.logger.error('Error authenticaticate', error);
       throw new Error(error);
     }
   }
@@ -61,7 +67,7 @@ export class PomeloRestClient {
         await lastValueFrom(obsResponse)
       ).data;
     } catch (error) {
-      Logger.error(error);
+      this.logger.error('Error getSensitiveInfoToken', error);
       throw new Error(error);
     }
   }

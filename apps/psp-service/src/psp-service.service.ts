@@ -2,24 +2,30 @@ import { BuildersService } from '@builder/builders';
 import { CommonService } from '@common/common';
 import { ResponsePaginator } from '@common/common/interfaces/response-pagination.interface';
 import { QuerySearchAnyDto } from '@common/common/models/query_search-any.dto';
-import { Inject, Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { PspServiceMongooseService } from '@psp/psp';
 import { PspCreateDto } from '@psp/psp/dto/psp.create.dto';
 import { PspHasActiveDto } from '@psp/psp/dto/psp.has.active.dto';
 import { PspUpdateDto } from '@psp/psp/dto/psp.update.dto';
 import { PspDocument } from '@psp/psp/entities/mongoose/psp.schema';
 import { ConfigCheckStatsDto } from '@stats/stats/dto/config.check.stats.dto';
-import CheckStatsType from '../../../libs/stats/src/enum/check.stats.type';
 import { StatusDocument } from '@status/status/entities/mongoose/status.schema';
 import EventsNamesTransferEnum from 'apps/transfer-service/src/enum/events.names.transfer.enum';
 import axios from 'axios';
 import { isArray } from 'class-validator';
+import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
+import { Logger } from 'winston';
+import CheckStatsType from '../../../libs/stats/src/enum/check.stats.type';
 import EventsNamesStatusEnum from '../../status-service/src/enum/events.names.status.enum';
 import EventsNamesPspAccountEnum from './enum/events.names.psp.acount.enum';
 
+import { Traceable } from '@amplication/opentelemetry-nestjs';
+
+@Traceable()
 @Injectable()
 export class PspServiceService {
   constructor(
+    @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     @Inject(BuildersService)
     private readonly builder: BuildersService,
     @Inject(PspServiceMongooseService)
@@ -147,7 +153,7 @@ export class PspServiceService {
   }
 
   async checkStatsTransfer(configCheckStats: ConfigCheckStatsDto) {
-    Logger.log('CHECK STATS PSPs TRANSFER', PspServiceService.name);
+    this.logger.debug('CHECK STATS PSPs TRANSFER', PspServiceService.name);
   }
 
   async checkCashierPsps() {

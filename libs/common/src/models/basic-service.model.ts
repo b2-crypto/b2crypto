@@ -3,9 +3,11 @@ import { CommonService } from '@common/common';
 import { CreateAnyDto } from '@common/common/models/create-any.dto';
 import { QuerySearchAnyDto } from '@common/common/models/query_search-any.dto';
 import { UpdateAnyDto } from '@common/common/models/update-any.dto';
-import { BadRequestException, Logger } from '@nestjs/common';
+import { BadRequestException, Inject } from '@nestjs/common';
 import { isDate, isDateString } from 'class-validator';
 import { ClientSession, isObjectIdOrHexString, ObjectId } from 'mongoose';
+import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
+import { Logger } from 'winston';
 import { ResponsePaginator } from '../interfaces/response-pagination.interface';
 import { ServiceModelInterface } from '../interfaces/service-model.interface';
 
@@ -27,7 +29,10 @@ export class BasicServiceModel<
   model: TBasicModel | any;
   nameOrm: number;
 
-  constructor(model: TBasicModel | any) {
+  constructor(
+    @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
+    model: TBasicModel | any,
+  ) {
     this.model = model;
     this.checkOrmName();
   }
@@ -80,7 +85,7 @@ export class BasicServiceModel<
 
         return this.model.create(createDto, session);
       } catch (err) {
-        Logger.error(err, 'CreateMany');
+        this.logger.error('CreateMany', err);
         throw new BadRequestException(err);
       }
     }
@@ -275,7 +280,10 @@ export class BasicServiceModel<
         | undefined;
 
       if (!mongoId) {
-        Logger.error(id, 'Id is not mongoDb id in BasicServiceModel.findOne');
+        this.logger.error(
+          'Id is not mongoDb id in BasicServiceModel.findOne',
+          id,
+        );
         // throw new BadRequestException('Id is not valid');
       }
 
@@ -284,11 +292,14 @@ export class BasicServiceModel<
         : await this.model.findOne({ id: mongoId });
     } catch (err) {
       console.log(err);
-      Logger.error(
-        `${id}`,
+      this.logger.error(
         `${BasicServiceModel.name}-findOne.id-${this.model.name}`,
+        `${id}`,
       );
-      Logger.error(err, `${BasicServiceModel.name}-findOne-${this.model.name}`);
+      this.logger.error(
+        `${BasicServiceModel.name}-findOne-${this.model.name}`,
+        err,
+      );
       return null;
     }
   }
@@ -365,7 +376,7 @@ export class BasicServiceModel<
       await this.model.deleteMany(query);
       return true;
     } catch (err) {
-      Logger.error(err, `${BasicServiceModel.name}-removeAllData`);
+      this.logger.error(`${BasicServiceModel.name}-removeAllData`, err);
       throw new BadRequestException(
         `Can't remove all data of query ${JSON.stringify(query)}`,
       );

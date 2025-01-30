@@ -1,19 +1,25 @@
 import {
   Controller,
-  Logger,
+  Inject,
   NotImplementedException,
   Param,
   Post,
 } from '@nestjs/common';
+import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
+import { Logger } from 'winston';
 import { PomeloMigrationService } from './services/pomelo.migration.service';
 
 @Controller('pomelo-migration')
 export class PomeloMigrationController {
-  constructor(private readonly migrationService: PomeloMigrationService) {}
+  constructor(
+    @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
+    private readonly migrationService: PomeloMigrationService,
+  ) {}
+
   @Post('ignate')
   async ignatePomeloIntegration() {
     return new NotImplementedException('Method not implemented.');
-    Logger.log('Starting ...', 'PomeloMigrationController');
+    this.logger.debug('Starting ...', 'PomeloMigrationController');
     //await this.migrationService.startPomeloMigration();
     return {
       statusCode: 200,
@@ -23,7 +29,7 @@ export class PomeloMigrationController {
 
   @Post('ignate-by-user/:userId')
   async ignatePomeloIntegrationByUser(@Param('userId') userId: string) {
-    Logger.log(
+    this.logger.debug(
       `Starting migration by user: ${userId}`,
       'PomeloMigrationController',
     );
@@ -36,7 +42,10 @@ export class PomeloMigrationController {
 
   @Post('set-cards-owner')
   async setCardsOwner() {
-    Logger.log(`Starting to set cards owner`, 'PomeloMigrationController');
+    this.logger.debug(
+      `Starting to set cards owner`,
+      'PomeloMigrationController',
+    );
     await this.migrationService.setAllCardsOwner();
     return {
       statusCode: 200,

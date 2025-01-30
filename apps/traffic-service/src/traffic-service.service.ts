@@ -12,6 +12,9 @@ import { TrafficUpdateDto } from '@traffic/traffic/dto/traffic.update.dto';
 import EventsNamesAffiliateEnum from 'apps/affiliate-service/src/enum/events.names.affiliate.enum';
 import { firstValueFrom } from 'rxjs';
 
+import { Traceable } from '@amplication/opentelemetry-nestjs';
+
+@Traceable()
 @Injectable()
 export class TrafficServiceService {
   private eventClient: ClientProxy;
