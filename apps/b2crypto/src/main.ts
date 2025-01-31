@@ -29,7 +29,6 @@ async function bootstrap() {
   const app = await NestFactory.create(AppHttpModule);
 
   const configService = app.get(ConfigService);
-  const loggerService = app.get(Logger);
 
   const validationPipes = new ValidationPipe({
     whitelist: true,
@@ -68,8 +67,8 @@ async function bootstrap() {
   await app.startAllMicroservices();
   await app.listen(configService.get('PORT') ?? 3000);
 
-  loggerService.log('Timezone', process.env.TZ);
-  loggerService.log('Listening on port ' + configService.get('PORT'));
+  Logger.log('Timezone', process.env.TZ);
+  Logger.log('Listening on port ' + configService.get('PORT'));
   if (typeof process.send === 'function') {
     process.send('ready');
   }
