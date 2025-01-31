@@ -24,6 +24,7 @@ import { B2CoreMigrationController } from './b2core.migration.controller';
 import { ClientsIntegrationController } from './clients.controller';
 import { FiatIntegrationClient } from './clients/fiat.integration.client';
 import { PomeloV1DBClient } from './clients/pomelo.v1.bd.client';
+import { FireBlocksNotificationsController } from './fireblocks.notifications.controller';
 import { IntegrationServiceService } from './integration-service.service';
 import { PomeloIntegrationServiceController } from './pomelo.integration-service.controller';
 import { PomeloMigrationController } from './pomelo.migration.controller';
@@ -61,6 +62,7 @@ import { SumsubNotificationIntegrationController } from './sumsub.notification.c
     B2CoreMigrationController,
     PomeloShippingController,
     PomeloMigrationController,
+    FireBlocksNotificationsController,
   ],
   providers: [
     PomeloV1DBClient,
