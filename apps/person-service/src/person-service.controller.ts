@@ -99,6 +99,7 @@ export class PersonServiceController implements GenericServiceController {
       createPersonDto.taxIdentificationType ?? createPersonDto.typeDocId;
     createPersonDto.taxIdentificationValue =
       createPersonDto.taxIdentificationValue ?? createPersonDto.numDocId;
+
     if (!createPersonDto.user) {
       const user = await this.userService.getOne(req.user.id);
       if (!user._id) {
