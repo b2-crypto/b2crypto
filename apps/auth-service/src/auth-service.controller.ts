@@ -24,7 +24,6 @@ import {
   Get,
   HttpStatus,
   Inject,
-  Logger,
   NotFoundException,
   Param,
   Post,
@@ -63,7 +62,9 @@ import EventsNamesMessageEnum from 'apps/message-service/src/enum/events.names.m
 import EventsNamesPersonEnum from 'apps/person-service/src/enum/events.names.person.enum';
 import { isBoolean } from 'class-validator';
 import { SwaggerSteakeyConfigEnum } from 'libs/config/enum/swagger.stakey.config.enum';
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { BadRequestError } from 'passport-headerapikey';
+import { Logger } from 'winston';
 import EventsNamesUserEnum from '../../user-service/src/enum/events.names.user.enum';
 
 @ApiTags('AUTHENTICATION')
@@ -71,6 +72,7 @@ import EventsNamesUserEnum from '../../user-service/src/enum/events.names.user.e
 export class AuthServiceController {
   private eventClient: ClientProxy;
   constructor(
+    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
     @Inject(CACHE_MANAGER)
     private cacheManager: Cache,
     @Inject(BuildersService)
@@ -211,7 +213,7 @@ export class AuthServiceController {
       }
       return client;
     } catch (err) {
-      Logger.error(err, 'Error getting client from public key');
+      this.logger.error('Error getting client from public key', err);
       throw new UnauthorizedException();
     }
   }
@@ -239,7 +241,7 @@ export class AuthServiceController {
       });
       return code;
     } catch (err) {
-      Logger.error(err, 'Bad request Identity code');
+      this.logger.error('Bad request Identity code', err);
       throw new BadGatewayException();
     }
   }
@@ -257,7 +259,7 @@ export class AuthServiceController {
       }
       return rta;
     } catch (err) {
-      Logger.error(err, 'Bad request Identity token');
+      this.logger.error('Bad request Identity token', err);
       throw new BadGatewayException();
     }
   }
@@ -339,7 +341,7 @@ export class AuthServiceController {
         message: 'OTP generated',
       };
     } catch (error) {
-      Logger.error({ error }, 'Error restoring password');
+      this.logger.error('Error restoring password', error);
       throw error;
     }
   }
@@ -439,7 +441,7 @@ export class AuthServiceController {
         emailData,
       );
     } catch (error) {
-      Logger.error('Error sending user registration email', error.stack);
+      this.logger.error('Error sending user registration email', error.stack);
     }
 
     return createdUser;
@@ -706,7 +708,7 @@ export class AuthServiceController {
       },
     };
 
-    Logger.log(data, 'OTP Sended');
+    this.logger.info('OTP Sended', data);
     this.builder.emitMessageEventClient(
       EventsNamesMessageEnum.sendEmailOtpNotification,
       data,

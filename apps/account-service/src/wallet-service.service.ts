@@ -14,12 +14,7 @@ import { StatusCashierEnum } from '@common/common/enums/StatusCashierEnum';
 import TagEnum from '@common/common/enums/TagEnum';
 import { IntegrationService } from '@integration/integration';
 import IntegrationCryptoEnum from '@integration/integration/crypto/enums/IntegrationCryptoEnum';
-import {
-  BadRequestException,
-  Inject,
-  Injectable,
-  Logger,
-} from '@nestjs/common';
+import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { TransferCreateDto } from '@transfer/transfer/dto/transfer.create.dto';
 import { OperationTransactionType } from '@transfer/transfer/enum/operation.transaction.type.enum';
@@ -33,6 +28,8 @@ import { TransferCreateButtonDto } from 'apps/transfer-service/src/dto/transfer.
 import EventsNamesTransferEnum from 'apps/transfer-service/src/enum/events.names.transfer.enum';
 import { UserServiceService } from 'apps/user-service/src/user-service.service';
 import { isMongoId } from 'class-validator';
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
+import { Logger } from 'winston';
 import { AccountServiceService } from './account-service.service';
 import { WalletWithdrawalDto } from './dtos/WalletWithdrawalDto';
 import EventsNamesAccountEnum from './enum/events.names.account.enum';
@@ -41,6 +38,7 @@ import EventsNamesAccountEnum from './enum/events.names.account.enum';
 export class WalletServiceService {
   private cryptoType: any = null;
   constructor(
+    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
     @Inject(UserServiceService)
     private readonly userService: UserServiceService,
     @Inject(AccountServiceService)
@@ -440,7 +438,7 @@ export class WalletServiceService {
           from.amount = from.amount - createDto.amount;
           return from;
         } catch (error) {
-          Logger.error(
+          this.logger.error(
             error.message,
             'Error creating transaction on Fireblocks',
           );
@@ -1416,7 +1414,7 @@ export class WalletServiceService {
         status: 'pending',
       };
     } catch (error) {
-      Logger.error(
+      this.logger.error(
         `Withdrawal failed: ${error.message}`,
         'WalletServiceService',
       );
