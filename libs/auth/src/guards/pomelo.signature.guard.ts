@@ -1,22 +1,27 @@
+import { Traceable } from '@amplication/opentelemetry-nestjs';
+import { CommonService } from '@common/common';
+import { PomeloProcessConstants } from '@common/common/utils/pomelo.integration.process.constants';
+import { PomeloHttpUtils } from '@common/common/utils/pomelo.integration.process.http.utils';
+import { PomeloSignatureUtils } from '@common/common/utils/pomelo.integration.process.signature';
+import { ProcessHeaderDto } from '@integration/integration/dto/pomelo.process.header.dto';
+import { PomeloEnum } from '@integration/integration/enum/pomelo.enum';
 import {
   CanActivate,
   ExecutionContext,
   HttpException,
+  Inject,
   Injectable,
-  Logger,
 } from '@nestjs/common';
-import { Reflector } from '@nestjs/core';
 import { PATH_METADATA } from '@nestjs/common/constants';
-import { PomeloSignatureUtils } from '@common/common/utils/pomelo.integration.process.signature';
-import { PomeloProcessConstants } from '@common/common/utils/pomelo.integration.process.constants';
-import { PomeloHttpUtils } from '@common/common/utils/pomelo.integration.process.http.utils';
-import { PomeloEnum } from '@integration/integration/enum/pomelo.enum';
-import { ProcessHeaderDto } from '@integration/integration/dto/pomelo.process.header.dto';
-import { CommonService } from '@common/common';
+import { Reflector } from '@nestjs/core';
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
+import { Logger } from 'winston';
 
+@Traceable()
 @Injectable()
 export class PomeloSignatureGuard implements CanActivate {
   constructor(
+    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
     private readonly signatureUtil: PomeloSignatureUtils,
     private readonly constants: PomeloProcessConstants,
     private readonly utils: PomeloHttpUtils,
@@ -24,28 +29,31 @@ export class PomeloSignatureGuard implements CanActivate {
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    Logger.debug('Checking Pomelo signature', 'PomeloSignatureGuard');
+    this.logger.debug('Checking Pomelo signature', 'PomeloSignatureGuard');
     this.headersToLowercase(context);
     const headers = this.utils.extractRequestHeaders(context);
     const path =
       this.reflector
         .get<string[]>(PATH_METADATA, context.getHandler())
         ?.toString() || '';
-    Logger.log(`Path: ${path}`, 'SignatureGuard');
-    Logger.log(
+    this.logger.debug(`Path: ${path}`, 'SignatureGuard');
+    this.logger.debug(
       `Headers endpoint: ${JSON.stringify(headers.endpoint)}`,
       'SignatureGuard',
     );
-    Logger.debug(
-      CommonService.checkWhitelistedIps(context),
+    this.logger.debug(
       'checkWhitelistedIps',
+      CommonService.checkWhitelistedIps(context),
     );
-    Logger.debug(this.checkValidEndpoint(path, headers), 'checkValidEndpoint');
+    this.logger.debug(
+      'checkValidEndpoint',
+      this.checkValidEndpoint(path, headers),
+    );
     if (
       CommonService.checkWhitelistedIps(context) &&
       this.checkValidEndpoint(path, headers)
     ) {
-      Logger.log(`Authorizing request.`, 'SignatureGuard');
+      this.logger.debug(`Authorizing request.`, 'SignatureGuard');
       if (
         path == PomeloEnum.POMELO_AUTHORIZATION_PATH.toString() &&
         !this.checkSignatureIsNotExpired(headers.timestamp)
@@ -57,7 +65,10 @@ export class PomeloSignatureGuard implements CanActivate {
         context.switchToHttp().getRequest().body,
       );
       if (!isValid) {
-        Logger.log(`Signing invalid signature response`, 'SignatureGuard');
+        this.logger.debug(
+          `Signing invalid signature response`,
+          'SignatureGuard',
+        );
         this.utils.setResponseHeaders(context);
         this.utils.signResponse(
           context,
@@ -68,12 +79,12 @@ export class PomeloSignatureGuard implements CanActivate {
       }
       return isValid;
     }
-    Logger.log('Not Authorized', 'SignatureGuard');
+    this.logger.debug('Not Authorized', 'SignatureGuard');
     return false;
   }
 
   private checkValidEndpoint(path: string, headers: ProcessHeaderDto): boolean {
-    Logger.debug('Check valid endpoint', 'checkValidEndpoint');
+    this.logger.debug('Check valid endpoint', 'checkValidEndpoint');
     if (path !== PomeloEnum.POMELO_ADJUSTMENT_PATH)
       return path === headers.endpoint;
 

@@ -1,8 +1,10 @@
+import { Traceable } from '@amplication/opentelemetry-nestjs';
 import ActionsEnum from '@common/common/enums/ActionEnum';
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import ResponseB2Crypto from './models/ResponseB2Crypto';
 
+@Traceable()
 @Injectable()
 export class ResponseB2CryptoService {
   constructor(private readonly config: ConfigService) {}

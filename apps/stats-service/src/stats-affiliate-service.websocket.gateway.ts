@@ -1,6 +1,9 @@
+import { Traceable } from '@amplication/opentelemetry-nestjs';
+import { BuildersService } from '@builder/builders';
 import { ResponseDownloadWebsocketInterface } from '@common/common/interfaces/response.download.websocket.interface';
 import { BasicWebsocketGateway } from '@common/common/models/basic.websocket.gateway';
 import { QuerySearchAnyDto } from '@common/common/models/query_search-any.dto';
+import { BadRequestException } from '@nestjs/common';
 import {
   MessageBody,
   SubscribeMessage,
@@ -9,14 +12,13 @@ import {
   WsResponse,
 } from '@nestjs/websockets';
 import { StatsDateAffiliate } from '@stats/stats/entities/mongoose/stats.date.affiliate.schema';
+import EventsNamesFileEnum from 'apps/file-service/src/enum/events.names.file.enum';
 import { Observable, Subscriber } from 'rxjs';
 import { Server } from 'socket.io';
 import EventsNamesStatsEnum from './enum/events.names.stats.enum';
 import { StatsAffiliateServiceService } from './stats-affiliate-service.service';
-import { BuildersService } from '@builder/builders';
-import EventsNamesFileEnum from 'apps/file-service/src/enum/events.names.file.enum';
-import { BadRequestException } from '@nestjs/common';
 
+@Traceable()
 @WebSocketGateway(parseInt(EventsNamesStatsEnum.websocketPortStatsAffiliate), {
   namespace: EventsNamesStatsEnum.clientNameStatsAffiliate,
   cors: {

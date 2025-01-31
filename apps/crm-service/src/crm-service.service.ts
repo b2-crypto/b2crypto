@@ -1,4 +1,5 @@
 import { AffiliateDocument } from '@affiliate/affiliate/infrastructure/mongoose/affiliate.schema';
+import { Traceable } from '@amplication/opentelemetry-nestjs';
 import { BuildersService } from '@builder/builders';
 import { CategoryDocument } from '@category/category/entities/mongoose/category.schema';
 import { CommonService } from '@common/common';
@@ -16,18 +17,19 @@ import { IntegrationCrmService } from '@integration/integration/crm/generic/inte
 import { AssignLeadLeverateRequestDto } from '@integration/integration/crm/leverate-integration/dto/assign.lead.leverate.request.dto';
 import { CodeResponseLeverateEnum } from '@integration/integration/crm/leverate-integration/dto/result.response.leverate.dto';
 import { LeadInterface } from '@lead/lead/entities/lead.interface';
+import { Lead } from '@lead/lead/entities/mongoose/lead.schema';
 import {
   BadGatewayException,
   BadRequestException,
   Inject,
   Injectable,
-  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { RpcException } from '@nestjs/microservices';
 import { SchedulerRegistry } from '@nestjs/schedule';
 import { ConfigCheckStatsDto } from '@stats/stats/dto/config.check.stats.dto';
 import CheckStatsType from '@stats/stats/enum/check.stats.type';
+import { Status } from '@status/status/entities/mongoose/status.schema';
 import { StatusInterface } from '@status/status/entities/status.interface';
 import { TransferInterface } from '@transfer/transfer/entities/transfer.interface';
 import { OperationTransactionType } from '@transfer/transfer/enum/operation.transaction.type.enum';
@@ -38,18 +40,20 @@ import EventsNamesLeadEnum from 'apps/lead-service/src/enum/events.names.lead.en
 import EventsNamesStatusEnum from 'apps/status-service/src/enum/events.names.status.enum';
 import EventsNamesTransferEnum from 'apps/transfer-service/src/enum/events.names.transfer.enum';
 import { isArray, isEmpty } from 'class-validator';
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { BadRequestError } from 'passport-headerapikey';
+import { Logger } from 'winston';
 import { AutologinLeadFromAffiliateDto } from './dto/autologin.lead.from.affiliate.dto';
 import { AutologinLeadFromAffiliateResponseDto } from './dto/autologin.lead.from.affiliate.response.dto';
 import { CheckLeadStatusOnCrmDto } from './dto/check.lead.status.on.crm.dto';
 import { CreateLeadOnCrmDto } from './dto/create.lead.on.crm.dto';
 import { CreateTransferOnCrmDto } from './dto/create.transfer.on.crm.dto';
-import { Lead } from '@lead/lead/entities/mongoose/lead.schema';
-import { Status } from '@status/status/entities/mongoose/status.schema';
 
+@Traceable()
 @Injectable()
 export class CrmServiceService {
   constructor(
+    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
     @Inject(BuildersService)
     private readonly builder: BuildersService,
     @Inject(CrmServiceMongooseService)
@@ -205,7 +209,7 @@ export class CrmServiceService {
           category,
           affiliate,
         );
-        //Logger.debug(category, `${CrmServiceService.name}:199`);
+        //this.logger.debug(category, `${CrmServiceService.name}:199`);
         if (
           category.slug === 'leverate' ||
           CommonService.getSlug(category.name) === 'leverate'
@@ -237,7 +241,7 @@ export class CrmServiceService {
           const msg = `CRM ${crmOrigin.name} reassigned error`;
           //if (leadRta.code === 400 && !leadRta.message.length) {
           if (leadRta.code === CodeResponseLeverateEnum.Success) {
-            Logger.debug(leadRta, `Account reassigned to new owner`);
+            this.logger.debug(leadRta, `Account reassigned to new owner`);
             await this.builder.getPromiseLeadEventClient(
               EventsNamesLeadEnum.updateOne,
               {
@@ -251,7 +255,7 @@ export class CrmServiceService {
               data.leadDto._id,
             );
           } else {
-            Logger.error(leadRta, msg);
+            this.logger.error(msg, leadRta);
             await this.builder.getPromiseLeadEventClient(
               EventsNamesLeadEnum.deleteOneById,
               lead._id,
@@ -285,7 +289,7 @@ export class CrmServiceService {
         }
       }
     } catch (err) {
-      Logger.error(err, CrmServiceService.name);
+      this.logger.error(CrmServiceService.name, err);
       return err;
     }
     return null;
@@ -308,7 +312,7 @@ export class CrmServiceService {
     try {
       task = this.schedulerRegistry.getTimeout(taskName);
     } catch (err) {
-      Logger.error(err, 'Save lead schedulerRegistry');
+      this.logger.error('Save lead schedulerRegistry', err);
     }
     return new Promise((resolve) => {
       if (task) {
@@ -378,7 +382,7 @@ export class CrmServiceService {
     await this.checkLeadDetails(crmType, lead);
     data.transfer.leadName = lead.name;
     data.transfer.leadTradingPlatformId = lead.crmTradingPlatformAccountId;
-    Logger.debug(
+    this.logger.debug(
       JSON.stringify(data.transfer),
       'CrmServiceService:createOneTransferOnCrm: data.transfer',
     );
@@ -458,7 +462,10 @@ export class CrmServiceService {
         !isArray(tpAccountInfo) ||
         !tpAccountInfo[0].lv_tpaccountid
       ) {
-        Logger.error(JSON.stringify(tpAccountInfo), CrmServiceService.name);
+        this.logger.error(
+          JSON.stringify(tpAccountInfo),
+          CrmServiceService.name,
+        );
         throw new BadRequestException(
           `Can't get the account trading platform id`,
         );
@@ -546,7 +553,7 @@ export class CrmServiceService {
   }
 
   async checkStatsTransfer(configCheckStats: ConfigCheckStatsDto) {
-    Logger.log(configCheckStats, 'CHECK STATS CRMS TRANSFER');
+    this.logger.debug('CHECK STATS CRMS TRANSFER', configCheckStats);
   }
 
   async checkCrmLeadStatus(data: CheckLeadStatusOnCrmDto) {
@@ -602,7 +609,7 @@ export class CrmServiceService {
       const statusesFinded = {};
       //const promises = [];
       for (const affiliateId of data.affiliatesToCheck) {
-        //Logger.debug(affiliateId, 'affiliate check affiliate');
+        //this.logger.debug(affiliateId, 'affiliate check affiliate');
         const crmType: IntegrationCrmService = await this.getCrmTypeFromLead(
           affiliateId,
         );
@@ -610,7 +617,7 @@ export class CrmServiceService {
           const leadsRta = await crmType.affiliateGetUsers(`?${base}`);
           const leads = (leadsRta?.data as Array<GetUserDto>) ?? [];
           result.total += leads.length;
-          //Logger.debug(leads.length, `Leads to check status in CRM`);
+          //this.logger.debug(leads.length, `Leads to check status in CRM`);
           if (leads.length) {
             const leadsB2crypto: ResponsePaginator<Lead> =
               await this.builder.getPromiseLeadEventClient(
@@ -655,32 +662,32 @@ export class CrmServiceService {
               } else {
                 result.error.count++;
                 result.error.leads.push(leadCrm.tpAccount);
-                Logger.error(
+                this.logger.error(
                   `Status ${leadCrm.leadStatus} not found for ${leadCrm.tpAccount}`,
                   'No update lead',
                 );
               }
             }
           }
-          Logger.log(
+          this.logger.debug(
             `${
               crmType.crm.name
             } - ${affiliateId} start ${data.start.toUTCString()} - ${base}`,
             `Result status update ${result.total} crm leads`,
           );
         } catch (error) {
-          Logger.error(
-            { error, where: base },
+          this.logger.error(
             `Error get lead statuses from CRM ${crmType.crm.name} - ${affiliateId}`,
+            { error, where: base },
           );
         }
       }
-      /* Logger.debug(
+      /* this.logger.debug(
         `Updated ${result.b2crypto.count}. No updated ${result.moises.count}. Same status ${result.sameStatus.count}. Errors ${result.error.count}`,
         `Result status update ${result.total} crm leads ${}`,
       ); */
       if (result.error.count) {
-        Logger.debug(result.error.leads, 'Lead tpIds with error');
+        this.logger.debug('Lead tpIds with error', result.error.leads);
       }
     } else if (!!data.leadsToCheck) {
       const crmTypes = {};
@@ -735,14 +742,14 @@ export class CrmServiceService {
                 },
               );
             } else {
-              Logger.debug(
+              this.logger.debug(
                 `Status ${leadCrm.leadStatus} not found for ${leadCrm.tpAccount}`,
                 'No update lead',
               );
             }
           }
         } catch (error) {
-          Logger.error(error);
+          this.logger.error(error.message, error);
           continue;
         }
       }

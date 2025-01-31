@@ -1,19 +1,20 @@
+import { Traceable } from '@amplication/opentelemetry-nestjs';
+import { ProcessHeaderDto } from '@integration/integration/dto/pomelo.process.header.dto';
+import { PomeloEnum } from '@integration/integration/enum/pomelo.enum';
 import {
   CallHandler,
   ExecutionContext,
   Injectable,
-  Logger,
   NestInterceptor,
 } from '@nestjs/common';
+import { PATH_METADATA } from '@nestjs/common/constants';
+import { Reflector } from '@nestjs/core';
 import { Observable } from 'rxjs';
 import { map, tap } from 'rxjs/operators';
-import { PomeloSignatureUtils } from '../utils/pomelo.integration.process.signature';
 import { PomeloHttpUtils } from '../utils/pomelo.integration.process.http.utils';
-import { ProcessHeaderDto } from '@integration/integration/dto/pomelo.process.header.dto';
-import { PomeloEnum } from '@integration/integration/enum/pomelo.enum';
-import { Reflector } from '@nestjs/core';
-import { PATH_METADATA } from '@nestjs/common/constants';
+import { PomeloSignatureUtils } from '../utils/pomelo.integration.process.signature';
 
+@Traceable()
 @Injectable()
 export class PomeloSignatureInterceptor implements NestInterceptor {
   constructor(

@@ -1,17 +1,24 @@
+import { JwtAuthGuard } from '@auth/auth/guards/jwt-auth.guard';
+import { PoliciesGuard } from '@auth/auth/guards/policy.ability.guard';
 import { Module, OnModuleInit } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
-import { JwtAuthGuard } from '@auth/auth/guards/jwt-auth.guard';
-import { SeedService } from 'apps/seed-service/seed.service';
-import { configApp } from './config.app.const';
-import { SeedModule } from 'apps/seed-service/seed.module';
 import { JobModule } from 'apps/job-service/job.module';
-import { PoliciesGuard } from '@auth/auth/guards/policy.ability.guard';
+import { SeedModule } from 'apps/seed-service/seed.module';
+import { SeedService } from 'apps/seed-service/seed.service';
+import { WinstonModule } from 'nest-winston';
+import { configApp } from './config.app.const';
+import { logger } from './opentelemetry';
 
 const configHttp = {
   ...configApp,
 };
 
-configHttp.imports.push(JobModule);
+configHttp.imports.push(
+  JobModule,
+  WinstonModule.forRoot({
+    instance: logger,
+  }),
+);
 
 configHttp.providers.push({
   provide: APP_GUARD,

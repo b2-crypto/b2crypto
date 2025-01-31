@@ -1,10 +1,7 @@
 import { CommonService } from '@common/common';
+import { EnvironmentEnum } from '@common/common/enums/environment.enum';
 import { CrmDocument } from '@crm/crm/entities/mongoose/crm.schema';
-import {
-  BadRequestException,
-  Logger,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { BadRequestException, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { RpcException } from '@nestjs/microservices';
 import { TransferInterface } from '@transfer/transfer/entities/transfer.interface';
@@ -38,7 +35,6 @@ import { UserResponseDto } from './dto/user.response.dto';
 import { IntegrationCrmInterface } from './integration.crm.interface';
 import { CrmRoutesInterface } from './interface/crm.routes.interface';
 import { DataPostUrlEncode } from './types/integration.crm.type';
-import { EnvironmentEnum } from '@common/common/enums/environment.enum';
 
 export class IntegrationCrmService<
   // DTO
@@ -153,16 +149,16 @@ export class IntegrationCrmService<
           this.token = token.data?.Token || token.data.token;
           const expireIn = token.data?.expiresIn || token.data?.ExpiresIn;
         } catch (err) {
-          Logger.error(err, IntegrationCrmService.name);
-          Logger.error(
+          console.error(err, IntegrationCrmService.name);
+          console.error(
             'integration.crm.service.ts:151 ->',
             IntegrationCrmService.name,
           );
-          Logger.error(
+          console.error(
             `urlBase -> ${this.urlBase}`,
             IntegrationCrmService.name,
           );
-          Logger.error(
+          console.error(
             `token -> ${JSON.stringify({
               username: this.username,
               password: this.password,
@@ -215,7 +211,7 @@ export class IntegrationCrmService<
       const data: TUserResponse = rta?.data ?? rta;
       if (!isObject(data) || data['error']) {
         const error = (isObject(data['error']) && data['error']) || data;
-        Logger.error(error, IntegrationCrmService.name);
+        console.error(error, IntegrationCrmService.name);
         //throw new BadRequestException();
       }
       return data;
@@ -226,7 +222,7 @@ export class IntegrationCrmService<
   async affiliateAssignLead(
     assignLeadDto: AssignLeadLeverateRequestDto,
   ): Promise<TUserResponse> {
-    Logger.debug(JSON.stringify(assignLeadDto), 'Assignat lead');
+    console.debug(JSON.stringify(assignLeadDto), 'Assignat lead');
     if (
       this.configService.get<string>('ENVIRONMENT') === EnvironmentEnum.prod
     ) {
@@ -247,7 +243,7 @@ export class IntegrationCrmService<
       const data: TUserResponse = rta?.data ?? rta;
       if (!isObject(data) || data['error']) {
         const error = (isObject(data['error']) && data['error']) || data;
-        Logger.error(error, IntegrationCrmService.name);
+        console.error(error, IntegrationCrmService.name);
         //throw new BadRequestException();
       }
       return data;
@@ -287,7 +283,7 @@ export class IntegrationCrmService<
     //throw new RpcException(error || data);
     delete error.config;
     delete error.request;
-    Logger.error(error, 'Get Error');
+    console.error(error, 'Get Error');
     error.message = error?.response?.data;
     delete error.response;
     return {
@@ -348,18 +344,18 @@ export class IntegrationCrmService<
     try {
       headers.headers.Accept = 'application/json';
       delete headers.headers['Content-Type'];
-      //Logger.debug(url, `URL leverate - ${this.crm.name}`);
-      //Logger.debug(headers, 'headers leverate');
+      //console.debug(url, `URL leverate - ${this.crm.name}`);
+      //console.debug(headers, 'headers leverate');
       return this.http.get(url, headers);
     } catch (err) {
-      Logger.error(
+      console.error(
         JSON.stringify({
           name: this.crm.userCrm,
           pass: this.crm.passwordCrm,
         }),
         'Brand error',
       );
-      Logger.error(
+      console.error(
         err,
         `error ${this.urlBase + url}:${JSON.stringify(headers)}`,
       );
@@ -385,19 +381,19 @@ export class IntegrationCrmService<
       if (this.crm.clientZone.indexOf('http') !== 0) {
         this.crm.clientZone = `https://${this.crm.clientZone}`;
       }
-      Logger.debug(this.crm.clientZone, 'Clientzone autologin');
-      Logger.debug(
+      console.debug(this.crm.clientZone, 'Clientzone autologin');
+      console.debug(
         this.routesMap.affiliateRegenerateUserAutoLoginUrl,
         'route autologin',
       );
-      Logger.debug(regenerateUserAutoLoginUrlDto, 'data autologin');
+      console.debug(regenerateUserAutoLoginUrlDto, 'data autologin');
       const rta = await axios.post(
         `${this.crm.clientZone}/${this.routesMap.affiliateRegenerateUserAutoLoginUrl}`,
         regenerateUserAutoLoginUrlDto,
       );
       return rta?.data;
     } catch (err) {
-      Logger.error(regenerateUserAutoLoginUrlDto, 'error autologin');
+      console.error(regenerateUserAutoLoginUrlDto, 'error autologin');
       const error = this.getError(err);
       throw new UnauthorizedException();
     }
@@ -433,7 +429,7 @@ export class IntegrationCrmService<
       true,
     );
     const data: TPaymentResponse = rta?.data ?? rta;
-    Logger.debug(
+    console.debug(
       data,
       `crm register payment to ${registerPaymentDto['leadEmail']}`,
     );
@@ -465,12 +461,12 @@ export class IntegrationCrmService<
       }
       return data;
     } catch (err) {
-      Logger.error(`URL -> ${url}`, `${this.crm.name}:url account`);
-      Logger.error(
+      console.error(`URL -> ${url}`, `${this.crm.name}:url account`);
+      console.error(
         `HEADERS -> ${JSON.stringify(headers)}`,
         `${this.crm.name}:headers account`,
       );
-      Logger.error(JSON.stringify(err), `${this.crm.name}:error account`);
+      console.error(JSON.stringify(err), `${this.crm.name}:error account`);
       throw new BadRequestException(err);
     }
   }

@@ -11,13 +11,10 @@ import {
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 
+import { Traceable } from '@amplication/opentelemetry-nestjs';
 import { AllowAnon } from '@auth/auth/decorators/allow-anon.decorator';
-import { CheckPoliciesAbility } from '@auth/auth/policy/policy.handler.ability';
-import { PolicyHandlerRoleCreate } from '@auth/auth/policy/role/policity.handler.role.create';
-import { PolicyHandlerRoleDelete } from '@auth/auth/policy/role/policity.handler.role.delete';
-import { PolicyHandlerRoleRead } from '@auth/auth/policy/role/policity.handler.role.read';
-import { PolicyHandlerRoleUpdate } from '@auth/auth/policy/role/policity.handler.role.update';
 import { CommonService } from '@common/common';
+import { NoCache } from '@common/common/decorators/no-cache.decorator';
 import GenericServiceController from '@common/common/interfaces/controller.generic.interface';
 import { QuerySearchAnyDto } from '@common/common/models/query_search-any.dto';
 import { UpdateAnyDto } from '@common/common/models/update-any.dto';
@@ -31,9 +28,9 @@ import { RoleCreateDto } from '@role/role/dto/role.create.dto';
 import { RoleUpdateDto } from '@role/role/dto/role.update.dto';
 import EventsNamesRoleEnum from './enum/events.names.role.enum';
 import { RoleServiceService } from './role-service.service';
-import { NoCache } from '@common/common/decorators/no-cache.decorator';
 
 @ApiTags('Role')
+@Traceable()
 @Controller('role')
 export class RoleServiceController implements GenericServiceController {
   constructor(private readonly roleService: RoleServiceService) {}

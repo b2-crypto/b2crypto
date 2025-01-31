@@ -1,5 +1,6 @@
 import { AccountDocument } from '@account/account/entities/mongoose/account.schema';
 import WalletTypesAccountEnum from '@account/account/enum/wallet.types.account.enum';
+import { Traceable } from '@amplication/opentelemetry-nestjs';
 import { AllowAnon } from '@auth/auth/decorators/allow-anon.decorator';
 import { BuildersService } from '@builder/builders';
 import { CommonService } from '@common/common';
@@ -10,17 +11,16 @@ import { TransactionStateEnum } from '@fireblocks/ts-sdk';
 import { IntegrationService } from '@integration/integration';
 import IntegrationCryptoEnum from '@integration/integration/crypto/enums/IntegrationCryptoEnum';
 import { FireblocksIntegrationService } from '@integration/integration/crypto/fireblocks/fireblocks-integration.service';
+import { CACHE_MANAGER, Cache } from '@nestjs/cache-manager';
 import {
   BadRequestException,
   Body,
   Controller,
   Get,
   Inject,
-  Logger,
   Post,
   Req,
 } from '@nestjs/common';
-import { CACHE_MANAGER, Cache } from '@nestjs/cache-manager';
 import { TransferCreateDto } from '@transfer/transfer/dto/transfer.create.dto';
 import { OperationTransactionType } from '@transfer/transfer/enum/operation.transaction.type.enum';
 import EventsNamesAccountEnum from 'apps/account-service/src/enum/events.names.account.enum';
@@ -30,7 +30,10 @@ import EventsNamesStatusEnum from 'apps/status-service/src/enum/events.names.sta
 import EventsNamesTransferEnum from 'apps/transfer-service/src/enum/events.names.transfer.enum';
 import { isMongoId } from 'class-validator';
 import * as crypto from 'crypto';
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
+import { Logger } from 'winston';
 
+@Traceable()
 @Controller('fireblocks')
 //@UseGuards(ApiKeyAuthGuard)
 export class FireBlocksNotificationsController {
@@ -51,6 +54,7 @@ export class FireBlocksNotificationsController {
   tSM7QYNhlftT4/yVvYnk0YcCAwEAAQ==
   -----END PUBLIC KEY-----`.replace(/\\n/g, '\n');
   constructor(
+    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
     @Inject(CACHE_MANAGER)
     private cacheManager: Cache,
     private readonly builder: BuildersService,
@@ -65,7 +69,10 @@ export class FireBlocksNotificationsController {
   @NoCache()
   async resendFireblocksNotifications() {
     const rta = await (await this.getFireblocksType()).resendNotifications();
-    Logger.debug(JSON.stringify(rta, null, 2), 'resendFireblocksNotifications');
+    this.logger.debug(
+      JSON.stringify(rta, null, 2),
+      'resendFireblocksNotifications',
+    );
     return rta;
   }
   // ----------------------------
@@ -74,10 +81,10 @@ export class FireBlocksNotificationsController {
   // @CheckPoliciesAbility(new PolicyHandlerTransferRead())
   async webhook(@Req() req: any, @Body() data: any) {
     //const isVerified = this.verifySign(req);
-    //Logger.debug(isVerified, 'getTransferDto.isVerified');
+    //this.logger.debug(isVerified, 'getTransferDto.isVerified');
     //if (isVerified) {
     const rta = data.data;
-    Logger.debug(rta, '-start');
+    this.logger.debug(rta, '-start');
     if (
       rta.id &&
       rta.status &&
@@ -127,11 +134,11 @@ export class FireBlocksNotificationsController {
           },
         );
       }
-      Logger.debug(rta?.status, `${rta?.id} - ${rta.status}`);
+      this.logger.debug(rta?.status, `${rta?.id} - ${rta.status}`);
     }
     //}
     //return isVerified ? 'ok' : 'fail';
-    //Logger.debug(this.verifySign(req), 'getTransferDto.isVerified');
+    //this.logger.debug(this.verifySign(req), 'getTransferDto.isVerified');
     return {
       statusCode: 200,
       message: 'ok',
@@ -147,7 +154,7 @@ export class FireBlocksNotificationsController {
     verifier.end();
 
     const isVerified = verifier.verify(this.publicKey, signature, 'base64');
-    Logger.log(isVerified, 'Verified:');
+    this.logger.debug('Verified:', isVerified);
     return isVerified;
   }
 
@@ -187,7 +194,7 @@ export class FireBlocksNotificationsController {
     // const ownerId = brand.owner;
     const ownerId = ownerIdWallet.replace('-vault', '');
     if (!isMongoId(ownerId)) {
-      Logger.debug(ownerId, `Invalid ownerId ${ownerIdWallet}`);
+      this.logger.debug(ownerId, `Invalid ownerId ${ownerIdWallet}`);
       return null;
     }
     const crm = await this.getFireblocksCrm();
@@ -206,7 +213,7 @@ export class FireBlocksNotificationsController {
     );
     const wallet = walletList.list[0];
     if (!wallet) {
-      Logger.error(queryWhereWallet, 'Wallet not found with where');
+      this.logger.error('Wallet not found with where', queryWhereWallet);
       return null;
     }
     let isApproved = null;

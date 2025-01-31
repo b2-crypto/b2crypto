@@ -11,13 +11,11 @@ import {
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 
+import { Traceable } from '@amplication/opentelemetry-nestjs';
 import { AllowAnon } from '@auth/auth/decorators/allow-anon.decorator';
-import { CheckPoliciesAbility } from '@auth/auth/policy/policy.handler.ability';
-import { PolicyHandlerStatusCreate } from '@auth/auth/policy/status/policity.handler.status.create';
-import { PolicyHandlerStatusDelete } from '@auth/auth/policy/status/policity.handler.status.delete';
-import { PolicyHandlerStatusRead } from '@auth/auth/policy/status/policity.handler.status.read';
-import { PolicyHandlerStatusUpdate } from '@auth/auth/policy/status/policity.handler.status.update';
 import { CommonService } from '@common/common';
+import { NoCache } from '@common/common/decorators/no-cache.decorator';
+import GenericServiceController from '@common/common/interfaces/controller.generic.interface';
 import { QuerySearchAnyDto } from '@common/common/models/query_search-any.dto';
 import { UpdateAnyDto } from '@common/common/models/update-any.dto';
 import {
@@ -30,10 +28,9 @@ import { StatusCreateDto } from '@status/status/dto/status.create.dto';
 import { StatusUpdateDto } from '@status/status/dto/status.update.dto';
 import EventsNamesStatusEnum from './enum/events.names.status.enum';
 import { StatusServiceService } from './status-service.service';
-import GenericServiceController from '@common/common/interfaces/controller.generic.interface';
-import { NoCache } from '@common/common/decorators/no-cache.decorator';
 
 @ApiTags('Status')
+@Traceable()
 @Controller('status')
 export class StatusServiceController implements GenericServiceController {
   constructor(private readonly statusService: StatusServiceService) {}

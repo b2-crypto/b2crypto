@@ -1,6 +1,8 @@
 import { AffiliateServiceMongooseService } from '@affiliate/affiliate';
 import { AffiliateInterface } from '@affiliate/affiliate/domain/entities/affiliate.interface';
+import { Traceable } from '@amplication/opentelemetry-nestjs';
 import { BuildersService } from '@builder/builders';
+import { CommonService } from '@common/common';
 import { ResponsePaginator } from '@common/common/interfaces/response-pagination.interface';
 import { QuerySearchAnyDto } from '@common/common/models/query_search-any.dto';
 import { CrmServiceMongooseService } from '@crm/crm';
@@ -8,26 +10,28 @@ import {
   BadRequestException,
   Inject,
   Injectable,
-  Logger,
   UnauthorizedException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { PermissionServiceMongooseService } from '@permission/permission';
 import { UserServiceMongooseService } from '@user/user';
+import { UserInterface } from '@user/user/entities/user.interface';
 import EventsNamesAffiliateEnum from 'apps/affiliate-service/src/enum/events.names.affiliate.enum';
 import * as bcrypt from 'bcrypt';
+import { randomUUID } from 'crypto';
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import * as qrcode from 'qrcode';
 import * as speakeasy from 'speakeasy';
+import { Logger } from 'winston';
 import { UserDocument } from '../../user/src/entities/mongoose/user.schema';
 import { UserLoginDto } from './dto/user.login.dto';
-import { randomUUID } from 'crypto';
-import { UserInterface } from '@user/user/entities/user.interface';
-import { CommonService } from '@common/common';
 
+@Traceable()
 @Injectable()
 export class AuthService {
   constructor(
+    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
     private readonly configService: ConfigService,
     private readonly jwtService: JwtService,
     @Inject(CrmServiceMongooseService)
@@ -200,7 +204,7 @@ export class AuthService {
         },
       });
     } catch (err) {
-      Logger.error(err, 'auth.service:getAffiliates');
+      this.logger.error('auth.service:getAffiliates', err);
       throw new BadRequestException();
     }
   }

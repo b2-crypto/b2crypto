@@ -1,3 +1,4 @@
+import { Traceable } from '@amplication/opentelemetry-nestjs';
 import { CommonService } from '@common/common';
 import { BasicServiceModel } from '@common/common/models/basic-service.model';
 import { QuerySearchAnyDto } from '@common/common/models/query_search-any.dto';
@@ -9,6 +10,7 @@ import { AccountCreateDto } from './dto/account.create.dto';
 import { AccountUpdateDto } from './dto/account.update.dto';
 import { Account, AccountDocument } from './entities/mongoose/account.schema';
 
+@Traceable()
 @Injectable()
 export class AccountServiceMongooseService extends BasicServiceModel<
   AccountDocument,

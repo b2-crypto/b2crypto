@@ -1,13 +1,20 @@
+import { Traceable } from '@amplication/opentelemetry-nestjs';
 import {
   CardEvents,
   ShippingNotifications,
 } from '@integration/integration/dto/pomelo.shipping.body.dto';
 import { PomeloCache } from '@integration/integration/util/pomelo.integration.process.cache';
-import { Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
+import { Logger } from 'winston';
 
+@Traceable()
 @Injectable()
 export class PomeloIntegrationShippingService {
-  constructor(private readonly cache: PomeloCache) {}
+  constructor(
+    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
+    private readonly cache: PomeloCache,
+  ) {}
 
   async handleShippingNotification(
     notification: ShippingNotifications,
@@ -20,8 +27,8 @@ export class PomeloIntegrationShippingService {
         statusCode: 204,
         body: {},
       };
-      Logger.debug(notification, 'Shipping-NotificationHandler');
-      Logger.debug(
+      this.logger.debug('Shipping-NotificationHandler', notification);
+      this.logger.debug(
         JSON.stringify(notification, null, 2),
         'Shipping-NotificationHandler',
       );
@@ -38,7 +45,7 @@ export class PomeloIntegrationShippingService {
         statusCode: 204,
         body: {},
       };
-      Logger.debug(
+      this.logger.debug(
         JSON.stringify(event, null, 2),
         'CardEvents-NotificationHandler',
       );

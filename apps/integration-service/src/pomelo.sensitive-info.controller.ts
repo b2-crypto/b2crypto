@@ -1,3 +1,4 @@
+import { Traceable } from '@amplication/opentelemetry-nestjs';
 import { BuildersService } from '@builder/builders';
 import { NoCache } from '@common/common/decorators/no-cache.decorator';
 import { IntegrationService } from '@integration/integration';
@@ -10,17 +11,20 @@ import {
   Get,
   HttpCode,
   Inject,
-  Logger,
   PreconditionFailedException,
   Request,
 } from '@nestjs/common';
 import { User } from '@user/user/entities/mongoose/user.schema';
 import EventsNamesUserEnum from 'apps/user-service/src/enum/events.names.user.enum';
 import { UserServiceService } from 'apps/user-service/src/user-service.service';
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
+import { Logger } from 'winston';
 
+@Traceable()
 @Controller(PomeloEnum.POMELO_INTEGRATION_CONTROLLER)
 export class PomeloSensitiveInfoController {
   constructor(
+    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
     private readonly builder: BuildersService,
     private readonly integration: IntegrationService,
     @Inject(UserServiceService)
@@ -33,7 +37,7 @@ export class PomeloSensitiveInfoController {
   @HttpCode(200)
   async issuePomeloPrivateInfoToken(@Request() req: Request): Promise<any> {
     const b2cryptoUser = req['user']?.id || '';
-    Logger.log(
+    this.logger.debug(
       `Looking for user: ${b2cryptoUser}`,
       'PomeloSensitiveInfoController',
     );

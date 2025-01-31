@@ -1,10 +1,12 @@
-import { ActivityDocument } from '@activity/activity/entities/mongoose/activity.schema';
-import { BasicServiceModel } from '@common/common/models/basic-service.model';
 import { ActivityCreateDto } from '@activity/activity/dto/activity.create.dto';
 import { ActivityUpdateDto } from '@activity/activity/dto/activity.update.dto';
+import { ActivityDocument } from '@activity/activity/entities/mongoose/activity.schema';
+import { Traceable } from '@amplication/opentelemetry-nestjs';
+import { BasicServiceModel } from '@common/common/models/basic-service.model';
 import { Inject, Injectable } from '@nestjs/common';
 import { Model } from 'mongoose';
 
+@Traceable()
 @Injectable()
 export class ActivityServiceMongooseService extends BasicServiceModel<
   ActivityDocument,

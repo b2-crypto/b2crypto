@@ -1,5 +1,6 @@
 import { AccountDocument } from '@account/account/entities/mongoose/account.schema';
 import { CreateLeadAffiliateDto } from '@affiliate/affiliate/domain/dto/create-lead-affiliate.dto';
+import { Traceable } from '@amplication/opentelemetry-nestjs';
 import { CrmDocument } from '@crm/crm/entities/mongoose/crm.schema';
 import { AntelopeIntegrationService } from '@integration/integration/crm/antelope-integration/antelope-integration.service';
 import { LeverateIntegrationService } from '@integration/integration/crm/leverate-integration/leverate-integration.service';
@@ -22,6 +23,7 @@ import { IntegrationCryptoService } from './crypto/generic/integration.crypto.se
 import { IntegrationIdentityEnum } from './identity/generic/domain/integration.identity.enum';
 import { IntegrationIdentityService } from './identity/generic/integration.identity.service';
 
+@Traceable()
 @Injectable()
 export class IntegrationService {
   private env: string;

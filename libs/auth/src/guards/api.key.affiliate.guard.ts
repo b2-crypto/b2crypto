@@ -1,4 +1,5 @@
 import { AffiliateServiceMongooseService } from '@affiliate/affiliate';
+import { Traceable } from '@amplication/opentelemetry-nestjs';
 import { BuildersService } from '@builder/builders';
 import {
   ExecutionContext,
@@ -8,6 +9,7 @@ import {
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import EventsNamesAffiliateEnum from 'apps/affiliate-service/src/enum/events.names.affiliate.enum';
+@Traceable()
 @Injectable()
 export class ApiKeyAffiliateAuthGuard extends AuthGuard('api-key-affiliate') {
   constructor(

@@ -1,12 +1,16 @@
+import { Traceable } from '@amplication/opentelemetry-nestjs';
 import { BuildersService } from '@builder/builders';
 import { EnvironmentEnum } from '@common/common/enums/environment.enum';
-import { Inject, Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import EventsNamesAccountEnum from 'apps/account-service/src/enum/events.names.account.enum';
 import EventsNamesTransferEnum from 'apps/transfer-service/src/enum/events.names.transfer.enum';
 import EventsNamesUserEnum from 'apps/user-service/src/enum/events.names.user.enum';
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
+import { Logger } from 'winston';
 
+@Traceable()
 @Injectable()
 export class JobService {
   static readonly periodicTime = {
@@ -21,6 +25,7 @@ export class JobService {
   private env = 'DEV';
 
   constructor(
+    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
     readonly configService: ConfigService,
     @Inject(BuildersService)
     private readonly builder: BuildersService,
@@ -32,7 +37,7 @@ export class JobService {
     timeZone: process.env.TZ,
   })
   async sendLast6hHistoryTransfer() {
-    Logger.log(
+    this.logger.debug(
       'Sended last 6h history transfer',
       `${this.env} - ${JobService.name}`,
     );
@@ -52,7 +57,7 @@ export class JobService {
     timeZone: process.env.TZ,
   })
   async sendBalanceCardReportsCron() {
-    Logger.log(
+    this.logger.debug(
       'Sended balance card report',
       `${this.env} - ${JobService.name}`,
     );
@@ -72,7 +77,10 @@ export class JobService {
     timeZone: process.env.TZ,
   })
   checkBalanceUserCron() {
-    Logger.log('Checked balance users', `${this.env} - ${JobService.name}`);
+    this.logger.debug(
+      'Checked balance users',
+      `${this.env} - ${JobService.name}`,
+    );
     if (this.env == EnvironmentEnum.prod) {
       this.builder.emitUserEventClient(
         EventsNamesUserEnum.checkBalanceUser,
@@ -85,7 +93,10 @@ export class JobService {
     timeZone: process.env.TZ,
   })
   checkCardsInPomelo() {
-    Logger.log('Checking Cards in pomelo', `${this.env} - ${JobService.name}`);
+    this.logger.debug(
+      'Checking Cards in pomelo',
+      `${this.env} - ${JobService.name}`,
+    );
     if (this.env === EnvironmentEnum.prod) {
       this.builder.emitAccountEventClient(
         EventsNamesAccountEnum.checkCardsCreatedInPomelo,
@@ -98,7 +109,7 @@ export class JobService {
     timeZone: process.env.TZ,
   })
   sweepOmibus() {
-    Logger.log('Job sweep omibus', `${this.env} - ${JobService.name}`);
+    this.logger.debug('Job sweep omibus', `${this.env} - ${JobService.name}`);
     if (this.env === EnvironmentEnum.prod) {
       // this.builder.emitAccountEventClient(
       //   EventsNamesAccountEnum.sweepOmnibus,
@@ -111,11 +122,11 @@ export class JobService {
     timeZone: process.env.TZ,
   })
   checkB2BinPayTransfers() {
-    Logger.warn(
+    this.logger.warn(
       'Disabled Job checkB2BinPayTransfers',
       `${this.env} - ${JobService.name}`,
     );
-    // Logger.log(
+    // this.logger.debug(
     //   'Checking B2BinPay transfers',
     //   `${this.env} - ${JobService.name}`,
     // );

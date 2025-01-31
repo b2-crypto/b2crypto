@@ -2,6 +2,7 @@ import { AccountCreateDto } from '@account/account/dto/account.create.dto';
 import { AccountUpdateDto } from '@account/account/dto/account.update.dto';
 import StatusAccountEnum from '@account/account/enum/status.account.enum';
 import { ActivityCreateDto } from '@activity/activity/dto/activity.create.dto';
+import { Traceable } from '@amplication/opentelemetry-nestjs';
 import { BuildersService } from '@builder/builders';
 import { CommonService } from '@common/common';
 import { NoCache } from '@common/common/decorators/no-cache.decorator';
@@ -16,7 +17,6 @@ import {
   Delete,
   Get,
   Inject,
-  Logger,
   Param,
   ParseArrayPipe,
   Patch,
@@ -35,13 +35,17 @@ import {
 import { ApiExcludeEndpoint, ApiTags } from '@nestjs/swagger';
 import EventsNamesStatusEnum from 'apps/status-service/src/enum/events.names.status.enum';
 import EventsNamesUserEnum from 'apps/user-service/src/enum/events.names.user.enum';
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
+import { Logger } from 'winston';
 import { AccountServiceService } from './account-service.service';
 import EventsNamesAccountEnum from './enum/events.names.account.enum';
 
 @ApiTags('ACCOUNT')
+@Traceable()
 @Controller('accounts')
 export class AccountServiceController implements GenericServiceController {
   constructor(
+    @Inject(WINSTON_MODULE_NEST_PROVIDER) protected readonly logger: Logger,
     private readonly accountService: AccountServiceService,
     @Inject(BuildersService)
     private readonly builder: BuildersService,
@@ -254,7 +258,7 @@ export class AccountServiceController implements GenericServiceController {
     @Ctx() ctx: RmqContext,
   ) {
     CommonService.ack(ctx);
-    Logger.log('Get balance report', AccountServiceController.name);
+    this.logger.info('Get balance report', AccountServiceController.name);
     this.accountService.getBalanceReport(query);
     return true;
   }

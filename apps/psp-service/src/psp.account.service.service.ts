@@ -1,29 +1,29 @@
-import { isMongoId } from 'class-validator';
+import { Traceable } from '@amplication/opentelemetry-nestjs';
 import { BuildersService } from '@builder/builders';
 import { ResponsePaginator } from '@common/common/interfaces/response-pagination.interface';
 import { QuerySearchAnyDto } from '@common/common/models/query_search-any.dto';
-import {
-  Inject,
-  Injectable,
-  Logger,
-  NotImplementedException,
-} from '@nestjs/common';
+import { Inject, Injectable, NotImplementedException } from '@nestjs/common';
 import { PspAccountServiceMongooseService } from '@psp-account/psp-account';
 import { PspAccountCreateDto } from '@psp-account/psp-account/dto/psp-account.create.dto';
 import { PspAccountUpdateDto } from '@psp-account/psp-account/dto/psp-account.update.dto';
 import { PspAccountHasActiveDto } from '@psp-account/psp-account/dto/psp.has.active.dto';
 import { PspAccountDocument } from '@psp-account/psp-account/entities/mongoose/psp-account.schema';
 import { ConfigCheckStatsDto } from '@stats/stats/dto/config.check.stats.dto';
-import CheckStatsType from '../../../libs/stats/src/enum/check.stats.type';
 import { StatusDocument } from '@status/status/entities/mongoose/status.schema';
 import EventsNamesStatusEnum from 'apps/status-service/src/enum/events.names.status.enum';
 import EventsNamesTransferEnum from 'apps/transfer-service/src/enum/events.names.transfer.enum';
+import { isMongoId } from 'class-validator';
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
+import { Logger } from 'winston';
+import CheckStatsType from '../../../libs/stats/src/enum/check.stats.type';
 import EventsNamesPspEnum from './enum/events.names.psp.enum';
 import { PspServiceService } from './psp-service.service';
 
+@Traceable()
 @Injectable()
 export class PspAccountServiceService {
   constructor(
+    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
     private readonly pspService: PspServiceService,
     @Inject(BuildersService)
     private readonly builder: BuildersService,
@@ -206,7 +206,7 @@ export class PspAccountServiceService {
   }
 
   async checkStatsForOnePspAccount(pspAccountId: string) {
-    Logger.debug(pspAccountId, PspAccountServiceService.name);
+    this.logger.debug(PspAccountServiceService.name, pspAccountId);
     this.checkStats({
       pspAccountId,
       checkType: CheckStatsType.PSP_ACCOUNT,
@@ -217,11 +217,11 @@ export class PspAccountServiceService {
   }
 
   async checkStatsForAllPspAccount() {
-    //Logger.debug('Start', 'Check all pspAccount');
+    //this.logger.debug('Start', 'Check all pspAccount');
     let pagePspAccount = await this.lib.findAll();
     while (pagePspAccount?.nextPage != 1) {
       for (let h = 0; h < pagePspAccount.elementsPerPage; h++) {
-        //Logger.debug(pagePspAccount.list[h].name, 'Checking pspAccount');
+        //this.logger.debug(pagePspAccount.list[h].name, 'Checking pspAccount');
         this.checkStats({
           pspAccountId: pagePspAccount.list[h]?._id,
           checkType: CheckStatsType.PSP_ACCOUNT,

@@ -7,7 +7,7 @@ import {
   TransferPeerPathType,
 } from '@fireblocks/ts-sdk';
 import { Cache } from '@nestjs/cache-manager';
-import { ConflictException, HttpStatus, Logger } from '@nestjs/common';
+import { ConflictException, HttpStatus } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { FireblocksError } from '../errors';
 import { DepositDto } from '../generic/dto/deposit.dto';
@@ -105,7 +105,7 @@ export class FireblocksIntegrationService extends IntegrationCryptoService<
           : [];
       }, Infinity);
     } catch (e) {
-      Logger.error(e);
+      console.error(e);
     }
   }
   // creating a new vault account
@@ -124,10 +124,10 @@ export class FireblocksIntegrationService extends IntegrationCryptoService<
           autoFuel: true, // Because gas station is enable
         },
       });
-      Logger.debug(JSON.stringify(vault.data, null, 2), 'createVault');
+      console.debug(JSON.stringify(vault.data, null, 2), 'createVault');
       return vault.data;
     } catch (e) {
-      Logger.debug(e);
+      console.debug(e);
     }
   }
   // creating a new vault account
@@ -155,14 +155,14 @@ export class FireblocksIntegrationService extends IntegrationCryptoService<
         walletUser = await this.fireblocks.vaults.createVaultAccountAsset(data);
       }
 
-      Logger.debug(JSON.stringify(walletUser, null, 2), 'createWallet');
+      console.debug(JSON.stringify(walletUser, null, 2), 'createWallet');
       return walletUser.data;
     } catch (e) {
       if (e.message.indexOf('not found') > -1) {
         await this.createWallet(vaultId, assetId);
         return this.createWallet(vaultId, assetId, walletName, customerId);
       }
-      Logger.error(e.message, 'createWallet');
+      console.error(e.message, 'createWallet');
 
       throw new ConflictException({
         statusCode: HttpStatus.CONFLICT,
@@ -178,9 +178,9 @@ export class FireblocksIntegrationService extends IntegrationCryptoService<
       const vaults = await this.fireblocks.vaults.getPagedVaultAccounts({
         limit,
       });
-      Logger.debug(JSON.stringify(vaults.data, null, 2));
+      console.debug(JSON.stringify(vaults.data, null, 2));
     } catch (e) {
-      Logger.debug(e);
+      console.debug(e);
     }
   }
 
@@ -190,9 +190,9 @@ export class FireblocksIntegrationService extends IntegrationCryptoService<
         assetId,
         address,
       });
-      Logger.debug(JSON.stringify(rta.data, null, 2));
+      console.debug(JSON.stringify(rta.data, null, 2));
     } catch (e) {
-      Logger.debug(e);
+      console.debug(e);
     }
   }
 
@@ -231,7 +231,7 @@ export class FireblocksIntegrationService extends IntegrationCryptoService<
     const result = await this.fireblocks.transactions.createTransaction({
       transactionRequest: payload,
     });
-    Logger.debug(JSON.stringify(result, null, 2));
+    console.debug(JSON.stringify(result, null, 2));
     return result;
   }
   async getTxStatus(txId: string): Promise<TransactionStateEnum | string> {
@@ -245,7 +245,7 @@ export class FireblocksIntegrationService extends IntegrationCryptoService<
         return 'Transaction does not exist';
       }
 
-      Logger.debug(messageToConsole);
+      console.debug(messageToConsole);
       // while (tx.status !== TransactionStateEnum.Completed) {
       //   await new Promise((resolve) => setTimeout(resolve, 3000));
 
@@ -261,7 +261,7 @@ export class FireblocksIntegrationService extends IntegrationCryptoService<
       //         `Signing request failed/blocked/cancelled: Transaction: ${tx.id} status is ${tx.status}`,
       //       );
       //     default:
-      //       Logger.debug(messageToConsole);
+      //       console.debug(messageToConsole);
       //       break;
       //   }
       // }

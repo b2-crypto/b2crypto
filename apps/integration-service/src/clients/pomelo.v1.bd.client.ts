@@ -1,8 +1,16 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Traceable } from '@amplication/opentelemetry-nestjs';
+import { Inject, Injectable } from '@nestjs/common';
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
+import { Logger } from 'winston';
 const { Client } = require('pg');
 
+@Traceable()
 @Injectable()
 export class PomeloV1DBClient {
+  constructor(
+    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
+  ) {}
+
   private connectionProps = {
     user: process.env.V1_DB_USER,
     password: process.env.V1_DB_PWD,
@@ -20,7 +28,7 @@ export class PomeloV1DBClient {
         await client
           .connect()
           .then(async () => {
-            Logger.log(
+            this.logger.debug(
               'Successfuly connected to V1 DB database',
               PomeloV1DBClient.name,
             );
@@ -28,22 +36,22 @@ export class PomeloV1DBClient {
               if (err) {
                 reject(err);
               } else {
-                Logger.debug(
-                  result.rows,
+                this.logger.debug(
                   'PomeloV1DBClient.getBalanaceByCard:result.rows',
+                  result.rows,
                 );
                 resolve(result.rows);
               }
               client
                 .end()
                 .then(() => {
-                  Logger.log(
+                  this.logger.debug(
                     'Connection to V1 DB successfuly closed',
                     PomeloV1DBClient.name,
                   );
                 })
                 .catch((err: any) => {
-                  Logger.error(
+                  this.logger.error(
                     `Error closing connection ${err}`,
                     PomeloV1DBClient.name,
                   );
@@ -51,7 +59,7 @@ export class PomeloV1DBClient {
             });
           })
           .catch((err: any) => {
-            Logger.error(
+            this.logger.error(
               `Error connecting to V1 DB database ${err}`,
               PomeloV1DBClient.name,
             );
@@ -59,7 +67,7 @@ export class PomeloV1DBClient {
       });
       return resultset[0]?.balance;
     } catch (error) {
-      Logger.error(error, PomeloV1DBClient.name);
+      this.logger.error(PomeloV1DBClient.name, error);
     }
   }
 }

@@ -1,17 +1,19 @@
-import { UserChangePasswordDto } from '@user/user/dto/user.change-password.dto';
-import { BasicServiceModel } from '@common/common/models/basic-service.model';
+import { Traceable } from '@amplication/opentelemetry-nestjs';
 import dbIntegrationEnum from '@builder/builders/enums/db-integration.enum';
-import { UserDocument } from '@user/user/entities/mongoose/user.schema';
+import { CommonService } from '@common/common/common.service';
+import { BasicServiceModel } from '@common/common/models/basic-service.model';
+import { Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import { RoleDocument } from '@role/role/entities/mongoose/role.schema';
+import { UserChangePasswordDto } from '@user/user/dto/user.change-password.dto';
 import { UserRegisterDto } from '@user/user/dto/user.register.dto';
 import { UserUpdateDto } from '@user/user/dto/user.update.dto';
-import { CommonService } from '@common/common/common.service';
-import { Inject, Injectable, NotFoundException } from '@nestjs/common';
-import * as speakeasy from 'speakeasy';
-import * as qrcode from 'qrcode';
+import { UserDocument } from '@user/user/entities/mongoose/user.schema';
 import { Model } from 'mongoose';
-import { RoleDocument } from '@role/role/entities/mongoose/role.schema';
-import { ConfigService } from '@nestjs/config';
+import * as qrcode from 'qrcode';
+import * as speakeasy from 'speakeasy';
 
+@Traceable()
 @Injectable()
 export class UserServiceMongooseService extends BasicServiceModel<
   UserDocument,

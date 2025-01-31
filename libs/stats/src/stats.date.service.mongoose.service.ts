@@ -1,3 +1,4 @@
+import { Traceable } from '@amplication/opentelemetry-nestjs';
 import { CommonService } from '@common/common';
 import { BasicServiceModel } from '@common/common/models/basic-service.model';
 import { QuerySearchAnyDto } from '@common/common/models/query_search-any.dto';
@@ -10,6 +11,7 @@ import { StatsDateAllCreateDto } from './dto/stats.date.all.create.dto';
 import { StatsDateAllUpdateDto } from './dto/stats.date.all.update.dto';
 import { StatsDateDocument } from './entities/mongoose/stats.date.schema';
 
+@Traceable()
 @Injectable()
 export class StatsDateServiceMongooseService extends BasicServiceModel<
   StatsDateDocument,

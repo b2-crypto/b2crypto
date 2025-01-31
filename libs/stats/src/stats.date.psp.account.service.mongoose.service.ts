@@ -1,3 +1,4 @@
+import { Traceable } from '@amplication/opentelemetry-nestjs';
 import { CommonService } from '@common/common';
 import { BasicServiceModel } from '@common/common/models/basic-service.model';
 import { QuerySearchAnyDto } from '@common/common/models/query_search-any.dto';
@@ -9,6 +10,7 @@ import { isArray, isDateString, isMongoId } from 'class-validator';
 import { ObjectId } from 'mongodb';
 import { Model } from 'mongoose';
 
+@Traceable()
 @Injectable()
 export class StatsDatePspAccountServiceMongooseService extends BasicServiceModel<
   StatsDatePspAccountDocument,

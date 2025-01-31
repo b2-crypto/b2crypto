@@ -1,3 +1,4 @@
+import { Traceable } from '@amplication/opentelemetry-nestjs';
 import { AuthService } from '@auth/auth';
 import { AllowAnon } from '@auth/auth/decorators/allow-anon.decorator';
 import { ApiKeyCheck } from '@auth/auth/decorators/api-key-check.decorator';
@@ -24,7 +25,6 @@ import {
   Get,
   HttpStatus,
   Inject,
-  Logger,
   NotFoundException,
   Param,
   Post,
@@ -54,14 +54,18 @@ import EventsNamesMessageEnum from 'apps/message-service/src/enum/events.names.m
 import EventsNamesUserEnum from 'apps/user-service/src/enum/events.names.user.enum';
 import { isBoolean } from 'class-validator';
 import { SwaggerSteakeyConfigEnum } from 'libs/config/enum/swagger.stakey.config.enum';
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
+import { Logger } from 'winston';
 import { SecurityServiceService } from './security-service.service';
 
 @ApiTags('AUTHENTICATION')
+@Traceable()
 @Controller('auth')
 export class SecurityServiceController {
   private eventClient: ClientProxy;
 
   constructor(
+    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
     private readonly securityServiceService: SecurityServiceService,
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
     @Inject(BuildersService) private builder: BuildersService,
@@ -319,7 +323,7 @@ export class SecurityServiceController {
         emailData,
       );
     } catch (error) {
-      Logger.error('Error sending user registration email', error.stack);
+      this.logger.error('Error sending user registration email', error.stack);
     }
 
     return createdUser;
@@ -468,7 +472,7 @@ export class SecurityServiceController {
         resourceName: ResourcesEnum.USER,
       };
     }
-    Logger.log(data, 'OTP Sended');
+    this.logger.debug('OTP Sended', data);
     this.builder.emitMessageEventClient(
       EventsNamesMessageEnum.sendEmailOtpNotification,
       data,
@@ -511,7 +515,7 @@ export class SecurityServiceController {
       }
       return client;
     } catch (err) {
-      Logger.error(err, 'Error getting client from public key');
+      this.logger.error('Error getting client from public key', err);
       throw new UnauthorizedException();
     }
   }
@@ -539,7 +543,7 @@ export class SecurityServiceController {
       });
       return code;
     } catch (err) {
-      Logger.error(err, 'Bad request Identity code');
+      this.logger.error('Bad request Identity code', err);
       throw new BadGatewayException();
     }
   }
@@ -557,7 +561,7 @@ export class SecurityServiceController {
       }
       return rta;
     } catch (err) {
-      Logger.error(err, 'Bad request Identity token');
+      this.logger.error('Bad request Identity token', err);
       throw new BadGatewayException();
     }
   }

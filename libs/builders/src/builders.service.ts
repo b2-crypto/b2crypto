@@ -1,3 +1,4 @@
+import { Traceable } from '@amplication/opentelemetry-nestjs';
 import EventClientEnum from '@common/common/enums/EventsNameEnum';
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
@@ -23,6 +24,7 @@ import EventsNamesTransferEnum from 'apps/transfer-service/src/enum/events.names
 import EventsNamesUserEnum from 'apps/user-service/src/enum/events.names.user.enum';
 import { Observable, lastValueFrom, startWith } from 'rxjs';
 
+@Traceable()
 @Injectable()
 export class BuildersService {
   constructor(
