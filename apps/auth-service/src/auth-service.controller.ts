@@ -688,7 +688,7 @@ export class AuthServiceController {
   private async generateOtp(user: UserDocument, msOTP?: number) {
     const otpTTL =
       msOTP ??
-      this.configService.get<number>('OTP_VALIDATION_TIME_SECONDS', 90) * 1000;
+      this.configService.get<number>('OTP_VALIDATION_TIME_SECONDS', 120) * 1000;
 
     const otpSended =
       (await this.getOtpGenerated(user.email)) ?? CommonService.getOTP();

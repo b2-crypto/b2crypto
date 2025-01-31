@@ -19,6 +19,7 @@ import {
   isStressTest,
   LOGO_URL,
   mongoAtlasClusterName,
+  OTP_VALIDATION_TIME_SECONDS,
   POMELO_WHITELISTED_IPS_CHECK,
   PORT,
   PROJECT_NAME,
@@ -156,6 +157,10 @@ export const ecsFargateService = new awsx.ecs.FargateService(
             value: SECRETS.AUTH_SECRET,
           },
           { name: 'AUTH_EXPIRE_IN', value: AUTH_EXPIRE_IN },
+          {
+            name: 'OTP_VALIDATION_TIME_SECONDS',
+            value: OTP_VALIDATION_TIME_SECONDS,
+          },
           {
             name: 'API_KEY_EMAIL_APP',
             value: API_KEY_EMAIL_APP,
