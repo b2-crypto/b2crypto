@@ -1,5 +1,5 @@
 /* eslint-disable */
-import { logger, sdk } from './opentelemetry';
+import { sdk } from './opentelemetry';
 
 sdk.start();
 /* eslint-disable */
@@ -22,23 +22,24 @@ import { StatusServiceModule } from 'apps/status-service/src/status-service.modu
 import { TransferServiceModule } from 'apps/transfer-service/src/transfer-service.module';
 import * as basicAuth from 'express-basic-auth';
 import { SwaggerSteakeyConfigEnum } from 'libs/config/enum/swagger.stakey.config.enum';
-import {
-  WINSTON_MODULE_NEST_PROVIDER,
-  WinstonLogger,
-  WinstonModule,
-} from 'nest-winston';
+import { Logger } from 'nestjs-pino';
 import { UserServiceModule } from '../../user-service/src/user-service.module';
 import { AppHttpModule } from './app.http.module';
 
 async function bootstrap() {
+  // const app = await NestFactory.create(AppHttpModule, {
+  //   logger: WinstonModule.createLogger({
+  //     instance: logger,
+  //   }),
+  // });
   const app = await NestFactory.create(AppHttpModule, {
-    logger: WinstonModule.createLogger({
-      instance: logger,
-    }),
+    bufferLogs: true,
   });
 
   const configService = app.get(ConfigService);
-  const loggerService = app.get<WinstonLogger>(WINSTON_MODULE_NEST_PROVIDER);
+  const loggerService = app.get(Logger);
+
+  app.useLogger(loggerService);
 
   const validationPipes = new ValidationPipe({
     whitelist: true,

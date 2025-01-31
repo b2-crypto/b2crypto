@@ -1,15 +1,15 @@
 import { Traceable } from '@amplication/opentelemetry-nestjs';
 import { HttpService } from '@nestjs/axios';
-import { Inject, Injectable } from '@nestjs/common';
-import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
+import { Injectable } from '@nestjs/common';
+import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import { lastValueFrom } from 'rxjs';
-import { Logger } from 'winston';
 
 @Traceable()
 @Injectable()
 export class FiatIntegrationClient {
   constructor(
-    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
+    @InjectPinoLogger(FiatIntegrationClient.name)
+    protected readonly logger: PinoLogger,
     private httpService: HttpService,
   ) {}
 

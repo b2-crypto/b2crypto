@@ -10,13 +10,11 @@ import {
   Body,
   Controller,
   HttpCode,
-  Inject,
   Post,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
-import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
-import { Logger } from 'winston';
+import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import { PomeloIntegrationShippingService } from './services/pomelo.integration.shipping.service';
 
 @Traceable()
@@ -25,7 +23,8 @@ import { PomeloIntegrationShippingService } from './services/pomelo.integration.
 @UseInterceptors(PomeloSignatureInterceptor)
 export class PomeloShippingController {
   constructor(
-    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
+    @InjectPinoLogger(PomeloShippingController.name)
+    protected readonly logger: PinoLogger,
     private readonly shippingService: PomeloIntegrationShippingService,
   ) {}
 

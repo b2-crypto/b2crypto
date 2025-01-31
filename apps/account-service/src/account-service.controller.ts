@@ -35,8 +35,7 @@ import {
 import { ApiExcludeEndpoint, ApiTags } from '@nestjs/swagger';
 import EventsNamesStatusEnum from 'apps/status-service/src/enum/events.names.status.enum';
 import EventsNamesUserEnum from 'apps/user-service/src/enum/events.names.user.enum';
-import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
-import { Logger } from 'winston';
+import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import { AccountServiceService } from './account-service.service';
 import EventsNamesAccountEnum from './enum/events.names.account.enum';
 
@@ -45,7 +44,8 @@ import EventsNamesAccountEnum from './enum/events.names.account.enum';
 @Controller('accounts')
 export class AccountServiceController implements GenericServiceController {
   constructor(
-    @Inject(WINSTON_MODULE_NEST_PROVIDER) protected readonly logger: Logger,
+    @InjectPinoLogger(AccountServiceController.name)
+    protected readonly logger: PinoLogger,
     private readonly accountService: AccountServiceService,
     @Inject(BuildersService)
     private readonly builder: BuildersService,

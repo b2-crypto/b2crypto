@@ -1,15 +1,15 @@
 import { Traceable } from '@amplication/opentelemetry-nestjs';
-import { Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import * as fs from 'fs';
-import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
+import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import * as sftpClient from 'ssh2-sftp-client';
-import { Logger } from 'winston';
 
 @Traceable()
 @Injectable()
 export class PomeloIntegrationSFTPService {
   constructor(
-    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
+    @InjectPinoLogger(PomeloIntegrationSFTPService.name)
+    protected readonly logger: PinoLogger,
   ) {}
 
   private client = new sftpClient();

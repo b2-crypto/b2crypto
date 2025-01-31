@@ -81,8 +81,7 @@ import { Traceable } from '@amplication/opentelemetry-nestjs';
 import { CategoryInterface } from '@category/category/entities/category.interface';
 import DocIdTypeEnum from '@common/common/enums/DocIdTypeEnum';
 import { PspAccountInterface } from '@psp-account/psp-account/entities/psp-account.interface';
-import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
-import { Logger } from 'winston';
+import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import { ResponsePaginator } from '../../../libs/common/src/interfaces/response-pagination.interface';
 import { AccountServiceController } from './account-service.controller';
 import { AccountServiceService } from './account-service.service';
@@ -94,7 +93,8 @@ import EventsNamesAccountEnum from './enum/events.names.account.enum';
 @Controller('cards')
 export class CardServiceController extends AccountServiceController {
   constructor(
-    @Inject(WINSTON_MODULE_NEST_PROVIDER) protected readonly logger: Logger,
+    @InjectPinoLogger(CardServiceController.name)
+    protected readonly logger: PinoLogger,
     readonly cardService: AccountServiceService,
     @Inject(UserServiceService)
     private readonly userService: UserServiceService,

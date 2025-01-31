@@ -37,8 +37,7 @@ import EventsNamesMessageEnum from 'apps/message-service/src/enum/events.names.m
 import EventsNamesStatusEnum from 'apps/status-service/src/enum/events.names.status.enum';
 import EventsNamesTransferEnum from 'apps/transfer-service/src/enum/events.names.transfer.enum';
 import * as fs from 'fs';
-import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
-import { Logger } from 'winston';
+import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 
 @Traceable()
 @Injectable()
@@ -150,7 +149,8 @@ export class AccountServiceService
     return Promise.all(promises);
   }
   constructor(
-    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
+    @InjectPinoLogger(AccountServiceService.name)
+    protected readonly logger: PinoLogger,
     private configService: ConfigService,
     @Inject(BuildersService)
     private readonly builder: BuildersService,

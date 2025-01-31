@@ -30,8 +30,7 @@ import EventsNamesStatusEnum from 'apps/status-service/src/enum/events.names.sta
 import EventsNamesTransferEnum from 'apps/transfer-service/src/enum/events.names.transfer.enum';
 import { isMongoId } from 'class-validator';
 import * as crypto from 'crypto';
-import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
-import { Logger } from 'winston';
+import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 
 @Traceable()
 @Controller('fireblocks')
@@ -54,7 +53,8 @@ export class FireBlocksNotificationsController {
   tSM7QYNhlftT4/yVvYnk0YcCAwEAAQ==
   -----END PUBLIC KEY-----`.replace(/\\n/g, '\n');
   constructor(
-    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
+    @InjectPinoLogger(FireBlocksNotificationsController.name)
+    protected readonly logger: PinoLogger,
     @Inject(CACHE_MANAGER)
     private cacheManager: Cache,
     private readonly builder: BuildersService,

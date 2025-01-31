@@ -9,9 +9,7 @@ import {
   ATTR_SERVICE_NAME,
   ATTR_SERVICE_VERSION,
 } from '@opentelemetry/semantic-conventions';
-import { OpenTelemetryTransportV3 } from '@opentelemetry/winston-transport';
-import { utilities } from 'nest-winston';
-import { createLogger, format, transports } from 'winston';
+import { pino } from 'pino';
 
 const resource = new Resource({
   [ATTR_SERVICE_NAME]: `${process.env.APP_NAME || 'b2crypto'}.${
@@ -66,22 +64,28 @@ process.on('SIGTERM', async () => {
     .finally(() => process.exit(0));
 });
 
-export const logger = createLogger({
-  level: 'info',
-  format: format.json(),
-  transports: [
-    new transports.Console({
-      format: format.combine(
-        format.timestamp(),
-        format.ms(),
-        utilities.format.nestLike(process.env.APP_NAME, {
-          colors: true,
-          prettyPrint: true,
-          processId: true,
-          appName: true,
-        }),
-      ),
-    }),
-    new OpenTelemetryTransportV3(),
-  ],
+// export const logger = createLogger({
+//   level: 'info',
+//   format: format.json(),
+//   transports: [
+//     new transports.Console({
+//       format: format.combine(
+//         format.timestamp(),
+//         format.ms(),
+//         utilities.format.nestLike(process.env.APP_NAME, {
+//           colors: true,
+//           prettyPrint: true,
+//           processId: true,
+//           appName: true,
+//         }),
+//       ),
+//     }),
+//     new OpenTelemetryTransportV3(),
+//   ],
+// });
+
+const transport = pino.transport({
+  target: 'pino-opentelemetry-transport',
 });
+
+export const logger = pino(transport);
