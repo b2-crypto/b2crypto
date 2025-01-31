@@ -1,8 +1,9 @@
 /* eslint-disable */
-import { tracingConfig } from './opentelemetry';
+import { sdk } from './opentelemetry';
+
+sdk.start();
 /* eslint-disable */
 
-import { Tracing } from '@amplication/opentelemetry-nestjs';
 import { QueueAdminModule } from '@common/common/queue-admin-providers/queue.admin.provider.module';
 import { INestApplication, Logger, ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
@@ -25,14 +26,10 @@ import { UserServiceModule } from '../../user-service/src/user-service.module';
 import { AppHttpModule } from './app.http.module';
 
 async function bootstrap() {
-  Tracing.init(tracingConfig);
-  Logger.log(process.env.TZ, 'Timezone');
+  const app = await NestFactory.create(AppHttpModule);
 
-  const app = await NestFactory.create(AppHttpModule, {
-    // logger: false,
-    cors: true,
-  });
   const configService = app.get(ConfigService);
+  const loggerService = app.get(Logger);
 
   const validationPipes = new ValidationPipe({
     whitelist: true,
@@ -59,6 +56,7 @@ async function bootstrap() {
     credentials: true,
     allowedHeaders: 'b2crypto-affiliate-key b2crypto-key Content-Type Accept',
   });
+
   app.getHttpAdapter().getInstance().disable('x-powered-by');
 
   app.connectMicroservice(
@@ -69,7 +67,9 @@ async function bootstrap() {
   );
   await app.startAllMicroservices();
   await app.listen(configService.get('PORT') ?? 3000);
-  Logger.log('Listening on port ' + configService.get('PORT'));
+
+  loggerService.log('Timezone', process.env.TZ);
+  loggerService.log('Listening on port ' + configService.get('PORT'));
   if (typeof process.send === 'function') {
     process.send('ready');
   }
