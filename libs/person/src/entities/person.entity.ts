@@ -2,7 +2,6 @@ import { AffiliateEntity } from '@affiliate/affiliate/domain/entities/affiliate.
 import CountryCodeEnum from '@common/common/enums/country.code.b2crypto.enum';
 import DocIdTypeEnum from '@common/common/enums/DocIdTypeEnum';
 import GenderEnum from '@common/common/enums/GenderEnum';
-import BirthModel from '@common/common/models/BirthModel';
 import JobModel from '@common/common/models/JobModel';
 import KyCModel from '@common/common/models/KyCModel';
 import LocationModel from '@common/common/models/LocationModel';
@@ -41,5 +40,5 @@ export class PersonEntity implements PersonInterface {
   nationality: CountryCodeEnum;
   country: CountryCodeEnum;
   taxIdentificationType: string;
-  taxIdentificationValue: number;
+  taxIdentificationValue: string;
 }
