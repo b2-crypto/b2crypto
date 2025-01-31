@@ -689,14 +689,15 @@ export class AuthServiceController {
     const otpTTL =
       msOTP ??
       this.configService.get<number>('OTP_VALIDATION_TIME_SECONDS', 120) * 1000;
+    const email = user.email.toLocaleLowerCase();
 
     const otpSended =
-      (await this.getOtpGenerated(user.email)) ?? CommonService.getOTP();
+      (await this.getOtpGenerated(email)) ?? CommonService.getOTP();
 
-    await this.cacheManager.set(user.email, otpSended, otpTTL);
+    await this.cacheManager.set(email, otpSended, otpTTL);
 
     const data = {
-      destinyText: user.email,
+      destinyText: email,
       destiny: user?._id
         ? {
             resourceId: user?._id,
@@ -704,7 +705,7 @@ export class AuthServiceController {
           }
         : null,
       vars: {
-        name: user.name ?? user.email,
+        name: user.name ?? email,
         lastname: '',
         otp: otpSended,
       },
@@ -719,11 +720,15 @@ export class AuthServiceController {
   }
 
   private async getOtpGenerated(email: string) {
-    return this.cacheManager.get<number>(email);
+    const _email = email.toLocaleLowerCase();
+    this.logger.debug('getOtpGenerated', _email);
+    return this.cacheManager.get<number>(_email);
   }
 
   private async deleteOtpGenerated(email: string) {
-    return this.cacheManager.del(email);
+    const _email = email.toLocaleLowerCase();
+    this.logger.debug('deleteOtpGenerated', _email);
+    return this.cacheManager.del(_email);
   }
 }
 
