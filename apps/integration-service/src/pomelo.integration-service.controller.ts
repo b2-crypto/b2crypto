@@ -12,11 +12,13 @@ import {
   Controller,
   Headers,
   HttpCode,
-  Logger,
+  Inject,
   Post,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
+import { Logger } from 'winston';
 import { PomeloIntegrationProcessService } from './services/pomelo.integration.process.service';
 import { PomeloIntegrationSFTPService } from './services/pomelo.integration.sftp.service';
 
@@ -24,6 +26,7 @@ import { PomeloIntegrationSFTPService } from './services/pomelo.integration.sftp
 @Controller()
 export class PomeloIntegrationServiceController {
   constructor(
+    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
     private readonly integrationServiceService: PomeloIntegrationProcessService,
     private readonly sftpService: PomeloIntegrationSFTPService,
   ) {}
@@ -36,7 +39,7 @@ export class PomeloIntegrationServiceController {
     @Body() notification: NotificationDto,
     @Headers() headers: any,
   ): Promise<any> {
-    Logger.log(
+    this.logger.debug(
       `Idempotency: ${notification.idempotency_key}`,
       'NotificationHandler - processNotification',
     );
@@ -55,9 +58,9 @@ export class PomeloIntegrationServiceController {
     @Headers(PomeloEnum.POMELO_IDEMPOTENCY_HEADER) idempotency: string,
     @Headers() headers: any,
   ): Promise<any> {
-    Logger.log(`Idempotency: ${idempotency}`, 'AdjustmentHandler');
+    this.logger.debug(`Idempotency: ${idempotency}`, 'AdjustmentHandler');
     adjustment.idempotency = idempotency;
-    Logger.log(adjustment, 'AdjustmentHandler');
+    this.logger.debug('AdjustmentHandler', adjustment);
     return await this.integrationServiceService.processAdjustment(
       adjustment,
       headers,
@@ -73,9 +76,9 @@ export class PomeloIntegrationServiceController {
     @Headers(PomeloEnum.POMELO_IDEMPOTENCY_HEADER) idempotency: string,
     @Headers() headers: any,
   ): Promise<any> {
-    Logger.log(`Idempotency: ${idempotency}`, 'AuthorizationHandler');
+    this.logger.debug(`Idempotency: ${idempotency}`, 'AuthorizationHandler');
     authorization.idempotency = idempotency;
-    Logger.log(authorization, 'AuthorizationHandler');
+    this.logger.debug('AuthorizationHandler', authorization);
     return await this.integrationServiceService.processAuthorization(
       authorization,
       headers,

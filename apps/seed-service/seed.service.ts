@@ -5,7 +5,7 @@ import { BuildersService } from '@builder/builders';
 import { CategoryServiceMongooseService } from '@category/category';
 import { CrmServiceMongooseService } from '@crm/crm';
 import { LeadServiceMongooseService } from '@lead/lead';
-import { Inject, Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import { PermissionServiceMongooseService } from '@permission/permission';
 import { PersonServiceMongooseService } from '@person/person';
@@ -21,6 +21,8 @@ import { TrafficServiceMongooseService } from '@traffic/traffic';
 import { TransferServiceMongooseService } from '@transfer/transfer';
 import { UserServiceMongooseService } from '@user/user';
 import { BrandServiceMongooseService } from 'libs/brand/src';
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
+import { Logger } from 'winston';
 import creator from './data/initial-data';
 
 @Traceable()
@@ -28,6 +30,7 @@ import creator from './data/initial-data';
 export class SeedService {
   private eventClient: ClientProxy;
   constructor(
+    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
     @Inject(BuildersService)
     private readonly builder: BuildersService,
     private readonly transferRepo: TransferServiceMongooseService,
@@ -81,7 +84,7 @@ export class SeedService {
       !countPermissions /*||
       !countTransfers*/
     ) {
-      Logger.debug('Seeding initial data...', SeedService.name);
+      this.logger.debug('Seeding initial data...', SeedService.name);
       // await this.clearStats();
       // await this.clearActivities();
       // await this.clearPersons();
@@ -105,95 +108,95 @@ export class SeedService {
   }
 
   async clearStats() {
-    Logger.log('Clear stats...', SeedService.name);
+    this.logger.debug('Clear stats...', SeedService.name);
     return Promise.all([
       this.statsDatePspAccountsRepo.clear(),
       this.statsDateAffiliatesRepo.clear(),
     ]);
   }
   async clearActivities() {
-    Logger.log('Clear activities...', SeedService.name);
+    this.logger.debug('Clear activities...', SeedService.name);
     return this.activityRepo.clear();
   }
   async clearStatus() {
-    Logger.log('Clear status...', SeedService.name);
+    this.logger.debug('Clear status...', SeedService.name);
     return this.statusRepo.clear();
   }
   async clearCategories() {
-    Logger.log('Start seed categories...', SeedService.name);
+    this.logger.debug('Start seed categories...', SeedService.name);
     return this.categoryRepo.clear();
   }
   async clearPermissions() {
     // Clear Permissions
-    Logger.log('Clear permissions...', SeedService.name);
+    this.logger.debug('Clear permissions...', SeedService.name);
     return this.permissionRepo.clear();
   }
   async clearRoles() {
     // Clear Roles
-    Logger.log('Clear roles...', SeedService.name);
+    this.logger.debug('Clear roles...', SeedService.name);
     return this.roleRepo.clear();
   }
   async clearBrands() {
     // Clear Brands
-    Logger.log('Clear brands...', SeedService.name);
+    this.logger.debug('Clear brands...', SeedService.name);
     return this.brandRepo.clear();
   }
   async clearCrms() {
     // Clear Crms
-    Logger.log('Clear crms...', SeedService.name);
+    this.logger.debug('Clear crms...', SeedService.name);
     return this.crmRepo.clear();
   }
   async clearPersons() {
     // Clear Persons
-    Logger.log('Clear persons...', SeedService.name);
+    this.logger.debug('Clear persons...', SeedService.name);
     return this.personRepo.clear();
   }
   async clearUsers() {
     // Clear Users
-    Logger.log('Clear users...', SeedService.name);
+    this.logger.debug('Clear users...', SeedService.name);
     return this.userRepo.clear();
   }
   async clearPsps() {
     // Clear Psps
-    Logger.log('Clear psps...', SeedService.name);
+    this.logger.debug('Clear psps...', SeedService.name);
     return this.pspRepo.clear();
   }
   async clearPspAccounts() {
     // Clear Psps Account
-    Logger.log('Clear psps account...', SeedService.name);
+    this.logger.debug('Clear psps account...', SeedService.name);
     return this.pspAccountRepo.clear();
   }
   async clearTraffic() {
     // Clear Traffic
-    Logger.log('Clear traffic...', SeedService.name);
+    this.logger.debug('Clear traffic...', SeedService.name);
     return this.trafficRepo.clear();
   }
   async clearAffiliates() {
     // Clear Affiliates
-    Logger.log('Clear affiliate...', SeedService.name);
+    this.logger.debug('Clear affiliate...', SeedService.name);
     return this.affiliateRepo.clear();
   }
   async clearLeads() {
     // Clear Leads
-    Logger.log('Clear lead...', SeedService.name);
+    this.logger.debug('Clear lead...', SeedService.name);
     return this.leadRepo.clear();
   }
   async clearTransfers() {
     // Clear Transfers
-    Logger.log('Clear transfers...', SeedService.name);
+    this.logger.debug('Clear transfers...', SeedService.name);
     return this.transferRepo.clear();
   }
 
   async seedStatus() {
     this.clearStatus();
     // Create Status
-    Logger.log('Saving status...', SeedService.name);
+    this.logger.debug('Saving status...', SeedService.name);
     return creator.createInitialStatusDataList();
   }
 
   async seedCategory() {
     this.clearCategories();
-    Logger.log('Saving categories...', SeedService.name);
+    this.logger.debug('Saving categories...', SeedService.name);
     return Promise.all([
       // Create Category/Categories
       await creator.createInitialCategoryDataList(),
@@ -219,62 +222,62 @@ export class SeedService {
   async seedPermissions() {
     this.clearPermissions();
     // Create Permissions
-    Logger.log('Saving permissions...', SeedService.name);
+    this.logger.debug('Saving permissions...', SeedService.name);
     return creator.createInitialPermissionDataList();
   }
 
   async seedRoles() {
     this.clearRoles();
     // Create Roles
-    Logger.log('Saving roles...', SeedService.name);
+    this.logger.debug('Saving roles...', SeedService.name);
     return creator.createInitialRoleDataList();
   }
 
   async seedBrands() {
     this.clearBrands();
     // Create Brands
-    Logger.log('Saving brands...', SeedService.name);
+    this.logger.debug('Saving brands...', SeedService.name);
     return creator.createInitialBrandDataList();
   }
   async seedCrm() {
     await this.clearCrms();
     // Create Crms
-    Logger.log('Saving crms...', SeedService.name);
+    this.logger.debug('Saving crms...', SeedService.name);
     return creator.createInitialCrmDataList();
   }
   async seedUsers() {
     await this.clearUsers();
     // Create Users
-    Logger.log('Saving superadmin...', SeedService.name);
+    this.logger.debug('Saving superadmin...', SeedService.name);
     return creator.createInitialUserDataList();
   }
   async seedPsps() {
     await this.clearPsps();
     // Create Psps
-    Logger.log('Saving psp...', SeedService.name);
+    this.logger.debug('Saving psp...', SeedService.name);
     return creator.createInitialPspDataList();
   }
   async seedPspAccounts() {
     await this.clearPspAccounts();
     // Create Psps
-    Logger.log('Saving psp account...', SeedService.name);
+    this.logger.debug('Saving psp account...', SeedService.name);
     return creator.createInitialPspAccountDataList();
   }
   async seedAffiliates() {
     await Promise.all([this.clearTraffic(), this.clearAffiliates()]);
     // Create Affiliate
-    Logger.log('Saving affiliate...', SeedService.name);
+    this.logger.debug('Saving affiliate...', SeedService.name);
     return creator.createInitialAffiliateDataList();
   }
   async seedLeads() {
     await this.clearLeads();
     // Create Lead
-    Logger.log('Save lead...', SeedService.name);
+    this.logger.debug('Save lead...', SeedService.name);
     return creator.createInitialLeadDataList();
   }
   async seedTransfers() {
     await this.clearTransfers();
-    Logger.log('Save transfers...', SeedService.name);
+    this.logger.debug('Save transfers...', SeedService.name);
     return creator.createInitialTransferDataList();
   }
 }

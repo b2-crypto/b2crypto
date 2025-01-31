@@ -4,16 +4,18 @@ import {
   ExecutionContext,
   Inject,
   Injectable,
-  Logger,
   UnauthorizedException,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import EventsNamesUserEnum from 'apps/user-service/src/enum/events.names.user.enum';
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
+import { Logger } from 'winston';
 
 @Traceable()
 @Injectable()
 export class ApiKeyAuthGuard extends AuthGuard('api-key') {
   constructor(
+    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
     @Inject(BuildersService)
     private readonly builder: BuildersService,
   ) {
@@ -39,7 +41,7 @@ export class ApiKeyAuthGuard extends AuthGuard('api-key') {
       delete request.headers['checkApiKey'];
       return true;
     } catch (err) {
-      Logger.error(err, 'ApiKeyAuthGuard.canActive');
+      this.logger.error('ApiKeyAuthGuard.canActive', err);
       return false;
     }
   }

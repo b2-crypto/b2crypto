@@ -1,12 +1,18 @@
 import { Traceable } from '@amplication/opentelemetry-nestjs';
 import { SumsubProcessHeaderDto } from '@integration/integration/identity/generic/domain/dto/sumsub.process.header.dto';
-import { Injectable, Logger, NotImplementedException } from '@nestjs/common';
+import { Inject, Injectable, NotImplementedException } from '@nestjs/common';
 import * as crypto from 'crypto';
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
+import { Logger } from 'winston';
 
 @Traceable()
 @Injectable()
 export class SumsubSignatureUtils {
   private apiKey = 'zyPoKDIxcPqJNtSi4BtjK1RV62g';
+
+  constructor(
+    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
+  ) {}
 
   checkSignature(headers: SumsubProcessHeaderDto, body): boolean {
     const algo = {
@@ -18,17 +24,17 @@ export class SumsubSignatureUtils {
     if (!algo) {
       throw new NotImplementedException('Unsupported algorithm');
     }
-    Logger.log(`Using ${algo} as algorithm`, 'Sumsub Check Signature');
+    this.logger.debug(`Using ${algo} as algorithm`, 'Sumsub Check Signature');
 
     const calculatedDigest = crypto
       .createHmac(algo, this.apiKey)
       .update(JSON.stringify(body))
       .digest('hex');
-    Logger.log(
+    this.logger.debug(
       `Calculated digest: ${calculatedDigest}`,
       'Sumsub Check Signature',
     );
-    Logger.log(`Digest: ${headers.digest}`, 'Sumsub Check Signature');
+    this.logger.debug(`Digest: ${headers.digest}`, 'Sumsub Check Signature');
 
     //return calculatedDigest === headers.digest;
     return true;

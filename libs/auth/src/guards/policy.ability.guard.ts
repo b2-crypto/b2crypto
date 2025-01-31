@@ -4,12 +4,14 @@ import { PomeloEnum } from '@integration/integration/enum/pomelo.enum';
 import {
   CanActivate,
   ExecutionContext,
+  Inject,
   Injectable,
-  Logger,
 } from '@nestjs/common';
 import { PATH_METADATA } from '@nestjs/common/constants';
 import { Reflector } from '@nestjs/core';
 import * as ipaddr from 'ipaddr.js';
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
+import { Logger } from 'winston';
 import { AppAbility, CaslAbilityFactory } from '../casl-ability.factory';
 import { IS_ANON } from '../decorators/allow-anon.decorator';
 import { IS_API_KEY_CHECK } from '../decorators/api-key-check.decorator';
@@ -23,6 +25,7 @@ import {
 @Injectable()
 export class PoliciesGuard implements CanActivate {
   constructor(
+    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
     private reflector: Reflector,
     private caslAbilityFactory: CaslAbilityFactory,
   ) {}
@@ -109,7 +112,7 @@ export class PoliciesGuard implements CanActivate {
       ipaddr.process(request?.connection?.remoteAddress).toString() ||
       request?.connection?.remoteAddress ||
       '';
-    Logger.log('SignatureGuard', `IpCaller: ${caller}`);
+    this.logger.debug('SignatureGuard', `IpCaller: ${caller}`);
     const whitelisted = process.env.POMELO_WHITELISTED_IPS;
     return whitelisted?.split(',')?.includes(caller) || false;
   }

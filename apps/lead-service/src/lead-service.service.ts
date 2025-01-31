@@ -24,7 +24,6 @@ import {
   BadRequestException,
   Inject,
   Injectable,
-  Logger,
   NotFoundException,
   NotImplementedException,
   UnauthorizedException,
@@ -55,6 +54,8 @@ import { StatusServiceService } from 'apps/status-service/src/status-service.ser
 import { UserServiceService } from 'apps/user-service/src/user-service.service';
 import { isArray } from 'class-validator';
 import { isValidObjectId } from 'mongoose';
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
+import { Logger } from 'winston';
 import EventsNamesTransferEnum from '../../transfer-service/src/enum/events.names.transfer.enum';
 import { AutologinLeadDto } from './dto/autologin.lead.dto';
 import { AutologinLeadResponse } from './dto/autologin.lead.response';
@@ -75,6 +76,7 @@ export class LeadServiceService
   private statusFtd: StatusDocument;
 
   constructor(
+    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
     private configService: ConfigService,
     @Inject(BuildersService)
     private readonly builder: BuildersService,
@@ -964,14 +966,14 @@ export class LeadServiceService
           EventsNamesLeadEnum.deleteOneById,
           lead._id,
         );
-        Logger.error(leadValidated, `${LeadServiceService.name}:862`);
+        this.logger.error(`${LeadServiceService.name}:862`, leadValidated);
         CommonService.ack(ctx);
         if (rtaLeadCreateOnLeverate?.error.code != 401) {
           throw new BadRequestException('lead already exist');
         }
-        Logger.error(
-          rtaLeadCreateOnLeverate?.error,
+        this.logger.error(
           `Leverate error with affiliate ${leadValidated.affiliate}`,
+          rtaLeadCreateOnLeverate?.error,
         );
         //throw new BadRequestException('contact B2Crypto support');
         throw new BadRequestException({
@@ -1359,7 +1361,7 @@ export class LeadServiceService
           >(EventsNamesStatsEnum.checkAllStatsAffiliate, {
             list: leadsToCheck.list,
           });
-        /* Logger.debug(
+        /* this.logger.debug(
           `Checked ${leadsToCheck.totalElements} result ${listStatsAffiliate?.length} total stats generated on page ${leadsToCheck.currentPage} for ${affiliateId} Affiliate`,
           LeadServiceService.name,
         ); */
@@ -1367,7 +1369,7 @@ export class LeadServiceService
       }
       page = leadsToCheck.nextPage;
       nextPage = leadsToCheck.nextPage;
-      Logger.log(
+      this.logger.debug(
         `Saved page ${leadsToCheck.currentPage} of AFFILIATE ${affiliateId} lead's. Next page ${nextPage}/${leadsToCheck.lastPage}`,
         'Check leads affiliate stats',
       );
@@ -1406,7 +1408,10 @@ export class LeadServiceService
     affiliateList = [],
     daysBefore = 0,
   ) {
-    Logger.debug(`Checking leads modified`, 'checkStatusFromLeadsListByStatus');
+    this.logger.debug(
+      `Checking leads modified`,
+      'checkStatusFromLeadsListByStatus',
+    );
     const today = new Date();
     //today.setUTCHours(0, 0, 0, 0);
     if (affiliateList.length === 0) {

@@ -2,10 +2,12 @@ import { Traceable } from '@amplication/opentelemetry-nestjs';
 import { CommonService } from '@common/common';
 import { ProcessHeaderDto } from '@integration/integration/dto/pomelo.process.header.dto';
 import { PomeloEnum } from '@integration/integration/enum/pomelo.enum';
-import { ExecutionContext, Injectable, Logger } from '@nestjs/common';
+import { ExecutionContext, Inject, Injectable } from '@nestjs/common';
 import { PATH_METADATA } from '@nestjs/common/constants';
 import { Reflector } from '@nestjs/core';
 import { AuthGuard } from '@nestjs/passport';
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
+import { Logger } from 'winston';
 import { IS_ANON } from '../decorators/allow-anon.decorator';
 import { IS_API_KEY_CHECK } from '../decorators/api-key-check.decorator';
 import { IS_REFRESH } from '../decorators/refresh.decorator';
@@ -13,12 +15,15 @@ import { IS_REFRESH } from '../decorators/refresh.decorator';
 @Traceable()
 @Injectable()
 export class JwtAuthGuard extends AuthGuard('jwt') {
-  constructor(private reflector: Reflector) {
+  constructor(
+    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
+    private reflector: Reflector,
+  ) {
     super();
   }
 
   canActivate(context: ExecutionContext) {
-    Logger.debug('Checking JWT', 'JwtAuthGuard');
+    this.logger.debug('Checking JWT', 'JwtAuthGuard');
     const isPublic = this.reflector.getAllAndOverride<boolean>(IS_ANON, [
       context.getHandler(),
       context.getClass(),

@@ -1,12 +1,17 @@
 import { Traceable } from '@amplication/opentelemetry-nestjs';
 import { HttpService } from '@nestjs/axios';
-import { Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { lastValueFrom } from 'rxjs';
+import { Logger } from 'winston';
 
 @Traceable()
 @Injectable()
 export class FiatIntegrationClient {
-  constructor(private httpService: HttpService) {}
+  constructor(
+    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
+    private httpService: HttpService,
+  ) {}
 
   async getCurrencyConversionCustodial(
     from: string,
@@ -27,7 +32,7 @@ export class FiatIntegrationClient {
     const fromParsed = from === 'USDT' ? 'USD' : from;
 
     const url = `${apiURL}?access_key=${apiKey}&from=${fromParsed}&to=${toParsed}&amount=${amount}`;
-    Logger.log(url, 'FiatIntegrationClient.getCurrencyConversion');
+    this.logger.debug(url, 'FiatIntegrationClient.getCurrencyConversion');
     const obsResponse = this.httpService.get(url);
     const data = await (await lastValueFrom(obsResponse)).data;
     return data.result;

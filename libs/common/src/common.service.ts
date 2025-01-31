@@ -5,7 +5,6 @@ import {
   BadRequestException,
   ExecutionContext,
   Injectable,
-  Logger,
 } from '@nestjs/common';
 import { RmqContext } from '@nestjs/microservices';
 import { SchedulerRegistry } from '@nestjs/schedule';
@@ -53,7 +52,7 @@ export class CommonService {
           id: item._id,
           searchText: item.searchText,
         });
-        Logger.debug(
+        console.debug(
           `${item.numericId} - ${item.leadEmail}`,
           `Updated searchText page ${elems.currentPage} / ${elems.lastPage}`,
         );
@@ -86,25 +85,25 @@ export class CommonService {
       const rta = await func();
       const end = new Date();
       if (!onlyTimeLapse) {
-        Logger.log(`${functionName} start: ${start.toISOString()}`);
-        Logger.log(
+        console.log(`${functionName} start: ${start.toISOString()}`);
+        console.log(
           `${functionName} end: ${end.toISOString()}`,
           'Time to function',
         );
       }
-      Logger.log(
+      console.log(
         `${functionName} Timed lapsed (ms): ${end.getTime() - start.getTime()}`,
         'Time to function',
       );
       return rta;
     } catch (error) {
       const end = new Date();
-      Logger.log(`${functionName} start: ${start.toISOString()}`);
-      Logger.log(
+      console.log(`${functionName} start: ${start.toISOString()}`);
+      console.log(
         `${functionName} end: ${end.toISOString()}`,
         'Time to function',
       );
-      Logger.log(
+      console.log(
         `${functionName} Timed lapsed (ms): ${end.getTime() - start.getTime()}`,
         'Time to function',
       );
@@ -233,9 +232,9 @@ export class CommonService {
       const task = schedulerRegistry.getTimeout(name);
       clearTimeout(task);
       schedulerRegistry.deleteTimeout(name);
-      Logger.log('cleared', `Task "${name}" schedulerRegistry`);
+      console.log('cleared', `Task "${name}" schedulerRegistry`);
     } catch (err) {
-      Logger.error(err, `Task "${name}" schedulerRegistry`);
+      console.error(err, `Task "${name}" schedulerRegistry`);
     }
   }
 
@@ -287,7 +286,7 @@ export class CommonService {
         attrVal[smaller] = range[smaller];
       }
     }
-    //Logger.log(attrVal, 'End date checkDateAttr');
+    //console.log(attrVal, 'End date checkDateAttr');
     return attrVal;
   }
 
@@ -387,7 +386,7 @@ export class CommonService {
     return query;
   }
   static checkWhitelistedIps(context: ExecutionContext): boolean {
-    Logger.debug('Check whitelisted ips', 'checkWhitelistedIps');
+    console.debug('Check whitelisted ips', 'checkWhitelistedIps');
     if (
       process.env.POMELO_WHITELISTED_IPS_CHECK ===
       PomeloEnum.POMELO_WHITELISTED_IPS_CHECK_OFF.toString()
@@ -399,7 +398,7 @@ export class CommonService {
       request?.headers[PomeloEnum.POMELO_WHITELISTED_HEADER_FORWARDED] ||
       request?.headers[PomeloEnum.POMELO_WHITELISTED_HEADER_REAL] ||
       '';
-    Logger.log(`IpCaller: ${caller}`, 'SignatureGuard');
+    console.log(`IpCaller: ${caller}`, 'SignatureGuard');
     const whitelisted = process.env.POMELO_WHITELISTED_IPS;
     return (
       whitelisted?.replace(/\s/g, '')?.split(',')?.includes(caller) || false

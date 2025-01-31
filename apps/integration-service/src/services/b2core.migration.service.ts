@@ -5,16 +5,21 @@ import { Traceable } from '@amplication/opentelemetry-nestjs';
 import { BuildersService } from '@builder/builders';
 import { CommonService } from '@common/common';
 import CurrencyCodeB2cryptoEnum from '@common/common/enums/currency-code-b2crypto.enum';
-import { Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import EventsNamesAccountEnum from 'apps/account-service/src/enum/events.names.account.enum';
 import EventsNamesUserEnum from 'apps/user-service/src/enum/events.names.user.enum';
 import * as csv from 'csv-parser';
 import { createReadStream } from 'fs';
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
+import { Logger } from 'winston';
 
 @Traceable()
 @Injectable()
 export class B2CoreMigrationService {
-  constructor(private builder: BuildersService) {}
+  constructor(
+    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
+    private builder: BuildersService,
+  ) {}
 
   async startB2CoreMigration(file: Express.Multer.File) {
     const results = [];
@@ -23,12 +28,15 @@ export class B2CoreMigrationService {
       const results = await this.getFileRows(file);
       for (let i = 0; i < results.length; i++) {
         const data = results[i];
-        Logger.log(JSON.stringify(data['Email']), B2CoreMigrationService.name);
+        this.logger.debug(
+          JSON.stringify(data['Email']),
+          B2CoreMigrationService.name,
+        );
         if (data['Client status'] === 'Active') {
           const email = data['Email'];
           const user = await this.getUserByEmail(data);
           const walletAccount = this.buildAccount(data, user);
-          Logger.log(
+          this.logger.debug(
             `Creating wallet: ${walletAccount.name}-${walletAccount.accountId}`,
             `${walletAccount.owner} - ${email}`,
           );
@@ -39,7 +47,7 @@ export class B2CoreMigrationService {
         }
       }
     } catch (error) {
-      Logger.error(error, B2CoreMigrationService.name);
+      this.logger.error(B2CoreMigrationService.name, error);
     }
     return migrated;
   }
@@ -49,12 +57,15 @@ export class B2CoreMigrationService {
       const results = await this.getFileRows(file);
       for (let i = 0; i < results.length; i++) {
         const data = results[i];
-        Logger.log(JSON.stringify(data['Email']), B2CoreMigrationService.name);
+        this.logger.debug(
+          JSON.stringify(data['Email']),
+          B2CoreMigrationService.name,
+        );
         if (data['Client status'] === 'Active') {
           const email = data['Email'];
           const user = await this.migrateUser(data);
           const walletAccount = this.buildAccount(data, user);
-          Logger.log(
+          this.logger.debug(
             `Creating wallet: ${walletAccount.name}-${walletAccount.accountId}`,
             `${walletAccount.owner} - ${email}`,
           );
@@ -65,7 +76,7 @@ export class B2CoreMigrationService {
         }
       }
     } catch (error) {
-      Logger.error(error, B2CoreMigrationService.name);
+      this.logger.error(B2CoreMigrationService.name, error);
     }
     return migrated;
   }
@@ -80,11 +91,11 @@ export class B2CoreMigrationService {
             results.push(data);
           })
           .on('end', () => {
-            Logger.log(results, B2CoreMigrationService.name);
+            this.logger.debug(B2CoreMigrationService.name, results);
             res(results);
           });
       } catch (error) {
-        Logger.error(error, B2CoreMigrationService.name);
+        this.logger.error(B2CoreMigrationService.name, error);
         rej(error);
       }
     });
@@ -96,21 +107,21 @@ export class B2CoreMigrationService {
         createReadStream(file.path)
           .pipe(csv())
           .on('data', async (data) => {
-            Logger.log(
+            this.logger.debug(
               JSON.stringify(data['Email']),
               B2CoreMigrationService.name,
             );
             results.push(this.getWallet(data));
           })
           .on('end', async () => {
-            Logger.log('Already', B2CoreMigrationService.name);
+            this.logger.debug('Already', B2CoreMigrationService.name);
             const list = await Promise.all(results);
             Logger.debug(list, `${B2CoreMigrationService.name} - list`);
             res(list);
           });
       });
     } catch (error) {
-      Logger.error(error, B2CoreMigrationService.name);
+      this.logger.error(error, B2CoreMigrationService.name);
     }
   }
 
@@ -118,7 +129,7 @@ export class B2CoreMigrationService {
     const email = data['Email'];
     const user = await this.getUserByEmail(data);
     const walletAccount = this.buildAccount(data, user);
-    Logger.log(
+    this.logger.debug(
       `Creating wallet: ${walletAccount.name}-${walletAccount.accountId}`,
       `${walletAccount.owner} - ${email}`,
     );
@@ -147,13 +158,13 @@ export class B2CoreMigrationService {
           },
         );
       }
-      Logger.log(
+      this.logger.debug(
         `User ${email} ${user ? 'was found' : 'was NOT found'}`,
         B2CoreMigrationService.name,
       );
       return user;
     } catch (error) {
-      Logger.error(error, B2CoreMigrationService.name);
+      this.logger.error(B2CoreMigrationService.name, error);
     }
   }
 
@@ -166,7 +177,7 @@ export class B2CoreMigrationService {
       );
       return user;
     } catch (error) {
-      Logger.error(error, B2CoreMigrationService.name);
+      this.logger.error(B2CoreMigrationService.name, error);
     }
   }
 
@@ -203,7 +214,7 @@ export class B2CoreMigrationService {
 
   private async migrateWalletAccount(walletAccount: any) {
     try {
-      Logger.log(
+      this.logger.debug(
         `Creating wallet: ${JSON.stringify(walletAccount)}`,
         B2CoreMigrationService.name,
       );
@@ -213,7 +224,7 @@ export class B2CoreMigrationService {
       );
       return account;
     } catch (error) {
-      Logger.error(error, B2CoreMigrationService.name);
+      this.logger.error(B2CoreMigrationService.name, error);
     }
   }
 

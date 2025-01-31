@@ -211,8 +211,8 @@ export class B2BinPayNotificationsController {
         },
       );
       this.logger.debug(
-        accounts.list.length,
         `checkTransferInB2BinPay.totalElements - page ${accounts.currentPage}`,
+        accounts.list.length,
       );
       promises.push(this.checkAccounts(accounts));
     } while (accounts.nextPage !== accounts.firstPage);

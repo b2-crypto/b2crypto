@@ -10,7 +10,6 @@ import {
   BadRequestException,
   Inject,
   Injectable,
-  Logger,
   UnauthorizedException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
@@ -21,8 +20,10 @@ import { UserInterface } from '@user/user/entities/user.interface';
 import EventsNamesAffiliateEnum from 'apps/affiliate-service/src/enum/events.names.affiliate.enum';
 import * as bcrypt from 'bcrypt';
 import { randomUUID } from 'crypto';
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import * as qrcode from 'qrcode';
 import * as speakeasy from 'speakeasy';
+import { Logger } from 'winston';
 import { UserDocument } from '../../user/src/entities/mongoose/user.schema';
 import { UserLoginDto } from './dto/user.login.dto';
 
@@ -30,6 +31,7 @@ import { UserLoginDto } from './dto/user.login.dto';
 @Injectable()
 export class AuthService {
   constructor(
+    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
     private readonly configService: ConfigService,
     private readonly jwtService: JwtService,
     @Inject(CrmServiceMongooseService)
@@ -202,7 +204,7 @@ export class AuthService {
         },
       });
     } catch (err) {
-      Logger.error(err, 'auth.service:getAffiliates');
+      this.logger.error('auth.service:getAffiliates', err);
       throw new BadRequestException();
     }
   }

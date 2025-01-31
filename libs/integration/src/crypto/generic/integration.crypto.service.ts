@@ -5,7 +5,6 @@ import { FetchData } from '@common/common/models/fetch-data.model';
 import { Cache } from '@nestjs/cache-manager';
 import {
   BadRequestException,
-  Logger,
   NotFoundException,
   NotImplementedException,
 } from '@nestjs/common';
@@ -89,7 +88,7 @@ export class IntegrationCryptoService<
             const token = await this.fetch('POST', this.routesMap.auth, req);
 
             if (!token.data) {
-              Logger.error(
+              console.error(
                 token,
                 `Token crypto not found: ${token.errors[0].detail}`,
               );
@@ -108,12 +107,12 @@ export class IntegrationCryptoService<
             const expireIn = token.data?.expiresIn || token.data?.ExpiresIn;
           }
         } catch (err) {
-          Logger.error(err, `${IntegrationCryptoService.name}:err`);
-          Logger.error(
+          console.error(err, `${IntegrationCryptoService.name}:err`);
+          console.error(
             this.urlBase,
             `${IntegrationCryptoService.name}:urlBase`,
           );
-          Logger.error(req, `${IntegrationCryptoService.name}:token`);
+          console.error(req, `${IntegrationCryptoService.name}:token`);
           throw new BadRequestException(err);
         }
         // Todo[hender] Save token and check if already expire

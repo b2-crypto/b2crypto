@@ -1,5 +1,5 @@
 import { EnvironmentEnum } from '@common/common/enums/environment.enum';
-import { INestApplication, Logger, ValidationPipe } from '@nestjs/common';
+import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import {
@@ -7,7 +7,6 @@ import {
   PathsObject,
 } from '@nestjs/swagger/dist/interfaces/open-api-spec.interface';
 import { isNumber } from 'class-validator';
-import * as http from 'http';
 import { CommonService } from '../common.service';
 
 export async function bootstrapGateway(
@@ -20,7 +19,7 @@ export async function bootstrapGateway(
   if (!isNumber(port)) {
     return false;
   }
-  Logger.log(port, 'Deploy port');
+  console.log(port, 'Deploy port');
   const app = await NestFactory.create(module, {
     //logger: false,
     cors: true,
