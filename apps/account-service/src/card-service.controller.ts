@@ -94,7 +94,7 @@ import EventsNamesAccountEnum from './enum/events.names.account.enum';
 @Controller('cards')
 export class CardServiceController extends AccountServiceController {
   constructor(
-    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
+    @Inject(WINSTON_MODULE_NEST_PROVIDER) protected readonly logger: Logger,
     readonly cardService: AccountServiceService,
     @Inject(UserServiceService)
     private readonly userService: UserServiceService,

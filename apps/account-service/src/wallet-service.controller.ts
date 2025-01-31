@@ -75,7 +75,7 @@ import { WalletServiceService } from './wallet-service.service';
 export class WalletServiceController extends AccountServiceController {
   private cryptoType = null;
   constructor(
-    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
+    @Inject(WINSTON_MODULE_NEST_PROVIDER) protected readonly logger: Logger,
     private readonly walletService: AccountServiceService,
     @Inject(WalletServiceService)
     private readonly walletServiceService: WalletServiceService,

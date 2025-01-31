@@ -45,7 +45,7 @@ import EventsNamesAccountEnum from './enum/events.names.account.enum';
 @Controller('accounts')
 export class AccountServiceController implements GenericServiceController {
   constructor(
-    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
+    @Inject(WINSTON_MODULE_NEST_PROVIDER) protected readonly logger: Logger,
     private readonly accountService: AccountServiceService,
     @Inject(BuildersService)
     private readonly builder: BuildersService,
