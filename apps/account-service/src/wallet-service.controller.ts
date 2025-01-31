@@ -1046,15 +1046,15 @@ export class WalletServiceController extends AccountServiceController {
         }
       } catch (error) {
         this.logger.error(
-          error.message,
           'Error creating transaction on Fireblocks',
+          error.message,
         );
         throw new BadRequestException('Sorry, something went wrong');
       }
       if (!rta && isProd) {
         this.logger.error(
-          JSON.stringify(rta, null, 2),
           'Error rta on Fireblocks',
+          JSON.stringify(rta, null, 2),
         );
         throw new BadRequestException('Sorry, something went wrong');
       }
@@ -1422,8 +1422,8 @@ export class WalletServiceController extends AccountServiceController {
             )
             .catch((err) => {
               this.logger.error(
-                err,
                 `Catch sweep error deposit ${vaultFrom.name}_${from.name}`,
+                err,
               );
               return null;
             })
@@ -1457,8 +1457,8 @@ export class WalletServiceController extends AccountServiceController {
             )
             .catch((err) => {
               this.logger.error(
-                err,
                 `Catch sweep error withdrawal ${vaultFrom.name}_${from.name}`,
+                err,
               );
               return null;
             })

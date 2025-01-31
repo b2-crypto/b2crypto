@@ -158,7 +158,7 @@ export class CardServiceController extends AccountServiceController {
           }
         } catch (err) {
           if (err.response?.data) {
-            this.logger.error(err.response?.data, 'Error HTTP request');
+            this.logger.error('Error HTTP request', err.response?.data);
             if (err.response?.data?.error?.details) {
               throw new BadRequestException(
                 err.response?.data?.error?.details
@@ -167,7 +167,7 @@ export class CardServiceController extends AccountServiceController {
               );
             }
           } else {
-            this.logger.error(err, 'Error in card profile or update card');
+            this.logger.error('Error in card profile or update card', err);
           }
           throw new BadRequestException('Card not updated');
         }
@@ -217,7 +217,7 @@ export class CardServiceController extends AccountServiceController {
       });
       return amount;
     } catch (err) {
-      this.logger.error(err, 'CardController');
+      this.logger.error('CardController', err);
       return account.amountCustodial || account.amount;
     }
   }
@@ -471,8 +471,8 @@ export class CardServiceController extends AccountServiceController {
         );
       }
       this.logger.error(
-        JSON.stringify(err),
         `Account Card not created ${account.owner}`,
+        JSON.stringify(err),
       );
       if (err.response) {
         err.response.details = err.response.details ?? [];
@@ -1692,7 +1692,7 @@ export class CardServiceController extends AccountServiceController {
         user.userCard = await this.getUserCard(cardIntegration, user);
       }
     } catch (err) {
-      this.logger.error(err, 'Error in card profile creation');
+      this.logger.error('Error in card profile creation', err);
       throw new BadRequestException('Card profile not found');
     }
     this.logger.debug(configActivate.pin, 'pin active card');
@@ -1740,7 +1740,7 @@ export class CardServiceController extends AccountServiceController {
           },
         });
       } catch (err) {
-        this.logger.error(err, 'Error get card pomelo');
+        this.logger.error('Error get card pomelo', err);
         throw new BadRequestException('Get Card error');
       }
       if (!card.totalElements) {
@@ -1775,8 +1775,8 @@ export class CardServiceController extends AccountServiceController {
           );
         } catch (error) {
           this.logger.error(
-            error.message || error,
             `Update AFG Card-${n_card?.id.toString()}-${user.email}`,
+            error.message || error,
           );
           //throw new BadRequestException('Bad update card');
         }
@@ -1979,8 +1979,8 @@ export class CardServiceController extends AccountServiceController {
           );
         } catch (error) {
           this.logger.error(
-            error.message || error,
             `LevelUpCard-${card._id.toString()}`,
+            error.message || error,
           );
           throw new BadRequestException('Bad update card');
         }
@@ -2082,7 +2082,7 @@ export class CardServiceController extends AccountServiceController {
       });
       return CardsEnum.CARD_PROCESS_OK;
     } catch (error) {
-      this.logger.error(error, CardServiceController.name);
+      this.logger.error(CardServiceController.name, error);
       return CardsEnum.CARD_PROCESS_FAILURE;
     }
   }
@@ -2098,7 +2098,7 @@ export class CardServiceController extends AccountServiceController {
       }
       return cardList.list[0];
     } catch (error) {
-      this.logger.error(error, 'Error-cfindByCardId');
+      this.logger.error('Error-cfindByCardId', error);
     }
   }
 
@@ -2112,7 +2112,7 @@ export class CardServiceController extends AccountServiceController {
       });
       return cardList;
     } catch (error) {
-      this.logger.error(error, 'Error-getCardId');
+      this.logger.error('Error-getCardId', error);
     }
   }
 
@@ -2190,7 +2190,7 @@ export class CardServiceController extends AccountServiceController {
         paginator.nextPage = usersPaginator.nextPage;
       } while (paginator.nextPage !== paginator.firstPage);
     } catch (error) {
-      this.logger.error(error, CardServiceController.name);
+      this.logger.error(CardServiceController.name, error);
     }
   }
   private buildCardDto(
@@ -2278,7 +2278,7 @@ export class CardServiceController extends AccountServiceController {
         },
       });
     } catch (error) {
-      this.logger.error(error, CardServiceController.name);
+      this.logger.error(CardServiceController.name, error);
     }
   }
 

@@ -441,8 +441,8 @@ export class WalletServiceService {
           return from;
         } catch (error) {
           this.logger.error(
-            error.message,
             'Error creating transaction on Fireblocks',
+            error.message,
           );
           throw new BadRequestException('Sorry, something went wrong');
         }
@@ -1417,8 +1417,8 @@ export class WalletServiceService {
       };
     } catch (error) {
       this.logger.error(
-        `Withdrawal failed: ${error.message}`,
         'WalletServiceService',
+        `Withdrawal failed: ${error.message}`,
       );
       throw new BadRequestException('Failed to process withdrawal');
     }

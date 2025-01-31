@@ -222,7 +222,7 @@ export class MessageServiceController implements GenericServiceController {
     try {
       await this.messageService.sendEmailBalanceReport(message);
     } catch (err) {
-      this.logger.error(err, MessageServiceController.name);
+      this.logger.error(MessageServiceController.name, err);
     }
   }
 

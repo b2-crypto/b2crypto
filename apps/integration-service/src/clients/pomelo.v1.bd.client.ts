@@ -52,16 +52,16 @@ export class PomeloV1DBClient {
                 })
                 .catch((err: any) => {
                   this.logger.error(
-                    `Error closing connection ${err}`,
                     PomeloV1DBClient.name,
+                    `Error closing connection ${err}`,
                   );
                 });
             });
           })
           .catch((err: any) => {
             this.logger.error(
-              `Error connecting to V1 DB database ${err}`,
               PomeloV1DBClient.name,
+              `Error connecting to V1 DB database ${err}`,
             );
           });
       });

@@ -463,8 +463,8 @@ export class CrmServiceService {
         !tpAccountInfo[0].lv_tpaccountid
       ) {
         this.logger.error(
-          JSON.stringify(tpAccountInfo),
           CrmServiceService.name,
+          JSON.stringify(tpAccountInfo),
         );
         throw new BadRequestException(
           `Can't get the account trading platform id`,
@@ -663,8 +663,8 @@ export class CrmServiceService {
                 result.error.count++;
                 result.error.leads.push(leadCrm.tpAccount);
                 this.logger.error(
-                  `Status ${leadCrm.leadStatus} not found for ${leadCrm.tpAccount}`,
                   'No update lead',
+                  `Status ${leadCrm.leadStatus} not found for ${leadCrm.tpAccount}`,
                 );
               }
             }
