@@ -1,4 +1,5 @@
 /* eslint-disable prettier/prettier */
+import { Traceable } from '@amplication/opentelemetry-nestjs';
 import { BuildersService } from '@builder/builders';
 import { QuerySearchAnyDto } from '@common/common/models/query_search-any.dto';
 import { CrmInterface } from '@crm/crm/entities/crm.interface';
@@ -20,6 +21,7 @@ import * as pug from 'pug';
 import { EmailMessageBuilder } from './email-message.builder';
 import TemplatesMessageEnum from './enum/templates.message.enum';
 
+@Traceable()
 @Injectable()
 export class MessageServiceService {
   private apiKey: string;

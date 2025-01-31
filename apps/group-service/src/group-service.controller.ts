@@ -11,13 +11,10 @@ import {
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 
+import { Traceable } from '@amplication/opentelemetry-nestjs';
 import { AllowAnon } from '@auth/auth/decorators/allow-anon.decorator';
-import { PolicyHandlerGroupCreate } from '@auth/auth/policy/group/policity.handler.group.create';
-import { PolicyHandlerGroupDelete } from '@auth/auth/policy/group/policity.handler.group.delete';
-import { PolicyHandlerGroupRead } from '@auth/auth/policy/group/policity.handler.group.read';
-import { PolicyHandlerGroupUpdate } from '@auth/auth/policy/group/policity.handler.group.update';
-import { CheckPoliciesAbility } from '@auth/auth/policy/policy.handler.ability';
 import { CommonService } from '@common/common';
+import { NoCache } from '@common/common/decorators/no-cache.decorator';
 import GenericServiceController from '@common/common/interfaces/controller.generic.interface';
 import { QuerySearchAnyDto } from '@common/common/models/query_search-any.dto';
 import { UpdateAnyDto } from '@common/common/models/update-any.dto';
@@ -31,9 +28,9 @@ import {
 } from '@nestjs/microservices';
 import EventsNamesGroupEnum from './enum/events.names.group.enum';
 import { GroupServiceService } from './group-service.service';
-import { NoCache } from '@common/common/decorators/no-cache.decorator';
 
 @ApiTags('GROUP')
+@Traceable()
 @Controller('group')
 export class GroupServiceController implements GenericServiceController {
   constructor(private readonly groupService: GroupServiceService) {}

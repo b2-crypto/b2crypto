@@ -1,3 +1,4 @@
+import { Traceable } from '@amplication/opentelemetry-nestjs';
 import { BuildersService } from '@builder/builders';
 import { CardsEnum } from '@common/common/enums/messages.enum';
 import TransportEnum from '@common/common/enums/TransportEnum';
@@ -19,13 +20,14 @@ import EventsNamesTransferEnum from 'apps/transfer-service/src/enum/events.names
 import { FiatIntegrationClient } from '../clients/fiat.integration.client';
 import { PomeloProcessEnum } from '../enums/pomelo.process.enum';
 
+@Traceable()
 @Injectable()
 export class PomeloIntegrationProcessService {
   constructor(
     private readonly cache: PomeloCache,
     private readonly currencyConversion: FiatIntegrationClient,
     private readonly builder: BuildersService,
-  ) { }
+  ) {}
 
   private async process(
     process: any,
@@ -339,9 +341,9 @@ export class PomeloIntegrationProcessService {
           day: '2-digit',
           hour: '2-digit',
           minute: '2-digit',
-          second: '2-digit'
+          second: '2-digit',
         }),
-        customerName: "",
+        customerName: '',
         transactionStatus: process.status,
         transactionType: authorization.transaction?.type,
         merchantName: authorization.merchant?.name,
@@ -358,6 +360,4 @@ export class PomeloIntegrationProcessService {
 
     return process;
   }
-
-
 }

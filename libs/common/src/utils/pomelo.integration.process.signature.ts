@@ -1,9 +1,11 @@
+import { Traceable } from '@amplication/opentelemetry-nestjs';
 import { ProcessBodyI } from '@integration/integration/dto/pomelo.process.body.dto';
 import { ProcessHeaderDto } from '@integration/integration/dto/pomelo.process.header.dto';
 import { PomeloCache } from '@integration/integration/util/pomelo.integration.process.cache';
 import { Injectable, Logger } from '@nestjs/common';
 import * as crypto from 'crypto';
 
+@Traceable()
 @Injectable()
 export class PomeloSignatureUtils {
   private API_DIC = JSON.parse(process.env.POMELO_SIGNATURE_SECRET_KEY_DIC);

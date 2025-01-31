@@ -1,5 +1,7 @@
+import { Traceable } from '@amplication/opentelemetry-nestjs';
 import { AllowAnon } from '@auth/auth/decorators/allow-anon.decorator';
 import { CommonService } from '@common/common';
+import { NoCache } from '@common/common/decorators/no-cache.decorator';
 import { QuerySearchAnyDto } from '@common/common/models/query_search-any.dto';
 import { LeadDocument } from '@lead/lead/entities/mongoose/lead.schema';
 import {
@@ -22,8 +24,8 @@ import { StatsDateAffiliateDocument } from '@stats/stats/entities/mongoose/stats
 import { TransferDocument } from '@transfer/transfer/entities/mongoose/transfer.schema';
 import EventsNamesStatsEnum from './enum/events.names.stats.enum';
 import { StatsAffiliateServiceService } from './stats-affiliate-service.service';
-import { NoCache } from '@common/common/decorators/no-cache.decorator';
 
+@Traceable()
 @Controller('stats')
 export class StatsAffiliateServiceController {
   constructor(

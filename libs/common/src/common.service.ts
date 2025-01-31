@@ -1,33 +1,27 @@
+import { Traceable } from '@amplication/opentelemetry-nestjs';
+import CountryCodeEnum from '@common/common/enums/country.code.b2crypto.enum';
+import { PomeloEnum } from '@integration/integration/enum/pomelo.enum';
 import {
   BadRequestException,
   ExecutionContext,
   Injectable,
   Logger,
 } from '@nestjs/common';
+import { RmqContext } from '@nestjs/microservices';
+import { SchedulerRegistry } from '@nestjs/schedule';
+import * as bcrypt from 'bcrypt';
 import {
   isBoolean,
   isDateString,
   isEmail,
   isPhoneNumber,
 } from 'class-validator';
-import CountryCodeEnum from '@common/common/enums/country.code.b2crypto.enum';
-import { CountryCode } from 'libphonenumber-js';
-import * as bcrypt from 'bcrypt';
-import { ConfigService } from '@nestjs/config';
-import {
-  ClientOptions,
-  ClientProxyFactory,
-  RedisOptions,
-  RmqContext,
-  RmqOptions,
-  Transport,
-} from '@nestjs/microservices';
-import { SchedulerRegistry } from '@nestjs/schedule';
-import { QuerySearchAnyDto } from './models/query_search-any.dto';
-import { FetchData } from './models/fetch-data.model';
 import * as http from 'http';
-import { PomeloEnum } from '@integration/integration/enum/pomelo.enum';
+import { CountryCode } from 'libphonenumber-js';
+import { FetchData } from './models/fetch-data.model';
+import { QuerySearchAnyDto } from './models/query_search-any.dto';
 
+@Traceable()
 @Injectable()
 export class CommonService {
   static getOTP() {

@@ -1,15 +1,13 @@
+import { Traceable } from '@amplication/opentelemetry-nestjs';
+import { BuildersService } from '@builder/builders';
+import { QuerySearchAnyDto } from '@common/common/models/query_search-any.dto';
+import { BadRequestException, Inject, Injectable } from '@nestjs/common';
+import { PermissionServiceMongooseService } from '@permission/permission';
 import { PermissionCreateDto } from '@permission/permission/dto/permission.create.dto';
 import { PermissionUpdateDto } from '@permission/permission/dto/permission.update.dto';
-import { QuerySearchAnyDto } from '@common/common/models/query_search-any.dto';
-import { PermissionServiceMongooseService } from '@permission/permission';
-import { BadRequestException, Inject, Injectable } from '@nestjs/common';
-import { BuildersService } from '@builder/builders';
 import { ScopeDto } from '@permission/permission/dto/scope.dto';
-import ResourcesEnum from '@common/common/enums/ResourceEnum';
-import EventsNamesActivityEnum from 'apps/activity-service/src/enum/events.names.activity.enum';
-import EventsNamesAffiliateEnum from 'apps/affiliate-service/src/enum/events.names.affiliate.enum';
-import EventsNamesBrandEnum from 'apps/brand-service/src/enum/events.names.brand.enum';
 
+@Traceable()
 @Injectable()
 export class PermissionServiceService {
   constructor(

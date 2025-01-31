@@ -1,3 +1,4 @@
+import { Traceable } from '@amplication/opentelemetry-nestjs';
 import { AuthService } from '@auth/auth';
 import { AllowAnon } from '@auth/auth/decorators/allow-anon.decorator';
 import { ApiKeyCheck } from '@auth/auth/decorators/api-key-check.decorator';
@@ -67,6 +68,7 @@ import { BadRequestError } from 'passport-headerapikey';
 import EventsNamesUserEnum from '../../user-service/src/enum/events.names.user.enum';
 
 @ApiTags('AUTHENTICATION')
+@Traceable()
 @Controller('auth')
 export class AuthServiceController {
   private eventClient: ClientProxy;

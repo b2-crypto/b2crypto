@@ -1,3 +1,4 @@
+import { Traceable } from '@amplication/opentelemetry-nestjs';
 import {
   Controller,
   Logger,
@@ -7,6 +8,7 @@ import {
 } from '@nestjs/common';
 import { PomeloMigrationService } from './services/pomelo.migration.service';
 
+@Traceable()
 @Controller('pomelo-migration')
 export class PomeloMigrationController {
   constructor(private readonly migrationService: PomeloMigrationService) {}

@@ -1,7 +1,7 @@
+import { Traceable } from '@amplication/opentelemetry-nestjs';
 import { BuildersService } from '@builder/builders';
 import { CategoryDocument } from '@category/category/entities/mongoose/category.schema';
 import { CommonService } from '@common/common';
-import EventClientEnum from '@common/common/enums/EventsNameEnum';
 import PeriodEnum from '@common/common/enums/PeriodEnum';
 import TagEnum from '@common/common/enums/TagEnum';
 import { ResponsePaginator } from '@common/common/interfaces/response-pagination.interface';
@@ -13,7 +13,6 @@ import {
   Injectable,
   Logger,
 } from '@nestjs/common';
-import { ClientProxy } from '@nestjs/microservices';
 import { PspAccountDocument } from '@psp-account/psp-account/entities/mongoose/psp-account.schema';
 import { PspDocument } from '@psp/psp/entities/mongoose/psp.schema';
 import { StatsDateAllCreateDto } from '@stats/stats/dto/stats.date.all.create.dto';
@@ -44,6 +43,7 @@ import StatsParamNameEnum from './enum/stats.param.names.enum';
 import StatusLeadEnum from './enum/status.lead.enum';
 import StatusTransferEnum from './enum/status.transfer.enum';
 
+@Traceable()
 @Injectable()
 export class StatsServiceService {
   private builder: BuildersService;

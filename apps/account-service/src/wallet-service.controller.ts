@@ -5,6 +5,7 @@ import { AccountDocument } from '@account/account/entities/mongoose/account.sche
 import StatusAccountEnum from '@account/account/enum/status.account.enum';
 import TypesAccountEnum from '@account/account/enum/types.account.enum';
 import WalletTypesAccountEnum from '@account/account/enum/wallet.types.account.enum';
+import { Traceable } from '@amplication/opentelemetry-nestjs';
 import { ApiKeyAuthGuard } from '@auth/auth/guards/api.key.guard';
 import { JwtAuthGuard } from '@auth/auth/guards/jwt-auth.guard';
 import { BuildersService } from '@builder/builders';
@@ -68,6 +69,7 @@ import EventsNamesAccountEnum from './enum/events.names.account.enum';
 import { WalletServiceService } from './wallet-service.service';
 
 @ApiTags(SwaggerSteakeyConfigEnum.TAG_WALLET)
+@Traceable()
 @Controller('wallets')
 export class WalletServiceController extends AccountServiceController {
   private cryptoType = null;

@@ -3,6 +3,7 @@ import { Account } from '@account/account/entities/mongoose/account.schema';
 import CardTypesAccountEnum from '@account/account/enum/card.types.account.enum';
 import StatusAccountEnum from '@account/account/enum/status.account.enum';
 import TypesAccountEnum from '@account/account/enum/types.account.enum';
+import { Traceable } from '@amplication/opentelemetry-nestjs';
 import { BuildersService } from '@builder/builders';
 import { CategoryInterface } from '@category/category/entities/category.interface';
 import { CommonService } from '@common/common';
@@ -39,6 +40,7 @@ import { isMongoId } from 'class-validator';
 import { ObjectId } from 'mongodb';
 import EventsNamesUserEnum from './enum/events.names.user.enum';
 
+@Traceable()
 @Injectable()
 export class UserServiceService {
   private eventClient: ClientProxy;

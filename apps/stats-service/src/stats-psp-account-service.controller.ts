@@ -1,5 +1,7 @@
+import { Traceable } from '@amplication/opentelemetry-nestjs';
 import { AllowAnon } from '@auth/auth/decorators/allow-anon.decorator';
 import { CommonService } from '@common/common';
+import { NoCache } from '@common/common/decorators/no-cache.decorator';
 import { QuerySearchAnyDto } from '@common/common/models/query_search-any.dto';
 import {
   Controller,
@@ -19,8 +21,8 @@ import { StatsDateCreateDto } from '@stats/stats/dto/stats.date.create.dto';
 import { TransferDocument } from '@transfer/transfer/entities/mongoose/transfer.schema';
 import EventsNamesStatsEnum from './enum/events.names.stats.enum';
 import { StatsPspAccountServiceService } from './stats-psp-account-service.service';
-import { NoCache } from '@common/common/decorators/no-cache.decorator';
 
+@Traceable()
 @Controller('stats')
 export class StatsPspAccountServiceController {
   constructor(

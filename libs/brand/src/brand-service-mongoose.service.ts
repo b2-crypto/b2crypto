@@ -1,3 +1,4 @@
+import { Traceable } from '@amplication/opentelemetry-nestjs';
 import { BrandCreateDto } from '@brand/brand/dto/brand.create.dto';
 import { BrandUpdateDto } from '@brand/brand/dto/brand.update.dto';
 import { BrandDocument } from '@brand/brand/entities/mongoose/brand.schema';
@@ -5,6 +6,7 @@ import { BasicServiceModel } from '@common/common/models/basic-service.model';
 import { Inject, Injectable } from '@nestjs/common';
 import { Model } from 'mongoose';
 
+@Traceable()
 @Injectable()
 export class BrandServiceMongooseService extends BasicServiceModel<
   BrandDocument,

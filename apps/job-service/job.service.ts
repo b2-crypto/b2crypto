@@ -1,3 +1,4 @@
+import { Traceable } from '@amplication/opentelemetry-nestjs';
 import { BuildersService } from '@builder/builders';
 import { EnvironmentEnum } from '@common/common/enums/environment.enum';
 import { Inject, Injectable, Logger } from '@nestjs/common';
@@ -7,6 +8,7 @@ import EventsNamesAccountEnum from 'apps/account-service/src/enum/events.names.a
 import EventsNamesTransferEnum from 'apps/transfer-service/src/enum/events.names.transfer.enum';
 import EventsNamesUserEnum from 'apps/user-service/src/enum/events.names.user.enum';
 
+@Traceable()
 @Injectable()
 export class JobService {
   static readonly periodicTime = {

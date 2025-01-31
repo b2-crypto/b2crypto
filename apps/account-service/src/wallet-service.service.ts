@@ -5,6 +5,7 @@ import { AccountDocument } from '@account/account/entities/mongoose/account.sche
 import StatusAccountEnum from '@account/account/enum/status.account.enum';
 import TypesAccountEnum from '@account/account/enum/types.account.enum';
 import WalletTypesAccountEnum from '@account/account/enum/wallet.types.account.enum';
+import { Traceable } from '@amplication/opentelemetry-nestjs';
 import { BuildersService } from '@builder/builders';
 import { CommonService } from '@common/common';
 import CountryCodeEnum from '@common/common/enums/country.code.b2crypto.enum';
@@ -37,6 +38,7 @@ import { AccountServiceService } from './account-service.service';
 import { WalletWithdrawalDto } from './dtos/WalletWithdrawalDto';
 import EventsNamesAccountEnum from './enum/events.names.account.enum';
 
+@Traceable()
 @Injectable()
 export class WalletServiceService {
   private cryptoType: any = null;

@@ -1,3 +1,4 @@
+import { Traceable } from '@amplication/opentelemetry-nestjs';
 import { BuildersService } from '@builder/builders';
 import { CommonService } from '@common/common';
 import { ResponsePaginator } from '@common/common/interfaces/response-pagination.interface';
@@ -9,14 +10,15 @@ import { PspHasActiveDto } from '@psp/psp/dto/psp.has.active.dto';
 import { PspUpdateDto } from '@psp/psp/dto/psp.update.dto';
 import { PspDocument } from '@psp/psp/entities/mongoose/psp.schema';
 import { ConfigCheckStatsDto } from '@stats/stats/dto/config.check.stats.dto';
-import CheckStatsType from '../../../libs/stats/src/enum/check.stats.type';
 import { StatusDocument } from '@status/status/entities/mongoose/status.schema';
 import EventsNamesTransferEnum from 'apps/transfer-service/src/enum/events.names.transfer.enum';
 import axios from 'axios';
 import { isArray } from 'class-validator';
+import CheckStatsType from '../../../libs/stats/src/enum/check.stats.type';
 import EventsNamesStatusEnum from '../../status-service/src/enum/events.names.status.enum';
 import EventsNamesPspAccountEnum from './enum/events.names.psp.acount.enum';
 
+@Traceable()
 @Injectable()
 export class PspServiceService {
   constructor(

@@ -1,12 +1,16 @@
+import { Traceable } from '@amplication/opentelemetry-nestjs';
 import { AllowAnon } from '@auth/auth/decorators/allow-anon.decorator';
+import { BuildersService } from '@builder/builders';
 import { CommonService } from '@common/common';
+import { NoCache } from '@common/common/decorators/no-cache.decorator';
+import ActionsEnum from '@common/common/enums/ActionEnum';
+import ResourcesEnum from '@common/common/enums/ResourceEnum';
 import { QuerySearchAnyDto } from '@common/common/models/query_search-any.dto';
 import { LeadDocument } from '@lead/lead/entities/mongoose/lead.schema';
 import {
   Controller,
   Get,
   Inject,
-  Logger,
   NotImplementedException,
   Param,
 } from '@nestjs/common';
@@ -24,14 +28,11 @@ import {
 import { StatsDateCreateDto } from '@stats/stats/dto/stats.date.create.dto';
 import { StatsDateAffiliateDocument } from '@stats/stats/entities/mongoose/stats.date.affiliate.schema';
 import { TransferDocument } from '@transfer/transfer/entities/mongoose/transfer.schema';
+import EventsNamesAffiliateEnum from 'apps/affiliate-service/src/enum/events.names.affiliate.enum';
 import EventsNamesStatsEnum from './enum/events.names.stats.enum';
 import { StatsServiceService } from './stats-service.service';
-import EventsNamesAffiliateEnum from 'apps/affiliate-service/src/enum/events.names.affiliate.enum';
-import { BuildersService } from '@builder/builders';
-import ActionsEnum from '@common/common/enums/ActionEnum';
-import ResourcesEnum from '@common/common/enums/ResourceEnum';
-import { NoCache } from '@common/common/decorators/no-cache.decorator';
 
+@Traceable()
 @Controller('stats')
 export class StatsServiceController {
   constructor(

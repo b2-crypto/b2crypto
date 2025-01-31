@@ -1,3 +1,4 @@
+import { Traceable } from '@amplication/opentelemetry-nestjs';
 import {
   Controller,
   Logger,
@@ -9,6 +10,7 @@ import {
 import { FileInterceptor } from '@nestjs/platform-express';
 import { B2CoreMigrationService } from './services/b2core.migration.service';
 
+@Traceable()
 @Controller('b2core-migration')
 export class B2CoreMigrationController {
   constructor(private readonly migrationService: B2CoreMigrationService) {}

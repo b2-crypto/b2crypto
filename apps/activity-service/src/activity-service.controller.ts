@@ -1,13 +1,11 @@
 import { ActivityCreateDto } from '@activity/activity/dto/activity.create.dto';
 import { ActivityUpdateDto } from '@activity/activity/dto/activity.update.dto';
 import { ActivityDocument } from '@activity/activity/entities/mongoose/activity.schema';
+import { Traceable } from '@amplication/opentelemetry-nestjs';
 import { AllowAnon } from '@auth/auth/decorators/allow-anon.decorator';
-import { PolicyHandlerActivityCreate } from '@auth/auth/policy/activity/policity.handler.activity.create';
-import { PolicyHandlerActivityDelete } from '@auth/auth/policy/activity/policity.handler.activity.delete';
-import { PolicyHandlerActivityRead } from '@auth/auth/policy/activity/policity.handler.activity.read';
-import { PolicyHandlerActivityUpdate } from '@auth/auth/policy/activity/policity.handler.activity.update';
-import { CheckPoliciesAbility } from '@auth/auth/policy/policy.handler.ability';
+import { BuildersService } from '@builder/builders';
 import { CommonService } from '@common/common';
+import { NoCache } from '@common/common/decorators/no-cache.decorator';
 import GenericServiceController from '@common/common/interfaces/controller.generic.interface';
 import { QuerySearchAnyDto } from '@common/common/models/query_search-any.dto';
 import { UpdateAnyDto } from '@common/common/models/update-any.dto';
@@ -16,7 +14,6 @@ import {
   Controller,
   Delete,
   Get,
-  Logger,
   Param,
   ParseArrayPipe,
   Patch,
@@ -33,10 +30,9 @@ import {
 import { ApiTags } from '@nestjs/swagger';
 import { ActivityServiceService } from './activity-service.service';
 import EventsNamesActivityEnum from './enum/events.names.activity.enum';
-import { BuildersService } from '@builder/builders';
-import { NoCache } from '@common/common/decorators/no-cache.decorator';
 
 @ApiTags('ACTIVITY')
+@Traceable()
 @Controller('activity')
 export class ActivityServiceController implements GenericServiceController {
   constructor(

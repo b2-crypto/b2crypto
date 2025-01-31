@@ -22,6 +22,7 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 
+import { Traceable } from '@amplication/opentelemetry-nestjs';
 import { AllowAnon } from '@auth/auth/decorators/allow-anon.decorator';
 import { ApiKeyCheck } from '@auth/auth/decorators/api-key-check.decorator';
 import { ApiKeyAuthGuard } from '@auth/auth/guards/api.key.guard';
@@ -55,6 +56,7 @@ import EventsNamesUserEnum from './enum/events.names.user.enum';
 import { UserServiceService } from './user-service.service';
 
 @ApiTags('USER')
+@Traceable()
 @Controller('users')
 export class UserServiceController implements GenericServiceController {
   constructor(

@@ -1,3 +1,4 @@
+import { Traceable } from '@amplication/opentelemetry-nestjs';
 import { PomeloProcessConstants } from '@common/common/utils/pomelo.integration.process.constants';
 import { SumsubHttpUtils } from '@common/common/utils/sumsub.integration.process.http.utils';
 import { SumsubSignatureUtils } from '@common/common/utils/sumsub.integration.process.signature';
@@ -9,6 +10,7 @@ import {
   Logger,
 } from '@nestjs/common';
 
+@Traceable()
 @Injectable()
 export class SumsubSignatureGuard implements CanActivate {
   constructor(

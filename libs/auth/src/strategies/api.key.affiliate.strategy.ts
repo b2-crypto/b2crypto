@@ -1,8 +1,10 @@
-import Strategy from 'passport-headerapikey';
-import { PassportStrategy } from '@nestjs/passport';
+import { Traceable } from '@amplication/opentelemetry-nestjs';
 import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { PassportStrategy } from '@nestjs/passport';
+import Strategy from 'passport-headerapikey';
 import { AuthService } from '../auth.service';
 
+@Traceable()
 @Injectable()
 export class ApiKeyAffiliateStrategy extends PassportStrategy(
   Strategy,

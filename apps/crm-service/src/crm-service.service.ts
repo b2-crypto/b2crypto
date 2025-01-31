@@ -1,4 +1,5 @@
 import { AffiliateDocument } from '@affiliate/affiliate/infrastructure/mongoose/affiliate.schema';
+import { Traceable } from '@amplication/opentelemetry-nestjs';
 import { BuildersService } from '@builder/builders';
 import { CategoryDocument } from '@category/category/entities/mongoose/category.schema';
 import { CommonService } from '@common/common';
@@ -16,6 +17,7 @@ import { IntegrationCrmService } from '@integration/integration/crm/generic/inte
 import { AssignLeadLeverateRequestDto } from '@integration/integration/crm/leverate-integration/dto/assign.lead.leverate.request.dto';
 import { CodeResponseLeverateEnum } from '@integration/integration/crm/leverate-integration/dto/result.response.leverate.dto';
 import { LeadInterface } from '@lead/lead/entities/lead.interface';
+import { Lead } from '@lead/lead/entities/mongoose/lead.schema';
 import {
   BadGatewayException,
   BadRequestException,
@@ -28,6 +30,7 @@ import { RpcException } from '@nestjs/microservices';
 import { SchedulerRegistry } from '@nestjs/schedule';
 import { ConfigCheckStatsDto } from '@stats/stats/dto/config.check.stats.dto';
 import CheckStatsType from '@stats/stats/enum/check.stats.type';
+import { Status } from '@status/status/entities/mongoose/status.schema';
 import { StatusInterface } from '@status/status/entities/status.interface';
 import { TransferInterface } from '@transfer/transfer/entities/transfer.interface';
 import { OperationTransactionType } from '@transfer/transfer/enum/operation.transaction.type.enum';
@@ -44,9 +47,8 @@ import { AutologinLeadFromAffiliateResponseDto } from './dto/autologin.lead.from
 import { CheckLeadStatusOnCrmDto } from './dto/check.lead.status.on.crm.dto';
 import { CreateLeadOnCrmDto } from './dto/create.lead.on.crm.dto';
 import { CreateTransferOnCrmDto } from './dto/create.transfer.on.crm.dto';
-import { Lead } from '@lead/lead/entities/mongoose/lead.schema';
-import { Status } from '@status/status/entities/mongoose/status.schema';
 
+@Traceable()
 @Injectable()
 export class CrmServiceService {
   constructor(

@@ -1,8 +1,9 @@
-
+import { Traceable } from '@amplication/opentelemetry-nestjs';
 import { Injectable, Logger } from '@nestjs/common';
-import * as sftpClient from 'ssh2-sftp-client';
 import * as fs from 'fs';
+import * as sftpClient from 'ssh2-sftp-client';
 
+@Traceable()
 @Injectable()
 export class PomeloIntegrationSFTPService {
   private client = new sftpClient();

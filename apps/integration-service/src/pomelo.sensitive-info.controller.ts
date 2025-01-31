@@ -1,3 +1,4 @@
+import { Traceable } from '@amplication/opentelemetry-nestjs';
 import { BuildersService } from '@builder/builders';
 import { NoCache } from '@common/common/decorators/no-cache.decorator';
 import { IntegrationService } from '@integration/integration';
@@ -18,6 +19,7 @@ import { User } from '@user/user/entities/mongoose/user.schema';
 import EventsNamesUserEnum from 'apps/user-service/src/enum/events.names.user.enum';
 import { UserServiceService } from 'apps/user-service/src/user-service.service';
 
+@Traceable()
 @Controller(PomeloEnum.POMELO_INTEGRATION_CONTROLLER)
 export class PomeloSensitiveInfoController {
   constructor(

@@ -2,6 +2,7 @@ import { AccountCreateDto } from '@account/account/dto/account.create.dto';
 import { AccountUpdateDto } from '@account/account/dto/account.update.dto';
 import StatusAccountEnum from '@account/account/enum/status.account.enum';
 import { ActivityCreateDto } from '@activity/activity/dto/activity.create.dto';
+import { Traceable } from '@amplication/opentelemetry-nestjs';
 import { BuildersService } from '@builder/builders';
 import { CommonService } from '@common/common';
 import { NoCache } from '@common/common/decorators/no-cache.decorator';
@@ -39,6 +40,7 @@ import { AccountServiceService } from './account-service.service';
 import EventsNamesAccountEnum from './enum/events.names.account.enum';
 
 @ApiTags('ACCOUNT')
+@Traceable()
 @Controller('accounts')
 export class AccountServiceController implements GenericServiceController {
   constructor(

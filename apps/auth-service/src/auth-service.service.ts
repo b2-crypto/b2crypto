@@ -1,3 +1,4 @@
+import { Traceable } from '@amplication/opentelemetry-nestjs';
 import { BuildersService } from '@builder/builders';
 import { CommonService } from '@common/common';
 import ResourcesEnum from '@common/common/enums/ResourceEnum';
@@ -18,6 +19,7 @@ import EventsNamesMessageEnum from 'apps/message-service/src/enum/events.names.m
 import EventsNamesPersonEnum from 'apps/person-service/src/enum/events.names.person.enum';
 import EventsNamesUserEnum from 'apps/user-service/src/enum/events.names.user.enum';
 
+@Traceable()
 @Injectable()
 export class AuthService {
   constructor(

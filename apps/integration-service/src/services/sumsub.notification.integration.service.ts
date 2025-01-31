@@ -1,9 +1,9 @@
+import { Traceable } from '@amplication/opentelemetry-nestjs';
 import { BuildersService } from '@builder/builders';
 import { SumsubApplicantOnHold } from '@integration/integration/identity/generic/domain/process/sumsub.applicant.onhold.dto';
 import { SumsubApplicantPending } from '@integration/integration/identity/generic/domain/process/sumsub.applicant.pending.dto';
 import { SumsubApplicantReviewed } from '@integration/integration/identity/generic/domain/process/sumsub.applicant.reviewed.dto';
 import {
-  BadRequestException,
   Injectable,
   Logger,
   NotFoundException,
@@ -14,6 +14,7 @@ import { UserEntity } from '@user/user/entities/user.entity';
 import EventsNamesUserEnum from 'apps/user-service/src/enum/events.names.user.enum';
 import { isMongoId } from 'class-validator';
 
+@Traceable()
 @Injectable()
 export class SumsubNotificationIntegrationService {
   constructor(private readonly builder: BuildersService) {}

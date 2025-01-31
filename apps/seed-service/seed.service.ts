@@ -1,7 +1,7 @@
 import { ActivityServiceMongooseService } from '@activity/activity';
 import { AffiliateServiceMongooseService } from '@affiliate/affiliate';
+import { Traceable } from '@amplication/opentelemetry-nestjs';
 import { BuildersService } from '@builder/builders';
-import { BrandServiceMongooseService } from 'libs/brand/src';
 import { CategoryServiceMongooseService } from '@category/category';
 import { CrmServiceMongooseService } from '@crm/crm';
 import { LeadServiceMongooseService } from '@lead/lead';
@@ -20,8 +20,10 @@ import { StatusServiceMongooseService } from '@status/status';
 import { TrafficServiceMongooseService } from '@traffic/traffic';
 import { TransferServiceMongooseService } from '@transfer/transfer';
 import { UserServiceMongooseService } from '@user/user';
+import { BrandServiceMongooseService } from 'libs/brand/src';
 import creator from './data/initial-data';
 
+@Traceable()
 @Injectable()
 export class SeedService {
   private eventClient: ClientProxy;

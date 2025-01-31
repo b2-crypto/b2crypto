@@ -1,10 +1,12 @@
+import { Traceable } from '@amplication/opentelemetry-nestjs';
 import { BasicServiceModel } from '@common/common/models/basic-service.model';
-import { CrmDocument } from '@crm/crm/entities/mongoose/crm.schema';
 import { CrmCreateDto } from '@crm/crm/dto/crm.create.dto';
 import { CrmUpdateDto } from '@crm/crm/dto/crm.update.dto';
+import { CrmDocument } from '@crm/crm/entities/mongoose/crm.schema';
 import { Inject, Injectable } from '@nestjs/common';
 import { Model } from 'mongoose';
 
+@Traceable()
 @Injectable()
 export class CrmServiceMongooseService extends BasicServiceModel<
   CrmDocument,

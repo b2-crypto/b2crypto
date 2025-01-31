@@ -1,5 +1,7 @@
 import { BankDepositCreateDto } from '@account/account/dto/bank-deposit.create.dto';
 import { BankCreateDto } from '@account/account/dto/bank.create.dto';
+import { Traceable } from '@amplication/opentelemetry-nestjs';
+import { NoCache } from '@common/common/decorators/no-cache.decorator';
 import { QuerySearchAnyDto } from '@common/common/models/query_search-any.dto';
 import {
   Body,
@@ -12,15 +14,13 @@ import {
   Req,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { NoCache } from '@common/common/decorators/no-cache.decorator';
 import { BankServiceService } from './bank-service.service';
 
 @ApiTags('BANK')
+@Traceable()
 @Controller('bank')
 export class BankServiceController {
-  constructor(
-    private readonly bankService: BankServiceService,
-  ) {}
+  constructor(private readonly bankService: BankServiceService) {}
 
   @Get('all')
   @NoCache()

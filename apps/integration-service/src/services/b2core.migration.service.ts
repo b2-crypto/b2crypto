@@ -1,6 +1,7 @@
 import StatusAccountEnum from '@account/account/enum/status.account.enum';
 import TypesAccountEnum from '@account/account/enum/types.account.enum';
 import WalletTypesAccountEnum from '@account/account/enum/wallet.types.account.enum';
+import { Traceable } from '@amplication/opentelemetry-nestjs';
 import { BuildersService } from '@builder/builders';
 import { CommonService } from '@common/common';
 import CurrencyCodeB2cryptoEnum from '@common/common/enums/currency-code-b2crypto.enum';
@@ -10,6 +11,7 @@ import EventsNamesUserEnum from 'apps/user-service/src/enum/events.names.user.en
 import * as csv from 'csv-parser';
 import { createReadStream } from 'fs';
 
+@Traceable()
 @Injectable()
 export class B2CoreMigrationService {
   constructor(private builder: BuildersService) {}

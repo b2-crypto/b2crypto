@@ -1,5 +1,6 @@
 import { AccountDocument } from '@account/account/entities/mongoose/account.schema';
 import WalletTypesAccountEnum from '@account/account/enum/wallet.types.account.enum';
+import { Traceable } from '@amplication/opentelemetry-nestjs';
 import { AllowAnon } from '@auth/auth/decorators/allow-anon.decorator';
 import { BuildersService } from '@builder/builders';
 import { CommonService } from '@common/common';
@@ -10,6 +11,7 @@ import { TransactionStateEnum } from '@fireblocks/ts-sdk';
 import { IntegrationService } from '@integration/integration';
 import IntegrationCryptoEnum from '@integration/integration/crypto/enums/IntegrationCryptoEnum';
 import { FireblocksIntegrationService } from '@integration/integration/crypto/fireblocks/fireblocks-integration.service';
+import { CACHE_MANAGER, Cache } from '@nestjs/cache-manager';
 import {
   BadRequestException,
   Body,
@@ -20,7 +22,6 @@ import {
   Post,
   Req,
 } from '@nestjs/common';
-import { CACHE_MANAGER, Cache } from '@nestjs/cache-manager';
 import { TransferCreateDto } from '@transfer/transfer/dto/transfer.create.dto';
 import { OperationTransactionType } from '@transfer/transfer/enum/operation.transaction.type.enum';
 import EventsNamesAccountEnum from 'apps/account-service/src/enum/events.names.account.enum';
@@ -31,6 +32,7 @@ import EventsNamesTransferEnum from 'apps/transfer-service/src/enum/events.names
 import { isMongoId } from 'class-validator';
 import * as crypto from 'crypto';
 
+@Traceable()
 @Controller('fireblocks')
 //@UseGuards(ApiKeyAuthGuard)
 export class FireBlocksNotificationsController {

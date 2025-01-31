@@ -1,11 +1,13 @@
 import CardTypesAccountEnum from '@account/account/enum/card.types.account.enum';
 import StatusAccountEnum from '@account/account/enum/status.account.enum';
 import TypesAccountEnum from '@account/account/enum/types.account.enum';
+import { Traceable } from '@amplication/opentelemetry-nestjs';
 import { BuildersService } from '@builder/builders';
 import { CommonService } from '@common/common';
 import DocIdTypeEnum from '@common/common/enums/DocIdTypeEnum';
 import GenderEnum from '@common/common/enums/GenderEnum';
 import CountryCodeEnum from '@common/common/enums/country.code.b2crypto.enum';
+import CurrencyCodeB2cryptoEnum from '@common/common/enums/currency-code-b2crypto.enum';
 import { IntegrationService } from '@integration/integration';
 import IntegrationCardEnum from '@integration/integration/card/enums/IntegrationCardEnum';
 import { CardSearchDto } from '@integration/integration/card/generic/dto/card.dto';
@@ -13,11 +15,11 @@ import { IntegrationCardService } from '@integration/integration/card/generic/in
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import EventsNamesAccountEnum from 'apps/account-service/src/enum/events.names.account.enum';
 import EventsNamesPersonEnum from 'apps/person-service/src/enum/events.names.person.enum';
+import EventsNamesTransferEnum from 'apps/transfer-service/src/enum/events.names.transfer.enum';
 import EventsNamesUserEnum from 'apps/user-service/src/enum/events.names.user.enum';
 import { PomeloV1DBClient } from '../clients/pomelo.v1.bd.client';
-import EventsNamesTransferEnum from 'apps/transfer-service/src/enum/events.names.transfer.enum';
-import CurrencyCodeB2cryptoEnum from '@common/common/enums/currency-code-b2crypto.enum';
 
+@Traceable()
 @Injectable()
 export class PomeloMigrationService {
   private pomeloIntegration: IntegrationCardService;

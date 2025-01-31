@@ -1,3 +1,4 @@
+import { Traceable } from '@amplication/opentelemetry-nestjs';
 import { BuildersService } from '@builder/builders';
 import {
   ExecutionContext,
@@ -8,6 +9,8 @@ import {
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import EventsNamesUserEnum from 'apps/user-service/src/enum/events.names.user.enum';
+
+@Traceable()
 @Injectable()
 export class ApiKeyAuthGuard extends AuthGuard('api-key') {
   constructor(

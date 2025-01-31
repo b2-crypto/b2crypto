@@ -1,3 +1,4 @@
+import { Traceable } from '@amplication/opentelemetry-nestjs';
 import dbIntegrationEnum from '@builder/builders/enums/db-integration.enum';
 import { BasicServiceModel } from '@common/common/models/basic-service.model';
 import { Inject, Injectable, Logger } from '@nestjs/common';
@@ -7,6 +8,7 @@ import { RoleUpdateDto } from '@role/role/dto/role.update.dto';
 import { RoleDocument } from '@role/role/entities/mongoose/role.schema';
 import { Model } from 'mongoose';
 
+@Traceable()
 @Injectable()
 export class RoleServiceMongooseService extends BasicServiceModel<
   RoleDocument,

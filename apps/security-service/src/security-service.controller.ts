@@ -1,3 +1,4 @@
+import { Traceable } from '@amplication/opentelemetry-nestjs';
 import { AuthService } from '@auth/auth';
 import { AllowAnon } from '@auth/auth/decorators/allow-anon.decorator';
 import { ApiKeyCheck } from '@auth/auth/decorators/api-key-check.decorator';
@@ -57,6 +58,7 @@ import { SwaggerSteakeyConfigEnum } from 'libs/config/enum/swagger.stakey.config
 import { SecurityServiceService } from './security-service.service';
 
 @ApiTags('AUTHENTICATION')
+@Traceable()
 @Controller('auth')
 export class SecurityServiceController {
   private eventClient: ClientProxy;

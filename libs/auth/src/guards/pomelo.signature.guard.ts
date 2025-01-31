@@ -1,3 +1,10 @@
+import { Traceable } from '@amplication/opentelemetry-nestjs';
+import { CommonService } from '@common/common';
+import { PomeloProcessConstants } from '@common/common/utils/pomelo.integration.process.constants';
+import { PomeloHttpUtils } from '@common/common/utils/pomelo.integration.process.http.utils';
+import { PomeloSignatureUtils } from '@common/common/utils/pomelo.integration.process.signature';
+import { ProcessHeaderDto } from '@integration/integration/dto/pomelo.process.header.dto';
+import { PomeloEnum } from '@integration/integration/enum/pomelo.enum';
 import {
   CanActivate,
   ExecutionContext,
@@ -5,15 +12,10 @@ import {
   Injectable,
   Logger,
 } from '@nestjs/common';
-import { Reflector } from '@nestjs/core';
 import { PATH_METADATA } from '@nestjs/common/constants';
-import { PomeloSignatureUtils } from '@common/common/utils/pomelo.integration.process.signature';
-import { PomeloProcessConstants } from '@common/common/utils/pomelo.integration.process.constants';
-import { PomeloHttpUtils } from '@common/common/utils/pomelo.integration.process.http.utils';
-import { PomeloEnum } from '@integration/integration/enum/pomelo.enum';
-import { ProcessHeaderDto } from '@integration/integration/dto/pomelo.process.header.dto';
-import { CommonService } from '@common/common';
+import { Reflector } from '@nestjs/core';
 
+@Traceable()
 @Injectable()
 export class PomeloSignatureGuard implements CanActivate {
   constructor(

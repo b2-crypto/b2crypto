@@ -1,3 +1,4 @@
+import { Traceable } from '@amplication/opentelemetry-nestjs';
 import {
   CardEvents,
   ShippingNotifications,
@@ -5,6 +6,7 @@ import {
 import { PomeloCache } from '@integration/integration/util/pomelo.integration.process.cache';
 import { Injectable, Logger } from '@nestjs/common';
 
+@Traceable()
 @Injectable()
 export class PomeloIntegrationShippingService {
   constructor(private readonly cache: PomeloCache) {}

@@ -1,3 +1,4 @@
+import { Traceable } from '@amplication/opentelemetry-nestjs';
 import { PomeloSignatureGuard } from '@auth/auth/guards/pomelo.signature.guard';
 import { PomeloSignatureInterceptor } from '@common/common/interceptors/pomelo.signature.interceptor';
 import {
@@ -16,6 +17,7 @@ import {
 } from '@nestjs/common';
 import { PomeloIntegrationShippingService } from './services/pomelo.integration.shipping.service';
 
+@Traceable()
 @Controller()
 @UseGuards(PomeloSignatureGuard)
 @UseInterceptors(PomeloSignatureInterceptor)

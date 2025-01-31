@@ -1,4 +1,4 @@
-import { isMongoId } from 'class-validator';
+import { Traceable } from '@amplication/opentelemetry-nestjs';
 import { BuildersService } from '@builder/builders';
 import { ResponsePaginator } from '@common/common/interfaces/response-pagination.interface';
 import { QuerySearchAnyDto } from '@common/common/models/query_search-any.dto';
@@ -14,13 +14,15 @@ import { PspAccountUpdateDto } from '@psp-account/psp-account/dto/psp-account.up
 import { PspAccountHasActiveDto } from '@psp-account/psp-account/dto/psp.has.active.dto';
 import { PspAccountDocument } from '@psp-account/psp-account/entities/mongoose/psp-account.schema';
 import { ConfigCheckStatsDto } from '@stats/stats/dto/config.check.stats.dto';
-import CheckStatsType from '../../../libs/stats/src/enum/check.stats.type';
 import { StatusDocument } from '@status/status/entities/mongoose/status.schema';
 import EventsNamesStatusEnum from 'apps/status-service/src/enum/events.names.status.enum';
 import EventsNamesTransferEnum from 'apps/transfer-service/src/enum/events.names.transfer.enum';
+import { isMongoId } from 'class-validator';
+import CheckStatsType from '../../../libs/stats/src/enum/check.stats.type';
 import EventsNamesPspEnum from './enum/events.names.psp.enum';
 import { PspServiceService } from './psp-service.service';
 
+@Traceable()
 @Injectable()
 export class PspAccountServiceService {
   constructor(

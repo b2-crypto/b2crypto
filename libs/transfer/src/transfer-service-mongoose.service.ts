@@ -1,4 +1,5 @@
 import TypesAccountEnum from '@account/account/enum/types.account.enum';
+import { Traceable } from '@amplication/opentelemetry-nestjs';
 import dbIntegrationEnum from '@builder/builders/enums/db-integration.enum';
 import { CommonService } from '@common/common';
 import { BasicServiceModel } from '@common/common/models/basic-service.model';
@@ -16,6 +17,7 @@ import { Aggregate, Model } from 'mongoose';
 import { ApproveOrRejectDepositDto } from './dto/approve.or.reject.deposit.dto';
 import { OperationTransactionType } from './enum/operation.transaction.type.enum';
 
+@Traceable()
 @Injectable()
 export class TransferServiceMongooseService extends BasicServiceModel<
   TransferDocument,

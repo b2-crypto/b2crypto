@@ -1,13 +1,15 @@
+import { Traceable } from '@amplication/opentelemetry-nestjs';
 import { BasicServiceModel } from '@common/common/models/basic-service.model';
 import { FileCreateDto } from '@file/file//dto/file.create.dto';
 import { FileUpdateDto } from '@file/file//dto/file.update.dto';
 import { FileDocument } from '@file/file/entities/mongoose/file.schema';
-import { Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import * as fs from 'fs';
 import { Model } from 'mongoose';
 import * as path from 'path';
 import { promisify } from 'util';
 
+@Traceable()
 @Injectable()
 export class FileServiceMongooseService extends BasicServiceModel<
   FileDocument,

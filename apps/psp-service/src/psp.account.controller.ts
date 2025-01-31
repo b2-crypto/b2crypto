@@ -1,10 +1,7 @@
+import { Traceable } from '@amplication/opentelemetry-nestjs';
 import { AllowAnon } from '@auth/auth/decorators/allow-anon.decorator';
-import { CheckPoliciesAbility } from '@auth/auth/policy/policy.handler.ability';
-import { PolicyHandlerPspAccountCreate } from '@auth/auth/policy/psp/policity.handler.psp.account.create';
-import { PolicyHandlerPspAccountDelete } from '@auth/auth/policy/psp/policity.handler.psp.account.delete';
-import { PolicyHandlerPspAccountRead } from '@auth/auth/policy/psp/policity.handler.psp.account.read';
-import { PolicyHandlerPspAccountUpdate } from '@auth/auth/policy/psp/policity.handler.psp.account.update';
 import { CommonService } from '@common/common';
+import { NoCache } from '@common/common/decorators/no-cache.decorator';
 import GenericServiceController from '@common/common/interfaces/controller.generic.interface';
 import { ResponsePaginator } from '@common/common/interfaces/response-pagination.interface';
 import { QuerySearchAnyDto } from '@common/common/models/query_search-any.dto';
@@ -36,9 +33,9 @@ import { PspAccountDocument } from '@psp-account/psp-account/entities/mongoose/p
 import { ConfigCheckStatsDto } from '@stats/stats/dto/config.check.stats.dto';
 import EventsNamesPspAccountEnum from './enum/events.names.psp.acount.enum';
 import { PspAccountServiceService } from './psp.account.service.service';
-import { NoCache } from '@common/common/decorators/no-cache.decorator';
 
 @ApiTags('PSP')
+@Traceable()
 @Controller('psp-account')
 export class PspAccountController implements GenericServiceController {
   constructor(private readonly pspAccountService: PspAccountServiceService) {}

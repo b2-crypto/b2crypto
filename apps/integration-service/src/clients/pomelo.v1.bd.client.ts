@@ -1,6 +1,8 @@
+import { Traceable } from '@amplication/opentelemetry-nestjs';
 import { Injectable, Logger } from '@nestjs/common';
 const { Client } = require('pg');
 
+@Traceable()
 @Injectable()
 export class PomeloV1DBClient {
   private connectionProps = {

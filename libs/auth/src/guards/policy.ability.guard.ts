@@ -1,23 +1,25 @@
+import { Traceable } from '@amplication/opentelemetry-nestjs';
+import { ProcessHeaderDto } from '@integration/integration/dto/pomelo.process.header.dto';
+import { PomeloEnum } from '@integration/integration/enum/pomelo.enum';
 import {
   CanActivate,
   ExecutionContext,
   Injectable,
   Logger,
 } from '@nestjs/common';
+import { PATH_METADATA } from '@nestjs/common/constants';
 import { Reflector } from '@nestjs/core';
+import * as ipaddr from 'ipaddr.js';
 import { AppAbility, CaslAbilityFactory } from '../casl-ability.factory';
 import { IS_ANON } from '../decorators/allow-anon.decorator';
 import { IS_API_KEY_CHECK } from '../decorators/api-key-check.decorator';
 import { IS_REFRESH } from '../decorators/refresh.decorator';
-import * as ipaddr from 'ipaddr.js';
 import {
   CHECK_POLICIES_ABILITY_KEY,
   PolicyHandler,
 } from '../policy/policy.handler.ability';
-import { PomeloEnum } from '@integration/integration/enum/pomelo.enum';
-import { ProcessHeaderDto } from '@integration/integration/dto/pomelo.process.header.dto';
-import { PATH_METADATA } from '@nestjs/common/constants';
 
+@Traceable()
 @Injectable()
 export class PoliciesGuard implements CanActivate {
   constructor(

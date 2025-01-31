@@ -5,6 +5,7 @@ import { AccountDocument } from '@account/account/entities/mongoose/account.sche
 import StatusAccountEnum from '@account/account/enum/status.account.enum';
 import TypesAccountEnum from '@account/account/enum/types.account.enum';
 import WalletTypesAccountEnum from '@account/account/enum/wallet.types.account.enum';
+import { Traceable } from '@amplication/opentelemetry-nestjs';
 import { BrandEntity } from '@brand/brand/entities/brand.entity';
 import { BuildersService } from '@builder/builders';
 import { CommonService } from '@common/common';
@@ -38,6 +39,7 @@ import EventsNamesStatusEnum from 'apps/status-service/src/enum/events.names.sta
 import EventsNamesTransferEnum from 'apps/transfer-service/src/enum/events.names.transfer.enum';
 import * as fs from 'fs';
 
+@Traceable()
 @Injectable()
 export class AccountServiceService
   implements BasicMicroserviceService<AccountDocument>

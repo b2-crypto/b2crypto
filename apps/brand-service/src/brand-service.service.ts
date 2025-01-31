@@ -1,22 +1,24 @@
+import { Traceable } from '@amplication/opentelemetry-nestjs';
 import { BrandCreateDto } from '@brand/brand/dto/brand.create.dto';
 import { BrandUpdateDto } from '@brand/brand/dto/brand.update.dto';
-import { BrandServiceMongooseService } from 'libs/brand/src';
+import { BrandDocument } from '@brand/brand/entities/mongoose/brand.schema';
+import { BuildersService } from '@builder/builders';
+import { CommonService } from '@common/common';
+import TagEnum from '@common/common/enums/TagEnum';
+import { ResponsePaginator } from '@common/common/interfaces/response-pagination.interface';
 import { QuerySearchAnyDto } from '@common/common/models/query_search-any.dto';
 import { Inject, Injectable, Logger } from '@nestjs/common';
-import CheckStatsType from '@stats/stats/enum/check.stats.type';
-import { BrandDocument } from '@brand/brand/entities/mongoose/brand.schema';
 import { ConfigCheckStatsDto } from '@stats/stats/dto/config.check.stats.dto';
-import { ResponsePaginator } from '@common/common/interfaces/response-pagination.interface';
-import EventsNamesLeadEnum from 'apps/lead-service/src/enum/events.names.lead.enum';
-import { BuildersService } from '@builder/builders';
-import axios from 'axios';
-import { CommonService } from '@common/common';
-import EventsNamesCategoryEnum from 'apps/category-service/src/enum/events.names.category.enum';
-import { BadRequestError } from 'passport-headerapikey';
-import TagEnum from '@common/common/enums/TagEnum';
-import EventsNamesStatusEnum from 'apps/status-service/src/enum/events.names.status.enum';
+import CheckStatsType from '@stats/stats/enum/check.stats.type';
 import { Status } from '@status/status/entities/mongoose/status.schema';
+import EventsNamesCategoryEnum from 'apps/category-service/src/enum/events.names.category.enum';
+import EventsNamesLeadEnum from 'apps/lead-service/src/enum/events.names.lead.enum';
+import EventsNamesStatusEnum from 'apps/status-service/src/enum/events.names.status.enum';
+import axios from 'axios';
+import { BrandServiceMongooseService } from 'libs/brand/src';
+import { BadRequestError } from 'passport-headerapikey';
 
+@Traceable()
 @Injectable()
 export class BrandServiceService {
   constructor(

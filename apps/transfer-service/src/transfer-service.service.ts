@@ -2,6 +2,7 @@ import { AccountUpdateDto } from '@account/account/dto/account.update.dto';
 import { AccountInterface } from '@account/account/entities/account.interface';
 import { AccountDocument } from '@account/account/entities/mongoose/account.schema';
 import { AffiliateDocument } from '@affiliate/affiliate/infrastructure/mongoose/affiliate.schema';
+import { Traceable } from '@amplication/opentelemetry-nestjs';
 import { BuildersService } from '@builder/builders';
 import { CategoryInterface } from '@category/category/entities/category.interface';
 import { CommonService } from '@common/common';
@@ -76,6 +77,7 @@ import { ApproveOrRejectDepositDto } from '../../../libs/transfer/src/dto/approv
 import { TransferLeadStatsDto } from './dto/transfer.lead.stat.dto';
 import EventsNamesTransferEnum from './enum/events.names.transfer.enum';
 
+@Traceable()
 @Injectable()
 export class TransferServiceService
   implements BasicMicroserviceService<TransferDocument>

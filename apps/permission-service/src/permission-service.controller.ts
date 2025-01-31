@@ -11,13 +11,10 @@ import {
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 
+import { Traceable } from '@amplication/opentelemetry-nestjs';
 import { AllowAnon } from '@auth/auth/decorators/allow-anon.decorator';
-import { PolicyHandlerPermissionCreate } from '@auth/auth/policy/permission/policity.handler.permission.create';
-import { PolicyHandlerPermissionDelete } from '@auth/auth/policy/permission/policity.handler.permission.delete';
-import { PolicyHandlerPermissionRead } from '@auth/auth/policy/permission/policity.handler.permission.read';
-import { PolicyHandlerPermissionUpdate } from '@auth/auth/policy/permission/policity.handler.permission.update';
-import { CheckPoliciesAbility } from '@auth/auth/policy/policy.handler.ability';
 import { CommonService } from '@common/common';
+import { NoCache } from '@common/common/decorators/no-cache.decorator';
 import GenericServiceController from '@common/common/interfaces/controller.generic.interface';
 import { QuerySearchAnyDto } from '@common/common/models/query_search-any.dto';
 import { UpdateAnyDto } from '@common/common/models/update-any.dto';
@@ -31,9 +28,9 @@ import { PermissionCreateDto } from '@permission/permission/dto/permission.creat
 import { PermissionUpdateDto } from '@permission/permission/dto/permission.update.dto';
 import EventsNamesPermissionEnum from './enum/events.names.permission.enum';
 import { PermissionServiceService } from './permission-service.service';
-import { NoCache } from '@common/common/decorators/no-cache.decorator';
 
 @ApiTags('PERMISSION')
+@Traceable()
 @Controller('permission')
 export class PermissionServiceController implements GenericServiceController {
   constructor(private readonly permissionService: PermissionServiceService) {}

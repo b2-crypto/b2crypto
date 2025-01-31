@@ -1,3 +1,4 @@
+import { Traceable } from '@amplication/opentelemetry-nestjs';
 import { ApiKeyCheck } from '@auth/auth/decorators/api-key-check.decorator';
 import { ApiKeyAuthGuard } from '@auth/auth/guards/api.key.guard';
 import { SumsubSignatureGuard } from '@auth/auth/guards/sumsub.signature.guard';
@@ -16,6 +17,7 @@ import {
 import { SumsubApplicantReviewed } from './../../../libs/integration/src/identity/generic/domain/process/sumsub.applicant.reviewed.dto';
 import { SumsubNotificationIntegrationService } from './services/sumsub.notification.integration.service';
 
+@Traceable()
 @Controller('sumsub')
 @UseGuards(ApiKeyAuthGuard, SumsubSignatureGuard)
 //@UseInterceptors(SumsubSignatureInterceptor)

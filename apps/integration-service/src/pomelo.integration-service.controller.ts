@@ -1,3 +1,4 @@
+import { Traceable } from '@amplication/opentelemetry-nestjs';
 import { PomeloSignatureGuard } from '@auth/auth/guards/pomelo.signature.guard';
 import { PomeloSignatureInterceptor } from '@common/common/interceptors/pomelo.signature.interceptor';
 import {
@@ -19,6 +20,7 @@ import {
 import { PomeloIntegrationProcessService } from './services/pomelo.integration.process.service';
 import { PomeloIntegrationSFTPService } from './services/pomelo.integration.sftp.service';
 
+@Traceable()
 @Controller()
 export class PomeloIntegrationServiceController {
   constructor(

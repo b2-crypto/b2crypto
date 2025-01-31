@@ -1,7 +1,9 @@
+import { Traceable } from '@amplication/opentelemetry-nestjs';
 import { SumsubProcessHeaderDto } from '@integration/integration/identity/generic/domain/dto/sumsub.process.header.dto';
 import { Injectable, Logger, NotImplementedException } from '@nestjs/common';
 import * as crypto from 'crypto';
 
+@Traceable()
 @Injectable()
 export class SumsubSignatureUtils {
   private apiKey = 'zyPoKDIxcPqJNtSi4BtjK1RV62g';

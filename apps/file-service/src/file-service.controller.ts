@@ -13,16 +13,12 @@ import {
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 
+import { Traceable } from '@amplication/opentelemetry-nestjs';
 import { AllowAnon } from '@auth/auth/decorators/allow-anon.decorator';
-import { PolicyHandlerFileCreate } from '@auth/auth/policy/file/policity.handler.file.create';
-import { PolicyHandlerFileDelete } from '@auth/auth/policy/file/policity.handler.file.delete';
-import { PolicyHandlerFileRead } from '@auth/auth/policy/file/policity.handler.file.read';
-import { PolicyHandlerFileUpdate } from '@auth/auth/policy/file/policity.handler.file.update';
-import { CheckPoliciesAbility } from '@auth/auth/policy/policy.handler.ability';
 import { CommonService } from '@common/common';
+import { NoCache } from '@common/common/decorators/no-cache.decorator';
 import GenericServiceController from '@common/common/interfaces/controller.generic.interface';
 import { QuerySearchAnyDto } from '@common/common/models/query_search-any.dto';
-import { UpdateAnyDto } from '@common/common/models/update-any.dto';
 import { FileCreateDto } from '@file/file/dto/file.create.dto';
 import { FileUpdateDto } from '@file/file/dto/file.update.dto';
 import {
@@ -35,9 +31,9 @@ import {
 import { Response as ExpressResponse } from 'express';
 import EventsNamesFileEnum from './enum/events.names.file.enum';
 import { FileServiceService } from './file-service.service';
-import { NoCache } from '@common/common/decorators/no-cache.decorator';
 
 @ApiTags('FILE')
+@Traceable()
 @Controller('file')
 export class FileServiceController implements GenericServiceController {
   constructor(private readonly fileService: FileServiceService) {}

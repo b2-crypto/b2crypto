@@ -78,6 +78,7 @@ import { ConfigCardActivateDto } from '@account/account/dto/config.card.activate
 import { PinUpdateDto } from '@account/account/dto/pin.update.dto';
 import { AccountInterface } from '@account/account/entities/account.interface';
 import WalletTypesAccountEnum from '@account/account/enum/wallet.types.account.enum';
+import { Traceable } from '@amplication/opentelemetry-nestjs';
 import { CategoryInterface } from '@category/category/entities/category.interface';
 import DocIdTypeEnum from '@common/common/enums/DocIdTypeEnum';
 import { PspAccountInterface } from '@psp-account/psp-account/entities/psp-account.interface';
@@ -88,6 +89,7 @@ import { AfgNamesEnum } from './enum/afg.names.enum';
 import EventsNamesAccountEnum from './enum/events.names.account.enum';
 
 @ApiTags(SwaggerSteakeyConfigEnum.TAG_CARD)
+@Traceable()
 @Controller('cards')
 export class CardServiceController extends AccountServiceController {
   constructor(
