@@ -1,11 +1,11 @@
 /* eslint-disable */
-import { logger, sdk } from './opentelemetry';
+import { sdk } from './opentelemetry';
 
 sdk.start();
 /* eslint-disable */
 
 import { QueueAdminModule } from '@common/common/queue-admin-providers/queue.admin.provider.module';
-import { INestApplication, ValidationPipe } from '@nestjs/common';
+import { INestApplication, Logger, ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, OpenAPIObject, SwaggerModule } from '@nestjs/swagger';
@@ -22,19 +22,13 @@ import { StatusServiceModule } from 'apps/status-service/src/status-service.modu
 import { TransferServiceModule } from 'apps/transfer-service/src/transfer-service.module';
 import * as basicAuth from 'express-basic-auth';
 import { SwaggerSteakeyConfigEnum } from 'libs/config/enum/swagger.stakey.config.enum';
-import { WINSTON_MODULE_NEST_PROVIDER, WinstonModule } from 'nest-winston';
 import { UserServiceModule } from '../../user-service/src/user-service.module';
 import { AppHttpModule } from './app.http.module';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppHttpModule, {
-    logger: WinstonModule.createLogger({
-      instance: logger,
-    }),
-  });
+  const app = await NestFactory.create(AppHttpModule);
 
   const configService = app.get(ConfigService);
-  const loggerService = app.get(WINSTON_MODULE_NEST_PROVIDER);
 
   const validationPipes = new ValidationPipe({
     whitelist: true,
@@ -73,8 +67,8 @@ async function bootstrap() {
   await app.startAllMicroservices();
   await app.listen(configService.get('PORT') ?? 3000);
 
-  loggerService.info('Timezone', process.env.TZ);
-  loggerService.info('Listening on port ' + configService.get('PORT'));
+  Logger.log('Timezone', process.env.TZ);
+  Logger.log('Listening on port ' + configService.get('PORT'));
   if (typeof process.send === 'function') {
     process.send('ready');
   }

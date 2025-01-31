@@ -1,5 +1,4 @@
 import DatabaseConnectionEnum from '@common/common/enums/DatabaseConnectionEnum';
-import { Logger } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import * as mongoose from 'mongoose';
 
@@ -21,11 +20,11 @@ export const databaseProviders = [
           keepAliveInitialDelay: 300000,
         });
 
-        Logger.log('Database activity connection open');
+        console.log('Database activity connection open');
 
         return connection;
       } catch (error) {
-        Logger.error(error);
+        console.error(error);
         return error;
       }
     },

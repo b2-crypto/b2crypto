@@ -11,7 +11,6 @@ import {
   BadRequestException,
   Inject,
   Injectable,
-  Logger,
   NotImplementedException,
 } from '@nestjs/common';
 import { ConfigCheckStatsDto } from '@stats/stats/dto/config.check.stats.dto';
@@ -22,6 +21,11 @@ import EventsNamesLeadEnum from 'apps/lead-service/src/enum/events.names.lead.en
 import EventsNamesTrafficEnum from 'apps/traffic-service/src/enum/events.names.traffic.enum';
 import EventsNamesUserEnum from 'apps/user-service/src/enum/events.names.user.enum';
 import { isMongoId } from 'class-validator';
+<<<<<<< HEAD
+=======
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
+import { Logger } from 'winston';
+>>>>>>> feature/opentelemetry-basic
 import CheckStatsType from '../../../libs/stats/src/enum/check.stats.type';
 import { MoveTrafficAffiliateDto } from './dto/move.traffic.affiliate.dto';
 import EventsNamesAffiliateEnum from './enum/events.names.affiliate.enum';
@@ -30,6 +34,7 @@ import EventsNamesAffiliateEnum from './enum/events.names.affiliate.enum';
 @Injectable()
 export class AffiliateServiceService {
   constructor(
+    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
     @Inject(BuildersService)
     private readonly builder: BuildersService,
     @Inject(AffiliateServiceMongooseService)
@@ -239,14 +244,14 @@ export class AffiliateServiceService {
             affiliate._id,
           );
         }
-        Logger.debug(
+        this.logger.debug(
           `Sended Page ${affiliates.currentPage}/${affiliates.lastPage}`,
           'Check all affiliates',
         );
         nextPage = affiliates.nextPage;
       } while (nextPage != 1);
     } else {
-      Logger.debug(affiliateId, AffiliateServiceService.name);
+      this.logger.debug(AffiliateServiceService.name, affiliateId);
       // TODO[hender - 2024/02/21] Update stats affiliate
       this.builder.emitLeadEventClient(
         EventsNamesLeadEnum.checkLeadsForAffiliateStats,
@@ -259,7 +264,7 @@ export class AffiliateServiceService {
   }
 
   async checkStatsTransfer(transfer: TransferInterface) {
-    Logger.debug(transfer, AffiliateServiceService.name);
+    this.logger.debug(AffiliateServiceService.name, transfer);
     this.checkStats({
       affiliateId: transfer.affiliate,
       checkType: CheckStatsType.LEAD,
