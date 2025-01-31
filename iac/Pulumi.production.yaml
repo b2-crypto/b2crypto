@@ -156,3 +156,4 @@ config:
   b2crypto-iac:OTLP_HOST:
     secure: AAABAHTGIOXPVYUfMTZXgqQslIl8kCEf1GHwXP16+8WpI0+oaXQepR2iyp8I+WUVVxd8M1NVRvF00mdUgFg=
   b2crypto-iac:APP_VERSION: 0.9.0
+  b2crypto-iac:OTP_VALIDATION_TIME_SECONDS: "120"

@@ -132,8 +132,8 @@ export class PomeloIntegrationProcessService {
       };
     } catch (error) {
       this.logger.error(
-        `Error: ${error} | Request: ${conversion}`,
         'PomeloProcess getAmount',
+        `Error: ${error} | Request: ${conversion}`,
       );
       throw new InternalServerErrorException(error);
     }

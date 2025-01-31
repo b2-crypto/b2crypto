@@ -121,7 +121,7 @@ export class B2CoreMigrationService {
           });
       });
     } catch (error) {
-      this.logger.error(error, B2CoreMigrationService.name);
+      this.logger.error(B2CoreMigrationService.name, error);
     }
   }
 
