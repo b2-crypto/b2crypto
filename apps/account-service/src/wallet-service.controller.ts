@@ -87,7 +87,7 @@ export class WalletServiceController extends AccountServiceController {
     private readonly configService: ConfigService,
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) {
-    super(walletService, ewalletBuilder);
+    super(logger, walletService, ewalletBuilder);
     this.getFireblocksType();
   }
 

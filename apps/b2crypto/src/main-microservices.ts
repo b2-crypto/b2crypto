@@ -1,10 +1,9 @@
-import { QueueAdminService } from '@common/common/queue-admin-providers/queue.admin.provider.service';
+import { EnvironmentEnum } from '@common/common/enums/environment.enum';
+import { QueueAdminModule } from '@common/common/queue-admin-providers/queue.admin.provider.module';
 import { Logger, ValidationPipe } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 import { AppHttpModule } from './app.http.module';
-import { EnvironmentEnum } from '@common/common/enums/environment.enum';
-import { ConfigService } from '@nestjs/config';
-import { QueueAdminModule } from '@common/common/queue-admin-providers/queue.admin.provider.module';
 
 async function bootstrap() {
   Logger.log(process.env.TZ, 'Timezone Microservice');

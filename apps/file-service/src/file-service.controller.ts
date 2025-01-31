@@ -3,7 +3,7 @@ import {
   Controller,
   Delete,
   Get,
-  Logger,
+  Inject,
   Param,
   ParseArrayPipe,
   Patch,
@@ -29,6 +29,8 @@ import {
   RmqContext,
 } from '@nestjs/microservices';
 import { Response as ExpressResponse } from 'express';
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
+import { Logger } from 'winston';
 import EventsNamesFileEnum from './enum/events.names.file.enum';
 import { FileServiceService } from './file-service.service';
 
@@ -36,7 +38,10 @@ import { FileServiceService } from './file-service.service';
 @Traceable()
 @Controller('file')
 export class FileServiceController implements GenericServiceController {
-  constructor(private readonly fileService: FileServiceService) {}
+  constructor(
+    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
+    private readonly fileService: FileServiceService,
+  ) {}
 
   @Get('all')
   @NoCache()
@@ -136,7 +141,7 @@ export class FileServiceController implements GenericServiceController {
     try {
       await this.fileService.addDataToFile(dto);
     } catch (err) {
-      Logger.error(err);
+      this.logger.error(err.message, err);
     }
     CommonService.ack(ctx);
   }

@@ -110,7 +110,7 @@ export class CardServiceController extends AccountServiceController {
     private readonly configService: ConfigService,
     private readonly currencyConversion: FiatIntegrationClient,
   ) {
-    super(cardService, cardBuilder);
+    super(logger, cardService, cardBuilder);
   }
 
   private readonly BLOCK_BALANCE_PERCENTAGE: number =

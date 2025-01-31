@@ -7,7 +7,7 @@ import { CommonService } from '@common/common';
 import TagEnum from '@common/common/enums/TagEnum';
 import { ResponsePaginator } from '@common/common/interfaces/response-pagination.interface';
 import { QuerySearchAnyDto } from '@common/common/models/query_search-any.dto';
-import { Inject, Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { ConfigCheckStatsDto } from '@stats/stats/dto/config.check.stats.dto';
 import CheckStatsType from '@stats/stats/enum/check.stats.type';
 import { Status } from '@status/status/entities/mongoose/status.schema';
@@ -16,12 +16,15 @@ import EventsNamesLeadEnum from 'apps/lead-service/src/enum/events.names.lead.en
 import EventsNamesStatusEnum from 'apps/status-service/src/enum/events.names.status.enum';
 import axios from 'axios';
 import { BrandServiceMongooseService } from 'libs/brand/src';
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { BadRequestError } from 'passport-headerapikey';
+import { Logger } from 'winston';
 
 @Traceable()
 @Injectable()
 export class BrandServiceService {
   constructor(
+    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
     @Inject(BuildersService)
     private readonly builder: BuildersService,
     @Inject(BrandServiceMongooseService)
@@ -141,7 +144,7 @@ export class BrandServiceService {
   }
 
   async checkStatsTransfer(configCheckStats: ConfigCheckStatsDto) {
-    Logger.log('CHECK STATS BRANDS TRANSFER');
+    this.logger.debug('CHECK STATS BRANDS TRANSFER');
   }
 
   async checkCashierBrands() {

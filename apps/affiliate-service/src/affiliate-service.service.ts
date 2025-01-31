@@ -21,11 +21,8 @@ import EventsNamesLeadEnum from 'apps/lead-service/src/enum/events.names.lead.en
 import EventsNamesTrafficEnum from 'apps/traffic-service/src/enum/events.names.traffic.enum';
 import EventsNamesUserEnum from 'apps/user-service/src/enum/events.names.user.enum';
 import { isMongoId } from 'class-validator';
-<<<<<<< HEAD
-=======
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
->>>>>>> feature/opentelemetry-basic
 import CheckStatsType from '../../../libs/stats/src/enum/check.stats.type';
 import { MoveTrafficAffiliateDto } from './dto/move.traffic.affiliate.dto';
 import EventsNamesAffiliateEnum from './enum/events.names.affiliate.enum';
