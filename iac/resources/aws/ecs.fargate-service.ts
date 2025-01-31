@@ -4,6 +4,7 @@ import * as pulumi from '@pulumi/pulumi';
 import {
   API_KEY_EMAIL_APP,
   APP_NAME,
+  APP_VERSION,
   AUTH_EXPIRE_IN,
   AUTH_MAX_SECONDS_TO_REFRESH,
   AUTHORIZATIONS_BLOCK_BALANCE_PERCENTAGE,
@@ -13,7 +14,6 @@ import {
   DATABASE_NAME,
   DEFAULT_CURRENCY_CONVERSION_COIN,
   DESIRED_COUNT_TASK,
-  DOMAIN,
   ENVIRONMENT,
   GOOGLE_2FA,
   isStressTest,
@@ -29,7 +29,6 @@ import {
   SOCIAL_MEDIA_ICONS,
   SOCIAL_MEDIA_LINKS,
   STACK,
-  SUBDOMAIN_PREFIX_OPTL_COLLECTOR,
   TAGS,
   TASK_CPU_MONOLITH,
   TASK_MEMORY_MONOLITH,
@@ -87,6 +86,8 @@ export const ecsFargateService = new awsx.ecs.FargateService(
         environment: [
           { name: 'ENVIRONMENT', value: ENVIRONMENT },
           { name: 'APP_NAME', value: APP_NAME },
+          { name: 'APP_VERSION', value: APP_VERSION },
+          { name: 'STACK', value: STACK },
           { name: 'GOOGLE_2FA', value: GOOGLE_2FA },
           { name: 'PORT', value: PORT },
           { name: 'DATABASE_NAME', value: DATABASE_NAME },
@@ -258,9 +259,18 @@ export const ecsFargateService = new awsx.ecs.FargateService(
             name: 'SOCIAL_MEDIA_LINKS',
             value: SOCIAL_MEDIA_LINKS,
           },
+          { name: 'OTLP_API_KEY', value: SECRETS.OTLP_API_KEY },
           {
-            name: 'OPTL_API_URL',
-            value: `https://${SUBDOMAIN_PREFIX_OPTL_COLLECTOR}.${DOMAIN}/v1/traces`,
+            name: 'OTLP_HOST_TRACES',
+            value: SECRETS.OTLP_HOST.apply((host) => `${host}/v1/traces`),
+          },
+          {
+            name: 'OTLP_HOST_LOGS',
+            value: SECRETS.OTLP_HOST.apply((host) => `${host}/v1/logs`),
+          },
+          {
+            name: 'OTLP_HOST_METRICS',
+            value: SECRETS.OTLP_HOST.apply((host) => `${host}/v1/metrics`),
           },
           {
             name: 'OPTL_SERVICE_NAME',
