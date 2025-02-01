@@ -1,22 +1,21 @@
 import { Traceable } from '@amplication/opentelemetry-nestjs';
 import {
   Controller,
-  Inject,
   NotImplementedException,
   Post,
   UploadedFile,
   UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
-import { Logger } from 'winston';
+import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import { B2CoreMigrationService } from './services/b2core.migration.service';
 
 @Traceable()
 @Controller('b2core-migration')
 export class B2CoreMigrationController {
   constructor(
-    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
+    @InjectPinoLogger(B2CoreMigrationController.name)
+    protected readonly logger: PinoLogger,
     private readonly migrationService: B2CoreMigrationService,
   ) {}
 

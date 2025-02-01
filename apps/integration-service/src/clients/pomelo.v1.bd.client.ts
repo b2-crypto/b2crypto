@@ -1,14 +1,15 @@
 import { Traceable } from '@amplication/opentelemetry-nestjs';
-import { Inject, Injectable } from '@nestjs/common';
-import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
-import { Logger } from 'winston';
-const { Client } = require('pg');
+import { Injectable } from '@nestjs/common';
+import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
+// const { Client } = require('pg');
+import { Client } from 'pg';
 
 @Traceable()
 @Injectable()
 export class PomeloV1DBClient {
   constructor(
-    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
+    @InjectPinoLogger(PomeloV1DBClient.name)
+    protected readonly logger: PinoLogger,
   ) {}
 
   private connectionProps = {

@@ -1,9 +1,8 @@
 import { Traceable } from '@amplication/opentelemetry-nestjs';
 import { SumsubProcessHeaderDto } from '@integration/integration/identity/generic/domain/dto/sumsub.process.header.dto';
-import { Inject, Injectable, NotImplementedException } from '@nestjs/common';
+import { Injectable, NotImplementedException } from '@nestjs/common';
 import * as crypto from 'crypto';
-import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
-import { Logger } from 'winston';
+import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 
 @Traceable()
 @Injectable()
@@ -11,7 +10,8 @@ export class SumsubSignatureUtils {
   private apiKey = 'zyPoKDIxcPqJNtSi4BtjK1RV62g';
 
   constructor(
-    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
+    @InjectPinoLogger(SumsubSignatureUtils.name)
+    protected readonly logger: PinoLogger,
   ) {}
 
   checkSignature(headers: SumsubProcessHeaderDto, body): boolean {

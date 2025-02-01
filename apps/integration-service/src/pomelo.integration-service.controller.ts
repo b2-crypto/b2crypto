@@ -12,13 +12,11 @@ import {
   Controller,
   Headers,
   HttpCode,
-  Inject,
   Post,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
-import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
-import { Logger } from 'winston';
+import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import { PomeloIntegrationProcessService } from './services/pomelo.integration.process.service';
 import { PomeloIntegrationSFTPService } from './services/pomelo.integration.sftp.service';
 
@@ -26,7 +24,8 @@ import { PomeloIntegrationSFTPService } from './services/pomelo.integration.sftp
 @Controller()
 export class PomeloIntegrationServiceController {
   constructor(
-    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
+    @InjectPinoLogger(PomeloIntegrationServiceController.name)
+    protected readonly logger: PinoLogger,
     private readonly integrationServiceService: PomeloIntegrationProcessService,
     private readonly sftpService: PomeloIntegrationSFTPService,
   ) {}

@@ -21,8 +21,7 @@ import EventsNamesLeadEnum from 'apps/lead-service/src/enum/events.names.lead.en
 import EventsNamesTrafficEnum from 'apps/traffic-service/src/enum/events.names.traffic.enum';
 import EventsNamesUserEnum from 'apps/user-service/src/enum/events.names.user.enum';
 import { isMongoId } from 'class-validator';
-import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
-import { Logger } from 'winston';
+import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import CheckStatsType from '../../../libs/stats/src/enum/check.stats.type';
 import { MoveTrafficAffiliateDto } from './dto/move.traffic.affiliate.dto';
 import EventsNamesAffiliateEnum from './enum/events.names.affiliate.enum';
@@ -31,7 +30,8 @@ import EventsNamesAffiliateEnum from './enum/events.names.affiliate.enum';
 @Injectable()
 export class AffiliateServiceService {
   constructor(
-    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
+    @InjectPinoLogger(AffiliateServiceService.name)
+    protected readonly logger: PinoLogger,
     @Inject(BuildersService)
     private readonly builder: BuildersService,
     @Inject(AffiliateServiceMongooseService)

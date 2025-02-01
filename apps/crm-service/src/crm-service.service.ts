@@ -40,9 +40,8 @@ import EventsNamesLeadEnum from 'apps/lead-service/src/enum/events.names.lead.en
 import EventsNamesStatusEnum from 'apps/status-service/src/enum/events.names.status.enum';
 import EventsNamesTransferEnum from 'apps/transfer-service/src/enum/events.names.transfer.enum';
 import { isArray, isEmpty } from 'class-validator';
-import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
+import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import { BadRequestError } from 'passport-headerapikey';
-import { Logger } from 'winston';
 import { AutologinLeadFromAffiliateDto } from './dto/autologin.lead.from.affiliate.dto';
 import { AutologinLeadFromAffiliateResponseDto } from './dto/autologin.lead.from.affiliate.response.dto';
 import { CheckLeadStatusOnCrmDto } from './dto/check.lead.status.on.crm.dto';
@@ -53,7 +52,8 @@ import { CreateTransferOnCrmDto } from './dto/create.transfer.on.crm.dto';
 @Injectable()
 export class CrmServiceService {
   constructor(
-    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
+    @InjectPinoLogger(CrmServiceService.name)
+    protected readonly logger: PinoLogger,
     @Inject(BuildersService)
     private readonly builder: BuildersService,
     @Inject(CrmServiceMongooseService)

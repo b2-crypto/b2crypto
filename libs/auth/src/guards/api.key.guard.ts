@@ -8,14 +8,14 @@ import {
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import EventsNamesUserEnum from 'apps/user-service/src/enum/events.names.user.enum';
-import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
-import { Logger } from 'winston';
+import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 
 @Traceable()
 @Injectable()
 export class ApiKeyAuthGuard extends AuthGuard('api-key') {
   constructor(
-    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
+    @InjectPinoLogger(ApiKeyAuthGuard.name)
+    protected readonly logger: PinoLogger,
     @Inject(BuildersService)
     private readonly builder: BuildersService,
   ) {

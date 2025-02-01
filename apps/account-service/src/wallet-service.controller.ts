@@ -61,8 +61,7 @@ import { UserServiceService } from 'apps/user-service/src/user-service.service';
 import { Cache } from 'cache-manager';
 import { isMongoId } from 'class-validator';
 import { SwaggerSteakeyConfigEnum } from 'libs/config/enum/swagger.stakey.config.enum';
-import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
-import { Logger } from 'winston';
+import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import { AccountServiceController } from './account-service.controller';
 import { AccountServiceService } from './account-service.service';
 import { WalletWithdrawalDto } from './dtos/WalletWithdrawalDto';
@@ -75,7 +74,8 @@ import { WalletServiceService } from './wallet-service.service';
 export class WalletServiceController extends AccountServiceController {
   private cryptoType = null;
   constructor(
-    @Inject(WINSTON_MODULE_NEST_PROVIDER) protected readonly logger: Logger,
+    @InjectPinoLogger(WalletServiceController.name)
+    protected readonly logger: PinoLogger,
     private readonly walletService: AccountServiceService,
     @Inject(WalletServiceService)
     private readonly walletServiceService: WalletServiceService,

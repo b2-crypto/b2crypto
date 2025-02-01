@@ -13,7 +13,7 @@ export const appautoscalingPolicy = new aws.appautoscaling.Policy(
       predefinedMetricSpecification: {
         predefinedMetricType: 'ECSServiceAverageCPUUtilization',
       },
-      targetValue: 50.0,
+      targetValue: 10.0,
     },
   },
 );

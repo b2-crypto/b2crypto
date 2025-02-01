@@ -7,8 +7,7 @@ import { Cron, CronExpression } from '@nestjs/schedule';
 import EventsNamesAccountEnum from 'apps/account-service/src/enum/events.names.account.enum';
 import EventsNamesTransferEnum from 'apps/transfer-service/src/enum/events.names.transfer.enum';
 import EventsNamesUserEnum from 'apps/user-service/src/enum/events.names.user.enum';
-import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
-import { Logger } from 'winston';
+import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 
 @Traceable()
 @Injectable()
@@ -25,7 +24,8 @@ export class JobService {
   private env = 'DEV';
 
   constructor(
-    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
+    @InjectPinoLogger(JobService.name)
+    protected readonly logger: PinoLogger,
     readonly configService: ConfigService,
     @Inject(BuildersService)
     private readonly builder: BuildersService,

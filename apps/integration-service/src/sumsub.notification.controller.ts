@@ -9,13 +9,12 @@ import {
   Body,
   Controller,
   HttpCode,
-  Inject,
+  NotFoundException,
   Post,
   Req,
   UseGuards,
 } from '@nestjs/common';
-import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
-import { Logger } from 'winston';
+import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import { SumsubApplicantReviewed } from './../../../libs/integration/src/identity/generic/domain/process/sumsub.applicant.reviewed.dto';
 import { SumsubNotificationIntegrationService } from './services/sumsub.notification.integration.service';
 
@@ -25,7 +24,8 @@ import { SumsubNotificationIntegrationService } from './services/sumsub.notifica
 //@UseInterceptors(SumsubSignatureInterceptor)
 export class SumsubNotificationIntegrationController {
   constructor(
-    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
+    @InjectPinoLogger(SumsubNotificationIntegrationController.name)
+    protected readonly logger: PinoLogger,
     private readonly sumsubService: SumsubNotificationIntegrationService,
   ) {}
 
@@ -39,7 +39,10 @@ export class SumsubNotificationIntegrationController {
     await this.sumsubService.validateClient(req.clientApi);
     this.logger.debug('Notification Reviewed body', notification);
     this.logger.debug('Notification Reviewed headers', req.headers);
-    await this.sumsubService.updateUserByReviewed(notification);
+    const user = await this.sumsubService.updateUserByReviewed(notification);
+
+    if (!user) throw new NotFoundException('User not found');
+
     return {
       statusCode: 200,
       description: 'received reviewed',
@@ -55,7 +58,10 @@ export class SumsubNotificationIntegrationController {
   ): Promise<any> {
     this.logger.debug('Notification Reviewed body', notification);
     this.logger.debug('Notification Reviewed headers', req.headers);
-    await this.sumsubService.updateUserByPending(notification);
+    const user = await this.sumsubService.updateUserByPending(notification);
+
+    if (!user) throw new NotFoundException('User not found');
+
     return {
       statusCode: 200,
       description: 'received pending',
@@ -71,7 +77,10 @@ export class SumsubNotificationIntegrationController {
   ): Promise<any> {
     this.logger.debug('Notification Reviewed body', notification);
     this.logger.debug('Notification Reviewed headers', req.headers);
-    await this.sumsubService.updateUserByOnHold(notification);
+    const user = await this.sumsubService.updateUserByOnHold(notification);
+
+    if (!user) throw new NotFoundException('User not found');
+
     return {
       statusCode: 200,
       description: 'received on hold',

@@ -37,9 +37,8 @@ import EventsNamesPspAccountEnum from 'apps/psp-service/src/enum/events.names.ps
 import EventsNamesTransferEnum from 'apps/transfer-service/src/enum/events.names.transfer.enum';
 import EventsNamesUserEnum from 'apps/user-service/src/enum/events.names.user.enum';
 import { readFileSync } from 'fs';
-import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
+import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import * as pug from 'pug';
-import { Logger } from 'winston';
 import { ClientTransferCreateDto } from './dto/client.transfer.create.dto';
 import { ClientsTaskNamesEnum } from './enums/clients.task.names.enum';
 
@@ -48,7 +47,8 @@ import { ClientsTaskNamesEnum } from './enums/clients.task.names.enum';
 export class ClientsIntegrationController {
   private pathTemplate = './apps/integration-service/src/templates';
   constructor(
-    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
+    @InjectPinoLogger(ClientsIntegrationController.name)
+    protected readonly logger: PinoLogger,
     private readonly builder: BuildersService,
     @Inject(SchedulerRegistry)
     private schedulerRegistry: SchedulerRegistry,

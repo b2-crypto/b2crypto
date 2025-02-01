@@ -1,16 +1,14 @@
 import { OpenTelemetryModule } from '@amplication/opentelemetry-nestjs';
 import { Module } from '@nestjs/common';
 import { JobModule } from 'apps/job-service/job.module';
-import { WinstonModule } from 'nest-winston';
+import { LoggerModule } from 'nestjs-pino';
 import { configApp } from './config.app.const';
-import { logger } from './opentelemetry';
+import { loggerConfig } from './logger.config';
 
 @Module({
   imports: [
     OpenTelemetryModule.forRoot(),
-    WinstonModule.forRoot({
-      instance: logger,
-    }),
+    LoggerModule.forRoot(loggerConfig),
     ...new Set([...configApp.imports, ...[JobModule]]),
   ],
   controllers: [...new Set([...configApp.controllers])],

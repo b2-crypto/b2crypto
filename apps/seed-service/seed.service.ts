@@ -21,8 +21,7 @@ import { TrafficServiceMongooseService } from '@traffic/traffic';
 import { TransferServiceMongooseService } from '@transfer/transfer';
 import { UserServiceMongooseService } from '@user/user';
 import { BrandServiceMongooseService } from 'libs/brand/src';
-import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
-import { Logger } from 'winston';
+import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import creator from './data/initial-data';
 
 @Traceable()
@@ -30,7 +29,8 @@ import creator from './data/initial-data';
 export class SeedService {
   private eventClient: ClientProxy;
   constructor(
-    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
+    @InjectPinoLogger(SeedService.name)
+    protected readonly logger: PinoLogger,
     @Inject(BuildersService)
     private readonly builder: BuildersService,
     private readonly transferRepo: TransferServiceMongooseService,

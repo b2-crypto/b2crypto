@@ -33,8 +33,7 @@ import EventsNamesStatusEnum from 'apps/status-service/src/enum/events.names.sta
 import EventsNamesTransferEnum from 'apps/transfer-service/src/enum/events.names.transfer.enum';
 import { isArray, isDateString, isEmpty } from 'class-validator';
 import { ClientSession } from 'mongoose';
-import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
-import { Logger } from 'winston';
+import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import { StatsDateMongoose } from './enum/stats.date.type';
 import StatsParamNameEnum from './enum/stats.param.names.enum';
 import StatusLeadEnum from './enum/status.lead.enum';
@@ -46,7 +45,8 @@ export class StatsServiceService {
   private builder: BuildersService;
   private statusFtd: StatusDocument;
   constructor(
-    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
+    @InjectPinoLogger(StatsServiceService.name)
+    protected readonly logger: PinoLogger,
     @Inject(BuildersService)
     builder: BuildersService,
 

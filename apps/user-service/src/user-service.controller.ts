@@ -51,8 +51,7 @@ import EventsNamesMessageEnum from 'apps/message-service/src/enum/events.names.m
 import { isBoolean } from 'class-validator';
 import { SwaggerSteakeyConfigEnum } from 'libs/config/enum/swagger.stakey.config.enum';
 import { ObjectId } from 'mongodb';
-import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
-import { Logger } from 'winston';
+import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import EventsNamesUserEnum from './enum/events.names.user.enum';
 import { UserServiceService } from './user-service.service';
 
@@ -61,7 +60,8 @@ import { UserServiceService } from './user-service.service';
 @Controller('users')
 export class UserServiceController implements GenericServiceController {
   constructor(
-    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
+    @InjectPinoLogger(UserServiceController.name)
+    protected readonly logger: PinoLogger,
     private readonly userService: UserServiceService,
     @Inject(BuildersService)
     readonly builder: BuildersService,

@@ -3,7 +3,6 @@ import {
   Controller,
   Delete,
   Get,
-  Inject,
   Param,
   ParseArrayPipe,
   Patch,
@@ -29,8 +28,7 @@ import {
   RmqContext,
 } from '@nestjs/microservices';
 import { Response as ExpressResponse } from 'express';
-import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
-import { Logger } from 'winston';
+import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import EventsNamesFileEnum from './enum/events.names.file.enum';
 import { FileServiceService } from './file-service.service';
 
@@ -39,7 +37,8 @@ import { FileServiceService } from './file-service.service';
 @Controller('file')
 export class FileServiceController implements GenericServiceController {
   constructor(
-    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
+    @InjectPinoLogger(FileServiceController.name)
+    protected readonly logger: PinoLogger,
     private readonly fileService: FileServiceService,
   ) {}
 

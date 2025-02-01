@@ -29,8 +29,7 @@ import { TransferCreateButtonDto } from 'apps/transfer-service/src/dto/transfer.
 import EventsNamesTransferEnum from 'apps/transfer-service/src/enum/events.names.transfer.enum';
 import { UserServiceService } from 'apps/user-service/src/user-service.service';
 import { isMongoId } from 'class-validator';
-import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
-import { Logger } from 'winston';
+import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import { AccountServiceService } from './account-service.service';
 import { WalletWithdrawalDto } from './dtos/WalletWithdrawalDto';
 import EventsNamesAccountEnum from './enum/events.names.account.enum';
@@ -40,7 +39,8 @@ import EventsNamesAccountEnum from './enum/events.names.account.enum';
 export class WalletServiceService {
   private cryptoType: any = null;
   constructor(
-    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
+    @InjectPinoLogger(WalletServiceService.name)
+    protected readonly logger: PinoLogger,
     @Inject(UserServiceService)
     private readonly userService: UserServiceService,
     @Inject(AccountServiceService)

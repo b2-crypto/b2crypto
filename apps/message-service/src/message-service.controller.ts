@@ -3,7 +3,6 @@ import {
   Controller,
   Delete,
   Get,
-  Inject,
   Param,
   ParseArrayPipe,
   Patch,
@@ -29,8 +28,7 @@ import {
   Payload,
   RmqContext,
 } from '@nestjs/microservices';
-import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
-import { Logger } from 'winston';
+import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import EventsNamesMessageEnum from './enum/events.names.message.enum';
 import { MessageServiceService } from './message-service.service';
 
@@ -39,7 +37,8 @@ import { MessageServiceService } from './message-service.service';
 @Controller('message')
 export class MessageServiceController implements GenericServiceController {
   constructor(
-    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
+    @InjectPinoLogger(MessageServiceController.name)
+    protected readonly logger: PinoLogger,
     private readonly messageService: MessageServiceService,
   ) {}
 

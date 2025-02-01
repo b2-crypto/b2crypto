@@ -72,8 +72,7 @@ import { isArray, isMongoId } from 'class-validator';
 import * as fs from 'fs';
 import { BrandInterface } from 'libs/brand/src/entities/brand.interface';
 import { ObjectId } from 'mongodb';
-import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
-import { Logger } from 'winston';
+import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import { ApproveOrRejectDepositDto } from '../../../libs/transfer/src/dto/approve.or.reject.deposit.dto';
 import { TransferLeadStatsDto } from './dto/transfer.lead.stat.dto';
 import EventsNamesTransferEnum from './enum/events.names.transfer.enum';
@@ -86,7 +85,8 @@ export class TransferServiceService
   private eventClient: ClientProxy;
 
   constructor(
-    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
+    @InjectPinoLogger(TransferServiceService.name)
+    protected readonly logger: PinoLogger,
     @Inject(StatusServiceService)
     private statusService: StatusServiceService,
     @Inject(PspAccountServiceService)

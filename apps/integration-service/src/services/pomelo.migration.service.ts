@@ -17,8 +17,7 @@ import EventsNamesAccountEnum from 'apps/account-service/src/enum/events.names.a
 import EventsNamesPersonEnum from 'apps/person-service/src/enum/events.names.person.enum';
 import EventsNamesTransferEnum from 'apps/transfer-service/src/enum/events.names.transfer.enum';
 import EventsNamesUserEnum from 'apps/user-service/src/enum/events.names.user.enum';
-import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
-import { Logger } from 'winston';
+import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import { PomeloV1DBClient } from '../clients/pomelo.v1.bd.client';
 
 @Traceable()
@@ -27,7 +26,8 @@ export class PomeloMigrationService {
   private pomeloIntegration: IntegrationCardService;
 
   constructor(
-    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
+    @InjectPinoLogger(PomeloMigrationService.name)
+    protected readonly logger: PinoLogger,
     private readonly integration: IntegrationService,
     @Inject(BuildersService)
     private builder: BuildersService,
