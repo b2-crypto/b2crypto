@@ -54,8 +54,7 @@ import EventsNamesMessageEnum from 'apps/message-service/src/enum/events.names.m
 import EventsNamesUserEnum from 'apps/user-service/src/enum/events.names.user.enum';
 import { isBoolean } from 'class-validator';
 import { SwaggerSteakeyConfigEnum } from 'libs/config/enum/swagger.stakey.config.enum';
-import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
-import { Logger } from 'winston';
+import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import { SecurityServiceService } from './security-service.service';
 
 @ApiTags('AUTHENTICATION')
@@ -65,7 +64,8 @@ export class SecurityServiceController {
   private eventClient: ClientProxy;
 
   constructor(
-    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
+    @InjectPinoLogger(SecurityServiceController.name)
+    protected readonly logger: PinoLogger,
     private readonly securityServiceService: SecurityServiceService,
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
     @Inject(BuildersService) private builder: BuildersService,

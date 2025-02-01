@@ -5,9 +5,9 @@ import { APP_GUARD } from '@nestjs/core';
 import { JobModule } from 'apps/job-service/job.module';
 import { SeedModule } from 'apps/seed-service/seed.module';
 import { SeedService } from 'apps/seed-service/seed.service';
-import { WinstonModule } from 'nest-winston';
+import { LoggerModule } from 'nestjs-pino';
 import { configApp } from './config.app.const';
-import { logger } from './opentelemetry';
+import { serviceName } from './opentelemetry';
 
 const configHttp = {
   ...configApp,
@@ -15,8 +15,33 @@ const configHttp = {
 
 configHttp.imports.push(
   JobModule,
-  WinstonModule.forRoot({
-    instance: logger,
+  // WinstonModule.forRoot({
+  //   instance: logger,
+  // }),
+  LoggerModule.forRoot({
+    useExisting: true,
+    pinoHttp: {
+      transport: {
+        targets: [
+          {
+            target: 'pino-pretty',
+            options: { colorize: true },
+          },
+          {
+            target: 'pino-opentelemetry-transport',
+            options: {
+              resourceAttributes: {
+                'service.name': serviceName,
+              },
+            },
+          },
+        ],
+        options: {
+          prettyPrint: true,
+          level: 'trace',
+        },
+      },
+    },
   }),
 );
 

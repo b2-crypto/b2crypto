@@ -8,6 +8,10 @@ import { QueueAdminModule } from '@common/common/queue-admin-providers/queue.adm
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
+import {
+  FastifyAdapter,
+  NestFastifyApplication,
+} from '@nestjs/platform-fastify';
 import { DocumentBuilder, OpenAPIObject, SwaggerModule } from '@nestjs/swagger';
 import { PathsObject } from '@nestjs/swagger/dist/interfaces/open-api-spec.interface';
 import { AccountServiceModule } from 'apps/account-service/src/account-service.module';
@@ -27,14 +31,16 @@ import { UserServiceModule } from '../../user-service/src/user-service.module';
 import { AppHttpModule } from './app.http.module';
 
 async function bootstrap() {
+  const app = await NestFactory.create<NestFastifyApplication>(
+    AppHttpModule,
+    new FastifyAdapter(),
+    {
+      bufferLogs: true,
+    },
+  );
   // const app = await NestFactory.create(AppHttpModule, {
-  //   logger: WinstonModule.createLogger({
-  //     instance: logger,
-  //   }),
+  //   bufferLogs: true,
   // });
-  const app = await NestFactory.create(AppHttpModule, {
-    bufferLogs: true,
-  });
 
   const configService = app.get(ConfigService);
   const loggerService = app.get(Logger);
@@ -67,7 +73,14 @@ async function bootstrap() {
     allowedHeaders: 'b2crypto-affiliate-key b2crypto-key Content-Type Accept',
   });
 
-  app.getHttpAdapter().getInstance().disable('x-powered-by');
+  // app.getHttpAdapter().getInstance().disable('x-powered-by');
+  app
+    .getHttpAdapter()
+    .getInstance()
+    .addHook('onSend', (request, reply, payload, done) => {
+      reply.header('x-powered-by', '');
+      done();
+    });
 
   app.connectMicroservice(
     await QueueAdminModule.getClientProvider(
@@ -78,8 +91,8 @@ async function bootstrap() {
   await app.startAllMicroservices();
   await app.listen(configService.get('PORT') ?? 3000);
 
-  loggerService.debug('Timezone', process.env.TZ);
-  loggerService.debug('Listening on port ' + configService.get('PORT'));
+  loggerService.log('Timezone', process.env.TZ);
+  loggerService.log('Listening on port ' + configService.get('PORT'));
   if (typeof process.send === 'function') {
     process.send('ready');
   }

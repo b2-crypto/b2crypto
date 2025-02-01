@@ -4,15 +4,15 @@ import {
   ShippingNotifications,
 } from '@integration/integration/dto/pomelo.shipping.body.dto';
 import { PomeloCache } from '@integration/integration/util/pomelo.integration.process.cache';
-import { Inject, Injectable } from '@nestjs/common';
-import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
-import { Logger } from 'winston';
+import { Injectable } from '@nestjs/common';
+import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 
 @Traceable()
 @Injectable()
 export class PomeloIntegrationShippingService {
   constructor(
-    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
+    @InjectPinoLogger(PomeloIntegrationShippingService.name)
+    protected readonly logger: PinoLogger,
     private readonly cache: PomeloCache,
   ) {}
 

@@ -9,19 +9,18 @@ import {
   CanActivate,
   ExecutionContext,
   HttpException,
-  Inject,
   Injectable,
 } from '@nestjs/common';
 import { PATH_METADATA } from '@nestjs/common/constants';
 import { Reflector } from '@nestjs/core';
-import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
-import { Logger } from 'winston';
+import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 
 @Traceable()
 @Injectable()
 export class PomeloSignatureGuard implements CanActivate {
   constructor(
-    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
+    @InjectPinoLogger(PomeloSignatureGuard.name)
+    protected readonly logger: PinoLogger,
     private readonly signatureUtil: PomeloSignatureUtils,
     private readonly constants: PomeloProcessConstants,
     private readonly utils: PomeloHttpUtils,

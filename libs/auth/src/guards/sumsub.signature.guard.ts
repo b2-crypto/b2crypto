@@ -6,17 +6,16 @@ import {
   CanActivate,
   ExecutionContext,
   HttpException,
-  Inject,
   Injectable,
 } from '@nestjs/common';
-import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
-import { Logger } from 'winston';
+import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 
 @Traceable()
 @Injectable()
 export class SumsubSignatureGuard implements CanActivate {
   constructor(
-    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
+    @InjectPinoLogger(SumsubSignatureGuard.name)
+    protected readonly logger: PinoLogger,
     private readonly signatureUtil: SumsubSignatureUtils,
     private readonly constants: PomeloProcessConstants,
     private readonly utils: SumsubHttpUtils,

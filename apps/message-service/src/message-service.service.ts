@@ -17,9 +17,8 @@ import EventsNamesLeadEnum from 'apps/lead-service/src/enum/events.names.lead.en
 import EventsNamesUserEnum from 'apps/user-service/src/enum/events.names.user.enum';
 import axios from 'axios';
 import { isEmail } from 'class-validator';
-import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
+import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import * as pug from 'pug';
-import { Logger } from 'winston';
 import { EmailMessageBuilder } from './email-message.builder';
 import TemplatesMessageEnum from './enum/templates.message.enum';
 
@@ -30,7 +29,8 @@ export class MessageServiceService {
   private url: string;
 
   constructor(
-    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
+    @InjectPinoLogger(MessageServiceService.name)
+    protected readonly logger: PinoLogger,
     @Inject(ConfigService)
     readonly configService: ConfigService,
     @Inject(BuildersService)

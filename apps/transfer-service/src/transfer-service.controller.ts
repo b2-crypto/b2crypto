@@ -75,8 +75,7 @@ import EventsNamesStatsEnum from 'apps/stats-service/src/enum/events.names.stats
 import EventsNamesStatusEnum from 'apps/status-service/src/enum/events.names.status.enum';
 import { isMongoId } from 'class-validator';
 import { SwaggerSteakeyConfigEnum } from 'libs/config/enum/swagger.stakey.config.enum';
-import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
-import { Logger } from 'winston';
+import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import { ApproveOrRejectDepositDto } from '../../../libs/transfer/src/dto/approve.or.reject.deposit.dto';
 import { BoldTransferRequestDto } from './dto/bold.transfer.request.dto';
 import { TransferAffiliateResponseDto } from './dto/transfer.affiliate.response.dto';
@@ -90,7 +89,8 @@ import { TransferServiceService } from './transfer-service.service';
 @Controller('transfers')
 export class TransferServiceController implements GenericServiceController {
   constructor(
-    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
+    @InjectPinoLogger(TransferServiceController.name)
+    protected readonly logger: PinoLogger,
     @Inject(AffiliateServiceService)
     private readonly affliateService: AffiliateServiceService,
     private readonly transferService: TransferServiceService,

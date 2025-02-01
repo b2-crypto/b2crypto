@@ -9,34 +9,47 @@ import {
   ATTR_SERVICE_NAME,
   ATTR_SERVICE_VERSION,
 } from '@opentelemetry/semantic-conventions';
-import { pino } from 'pino';
+
+export const serviceName = `${process.env.APP_NAME || 'b2crypto'}.${
+  process.env.STACK || 'dev'
+}`;
 
 const resource = new Resource({
-  [ATTR_SERVICE_NAME]: `${process.env.APP_NAME || 'b2crypto'}.${
-    process.env.STACK || 'dev'
-  }`,
+  [ATTR_SERVICE_NAME]: serviceName,
   [ATTR_SERVICE_VERSION]: process.env.APP_VERSION || '1.0.0',
 });
 
 const tracesExporter = new OTLPTraceExporter({
   headers: {
-    'signoz-ingestion-key': process.env.OTLP_API_KEY || '',
+    'signoz-ingestion-key':
+      process.env.OTLP_API_KEY || 'd41859ca-8bd2-4ad7-883d-942fd5a7a45a',
   },
-  url: process.env.OTLP_HOST_TRACES || 'http://localhost:4318/v1/traces',
+  url:
+    process.env.OTLP_HOST_TRACES ||
+    'https://ingest.us.signoz.cloud/v1/traces' ||
+    'http://localhost:4318/v1/traces',
 });
 
 const metricsExporter = new OTLPMetricExporter({
   headers: {
-    'signoz-ingestion-key': process.env.OTLP_API_KEY || '',
+    'signoz-ingestion-key':
+      process.env.OTLP_API_KEY || 'd41859ca-8bd2-4ad7-883d-942fd5a7a45a',
   },
-  url: process.env.OTLP_HOST_METRICS || 'http://localhost:4318/v1/metrics',
+  url:
+    process.env.OTLP_HOST_METRICS ||
+    'https://ingest.us.signoz.cloud/v1/metrics' ||
+    'http://localhost:4318/v1/metrics',
 });
 
 const logsExporter = new OTLPLogExporter({
   headers: {
-    'signoz-ingestion-key': process.env.OTLP_API_KEY || '',
+    'signoz-ingestion-key':
+      process.env.OTLP_API_KEY || 'd41859ca-8bd2-4ad7-883d-942fd5a7a45a',
   },
-  url: process.env.OTLP_HOST_LOGS || 'http://localhost:4318/v1/logs',
+  url:
+    process.env.OTLP_HOST_LOGS ||
+    'https://ingest.us.signoz.cloud/v1/logs' ||
+    'http://localhost:4318/v1/logs',
 });
 
 export const sdk = new NodeSDK({
@@ -63,29 +76,3 @@ process.on('SIGTERM', async () => {
     )
     .finally(() => process.exit(0));
 });
-
-// export const logger = createLogger({
-//   level: 'info',
-//   format: format.json(),
-//   transports: [
-//     new transports.Console({
-//       format: format.combine(
-//         format.timestamp(),
-//         format.ms(),
-//         utilities.format.nestLike(process.env.APP_NAME, {
-//           colors: true,
-//           prettyPrint: true,
-//           processId: true,
-//           appName: true,
-//         }),
-//       ),
-//     }),
-//     new OpenTelemetryTransportV3(),
-//   ],
-// });
-
-const transport = pino.transport({
-  target: 'pino-opentelemetry-transport',
-});
-
-export const logger = pino(transport);

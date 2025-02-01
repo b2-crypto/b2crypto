@@ -7,7 +7,6 @@ import { LeadDocument } from '@lead/lead/entities/mongoose/lead.schema';
 import {
   Controller,
   Get,
-  Inject,
   NotImplementedException,
   Param,
 } from '@nestjs/common';
@@ -22,8 +21,7 @@ import {
 import { StatsDateCreateDto } from '@stats/stats/dto/stats.date.create.dto';
 import { StatsDateAffiliateDocument } from '@stats/stats/entities/mongoose/stats.date.affiliate.schema';
 import { TransferDocument } from '@transfer/transfer/entities/mongoose/transfer.schema';
-import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
-import { Logger } from 'winston';
+import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import EventsNamesStatsEnum from './enum/events.names.stats.enum';
 import { StatsAffiliateServiceService } from './stats-affiliate-service.service';
 
@@ -31,7 +29,8 @@ import { StatsAffiliateServiceService } from './stats-affiliate-service.service'
 @Controller('stats')
 export class StatsAffiliateServiceController {
   constructor(
-    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
+    @InjectPinoLogger(StatsAffiliateServiceController.name)
+    protected readonly logger: PinoLogger,
     private readonly statsAffiliateServiceService: StatsAffiliateServiceService,
   ) {}
 
