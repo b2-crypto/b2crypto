@@ -1,6 +1,12 @@
 import { JwtAuthGuard } from '@auth/auth/guards/jwt-auth.guard';
 import { PoliciesGuard } from '@auth/auth/guards/policy.ability.guard';
-import { Module, OnModuleInit } from '@nestjs/common';
+import { CorrelationIdMiddleware } from '@common/common/middlewares';
+import {
+  MiddlewareConsumer,
+  Module,
+  NestModule,
+  OnModuleInit,
+} from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
 import { JobModule } from 'apps/job-service/job.module';
 import { SeedModule } from 'apps/seed-service/seed.module';
@@ -28,10 +34,14 @@ configHttp.providers.push({
 configHttp.imports.push(SeedModule);
 
 @Module(configHttp)
-export class AppHttpModule implements OnModuleInit {
+export class AppHttpModule implements OnModuleInit, NestModule {
   constructor(private seedService: SeedService) {}
 
   async onModuleInit(): Promise<void> {
     await this.seedService.saveInitialData();
+  }
+
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(CorrelationIdMiddleware).forRoutes('*');
   }
 }

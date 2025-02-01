@@ -171,6 +171,7 @@
     "epayco-sdk-node": "^1.2.1",
     "express": "^4.21.1",
     "express-basic-auth": "^1.2.1",
+    "fastify": "^4.29.0",
     "ioredis": "^5.2.4",
     "ipaddr.js": "^2.2.0",
     "jest-mock": "^29.7.0",
