@@ -7,43 +7,13 @@ import { SeedModule } from 'apps/seed-service/seed.module';
 import { SeedService } from 'apps/seed-service/seed.service';
 import { LoggerModule } from 'nestjs-pino';
 import { configApp } from './config.app.const';
-import { serviceName } from './opentelemetry';
+import { loggerConfig } from './logger.config';
 
 const configHttp = {
   ...configApp,
 };
 
-configHttp.imports.push(
-  JobModule,
-  // WinstonModule.forRoot({
-  //   instance: logger,
-  // }),
-  LoggerModule.forRoot({
-    useExisting: true,
-    pinoHttp: {
-      transport: {
-        targets: [
-          {
-            target: 'pino-pretty',
-            options: { colorize: true },
-          },
-          {
-            target: 'pino-opentelemetry-transport',
-            options: {
-              resourceAttributes: {
-                'service.name': serviceName,
-              },
-            },
-          },
-        ],
-        options: {
-          prettyPrint: true,
-          level: 'trace',
-        },
-      },
-    },
-  }),
-);
+configHttp.imports.push(JobModule, LoggerModule.forRoot(loggerConfig));
 
 configHttp.providers.push({
   provide: APP_GUARD,

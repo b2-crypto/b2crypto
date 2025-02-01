@@ -38,9 +38,6 @@ async function bootstrap() {
       bufferLogs: true,
     },
   );
-  // const app = await NestFactory.create(AppHttpModule, {
-  //   bufferLogs: true,
-  // });
 
   const configService = app.get(ConfigService);
   const loggerService = app.get(Logger);
@@ -63,7 +60,6 @@ async function bootstrap() {
   addSwaggerIntegration(app);
   addSwaggerStakeyCard(app);
 
-  // app.enableCors();
   app.enableCors({
     origin: '*',
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
@@ -73,7 +69,6 @@ async function bootstrap() {
     allowedHeaders: 'b2crypto-affiliate-key b2crypto-key Content-Type Accept',
   });
 
-  // app.getHttpAdapter().getInstance().disable('x-powered-by');
   app
     .getHttpAdapter()
     .getInstance()
