@@ -1,3 +1,5 @@
+import { CORRELATION_ID_HEADER } from '@common/common/middlewares';
+import { IncomingMessage } from 'http';
 import { serviceName } from './opentelemetry';
 
 export const loggerConfig = {
@@ -21,6 +23,14 @@ export const loggerConfig = {
         prettyPrint: true,
         level: 'trace',
       },
+    },
+    customProps: (req: IncomingMessage) => ({
+      correlationId: req.headers[CORRELATION_ID_HEADER],
+    }),
+    autoLogging: true,
+    serializers: {
+      req: () => undefined,
+      res: () => undefined,
     },
   },
 };
