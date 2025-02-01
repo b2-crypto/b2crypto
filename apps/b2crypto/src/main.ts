@@ -237,3 +237,4 @@ const filterDocumentsPathsByTags = (
 };
 
 bootstrap();
+// ClusterService.clusterize(bootstrap);
