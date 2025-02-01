@@ -21,35 +21,23 @@ const resource = new Resource({
 
 const tracesExporter = new OTLPTraceExporter({
   headers: {
-    'signoz-ingestion-key':
-      process.env.OTLP_API_KEY || 'd41859ca-8bd2-4ad7-883d-942fd5a7a45a',
+    'signoz-ingestion-key': process.env.OTLP_API_KEY || '',
   },
-  url:
-    process.env.OTLP_HOST_TRACES ||
-    'https://ingest.us.signoz.cloud/v1/traces' ||
-    'http://localhost:4318/v1/traces',
+  url: process.env.OTLP_HOST_TRACES || 'http://localhost:4318/v1/traces',
 });
 
 const metricsExporter = new OTLPMetricExporter({
   headers: {
-    'signoz-ingestion-key':
-      process.env.OTLP_API_KEY || 'd41859ca-8bd2-4ad7-883d-942fd5a7a45a',
+    'signoz-ingestion-key': process.env.OTLP_API_KEY || '',
   },
-  url:
-    process.env.OTLP_HOST_METRICS ||
-    'https://ingest.us.signoz.cloud/v1/metrics' ||
-    'http://localhost:4318/v1/metrics',
+  url: process.env.OTLP_HOST_METRICS || 'http://localhost:4318/v1/metrics',
 });
 
 const logsExporter = new OTLPLogExporter({
   headers: {
-    'signoz-ingestion-key':
-      process.env.OTLP_API_KEY || 'd41859ca-8bd2-4ad7-883d-942fd5a7a45a',
+    'signoz-ingestion-key': process.env.OTLP_API_KEY || '',
   },
-  url:
-    process.env.OTLP_HOST_LOGS ||
-    'https://ingest.us.signoz.cloud/v1/logs' ||
-    'http://localhost:4318/v1/logs',
+  url: process.env.OTLP_HOST_LOGS || 'http://localhost:4318/v1/logs',
 });
 
 export const sdk = new NodeSDK({
