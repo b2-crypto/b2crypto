@@ -21,6 +21,7 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 
+import { Traceable } from '@amplication/opentelemetry-nestjs';
 import { AllowAnon } from '@auth/auth/decorators/allow-anon.decorator';
 import { ApiKeyCheck } from '@auth/auth/decorators/api-key-check.decorator';
 import { ApiKeyAuthGuard } from '@auth/auth/guards/api.key.guard';
@@ -50,16 +51,17 @@ import EventsNamesMessageEnum from 'apps/message-service/src/enum/events.names.m
 import { isBoolean } from 'class-validator';
 import { SwaggerSteakeyConfigEnum } from 'libs/config/enum/swagger.stakey.config.enum';
 import { ObjectId } from 'mongodb';
-import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { Logger } from 'winston';
+import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import EventsNamesUserEnum from './enum/events.names.user.enum';
 import { UserServiceService } from './user-service.service';
 
 @ApiTags('USER')
+@Traceable()
 @Controller('users')
 export class UserServiceController implements GenericServiceController {
   constructor(
-    @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
+    @InjectPinoLogger(UserServiceController.name)
+    protected readonly logger: PinoLogger,
     private readonly userService: UserServiceService,
     @Inject(BuildersService)
     readonly builder: BuildersService,
@@ -255,7 +257,7 @@ export class UserServiceController implements GenericServiceController {
     CommonService.ack(ctx);
     const users = await this.userService.getAll({
       where: {
-        slug: CommonService.getSlug(email),
+        slugEmail: CommonService.getSlug(email),
       },
     });
 

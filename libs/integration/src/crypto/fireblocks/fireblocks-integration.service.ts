@@ -7,10 +7,9 @@ import {
   TransferPeerPathType,
 } from '@fireblocks/ts-sdk';
 import { Cache } from '@nestjs/cache-manager';
-import { ConflictException, HttpStatus, Inject } from '@nestjs/common';
+import { ConflictException, HttpStatus } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { Logger } from 'winston';
+import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import { FireblocksError } from '../errors';
 import { DepositDto } from '../generic/dto/deposit.dto';
 import { WalletDto } from '../generic/dto/wallet.dto';
@@ -37,7 +36,8 @@ export class FireblocksIntegrationService extends IntegrationCryptoService<
   private basePath: string;
   private apiKeyFireblocks: string;
   constructor(
-    @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
+    @InjectPinoLogger(FireblocksIntegrationService.name)
+    protected readonly logger: PinoLogger,
     protected configService: ConfigService,
     protected cacheManager: Cache,
   ) {

@@ -1,6 +1,7 @@
 import { CreateLeadAffiliateDto } from '@affiliate/affiliate/domain/dto/create-lead-affiliate.dto';
 import { AffiliateInterface } from '@affiliate/affiliate/domain/entities/affiliate.interface';
 import { AffiliateDocument } from '@affiliate/affiliate/infrastructure/mongoose/affiliate.schema';
+import { Traceable } from '@amplication/opentelemetry-nestjs';
 import { BrandDocument } from '@brand/brand/entities/mongoose/brand.schema';
 import { BuildersService } from '@builder/builders';
 import { CategoryUpdateDto } from '@category/category/dto/category.update.dto';
@@ -53,8 +54,7 @@ import { StatusServiceService } from 'apps/status-service/src/status-service.ser
 import { UserServiceService } from 'apps/user-service/src/user-service.service';
 import { isArray } from 'class-validator';
 import { isValidObjectId } from 'mongoose';
-import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { Logger } from 'winston';
+import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import EventsNamesTransferEnum from '../../transfer-service/src/enum/events.names.transfer.enum';
 import { AutologinLeadDto } from './dto/autologin.lead.dto';
 import { AutologinLeadResponse } from './dto/autologin.lead.response';
@@ -64,8 +64,6 @@ import { StatsLeadResponseDto } from './dto/lead.stats.response.dto';
 import { LoginLeadDto } from './dto/login.lead.dto';
 import { MoveLeadDto } from './dto/move_lead.dto';
 import EventsNamesLeadEnum from './enum/events.names.lead.enum';
-
-import { Traceable } from '@amplication/opentelemetry-nestjs';
 
 @Traceable()
 @Injectable()
@@ -77,7 +75,8 @@ export class LeadServiceService
   private statusFtd: StatusDocument;
 
   constructor(
-    @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
+    @InjectPinoLogger(LeadServiceService.name)
+    protected readonly logger: PinoLogger,
     private configService: ConfigService,
     @Inject(BuildersService)
     private readonly builder: BuildersService,

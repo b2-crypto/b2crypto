@@ -1,3 +1,4 @@
+import { Traceable } from '@amplication/opentelemetry-nestjs';
 import dbIntegrationEnum from '@builder/builders/enums/db-integration.enum';
 import { BasicServiceModel } from '@common/common/models/basic-service.model';
 import { Inject, Injectable } from '@nestjs/common';
@@ -6,10 +7,7 @@ import { RoleCreateDto } from '@role/role/dto/role.create.dto';
 import { RoleUpdateDto } from '@role/role/dto/role.update.dto';
 import { RoleDocument } from '@role/role/entities/mongoose/role.schema';
 import { Model } from 'mongoose';
-import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { Logger } from 'winston';
-
-import { Traceable } from '@amplication/opentelemetry-nestjs';
+import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 
 @Traceable()
 @Injectable()
@@ -20,7 +18,8 @@ export class RoleServiceMongooseService extends BasicServiceModel<
   RoleUpdateDto
 > {
   constructor(
-    @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
+    @InjectPinoLogger(RoleServiceMongooseService.name)
+    protected readonly logger: PinoLogger,
     @Inject('ROLE_MODEL_MONGOOSE') roleModel: Model<RoleDocument>,
     @Inject('PERMISSION_MODEL_MONGOOSE')
     private readonly permissionModel: Model<PermissionDocument>,

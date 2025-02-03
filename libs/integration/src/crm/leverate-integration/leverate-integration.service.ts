@@ -1,10 +1,10 @@
+import { Traceable } from '@amplication/opentelemetry-nestjs';
 import { CrmDocument } from '@crm/crm/entities/mongoose/crm.schema';
-import { Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { RpcException } from '@nestjs/microservices';
 import { TransferInterface } from '@transfer/transfer/entities/transfer.interface';
-import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { Logger } from 'winston';
+import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import { CrmGenerateTokenResponseDto } from '../generic/dto/crm.generate.token.response.dto';
 import { GenerateTokenCrmRequestDto } from '../generic/dto/generate.token.crm.dto';
 import { GetDepositDto } from '../generic/dto/get-deposit.dto';
@@ -30,8 +30,6 @@ import { RegisterLeadLeverateRequestDto } from './dto/register.lead.leverate.req
 import { InfoResponseLeverateDto } from './dto/result.response.leverate.dto';
 import { LeverateRegisterResponseDto } from './result/leverate.register.response.dto';
 import { LeverateRegenerateUserAutoLoginUrlDto } from './result/regenerate-user-auto-login-url.response';
-
-import { Traceable } from '@amplication/opentelemetry-nestjs';
 
 @Traceable()
 @Injectable()
@@ -59,7 +57,8 @@ export class LeverateIntegrationService
   implements GetLeadDataFromCRMInterface, GenerateCrmTokenInterface
 {
   constructor(
-    @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
+    @InjectPinoLogger(LeverateIntegrationService.name)
+    protected readonly logger: PinoLogger,
     _crm: CrmDocument,
     protected configService: ConfigService,
   ) {

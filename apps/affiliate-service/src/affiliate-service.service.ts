@@ -2,6 +2,7 @@ import { AffiliateServiceMongooseService } from '@affiliate/affiliate';
 import { AffiliateCreateDto } from '@affiliate/affiliate/domain/dto/affiliate.create.dto';
 import { AffiliateUpdateDto } from '@affiliate/affiliate/domain/dto/affiliate.update.dto';
 import { AffiliateDocument } from '@affiliate/affiliate/infrastructure/mongoose/affiliate.schema';
+import { Traceable } from '@amplication/opentelemetry-nestjs';
 import { BuildersService } from '@builder/builders';
 import { CommonService } from '@common/common';
 import { ResponsePaginator } from '@common/common/interfaces/response-pagination.interface';
@@ -20,19 +21,17 @@ import EventsNamesLeadEnum from 'apps/lead-service/src/enum/events.names.lead.en
 import EventsNamesTrafficEnum from 'apps/traffic-service/src/enum/events.names.traffic.enum';
 import EventsNamesUserEnum from 'apps/user-service/src/enum/events.names.user.enum';
 import { isMongoId } from 'class-validator';
-import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { Logger } from 'winston';
+import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import CheckStatsType from '../../../libs/stats/src/enum/check.stats.type';
 import { MoveTrafficAffiliateDto } from './dto/move.traffic.affiliate.dto';
 import EventsNamesAffiliateEnum from './enum/events.names.affiliate.enum';
-
-import { Traceable } from '@amplication/opentelemetry-nestjs';
 
 @Traceable()
 @Injectable()
 export class AffiliateServiceService {
   constructor(
-    @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
+    @InjectPinoLogger(AffiliateServiceService.name)
+    protected readonly logger: PinoLogger,
     @Inject(BuildersService)
     private readonly builder: BuildersService,
     @Inject(AffiliateServiceMongooseService)

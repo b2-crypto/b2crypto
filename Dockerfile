@@ -12,7 +12,7 @@ COPY --from=build /app/dist/apps/b2crypto ./dist/apps/b2crypto
 COPY --from=build /app/package*.json ./
 COPY --from=build /app/sftp ./sftp
 COPY --from=build /app/libs/message/src/templates ./libs/message/src/templates
-RUN corepack enable pnpm
+RUN npm install -g pnpm@^9.15.5
 RUN pnpm install --production
 RUN apk add --update curl
 
@@ -43,7 +43,7 @@ ENV CACHE_MAX_ITEMS=5
 ENV AUTH_MAX_SECONDS_TO_REFRESH=60
 ENV AUTH_SECRET=""
 ENV AUTH_EXPIRE_IN=8h
-ENV OTP_VALIDATION_TIME_SECONDS=90
+ENV OTP_VALIDATION_TIME_SECONDS=120
 ENV API_KEY_EMAIL_APP=""
 ENV URL_API_EMAIL_APP=""
 

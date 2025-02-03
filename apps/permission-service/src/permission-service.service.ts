@@ -1,3 +1,4 @@
+import { Traceable } from '@amplication/opentelemetry-nestjs';
 import { BuildersService } from '@builder/builders';
 import { QuerySearchAnyDto } from '@common/common/models/query_search-any.dto';
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
@@ -5,8 +6,6 @@ import { PermissionServiceMongooseService } from '@permission/permission';
 import { PermissionCreateDto } from '@permission/permission/dto/permission.create.dto';
 import { PermissionUpdateDto } from '@permission/permission/dto/permission.update.dto';
 import { ScopeDto } from '@permission/permission/dto/scope.dto';
-
-import { Traceable } from '@amplication/opentelemetry-nestjs';
 
 @Traceable()
 @Injectable()

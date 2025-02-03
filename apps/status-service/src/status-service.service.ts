@@ -1,3 +1,4 @@
+import { Traceable } from '@amplication/opentelemetry-nestjs';
 import { CommonService } from '@common/common';
 import ResourcesEnum from '@common/common/enums/ResourceEnum';
 import { QuerySearchAnyDto } from '@common/common/models/query_search-any.dto';
@@ -7,8 +8,6 @@ import { StatusUpdateDto } from '@status/status/dto/status.update.dto';
 import { StatusServiceMongooseService } from '@status/status/status-service-mongoose.service';
 import axios from 'axios';
 import { isArray } from 'class-validator';
-
-import { Traceable } from '@amplication/opentelemetry-nestjs';
 
 @Traceable()
 @Injectable()

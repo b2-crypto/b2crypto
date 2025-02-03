@@ -1,3 +1,4 @@
+import { Traceable } from '@amplication/opentelemetry-nestjs';
 import { AllowAnon } from '@auth/auth/decorators/allow-anon.decorator';
 import { BuildersService } from '@builder/builders';
 import { CommonService } from '@common/common';
@@ -31,6 +32,7 @@ import EventsNamesAffiliateEnum from 'apps/affiliate-service/src/enum/events.nam
 import EventsNamesStatsEnum from './enum/events.names.stats.enum';
 import { StatsServiceService } from './stats-service.service';
 
+@Traceable()
 @Controller('stats')
 export class StatsServiceController {
   constructor(

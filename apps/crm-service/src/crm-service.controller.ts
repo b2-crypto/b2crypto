@@ -13,6 +13,7 @@ import {
 } from '@nestjs/common';
 import { ApiExcludeEndpoint, ApiResponse, ApiTags } from '@nestjs/swagger';
 
+import { Traceable } from '@amplication/opentelemetry-nestjs';
 import { AllowAnon } from '@auth/auth/decorators/allow-anon.decorator';
 import { BuildersService } from '@builder/builders';
 import { CommonService } from '@common/common';
@@ -50,6 +51,7 @@ import { CreateTransferOnCrmDto } from './dto/create.transfer.on.crm.dto';
 import EventsNamesCrmEnum from './enum/events.names.crm.enum';
 
 @ApiTags('CRM')
+@Traceable()
 @Controller('crm')
 export class CrmServiceController implements GenericServiceController {
   constructor(

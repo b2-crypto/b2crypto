@@ -3,7 +3,6 @@ import {
   Controller,
   Delete,
   Get,
-  Inject,
   Param,
   ParseArrayPipe,
   Patch,
@@ -13,6 +12,7 @@ import {
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 
+import { Traceable } from '@amplication/opentelemetry-nestjs';
 import { AllowAnon } from '@auth/auth/decorators/allow-anon.decorator';
 import { CommonService } from '@common/common';
 import { NoCache } from '@common/common/decorators/no-cache.decorator';
@@ -28,16 +28,17 @@ import {
   RmqContext,
 } from '@nestjs/microservices';
 import { Response as ExpressResponse } from 'express';
-import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { Logger } from 'winston';
+import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import EventsNamesFileEnum from './enum/events.names.file.enum';
 import { FileServiceService } from './file-service.service';
 
 @ApiTags('FILE')
+@Traceable()
 @Controller('file')
 export class FileServiceController implements GenericServiceController {
   constructor(
-    @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
+    @InjectPinoLogger(FileServiceController.name)
+    protected readonly logger: PinoLogger,
     private readonly fileService: FileServiceService,
   ) {}
 

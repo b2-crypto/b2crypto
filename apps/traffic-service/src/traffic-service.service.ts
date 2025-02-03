@@ -1,4 +1,5 @@
 import { AffiliateDocument } from '@affiliate/affiliate/infrastructure/mongoose/affiliate.schema';
+import { Traceable } from '@amplication/opentelemetry-nestjs';
 import { BuildersService } from '@builder/builders';
 import { QuerySearchAnyDto } from '@common/common/models/query_search-any.dto';
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
@@ -11,8 +12,6 @@ import { TrafficCreateDto } from '@traffic/traffic/dto/traffic.create.dto';
 import { TrafficUpdateDto } from '@traffic/traffic/dto/traffic.update.dto';
 import EventsNamesAffiliateEnum from 'apps/affiliate-service/src/enum/events.names.affiliate.enum';
 import { firstValueFrom } from 'rxjs';
-
-import { Traceable } from '@amplication/opentelemetry-nestjs';
 
 @Traceable()
 @Injectable()

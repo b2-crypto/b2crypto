@@ -1,4 +1,5 @@
 /* eslint-disable prettier/prettier */
+import { Traceable } from '@amplication/opentelemetry-nestjs';
 import { BuildersService } from '@builder/builders';
 import { QuerySearchAnyDto } from '@common/common/models/query_search-any.dto';
 import { CrmInterface } from '@crm/crm/entities/crm.interface';
@@ -16,13 +17,10 @@ import EventsNamesLeadEnum from 'apps/lead-service/src/enum/events.names.lead.en
 import EventsNamesUserEnum from 'apps/user-service/src/enum/events.names.user.enum';
 import axios from 'axios';
 import { isEmail } from 'class-validator';
-import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
+import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import * as pug from 'pug';
-import { Logger } from 'winston';
 import { EmailMessageBuilder } from './email-message.builder';
 import TemplatesMessageEnum from './enum/templates.message.enum';
-
-import { Traceable } from '@amplication/opentelemetry-nestjs';
 
 @Traceable()
 @Injectable()
@@ -31,7 +29,8 @@ export class MessageServiceService {
   private url: string;
 
   constructor(
-    @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
+    @InjectPinoLogger(MessageServiceService.name)
+    protected readonly logger: PinoLogger,
     @Inject(ConfigService)
     readonly configService: ConfigService,
     @Inject(BuildersService)

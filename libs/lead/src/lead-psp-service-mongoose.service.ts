@@ -1,13 +1,11 @@
+import { Traceable } from '@amplication/opentelemetry-nestjs';
 import { BasicServiceModel } from '@common/common/models/basic-service.model';
 import { Inject, Injectable } from '@nestjs/common';
 import { Model } from 'mongoose';
+import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import { LeadPspCreateDto } from './dto/lead-psp.create.dto';
 import { LeadPspUpdateDto } from './dto/lead-psp.update.dto';
 import { LeadPspDocument } from './entities/mongoose/lead-psp.schema';
-
-import { Traceable } from '@amplication/opentelemetry-nestjs';
-import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { Logger } from 'winston';
 
 @Traceable()
 @Injectable()
@@ -18,7 +16,8 @@ export class LeadPspServiceMongooseService extends BasicServiceModel<
   LeadPspUpdateDto
 > {
   constructor(
-    @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
+    @InjectPinoLogger(LeadPspServiceMongooseService.name)
+    protected readonly logger: PinoLogger,
     @Inject('LEAD_PSP_MODEL_MONGOOSE') leadPspModel: Model<LeadPspDocument>,
   ) {
     super(logger, leadPspModel);

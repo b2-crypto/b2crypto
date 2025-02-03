@@ -1,3 +1,4 @@
+import { Traceable } from '@amplication/opentelemetry-nestjs';
 import dbIntegrationEnum from '@builder/builders/enums/db-integration.enum';
 import { ResponsePaginator } from '@common/common/interfaces/response-pagination.interface';
 import { BasicServiceModel } from '@common/common/models/basic-service.model';
@@ -5,14 +6,11 @@ import { QuerySearchAnyDto } from '@common/common/models/query_search-any.dto';
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { ScopeDto } from '@permission/permission/dto/scope.dto';
 import { Model, ObjectId } from 'mongoose';
+import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import { PermissionCreateDto } from './dto/permission.create.dto';
 import { PermissionUpdateDto } from './dto/permission.update.dto';
 import { PermissionDocument } from './entities/mongoose/permission.schema';
 import { ScopeDocument } from './entities/mongoose/scope.schema';
-
-import { Traceable } from '@amplication/opentelemetry-nestjs';
-import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { Logger } from 'winston';
 
 @Traceable()
 @Injectable()
@@ -23,7 +21,8 @@ export class PermissionServiceMongooseService extends BasicServiceModel<
   PermissionUpdateDto
 > {
   constructor(
-    @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
+    @InjectPinoLogger(PermissionServiceMongooseService.name)
+    protected readonly logger: PinoLogger,
     @Inject('PERMISSION_MODEL_MONGOOSE')
     permissionModel: Model<PermissionDocument>,
     @Inject('SCOPE_MODEL_MONGOOSE')

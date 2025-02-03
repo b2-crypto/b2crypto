@@ -1,8 +1,7 @@
+import { Traceable } from '@amplication/opentelemetry-nestjs';
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { RmqContext } from '@nestjs/microservices';
-
-import { Traceable } from '@amplication/opentelemetry-nestjs';
 
 @Traceable()
 @Injectable()

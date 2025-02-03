@@ -1,9 +1,8 @@
+import { Traceable } from '@amplication/opentelemetry-nestjs';
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import Strategy from 'passport-headerapikey';
 import { AuthService } from '../auth.service';
-
-import { Traceable } from '@amplication/opentelemetry-nestjs';
 
 @Traceable()
 @Injectable()

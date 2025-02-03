@@ -9,8 +9,7 @@ import { StatsDateAffiliateDocument } from '@stats/stats/entities/mongoose/stats
 import { isArray, isMongoId } from 'class-validator';
 import { ObjectId } from 'mongodb';
 import { Model, isObjectIdOrHexString } from 'mongoose';
-import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { Logger } from 'winston';
+import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 
 @Traceable()
 @Injectable()
@@ -21,7 +20,8 @@ export class StatsDateAffiliateServiceMongooseService extends BasicServiceModel<
   StatsDateUpdateDto
 > {
   constructor(
-    @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
+    @InjectPinoLogger(StatsDateAffiliateServiceMongooseService.name)
+    protected readonly logger: PinoLogger,
     @Inject('STATS_DATE_AFFILIATE_MODEL_MONGOOSE')
     private statsDateAffiliateModel: Model<StatsDateAffiliateDocument>,
   ) {

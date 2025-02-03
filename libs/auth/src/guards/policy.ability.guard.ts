@@ -1,16 +1,11 @@
+import { Traceable } from '@amplication/opentelemetry-nestjs';
 import { ProcessHeaderDto } from '@integration/integration/dto/pomelo.process.header.dto';
 import { PomeloEnum } from '@integration/integration/enum/pomelo.enum';
-import {
-  CanActivate,
-  ExecutionContext,
-  Inject,
-  Injectable,
-} from '@nestjs/common';
+import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 import { PATH_METADATA } from '@nestjs/common/constants';
 import { Reflector } from '@nestjs/core';
 import * as ipaddr from 'ipaddr.js';
-import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { Logger } from 'winston';
+import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import { AppAbility, CaslAbilityFactory } from '../casl-ability.factory';
 import { IS_ANON } from '../decorators/allow-anon.decorator';
 import { IS_API_KEY_CHECK } from '../decorators/api-key-check.decorator';
@@ -20,13 +15,12 @@ import {
   PolicyHandler,
 } from '../policy/policy.handler.ability';
 
-import { Traceable } from '@amplication/opentelemetry-nestjs';
-
 @Traceable()
 @Injectable()
 export class PoliciesGuard implements CanActivate {
   constructor(
-    @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
+    @InjectPinoLogger(PoliciesGuard.name)
+    protected readonly logger: PinoLogger,
     private reflector: Reflector,
     private caslAbilityFactory: CaslAbilityFactory,
   ) {}

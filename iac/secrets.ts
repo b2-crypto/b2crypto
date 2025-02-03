@@ -145,6 +145,9 @@ export const AUTH_MAX_SECONDS_TO_REFRESH = config.require(
   'AUTH_MAX_SECONDS_TO_REFRESH',
 );
 export const AUTH_EXPIRE_IN = config.require('AUTH_EXPIRE_IN');
+export const OTP_VALIDATION_TIME_SECONDS = config.require(
+  'OTP_VALIDATION_TIME_SECONDS',
+);
 export const API_KEY_EMAIL_APP = config.require('API_KEY_EMAIL_APP');
 export const URL_API_EMAIL_APP = config.require('URL_API_EMAIL_APP');
 export const TESTING = config.require('TESTING');

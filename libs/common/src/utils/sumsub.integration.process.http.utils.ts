@@ -1,8 +1,7 @@
+import { Traceable } from '@amplication/opentelemetry-nestjs';
 import { SumsubProcessHeaderDto } from '@integration/integration/identity/generic/domain/dto/sumsub.process.header.dto';
 import { SumsubEnum } from '@integration/integration/identity/generic/domain/sumsub.enum';
 import { ExecutionContext, Injectable } from '@nestjs/common';
-
-import { Traceable } from '@amplication/opentelemetry-nestjs';
 
 @Traceable()
 @Injectable()

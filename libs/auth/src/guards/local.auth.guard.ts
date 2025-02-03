@@ -1,7 +1,6 @@
+import { Traceable } from '@amplication/opentelemetry-nestjs';
 import { Injectable } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
-
-import { Traceable } from '@amplication/opentelemetry-nestjs';
 
 @Traceable()
 @Injectable()

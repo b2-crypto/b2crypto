@@ -5,7 +5,6 @@ import { FetchData } from '@common/common/models/fetch-data.model';
 import { Cache } from '@nestjs/cache-manager';
 import {
   BadRequestException,
-  Inject,
   NotFoundException,
   NotImplementedException,
 } from '@nestjs/common';
@@ -15,8 +14,7 @@ import axios, {
   AxiosResponse,
   CreateAxiosDefaults,
 } from 'axios';
-import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { Logger } from 'winston';
+import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import { DepositDto } from './dto/deposit.dto';
 import { WalletDto } from './dto/wallet.dto';
 import { IntegrationCryptoInterface } from './integration.crypto.interface';
@@ -38,7 +36,8 @@ export class IntegrationCryptoService<
   protected tokenCrm: string;
 
   constructor(
-    @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
+    @InjectPinoLogger(IntegrationCryptoService.name)
+    protected readonly logger: PinoLogger,
     public cryptoAccount: AccountDocument,
     protected configService: ConfigService,
     protected cacheManager: Cache,

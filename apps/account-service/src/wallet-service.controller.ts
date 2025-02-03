@@ -6,6 +6,7 @@ import { AccountDocument } from '@account/account/entities/mongoose/account.sche
 import StatusAccountEnum from '@account/account/enum/status.account.enum';
 import TypesAccountEnum from '@account/account/enum/types.account.enum';
 import WalletTypesAccountEnum from '@account/account/enum/wallet.types.account.enum';
+import { Traceable } from '@amplication/opentelemetry-nestjs';
 import { ApiKeyAuthGuard } from '@auth/auth/guards/api.key.guard';
 import { JwtAuthGuard } from '@auth/auth/guards/jwt-auth.guard';
 import { BuildersService } from '@builder/builders';
@@ -66,8 +67,7 @@ import { Cache } from 'cache-manager';
 import { isMongoId } from 'class-validator';
 import { SwaggerSteakeyConfigEnum } from 'libs/config/enum/swagger.stakey.config.enum';
 import { mongo } from 'mongoose';
-import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { Logger } from 'winston';
+import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import { AccountServiceController } from './account-service.controller';
 import { AccountServiceService } from './account-service.service';
 import { WithdrawalExecuteDto } from './dtos/WithdrawalExecuteDto';
@@ -79,12 +79,14 @@ import { WithdrawalError } from './utils/errors';
 import { WalletServiceService } from './wallet-service.service';
 
 @ApiTags(SwaggerSteakeyConfigEnum.TAG_WALLET)
+@Traceable()
 @Controller('wallets')
 export class WalletServiceController extends AccountServiceController {
   private cryptoType = null;
 
   constructor(
-    @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
+    @InjectPinoLogger(WalletServiceController.name)
+    protected readonly logger: PinoLogger,
     private readonly walletService: AccountServiceService,
     @Inject(WalletServiceService)
     private readonly walletServiceService: WalletServiceService,

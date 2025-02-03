@@ -1,6 +1,7 @@
 import CardTypesAccountEnum from '@account/account/enum/card.types.account.enum';
 import StatusAccountEnum from '@account/account/enum/status.account.enum';
 import TypesAccountEnum from '@account/account/enum/types.account.enum';
+import { Traceable } from '@amplication/opentelemetry-nestjs';
 import { BuildersService } from '@builder/builders';
 import { CommonService } from '@common/common';
 import DocIdTypeEnum from '@common/common/enums/DocIdTypeEnum';
@@ -16,11 +17,8 @@ import EventsNamesAccountEnum from 'apps/account-service/src/enum/events.names.a
 import EventsNamesPersonEnum from 'apps/person-service/src/enum/events.names.person.enum';
 import EventsNamesTransferEnum from 'apps/transfer-service/src/enum/events.names.transfer.enum';
 import EventsNamesUserEnum from 'apps/user-service/src/enum/events.names.user.enum';
-import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { Logger } from 'winston';
+import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import { PomeloV1DBClient } from '../clients/pomelo.v1.bd.client';
-
-import { Traceable } from '@amplication/opentelemetry-nestjs';
 
 @Traceable()
 @Injectable()
@@ -28,7 +26,8 @@ export class PomeloMigrationService {
   private pomeloIntegration: IntegrationCardService;
 
   constructor(
-    @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
+    @InjectPinoLogger(PomeloMigrationService.name)
+    protected readonly logger: PinoLogger,
     private readonly integration: IntegrationService,
     @Inject(BuildersService)
     private builder: BuildersService,

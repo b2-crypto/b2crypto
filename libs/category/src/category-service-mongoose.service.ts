@@ -1,13 +1,11 @@
+import { Traceable } from '@amplication/opentelemetry-nestjs';
 import { CategoryDocument } from '@category/category/entities/mongoose/category.schema';
 import { BasicServiceModel } from '@common/common/models/basic-service.model';
 import { Inject, Injectable } from '@nestjs/common';
 import { Model } from 'mongoose';
+import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import { CategoryCreateDto } from './dto/category.create.dto';
 import { CategoryUpdateDto } from './dto/category.update.dto';
-
-import { Traceable } from '@amplication/opentelemetry-nestjs';
-import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { Logger } from 'winston';
 
 @Traceable()
 @Injectable()
@@ -18,7 +16,8 @@ export class CategoryServiceMongooseService extends BasicServiceModel<
   CategoryUpdateDto
 > {
   constructor(
-    @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
+    @InjectPinoLogger(CategoryServiceMongooseService.name)
+    protected readonly logger: PinoLogger,
     @Inject('CATEGORY_MODEL_MONGOOSE')
     categoryModel: Model<CategoryDocument>,
   ) {

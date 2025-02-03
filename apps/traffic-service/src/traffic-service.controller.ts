@@ -11,13 +11,11 @@ import {
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 
+import { Traceable } from '@amplication/opentelemetry-nestjs';
 import { AllowAnon } from '@auth/auth/decorators/allow-anon.decorator';
-import { CheckPoliciesAbility } from '@auth/auth/policy/policy.handler.ability';
-import { PolicyHandlerTrafficCreate } from '@auth/auth/policy/traffic/policity.handler.traffic.create';
-import { PolicyHandlerTrafficDelete } from '@auth/auth/policy/traffic/policity.handler.traffic.delete';
-import { PolicyHandlerTrafficRead } from '@auth/auth/policy/traffic/policity.handler.traffic.read';
-import { PolicyHandlerTrafficUpdate } from '@auth/auth/policy/traffic/policity.handler.traffic.update';
 import { CommonService } from '@common/common';
+import { NoCache } from '@common/common/decorators/no-cache.decorator';
+import GenericServiceController from '@common/common/interfaces/controller.generic.interface';
 import { QuerySearchAnyDto } from '@common/common/models/query_search-any.dto';
 import { UpdateAnyDto } from '@common/common/models/update-any.dto';
 import {
@@ -31,10 +29,9 @@ import { TrafficCreateDto } from '@traffic/traffic/dto/traffic.create.dto';
 import { TrafficUpdateDto } from '@traffic/traffic/dto/traffic.update.dto';
 import EventsNamesTrafficEnum from './enum/events.names.traffic.enum';
 import { TrafficServiceService } from './traffic-service.service';
-import GenericServiceController from '@common/common/interfaces/controller.generic.interface';
-import { NoCache } from '@common/common/decorators/no-cache.decorator';
 
 @ApiTags('TRAFFIC')
+@Traceable()
 @Controller('traffic')
 export class TrafficServiceController implements GenericServiceController {
   static eventsName = {

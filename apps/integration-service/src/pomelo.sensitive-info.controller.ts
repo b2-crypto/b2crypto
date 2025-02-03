@@ -1,3 +1,4 @@
+import { Traceable } from '@amplication/opentelemetry-nestjs';
 import { BuildersService } from '@builder/builders';
 import { NoCache } from '@common/common/decorators/no-cache.decorator';
 import { IntegrationService } from '@integration/integration';
@@ -16,13 +17,14 @@ import {
 import { User } from '@user/user/entities/mongoose/user.schema';
 import EventsNamesUserEnum from 'apps/user-service/src/enum/events.names.user.enum';
 import { UserServiceService } from 'apps/user-service/src/user-service.service';
-import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { Logger } from 'winston';
+import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 
+@Traceable()
 @Controller(PomeloEnum.POMELO_INTEGRATION_CONTROLLER)
 export class PomeloSensitiveInfoController {
   constructor(
-    @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
+    @InjectPinoLogger(PomeloSensitiveInfoController.name)
+    protected readonly logger: PinoLogger,
     private readonly builder: BuildersService,
     private readonly integration: IntegrationService,
     @Inject(UserServiceService)

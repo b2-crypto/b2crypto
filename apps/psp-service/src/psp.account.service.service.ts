@@ -1,3 +1,4 @@
+import { Traceable } from '@amplication/opentelemetry-nestjs';
 import { BuildersService } from '@builder/builders';
 import { ResponsePaginator } from '@common/common/interfaces/response-pagination.interface';
 import { QuerySearchAnyDto } from '@common/common/models/query_search-any.dto';
@@ -12,19 +13,17 @@ import { StatusDocument } from '@status/status/entities/mongoose/status.schema';
 import EventsNamesStatusEnum from 'apps/status-service/src/enum/events.names.status.enum';
 import EventsNamesTransferEnum from 'apps/transfer-service/src/enum/events.names.transfer.enum';
 import { isMongoId } from 'class-validator';
-import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { Logger } from 'winston';
+import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import CheckStatsType from '../../../libs/stats/src/enum/check.stats.type';
 import EventsNamesPspEnum from './enum/events.names.psp.enum';
 import { PspServiceService } from './psp-service.service';
-
-import { Traceable } from '@amplication/opentelemetry-nestjs';
 
 @Traceable()
 @Injectable()
 export class PspAccountServiceService {
   constructor(
-    @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
+    @InjectPinoLogger(PspAccountServiceService.name)
+    protected readonly logger: PinoLogger,
     private readonly pspService: PspServiceService,
     @Inject(BuildersService)
     private readonly builder: BuildersService,

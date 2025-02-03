@@ -20,6 +20,7 @@ import {
 import { ApiHeader, ApiResponse, ApiTags } from '@nestjs/swagger';
 
 import { CreateLeadAffiliateDto } from '@affiliate/affiliate/domain/dto/create-lead-affiliate.dto';
+import { Traceable } from '@amplication/opentelemetry-nestjs';
 import { AllowAnon } from '@auth/auth/decorators/allow-anon.decorator';
 import { ApiKeyCheck } from '@auth/auth/decorators/api-key-check.decorator';
 import { BuildersService } from '@builder/builders';
@@ -49,8 +50,7 @@ import { TransferEntity } from '@transfer/transfer/entities/transfer.entity';
 import EventsNamesAffiliateEnum from 'apps/affiliate-service/src/enum/events.names.affiliate.enum';
 import EventsNamesCrmEnum from 'apps/crm-service/src/enum/events.names.crm.enum';
 import EventsNamesTransferEnum from 'apps/transfer-service/src/enum/events.names.transfer.enum';
-import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { Logger } from 'winston';
+import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import { ApiKeyAffiliateAuthGuard } from '../../../libs/auth/src/guards/api.key.affiliate.guard';
 import { AutologinLeadDto } from './dto/autologin.lead.dto';
 import { CftdToFtdDto } from './dto/cftd_to_ftd.dto';
@@ -62,10 +62,12 @@ import EventsNamesLeadEnum from './enum/events.names.lead.enum';
 import { LeadServiceService } from './lead-service.service';
 
 @ApiTags('LEAD')
+@Traceable()
 @Controller('lead')
 export class LeadServiceController implements GenericServiceController {
   constructor(
-    @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
+    @InjectPinoLogger(LeadServiceController.name)
+    protected readonly logger: PinoLogger,
     private readonly leadService: LeadServiceService,
     @Inject(BuildersService)
     private readonly builder: BuildersService,

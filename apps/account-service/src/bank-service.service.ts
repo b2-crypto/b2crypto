@@ -1,14 +1,13 @@
 import { BankDepositCreateDto } from '@account/account/dto/bank-deposit.create.dto';
 import { BankCreateDto } from '@account/account/dto/bank.create.dto';
 import TypesAccountEnum from '@account/account/enum/types.account.enum';
+import { Traceable } from '@amplication/opentelemetry-nestjs';
 import { CommonService } from '@common/common';
 import { QuerySearchAnyDto } from '@common/common/models/query_search-any.dto';
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { User } from '@user/user/entities/mongoose/user.schema';
 import { UserServiceService } from 'apps/user-service/src/user-service.service';
 import { AccountServiceService } from './account-service.service';
-
-import { Traceable } from '@amplication/opentelemetry-nestjs';
 
 @Traceable()
 @Injectable()
@@ -48,9 +47,7 @@ export class BankServiceService {
     createDto.owner = user.id;
     createDto.pin =
       createDto.pin ??
-      parseInt(
-        CommonService.getNumberDigits(CommonService.randomIntNumber(9999), 4),
-      );
+      CommonService.getNumberDigits(CommonService.randomIntNumber(9999), 4);
     const account = await this.accountService.createOne(createDto);
     // Integration Bank
     return account;

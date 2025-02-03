@@ -1,5 +1,6 @@
 import { AccountDocument } from '@account/account/entities/mongoose/account.schema';
 import { CreateLeadAffiliateDto } from '@affiliate/affiliate/domain/dto/create-lead-affiliate.dto';
+import { Traceable } from '@amplication/opentelemetry-nestjs';
 import { CrmDocument } from '@crm/crm/entities/mongoose/crm.schema';
 import { AntelopeIntegrationService } from '@integration/integration/crm/antelope-integration/antelope-integration.service';
 import { LeverateIntegrationService } from '@integration/integration/crm/leverate-integration/leverate-integration.service';
@@ -8,6 +9,7 @@ import { CACHE_MANAGER, Cache } from '@nestjs/cache-manager';
 import { Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { RpcException } from '@nestjs/microservices';
+import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import IntegrationCardEnum from './card/enums/IntegrationCardEnum';
 import { IntegrationCardService } from './card/generic/integration.card.service';
 import { PomeloIntegrationService } from './card/pomelo-integration/pomelo-integration.service';
@@ -22,16 +24,13 @@ import { IntegrationCryptoService } from './crypto/generic/integration.crypto.se
 import { IntegrationIdentityEnum } from './identity/generic/domain/integration.identity.enum';
 import { IntegrationIdentityService } from './identity/generic/integration.identity.service';
 
-import { Traceable } from '@amplication/opentelemetry-nestjs';
-import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { Logger } from 'winston';
-
 @Traceable()
 @Injectable()
 export class IntegrationService {
   private env: string;
   constructor(
-    @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
+    @InjectPinoLogger(IntegrationService.name)
+    protected readonly logger: PinoLogger,
     @Inject(CACHE_MANAGER)
     private cacheManager: Cache,
     private readonly configService: ConfigService,

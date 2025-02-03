@@ -1,12 +1,10 @@
+import { Traceable } from '@amplication/opentelemetry-nestjs';
 import { ProcessBodyI } from '@integration/integration/dto/pomelo.process.body.dto';
 import { ProcessHeaderDto } from '@integration/integration/dto/pomelo.process.header.dto';
 import { PomeloCache } from '@integration/integration/util/pomelo.integration.process.cache';
-import { Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import * as crypto from 'crypto';
-import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { Logger } from 'winston';
-
-import { Traceable } from '@amplication/opentelemetry-nestjs';
+import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 
 @Traceable()
 @Injectable()
@@ -14,7 +12,8 @@ export class PomeloSignatureUtils {
   private API_DIC = JSON.parse(process.env.POMELO_SIGNATURE_SECRET_KEY_DIC);
 
   constructor(
-    @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
+    @InjectPinoLogger(PomeloSignatureUtils.name)
+    protected readonly logger: PinoLogger,
     private readonly cache: PomeloCache,
   ) {}
 

@@ -1,4 +1,5 @@
 import { AffiliateServiceMongooseService } from '@affiliate/affiliate';
+import { Traceable } from '@amplication/opentelemetry-nestjs';
 import { BrandDocument } from '@brand/brand/entities/mongoose/brand.schema';
 import { BuildersService } from '@builder/builders';
 import dbIntegrationEnum from '@builder/builders/enums/db-integration.enum';
@@ -21,15 +22,12 @@ import { StatusServiceMongooseService } from '@status/status';
 import { StatusDocument } from '@status/status/entities/mongoose/status.schema';
 import { BrandServiceMongooseService } from 'libs/brand/src';
 import { Model, isValidObjectId } from 'mongoose';
+import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import { AffiliateDocument } from '../../affiliate/src/infrastructure/mongoose/affiliate.schema';
 import { PersonCreateDto } from '../../person/src/dto/person.create.dto';
 import { LeadCreateDto } from './dto/lead.create.dto';
 import { LeadUpdateDto } from './dto/lead.update.dto';
 import { Lead, LeadDocument } from './entities/mongoose/lead.schema';
-
-import { Traceable } from '@amplication/opentelemetry-nestjs';
-import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { Logger } from 'winston';
 
 @Traceable()
 @Injectable()
@@ -40,7 +38,8 @@ export class LeadServiceMongooseService extends BasicServiceModel<
   LeadUpdateDto
 > {
   constructor(
-    @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
+    @InjectPinoLogger(LeadServiceMongooseService.name)
+    protected readonly logger: PinoLogger,
     @Inject(BuildersService)
     private builder: BuildersService,
     @Inject('LEAD_MODEL_MONGOOSE')

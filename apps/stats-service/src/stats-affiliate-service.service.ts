@@ -1,3 +1,4 @@
+import { Traceable } from '@amplication/opentelemetry-nestjs';
 import { BuildersService } from '@builder/builders';
 import { CategoryDocument } from '@category/category/entities/mongoose/category.schema';
 import PeriodEnum from '@common/common/enums/PeriodEnum';
@@ -39,8 +40,6 @@ import EventsNamesTransferEnum from 'apps/transfer-service/src/enum/events.names
 import { isArray, isDate, isDateString, isEmpty } from 'class-validator';
 import { firstValueFrom } from 'rxjs';
 import { StatsDateDocuments, StatsDateMongoose } from './enum/stats.date.type';
-
-import { Traceable } from '@amplication/opentelemetry-nestjs';
 
 @Traceable()
 @Injectable()

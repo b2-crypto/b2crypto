@@ -1,7 +1,6 @@
 import DatabaseConnectionEnum from '@common/common/enums/DatabaseConnectionEnum';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import * as mongoose from 'mongoose';
-import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 
 export const databaseProviders = [
@@ -32,6 +31,6 @@ export const databaseProviders = [
       }
     },
     imports: [ConfigModule],
-    inject: [ConfigService, WINSTON_MODULE_PROVIDER],
+    inject: [ConfigService],
   },
 ];

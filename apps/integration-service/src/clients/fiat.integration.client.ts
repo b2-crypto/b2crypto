@@ -1,16 +1,15 @@
-import { HttpService } from '@nestjs/axios';
-import { Inject, Injectable } from '@nestjs/common';
-import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { lastValueFrom } from 'rxjs';
-import { Logger } from 'winston';
-
 import { Traceable } from '@amplication/opentelemetry-nestjs';
+import { HttpService } from '@nestjs/axios';
+import { BadGatewayException, Injectable } from '@nestjs/common';
+import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
+import { lastValueFrom } from 'rxjs';
 
 @Traceable()
 @Injectable()
 export class FiatIntegrationClient {
   constructor(
-    @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
+    @InjectPinoLogger(FiatIntegrationClient.name)
+    protected readonly logger: PinoLogger,
     private httpService: HttpService,
   ) {}
 
@@ -31,11 +30,24 @@ export class FiatIntegrationClient {
     const apiKey = process.env.CURRENCY_CONVERSION_API_KEY;
     const toParsed = to === 'USDT' ? 'USD' : to;
     const fromParsed = from === 'USDT' ? 'USD' : from;
-
     const url = `${apiURL}?access_key=${apiKey}&from=${fromParsed}&to=${toParsed}&amount=${amount}`;
-    this.logger.debug('FiatIntegrationClient.getCurrencyConversion', url);
-    const obsResponse = this.httpService.get(url);
-    const data = await (await lastValueFrom(obsResponse)).data;
+
+    this.logger.info(url, 'FiatIntegrationClient.getCurrencyConversion');
+
+    const data = await await lastValueFrom(this.httpService.get(url))
+      .then((res) => {
+        this.logger.info(
+          'FiatIntegrationClient.getCurrencyConversion',
+          JSON.stringify(res.data),
+        );
+        return res.data;
+      })
+      .catch((error) => {
+        this.logger.error('FiatIntegrationClient.getCurrencyConversion');
+        this.logger.error(error);
+        throw new BadGatewayException(error);
+      });
+
     return data.result;
   }
 }

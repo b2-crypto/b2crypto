@@ -1,21 +1,21 @@
+import { Traceable } from '@amplication/opentelemetry-nestjs';
 import {
   Controller,
-  Inject,
   NotImplementedException,
   Param,
   Post,
 } from '@nestjs/common';
-import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { Logger } from 'winston';
+import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import { PomeloMigrationService } from './services/pomelo.migration.service';
 
+@Traceable()
 @Controller('pomelo-migration')
 export class PomeloMigrationController {
   constructor(
-    @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
+    @InjectPinoLogger(PomeloMigrationController.name)
+    protected readonly logger: PinoLogger,
     private readonly migrationService: PomeloMigrationService,
   ) {}
-
   @Post('ignate')
   async ignatePomeloIntegration() {
     return new NotImplementedException('Method not implemented.');

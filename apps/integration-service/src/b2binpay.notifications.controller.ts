@@ -1,4 +1,5 @@
 import { AccountDocument } from '@account/account/entities/mongoose/account.schema';
+import { Traceable } from '@amplication/opentelemetry-nestjs';
 import { AllowAnon } from '@auth/auth/decorators/allow-anon.decorator';
 import { BuildersService } from '@builder/builders';
 import { CommonService } from '@common/common';
@@ -15,14 +16,15 @@ import EventsNamesCategoryEnum from 'apps/category-service/src/enum/events.names
 import EventsNamesPspAccountEnum from 'apps/psp-service/src/enum/events.names.psp.acount.enum';
 import EventsNamesStatusEnum from 'apps/status-service/src/enum/events.names.status.enum';
 import EventsNamesTransferEnum from 'apps/transfer-service/src/enum/events.names.transfer.enum';
-import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { Logger } from 'winston';
+import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 
+@Traceable()
 @Controller('b2binpay')
 //@UseGuards(ApiKeyAuthGuard)
 export class B2BinPayNotificationsController {
   constructor(
-    @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
+    @InjectPinoLogger(B2BinPayNotificationsController.name)
+    protected readonly logger: PinoLogger,
     private readonly builder: BuildersService,
     @Inject(IntegrationService)
     private integrationService: IntegrationService,

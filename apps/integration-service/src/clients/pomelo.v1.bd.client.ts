@@ -1,15 +1,15 @@
-import { Inject, Injectable } from '@nestjs/common';
-import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { Client } from 'pg';
-import { Logger } from 'winston';
-
 import { Traceable } from '@amplication/opentelemetry-nestjs';
+import { Injectable } from '@nestjs/common';
+import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
+// const { Client } = require('pg');
+import { Client } from 'pg';
 
 @Traceable()
 @Injectable()
 export class PomeloV1DBClient {
   constructor(
-    @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
+    @InjectPinoLogger(PomeloV1DBClient.name)
+    protected readonly logger: PinoLogger,
   ) {}
 
   private connectionProps = {
@@ -53,16 +53,16 @@ export class PomeloV1DBClient {
                 })
                 .catch((err: any) => {
                   this.logger.error(
-                    `Error closing connection ${err}`,
                     PomeloV1DBClient.name,
+                    `Error closing connection ${err}`,
                   );
                 });
             });
           })
           .catch((err: any) => {
             this.logger.error(
-              `Error connecting to V1 DB database ${err}`,
               PomeloV1DBClient.name,
+              `Error connecting to V1 DB database ${err}`,
             );
           });
       });

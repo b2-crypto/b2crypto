@@ -1,7 +1,6 @@
+import { Logger } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import * as mongoose from 'mongoose';
-import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { Logger } from 'winston';
 import { EnvironmentEnum } from '../enums/environment.enum';
 
 export const databaseProviders = [
@@ -9,7 +8,6 @@ export const databaseProviders = [
     provide: 'MONGOOSE_CONNECTION',
     useFactory: async (
       configService: ConfigService,
-      logger: Logger,
     ): Promise<typeof mongoose> => {
       const dbName = configService.get('DATABASE_NAME');
       const dbUrl = configService.get('DATABASE_URL');
@@ -23,16 +21,16 @@ export const databaseProviders = [
           keepAliveInitialDelay: 300000,
         });
         if (configService.get('ENVIRONMENT') !== EnvironmentEnum.prod) {
-          logger.debug(`Database "${dbName}" connect to:`, dbUrl);
+          Logger.debug(`Database "${dbName}" connect to:`, dbUrl);
         }
 
         return connection;
       } catch (error) {
-        logger.error(error.message, error);
+        Logger.error(error.message, error);
         return error;
       }
     },
     imports: [ConfigModule],
-    inject: [ConfigService, WINSTON_MODULE_PROVIDER],
+    inject: [ConfigService],
   },
 ];

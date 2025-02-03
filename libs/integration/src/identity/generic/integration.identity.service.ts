@@ -2,11 +2,9 @@ import { CommonService } from '@common/common';
 import { EnvironmentEnum } from '@common/common/enums/environment.enum';
 import { BasicDataIntegration } from '@integration/integration/domain/basic.data.integration.interface';
 import { HttpService } from '@nestjs/axios';
-import { Inject } from '@nestjs/common';
 import axios, { AxiosInstance } from 'axios';
 import * as crypto from 'crypto';
-import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { Logger } from 'winston';
+import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import { SumsubEnum } from './domain/sumsub.enum';
 import {
   SumsubIssuedTokenDto,
@@ -24,7 +22,8 @@ export class IntegrationIdentityService
   private routesMap: IdentityRoutesInterface;
 
   constructor(
-    @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
+    @InjectPinoLogger(IntegrationIdentityService.name)
+    protected readonly logger: PinoLogger,
     private dataIntegration: BasicDataIntegration,
     private httpService: HttpService,
   ) {}

@@ -4,6 +4,7 @@ import {
   Affiliate,
   AffiliateDocument,
 } from '@affiliate/affiliate/infrastructure/mongoose/affiliate.schema';
+import { Traceable } from '@amplication/opentelemetry-nestjs';
 import { BrandDocument } from '@brand/brand/entities/mongoose/brand.schema';
 import dbIntegrationEnum from '@builder/builders/enums/db-integration.enum';
 import { CommonService } from '@common/common';
@@ -22,12 +23,9 @@ import { TrafficDocument } from '@traffic/traffic/entities/mongoose/traffic.sche
 import { UserServiceMongooseService } from '@user/user';
 import { BrandServiceMongooseService } from 'libs/brand/src';
 import { Model } from 'mongoose';
+import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import { IpAddressDocument } from '../../ip-address/src/entities/mongoose/ip-address.schema';
 import { UserDocument } from '../../user/src/entities/mongoose/user.schema';
-
-import { Traceable } from '@amplication/opentelemetry-nestjs';
-import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { Logger } from 'winston';
 
 @Traceable()
 @Injectable()
@@ -38,7 +36,8 @@ export class AffiliateServiceMongooseService extends BasicServiceModel<
   AffiliateUpdateDto
 > {
   constructor(
-    @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
+    @InjectPinoLogger(AffiliateServiceMongooseService.name)
+    protected readonly logger: PinoLogger,
     @Inject('AFFILIATE_MODEL_MONGOOSE')
     affiliateModel: Model<AffiliateDocument>,
     @Inject(UserServiceMongooseService)

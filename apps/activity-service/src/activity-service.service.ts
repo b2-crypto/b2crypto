@@ -2,6 +2,7 @@ import { ActivityServiceMongooseService } from '@activity/activity';
 import { ActivityCreateDto } from '@activity/activity/dto/activity.create.dto';
 import { ActivityUpdateDto } from '@activity/activity/dto/activity.update.dto';
 import { ActivityDocument } from '@activity/activity/entities/mongoose/activity.schema';
+import { Traceable } from '@amplication/opentelemetry-nestjs';
 import { BuildersService } from '@builder/builders';
 import { ResponsePaginator } from '@common/common/interfaces/response-pagination.interface';
 import { BasicMicroserviceService } from '@common/common/models/basic.microservices.service';
@@ -10,8 +11,6 @@ import { QuerySearchAnyDto } from '@common/common/models/query_search-any.dto';
 import { UpdateAnyDto } from '@common/common/models/update-any.dto';
 import { Inject, Injectable, NotImplementedException } from '@nestjs/common';
 import { Ctx, RmqContext } from '@nestjs/microservices';
-
-import { Traceable } from '@amplication/opentelemetry-nestjs';
 
 @Traceable()
 @Injectable()

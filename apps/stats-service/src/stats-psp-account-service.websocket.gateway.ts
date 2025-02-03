@@ -1,3 +1,5 @@
+import { Traceable } from '@amplication/opentelemetry-nestjs';
+import { BuildersService } from '@builder/builders';
 import { ResponseDownloadWebsocketInterface } from '@common/common/interfaces/response.download.websocket.interface';
 import { BasicWebsocketGateway } from '@common/common/models/basic.websocket.gateway';
 import { QuerySearchAnyDto } from '@common/common/models/query_search-any.dto';
@@ -9,13 +11,13 @@ import {
   WsResponse,
 } from '@nestjs/websockets';
 import { StatsDatePspAccount } from '@stats/stats/entities/mongoose/stats.date.psp.account.schema';
+import EventsNamesFileEnum from 'apps/file-service/src/enum/events.names.file.enum';
 import { Observable } from 'rxjs';
 import { Server } from 'socket.io';
 import EventsNamesStatsEnum from './enum/events.names.stats.enum';
 import { StatsPspAccountServiceService } from './stats-psp-account-service.service';
-import { BuildersService } from '@builder/builders';
-import EventsNamesFileEnum from 'apps/file-service/src/enum/events.names.file.enum';
 
+@Traceable()
 @WebSocketGateway(parseInt(EventsNamesStatsEnum.websocketPortStatsPspAccount), {
   namespace: EventsNamesStatsEnum.clientNameStatsPspAccount,
   cors: {
