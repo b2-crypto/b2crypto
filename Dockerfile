@@ -13,6 +13,7 @@ COPY --from=build /app/package*.json ./
 COPY --from=build /app/sftp ./sftp
 COPY --from=build /app/libs/message/src/templates ./libs/message/src/templates
 RUN npm install -g pnpm@^9.15.5
+RUN apk add --no-cache python3 py3-pip
 RUN pnpm install --production
 RUN apk add --update curl
 
