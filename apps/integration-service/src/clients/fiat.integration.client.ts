@@ -1,6 +1,6 @@
 import { Traceable } from '@amplication/opentelemetry-nestjs';
 import { HttpService } from '@nestjs/axios';
-import { Injectable } from '@nestjs/common';
+import { BadGatewayException, Injectable } from '@nestjs/common';
 import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import { lastValueFrom } from 'rxjs';
 
@@ -30,11 +30,24 @@ export class FiatIntegrationClient {
     const apiKey = process.env.CURRENCY_CONVERSION_API_KEY;
     const toParsed = to === 'USDT' ? 'USD' : to;
     const fromParsed = from === 'USDT' ? 'USD' : from;
-
     const url = `${apiURL}?access_key=${apiKey}&from=${fromParsed}&to=${toParsed}&amount=${amount}`;
-    this.logger.debug(url, 'FiatIntegrationClient.getCurrencyConversion');
-    const obsResponse = this.httpService.get(url);
-    const data = await (await lastValueFrom(obsResponse)).data;
+
+    this.logger.info(url, 'FiatIntegrationClient.getCurrencyConversion');
+
+    const data = await await lastValueFrom(this.httpService.get(url))
+      .then((res) => {
+        this.logger.info(
+          'FiatIntegrationClient.getCurrencyConversion',
+          JSON.stringify(res.data),
+        );
+        return res.data;
+      })
+      .catch((error) => {
+        this.logger.error('FiatIntegrationClient.getCurrencyConversion');
+        this.logger.error(error);
+        throw new BadGatewayException(error);
+      });
+
     return data.result;
   }
 }
