@@ -12,7 +12,7 @@ COPY --from=build /app/dist/apps/b2crypto ./dist/apps/b2crypto
 COPY --from=build /app/package*.json ./
 COPY --from=build /app/sftp ./sftp
 COPY --from=build /app/libs/message/src/templates ./libs/message/src/templates
-RUN apk add --update pnpm
+RUN npm install -g pnpm@latest-10
 RUN pnpm install --production
 RUN apk add --update curl
 
