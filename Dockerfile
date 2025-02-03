@@ -1,4 +1,4 @@
-FROM public.ecr.aws/docker/library/node:20.17.0-alpine3.20 AS build
+FROM public.ecr.aws/docker/library/fedora:latest AS build
 WORKDIR /app
 COPY . .
 RUN dnf install nodejs -y
