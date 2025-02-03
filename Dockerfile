@@ -1,7 +1,8 @@
 FROM public.ecr.aws/docker/library/node:20.17.0-alpine3.20 AS build
 WORKDIR /app
 COPY . .
-RUN corepack enable pnpm
+RUN dnf install nodejs -y
+RUN npm install -g pnpm@^9.15.5
 RUN pnpm install
 RUN pnpm run build
 
