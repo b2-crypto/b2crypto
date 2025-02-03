@@ -323,7 +323,10 @@ export class CrmServiceController implements GenericServiceController {
     CommonService.ack(ctx);
     const crms = await this.crmService.getAll({
       where: {
-        slug: CommonService.getSlug(crmName),
+        $or: [
+          { slug: CommonService.getSlug(crmName) },
+          { name: new RegExp(crmName, 'ig') },
+        ],
       },
     });
     if (crms.totalElements) {
@@ -342,7 +345,7 @@ export class CrmServiceController implements GenericServiceController {
     CommonService.ack(ctx);
     const crms = await this.crmService.getAll({
       where: {
-        slug: CommonService.getSlug(crmName),
+        name: new RegExp(crmName, 'i'),
       },
     });
     if (crms.totalElements) {

@@ -39,8 +39,8 @@ export class SumsubNotificationIntegrationService {
   async updateUserByReviewed(notification: SumsubApplicantReviewed) {
     if (!isMongoId(notification.externalUserId)) {
       this.logger.error(
-        `User id "${notification.externalUserId}" isn't valid`,
         'Reviewed.SumsubNotificationIntegrationService',
+        `User id "${notification.externalUserId}" isn't valid`,
       );
       return null;
     }
@@ -50,8 +50,8 @@ export class SumsubNotificationIntegrationService {
     );
     if (!user) {
       this.logger.error(
-        'User not found',
         'Reviewed.SumsubNotificationIntegrationService',
+        'User not found',
       );
       return null;
     }
@@ -78,8 +78,8 @@ export class SumsubNotificationIntegrationService {
   async updateUserByPending(notification: SumsubApplicantPending) {
     if (!isMongoId(notification.externalUserId)) {
       this.logger.error(
-        `User id "${notification.externalUserId}" isn't valid`,
         'Reviewed.SumsubNotificationIntegrationService',
+        `User id "${notification.externalUserId}" isn't valid`,
       );
       return null;
     }
@@ -89,8 +89,8 @@ export class SumsubNotificationIntegrationService {
     );
     if (!user) {
       this.logger.error(
-        'User not found',
         'Pending.SumsubNotificationIntegrationService',
+        'User not found',
       );
       return null;
     }
@@ -103,8 +103,8 @@ export class SumsubNotificationIntegrationService {
       verifyIdentityStatus: notification.reviewStatus,
     });
     this.logger.debug(
-      'User Updated',
       'Pending.SumsubNotificationIntegrationService',
+      'User Updated',
     );
 
     return user;
@@ -112,8 +112,8 @@ export class SumsubNotificationIntegrationService {
   async updateUserByOnHold(notification: SumsubApplicantOnHold) {
     if (!isMongoId(notification.externalUserId)) {
       this.logger.error(
-        `User id "${notification.externalUserId}" isn't valid`,
         'Reviewed.SumsubNotificationIntegrationService',
+        `User id "${notification.externalUserId}" isn't valid`,
       );
       return null;
     }
@@ -123,8 +123,8 @@ export class SumsubNotificationIntegrationService {
     );
     if (!user) {
       this.logger.error(
-        'User not found',
         'OnHold.SumsubNotificationIntegrationService',
+        'User not found',
       );
       return null;
     }
@@ -138,8 +138,8 @@ export class SumsubNotificationIntegrationService {
       verifyIdentityLevelName: notification.levelName,
     });
     this.logger.debug(
-      'User Updated',
       'OnHold.SumsubNotificationIntegrationService',
+      'User Updated',
     );
 
     return user;

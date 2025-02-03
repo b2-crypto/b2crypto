@@ -22,6 +22,7 @@ import { StatusServiceMongooseService } from '@status/status';
 import { StatusDocument } from '@status/status/entities/mongoose/status.schema';
 import { BrandServiceMongooseService } from 'libs/brand/src';
 import { Model, isValidObjectId } from 'mongoose';
+import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import { AffiliateDocument } from '../../affiliate/src/infrastructure/mongoose/affiliate.schema';
 import { PersonCreateDto } from '../../person/src/dto/person.create.dto';
 import { LeadCreateDto } from './dto/lead.create.dto';
@@ -37,6 +38,8 @@ export class LeadServiceMongooseService extends BasicServiceModel<
   LeadUpdateDto
 > {
   constructor(
+    @InjectPinoLogger(LeadServiceMongooseService.name)
+    protected readonly logger: PinoLogger,
     @Inject(BuildersService)
     private builder: BuildersService,
     @Inject('LEAD_MODEL_MONGOOSE')
@@ -54,7 +57,7 @@ export class LeadServiceMongooseService extends BasicServiceModel<
     @Inject(CategoryServiceMongooseService)
     private categoryService: CategoryServiceMongooseService,
   ) {
-    super(leadModel);
+    super(logger, leadModel);
   }
 
   async findAll(query) {

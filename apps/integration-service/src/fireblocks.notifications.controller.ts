@@ -70,8 +70,8 @@ export class FireBlocksNotificationsController {
   async resendFireblocksNotifications() {
     const rta = await (await this.getFireblocksType()).resendNotifications();
     this.logger.debug(
-      JSON.stringify(rta, null, 2),
       'resendFireblocksNotifications',
+      JSON.stringify(rta, null, 2),
     );
     return rta;
   }
@@ -84,7 +84,7 @@ export class FireBlocksNotificationsController {
     //this.logger.debug(isVerified, 'getTransferDto.isVerified');
     //if (isVerified) {
     const rta = data.data;
-    this.logger.debug(rta, '-start');
+    this.logger.debug('-start', rta);
     if (
       rta.id &&
       rta.status &&
@@ -134,7 +134,7 @@ export class FireBlocksNotificationsController {
           },
         );
       }
-      this.logger.debug(rta?.status, `${rta?.id} - ${rta.status}`);
+      this.logger.debug(`${rta?.id} - ${rta.status}`, rta?.status);
     }
     //}
     //return isVerified ? 'ok' : 'fail';
@@ -194,7 +194,7 @@ export class FireBlocksNotificationsController {
     // const ownerId = brand.owner;
     const ownerId = ownerIdWallet.replace('-vault', '');
     if (!isMongoId(ownerId)) {
-      this.logger.debug(ownerId, `Invalid ownerId ${ownerIdWallet}`);
+      this.logger.debug(`Invalid ownerId ${ownerIdWallet}`, ownerId);
       return null;
     }
     const crm = await this.getFireblocksCrm();

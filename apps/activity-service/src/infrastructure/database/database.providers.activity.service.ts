@@ -1,12 +1,14 @@
 import DatabaseConnectionEnum from '@common/common/enums/DatabaseConnectionEnum';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import * as mongoose from 'mongoose';
+import { Logger } from 'winston';
 
 export const databaseProviders = [
   {
     provide: `MONGOOSE_CONNECTION${DatabaseConnectionEnum.Activity}`,
     useFactory: async (
       configService: ConfigService,
+      logger: Logger,
     ): Promise<typeof mongoose> => {
       const dbName = configService.get('DATABASE_NAME');
       const dbUrl = configService.get('DATABASE_URL');
@@ -20,11 +22,11 @@ export const databaseProviders = [
           keepAliveInitialDelay: 300000,
         });
 
-        console.log('Database activity connection open');
+        logger.info('Database activity connection open');
 
         return connection;
       } catch (error) {
-        console.error(error);
+        logger.error(error.message, error);
         return error;
       }
     },

@@ -52,10 +52,6 @@ export class CommonService {
           id: item._id,
           searchText: item.searchText,
         });
-        console.debug(
-          `${item.numericId} - ${item.leadEmail}`,
-          `Updated searchText page ${elems.currentPage} / ${elems.lastPage}`,
-        );
         return item;
       });
       query.page = elems.nextPage;
@@ -84,29 +80,11 @@ export class CommonService {
     try {
       const rta = await func();
       const end = new Date();
-      if (!onlyTimeLapse) {
-        console.log(`${functionName} start: ${start.toISOString()}`);
-        console.log(
-          `${functionName} end: ${end.toISOString()}`,
-          'Time to function',
-        );
-      }
-      console.log(
-        `${functionName} Timed lapsed (ms): ${end.getTime() - start.getTime()}`,
-        'Time to function',
-      );
+
       return rta;
     } catch (error) {
       const end = new Date();
-      console.log(`${functionName} start: ${start.toISOString()}`);
-      console.log(
-        `${functionName} end: ${end.toISOString()}`,
-        'Time to function',
-      );
-      console.log(
-        `${functionName} Timed lapsed (ms): ${end.getTime() - start.getTime()}`,
-        'Time to function',
-      );
+
       throw error;
     }
   }
@@ -232,10 +210,7 @@ export class CommonService {
       const task = schedulerRegistry.getTimeout(name);
       clearTimeout(task);
       schedulerRegistry.deleteTimeout(name);
-      console.log('cleared', `Task "${name}" schedulerRegistry`);
-    } catch (err) {
-      console.error(err, `Task "${name}" schedulerRegistry`);
-    }
+    } catch (err) {}
   }
 
   static ack(ctx: RmqContext) {
@@ -286,7 +261,6 @@ export class CommonService {
         attrVal[smaller] = range[smaller];
       }
     }
-    //console.log(attrVal, 'End date checkDateAttr');
     return attrVal;
   }
 
@@ -386,7 +360,6 @@ export class CommonService {
     return query;
   }
   static checkWhitelistedIps(context: ExecutionContext): boolean {
-    console.debug('Check whitelisted ips', 'checkWhitelistedIps');
     if (
       process.env.POMELO_WHITELISTED_IPS_CHECK ===
       PomeloEnum.POMELO_WHITELISTED_IPS_CHECK_OFF.toString()
@@ -398,7 +371,6 @@ export class CommonService {
       request?.headers[PomeloEnum.POMELO_WHITELISTED_HEADER_FORWARDED] ||
       request?.headers[PomeloEnum.POMELO_WHITELISTED_HEADER_REAL] ||
       '';
-    console.log(`IpCaller: ${caller}`, 'SignatureGuard');
     const whitelisted = process.env.POMELO_WHITELISTED_IPS;
     return (
       whitelisted?.replace(/\s/g, '')?.split(',')?.includes(caller) || false

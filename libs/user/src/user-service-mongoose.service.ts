@@ -10,6 +10,7 @@ import { UserRegisterDto } from '@user/user/dto/user.register.dto';
 import { UserUpdateDto } from '@user/user/dto/user.update.dto';
 import { UserDocument } from '@user/user/entities/mongoose/user.schema';
 import { Model } from 'mongoose';
+import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import * as qrcode from 'qrcode';
 import * as speakeasy from 'speakeasy';
 
@@ -22,12 +23,14 @@ export class UserServiceMongooseService extends BasicServiceModel<
   UserUpdateDto
 > {
   constructor(
+    @InjectPinoLogger(UserServiceMongooseService.name)
+    protected readonly logger: PinoLogger,
     private readonly configService: ConfigService,
     @Inject('ROLE_MODEL_MONGOOSE')
     private readonly roleModel: Model<RoleDocument>,
     @Inject('USER_MODEL_MONGOOSE') userModel: Model<UserDocument>,
   ) {
-    super(userModel);
+    super(logger, userModel);
   }
 
   async update(id: string, updateAnyDto: UserUpdateDto): Promise<UserDocument> {

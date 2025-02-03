@@ -9,6 +9,7 @@ import { StatsDatePspAccountDocument } from '@stats/stats/entities/mongoose/stat
 import { isArray, isDateString, isMongoId } from 'class-validator';
 import { ObjectId } from 'mongodb';
 import { Model } from 'mongoose';
+import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 
 @Traceable()
 @Injectable()
@@ -19,10 +20,12 @@ export class StatsDatePspAccountServiceMongooseService extends BasicServiceModel
   StatsDateUpdateDto
 > {
   constructor(
+    @InjectPinoLogger(StatsDatePspAccountServiceMongooseService.name)
+    protected readonly logger: PinoLogger,
     @Inject('STATS_DATE_PSP_ACCOUNT_MODEL_MONGOOSE')
     private statsDatePspAccountModel: Model<StatsDatePspAccountDocument>,
   ) {
-    super(statsDatePspAccountModel);
+    super(logger, statsDatePspAccountModel);
   }
 
   async globalStats(query: QuerySearchAnyDto) {

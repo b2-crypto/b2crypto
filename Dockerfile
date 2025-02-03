@@ -1,7 +1,8 @@
-FROM public.ecr.aws/docker/library/node:20.17.0-alpine3.20 AS build
+FROM public.ecr.aws/docker/library/fedora:latest AS build
 WORKDIR /app
 COPY . .
-RUN corepack enable pnpm
+RUN dnf install nodejs -y
+RUN dnf install pnpm -y
 RUN pnpm install
 RUN pnpm run build
 
@@ -17,6 +18,8 @@ RUN apk add --update curl
 
 ENV ENVIRONMENT=""
 ENV APP_NAME=""
+ENV APP_VERSION=""
+ENV STACK=""
 ENV GOOGLE_2FA=false
 ENV PORT=3000
 
@@ -84,8 +87,8 @@ ENV LOGO_URL=""
 ENV SOCIAL_MEDIA_ICONS=""
 ENV SOCIAL_MEDIA_LINKS=""
 
-ENV OPTL_API_URL=""
-ENV OPTL_SERVICE_NAME=""
+ENV OTLP_HOST=""
+ENV OTLP_API_KEY=""
 
 ENTRYPOINT [ "node", "./dist/apps/b2crypto/main.js" ]
 CMD [""]

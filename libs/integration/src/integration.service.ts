@@ -9,6 +9,7 @@ import { CACHE_MANAGER, Cache } from '@nestjs/cache-manager';
 import { Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { RpcException } from '@nestjs/microservices';
+import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import IntegrationCardEnum from './card/enums/IntegrationCardEnum';
 import { IntegrationCardService } from './card/generic/integration.card.service';
 import { PomeloIntegrationService } from './card/pomelo-integration/pomelo-integration.service';
@@ -28,6 +29,8 @@ import { IntegrationIdentityService } from './identity/generic/integration.ident
 export class IntegrationService {
   private env: string;
   constructor(
+    @InjectPinoLogger(IntegrationService.name)
+    protected readonly logger: PinoLogger,
     @Inject(CACHE_MANAGER)
     private cacheManager: Cache,
     private readonly configService: ConfigService,
@@ -101,10 +104,18 @@ export class IntegrationService {
     let crmType: IntegrationCrmService;
     switch (crmCategoryName.toUpperCase()) {
       case IntegrationCrmEnum.ANTELOPE:
-        crmType = new AntelopeIntegrationService(crm, this.configService);
+        crmType = new AntelopeIntegrationService(
+          this.logger,
+          crm,
+          this.configService,
+        );
         break;
       case IntegrationCrmEnum.LEVERATE:
-        crmType = new LeverateIntegrationService(crm, this.configService);
+        crmType = new LeverateIntegrationService(
+          this.logger,
+          crm,
+          this.configService,
+        );
         break;
     }
     if (!crmType) {
@@ -120,6 +131,7 @@ export class IntegrationService {
     switch (identityCategoryName.toUpperCase()) {
       case IntegrationIdentityEnum.SUMSUB:
         identityType = new IntegrationIdentityService(
+          this.logger,
           {
             urlApi: 'https://api.sumsub.com',
             token:
@@ -145,7 +157,11 @@ export class IntegrationService {
     let cardType: IntegrationCardService;
     switch (cardCategoryName.toUpperCase()) {
       case IntegrationCardEnum.POMELO:
-        cardType = new PomeloIntegrationService(this.configService, card);
+        cardType = new PomeloIntegrationService(
+          this.logger,
+          this.configService,
+          card,
+        );
         break;
     }
     if (!cardType) {
@@ -167,12 +183,14 @@ export class IntegrationService {
         break;
       case IntegrationCryptoEnum.FIREBLOCKS:
         cryptoType = new FireblocksIntegrationService(
+          this.logger,
           this.configService,
           this.cacheManager,
         );
         break;
       case IntegrationCryptoEnum.B2BINPAY:
         cryptoType = new B2BinPayIntegrationService(
+          this.logger,
           crypto,
           this.configService,
           this.cacheManager,

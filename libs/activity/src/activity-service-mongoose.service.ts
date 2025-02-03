@@ -5,6 +5,7 @@ import { Traceable } from '@amplication/opentelemetry-nestjs';
 import { BasicServiceModel } from '@common/common/models/basic-service.model';
 import { Inject, Injectable } from '@nestjs/common';
 import { Model } from 'mongoose';
+import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 
 @Traceable()
 @Injectable()
@@ -15,9 +16,11 @@ export class ActivityServiceMongooseService extends BasicServiceModel<
   ActivityUpdateDto
 > {
   constructor(
+    @InjectPinoLogger(ActivityServiceMongooseService.name)
+    protected readonly logger: PinoLogger,
     @Inject('ACTIVITY_MODEL_MONGOOSE')
     activityModel: Model<ActivityDocument>,
   ) {
-    super(activityModel);
+    super(logger, activityModel);
   }
 }

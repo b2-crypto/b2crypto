@@ -29,8 +29,8 @@ export class B2CoreMigrationService {
       for (let i = 0; i < results.length; i++) {
         const data = results[i];
         this.logger.debug(
-          JSON.stringify(data['Email']),
           B2CoreMigrationService.name,
+          JSON.stringify(data['Email']),
         );
         if (data['Client status'] === 'Active') {
           const email = data['Email'];
@@ -58,8 +58,8 @@ export class B2CoreMigrationService {
       for (let i = 0; i < results.length; i++) {
         const data = results[i];
         this.logger.debug(
-          JSON.stringify(data['Email']),
           B2CoreMigrationService.name,
+          JSON.stringify(data['Email']),
         );
         if (data['Client status'] === 'Active') {
           const email = data['Email'];
@@ -121,7 +121,7 @@ export class B2CoreMigrationService {
           });
       });
     } catch (error) {
-      this.logger.error(B2CoreMigrationService.name, error);
+      this.logger.error(error, B2CoreMigrationService.name);
     }
   }
 
@@ -215,8 +215,8 @@ export class B2CoreMigrationService {
   private async migrateWalletAccount(walletAccount: any) {
     try {
       this.logger.debug(
-        `Creating wallet: ${JSON.stringify(walletAccount)}`,
         B2CoreMigrationService.name,
+        `Creating wallet: ${JSON.stringify(walletAccount)}`,
       );
       const account = await this.builder.getPromiseAccountEventClient(
         EventsNamesAccountEnum.migrateOneWallet,

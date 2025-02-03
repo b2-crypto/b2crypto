@@ -44,8 +44,8 @@ export class PomeloIntegrationSFTPService {
 
   private async storeFile(remoteFile: string, localFile: string) {
     this.logger.debug(
-      `Storing remote file ${remoteFile} to ${localFile}`,
       PomeloIntegrationSFTPService.name,
+      `Storing remote file ${remoteFile} to ${localFile}`,
     );
     try {
       await this.client.get(remoteFile, localFile);

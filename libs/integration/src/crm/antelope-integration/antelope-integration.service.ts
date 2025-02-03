@@ -3,6 +3,7 @@ import { CrmDocument } from '@crm/crm/entities/mongoose/crm.schema';
 import { AntelopeRegisterLeadDto } from '@integration/integration/crm/antelope-integration/dto/antelope-register-lead.dto';
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import { GetDepositDto } from '../generic/dto/get-deposit.dto';
 import { GetSalesStatusesDto } from '../generic/dto/get-sales-statuses.dto';
 import { GetStatsDto } from '../generic/dto/get-stats.dto';
@@ -40,8 +41,13 @@ export class AntelopeIntegrationService
   >
   implements GetLeadDataFromCRMInterface
 {
-  constructor(_crm: CrmDocument, protected configService: ConfigService) {
-    super(_crm, configService);
+  constructor(
+    @InjectPinoLogger(AntelopeIntegrationService.name)
+    protected readonly logger: PinoLogger,
+    _crm: CrmDocument,
+    protected configService: ConfigService,
+  ) {
+    super(logger, _crm, configService);
     //username, password, token, apiKey
     super.setRouteMap({
       generateApiKey: '/login',

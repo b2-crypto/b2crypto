@@ -1,9 +1,10 @@
 import { Traceable } from '@amplication/opentelemetry-nestjs';
 import { CrmDocument } from '@crm/crm/entities/mongoose/crm.schema';
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { RpcException } from '@nestjs/microservices';
 import { TransferInterface } from '@transfer/transfer/entities/transfer.interface';
+import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import { CrmGenerateTokenResponseDto } from '../generic/dto/crm.generate.token.response.dto';
 import { GenerateTokenCrmRequestDto } from '../generic/dto/generate.token.crm.dto';
 import { GetDepositDto } from '../generic/dto/get-deposit.dto';
@@ -55,8 +56,13 @@ export class LeverateIntegrationService
   >
   implements GetLeadDataFromCRMInterface, GenerateCrmTokenInterface
 {
-  constructor(_crm: CrmDocument, protected configService: ConfigService) {
-    super(_crm, configService);
+  constructor(
+    @InjectPinoLogger(LeverateIntegrationService.name)
+    protected readonly logger: PinoLogger,
+    _crm: CrmDocument,
+    protected configService: ConfigService,
+  ) {
+    super(logger, _crm, configService);
     super.setRouteMap({
       // Affiliate
       generateApiKey: '',
@@ -105,12 +111,12 @@ export class LeverateIntegrationService
         this.crm.expTimeToken = new Date(rta.data.expTime);
         await this.crm.save();
       } catch (err) {
-        Logger.error(
-          `${url}`,
+        this.logger.error(
           `${LeverateIntegrationService.name}:generateCrmToken`,
+          `${url}`,
         );
-        Logger.error(`${url}`, LeverateIntegrationService.name);
-        Logger.error(err, LeverateIntegrationService.name);
+        this.logger.error(LeverateIntegrationService.name, `${url}`);
+        this.logger.error(LeverateIntegrationService.name, err);
       }
     }
     super.setTokenCrm(this.crm.token);
@@ -124,7 +130,10 @@ export class LeverateIntegrationService
     if (expTimeToken) {
       const expire = new Date(expTimeToken);
       const now = new Date();
-      Logger.debug(expire.getTime() <= now.getTime(), 'Has expired crm token');
+      this.logger.debug(
+        'Has expired crm token',
+        expire.getTime() <= now.getTime(),
+      );
       return expire.getTime() <= now.getTime();
     }
     return true;
@@ -133,9 +142,9 @@ export class LeverateIntegrationService
   async crmRegisterPayment(
     transfer: TransferInterface,
   ): Promise<InfoResponseLeverateDto> {
-    Logger.warn(
-      `Transfer ${transfer._id} - ${transfer.numericId}`,
+    this.logger.warn(
       'crmCreateDeposit',
+      `Transfer ${transfer._id} - ${transfer.numericId}`,
     );
     await this.generateCrmToken({
       organization: this.crm.organizationCrm,
@@ -152,9 +161,9 @@ export class LeverateIntegrationService
   async crmCreateWithdrawal(
     transfer: TransferInterface,
   ): Promise<InfoResponseLeverateDto> {
-    Logger.warn(
-      `Transfer ${transfer._id} - ${transfer.numericId}`,
+    this.logger.warn(
       'crmCreateWithdrawal',
+      `Transfer ${transfer._id} - ${transfer.numericId}`,
     );
     await this.generateCrmToken({
       organization: this.crm.organizationCrm,
@@ -169,9 +178,9 @@ export class LeverateIntegrationService
   async crmCreateCredit(
     transfer: TransferInterface,
   ): Promise<InfoResponseLeverateDto> {
-    Logger.warn(
-      `Transfer ${transfer._id} - ${transfer.numericId}`,
+    this.logger.warn(
       'crmCreateCredit',
+      `Transfer ${transfer._id} - ${transfer.numericId}`,
     );
     await this.generateCrmToken({
       organization: this.crm.organizationCrm,

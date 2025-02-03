@@ -1,7 +1,8 @@
-FROM public.ecr.aws/docker/library/node:20.17.0-alpine3.20 AS build
+FROM public.ecr.aws/docker/library/fedora:latest AS build
 WORKDIR /app
 COPY . .
-RUN corepack enable pnpm
+RUN dnf install nodejs -y
+RUN dnf install pnpm -y
 RUN pnpm install
 RUN pnpm run build
 

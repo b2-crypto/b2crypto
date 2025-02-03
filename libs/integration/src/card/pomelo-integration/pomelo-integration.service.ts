@@ -1,11 +1,12 @@
 import { AccountDocument } from '@account/account/entities/mongoose/account.schema';
 import { ConfigService } from '@nestjs/config';
-import { AxiosInstance, AxiosResponse } from 'axios';
+import { AxiosInstance } from 'axios';
+import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import { CardDto, CardSearchDto } from '../generic/dto/card.dto';
+import { ShippingDto } from '../generic/dto/shipping.dto';
 import { UserCardDto } from '../generic/dto/user.card.dto';
 import { UserResponseDto } from '../generic/dto/user.response.dto';
 import { IntegrationCardService } from '../generic/integration.card.service';
-import { ShippingDto } from '../generic/dto/shipping.dto';
 
 export class PomeloIntegrationService extends IntegrationCardService<
   UserCardDto,
@@ -18,10 +19,12 @@ export class PomeloIntegrationService extends IntegrationCardService<
   protected tokenInformationCard: string;
 
   constructor(
+    @InjectPinoLogger(PomeloIntegrationService.name)
+    protected readonly logger: PinoLogger,
     protected configService: ConfigService,
     _account?: AccountDocument,
   ) {
-    super(configService, _account);
+    super(logger, configService, _account);
     this.setClient({
       id: process.env.POMELO_CLIENT_ID,
       secret: this.account?.secret ?? process.env.POMELO_SECRET_ID,

@@ -1370,8 +1370,8 @@ export class LeadServiceService
       page = leadsToCheck.nextPage;
       nextPage = leadsToCheck.nextPage;
       this.logger.debug(
-        `Saved page ${leadsToCheck.currentPage} of AFFILIATE ${affiliateId} lead's. Next page ${nextPage}/${leadsToCheck.lastPage}`,
         'Check leads affiliate stats',
+        `Saved page ${leadsToCheck.currentPage} of AFFILIATE ${affiliateId} lead's. Next page ${nextPage}/${leadsToCheck.lastPage}`,
       );
     }
     await this.builder.getPromiseAffiliateEventClient(

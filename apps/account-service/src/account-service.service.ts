@@ -353,8 +353,8 @@ export class AccountServiceService
       );
     } else {
       this.logger.warn(
-        JSON.stringify(account),
         'Account created without email. Skipping confirmation email.',
+        JSON.stringify(account),
       );
     }
 
@@ -488,7 +488,7 @@ export class AccountServiceService
         query.where?.type ?? 'all types'
       } - ${this.printShortDate(date)} UTC`;
       this.sendEmailToList(promises, name);
-      this.logger.debug(name, 'Balance Report sended');
+      this.logger.debug('Balance Report sended', name);
     });
   }
 

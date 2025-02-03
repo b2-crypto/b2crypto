@@ -1695,7 +1695,7 @@ export class CardServiceController extends AccountServiceController {
       this.logger.error('Error in card profile creation', err);
       throw new BadRequestException('Card profile not found');
     }
-    this.logger.debug(configActivate.pin, 'pin active card');
+    this.logger.debug('pin active card', configActivate.pin);
     if (!configActivate.pin && configActivate.pin?.length !== 4) {
       configActivate.pin = CommonService.getNumberDigits(
         CommonService.randomIntNumber(9999),
@@ -1725,15 +1725,15 @@ export class CardServiceController extends AccountServiceController {
         throw new BadRequestException(details.join(','));
       }
       const cardId = (rta.data && rta.data['id']) || rta['id'];
-      this.logger.debug(cardId, `cardId actived`);
+      this.logger.debug(`cardId actived`, cardId);
       let crd = null;
       let card = null;
       let cards = null;
       try {
         cards = await cardIntegration.getCard(cardId);
-        this.logger.debug(cards, `Result pomelo active`);
+        this.logger.debug(`Result pomelo active`, cards);
         crd = cards.data;
-        this.logger.debug(cardId, `Search card active`);
+        this.logger.debug(`Search card active`, cardId);
         card = await this.cardService.findAll({
           where: {
             'cardConfig.id': crd.id,
@@ -1749,7 +1749,7 @@ export class CardServiceController extends AccountServiceController {
         const n_card = await this.cardService.createOne(
           cardDto as AccountCreateDto,
         );
-        this.logger.debug(n_card.id, `Card created for ${user.email}`);
+        this.logger.debug(`Card created for ${user.email}`, n_card.id);
         let afgName = 'grupo-1';
         if (configActivate.promoCode == 'pm2413') {
           afgName = 'grupo-3';
@@ -1951,7 +1951,7 @@ export class CardServiceController extends AccountServiceController {
       const group = await this.buildAFG(null, cardAfg);
       const afg = group.list[0];
       if (!afg) {
-        this.logger.debug(JSON.stringify(cardAfg), 'AFG not found group');
+        this.logger.debug('AFG not found group', JSON.stringify(cardAfg));
         throw new NotFoundException('AFG not found');
       }
       const cardIntegration = await this.integration.getCardIntegration(
@@ -2170,7 +2170,7 @@ export class CardServiceController extends AccountServiceController {
                 const n_card = await this.cardService.createOne(
                   cardDto as AccountCreateDto,
                 );
-                this.logger.debug(n_card.id, `Card created for ${usr.email}`);
+                this.logger.debug(`Card created for ${usr.email}`, n_card.id);
               } else if (
                 card.totalElements === 1 &&
                 card.list[0].statusText === StatusAccountEnum.ORDERED &&
@@ -2179,8 +2179,8 @@ export class CardServiceController extends AccountServiceController {
                 card.list[0].statusText = StatusAccountEnum.UNLOCK;
                 card.list[0].save();
                 this.logger.debug(
-                  card.list[0]?.id,
                   `Card updated for ${usr.email}`,
+                  card.list[0]?.id,
                 );
               }
             }

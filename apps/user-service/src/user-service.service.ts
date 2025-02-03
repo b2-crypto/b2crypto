@@ -62,7 +62,7 @@ export class UserServiceService {
         throw new NotFoundException('User not found');
       }
       if (!usr.slugEmail) {
-        this.logger.debug(usr.email, 'slug email');
+        this.logger.debug('slug email', usr.email);
         return this.updateUser({
           id: usr._id,
           slugEmail: CommonService.getSlug(usr.email),
@@ -75,7 +75,7 @@ export class UserServiceService {
       do {
         for (const usr of users.list) {
           if (!usr.slugEmail) {
-            this.logger.debug(usr.email, 'slug email');
+            this.logger.debug('slug email', usr.email);
             promises.push(this.updateSlugEmail(usr._id.toString()));
           }
         }

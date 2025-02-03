@@ -9,6 +9,7 @@ import axios, {
   AxiosResponse,
   CreateAxiosDefaults,
 } from 'axios';
+import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import { CardDto, CardSearchDto } from './dto/card.dto';
 import { ClientCardDto } from './dto/client.card.dto';
 import { ShippingDto } from './dto/shipping.dto';
@@ -44,6 +45,8 @@ export class IntegrationCardService<
   protected tokenInformationCard: string;
 
   constructor(
+    @InjectPinoLogger(IntegrationCardService.name)
+    protected readonly logger: PinoLogger,
     protected configService: ConfigService,
     public account?: AccountDocument,
   ) {
@@ -108,23 +111,23 @@ export class IntegrationCardService<
           );
           this.token = token.data.access_token; */
         } catch (err) {
-          console.error(err, IntegrationCardService.name);
-          console.error(
+          this.logger.error(IntegrationCardService.name, err);
+          this.logger.error(
+            IntegrationCardService.name,
             'integration.card.service.ts:151 ->',
-            IntegrationCardService.name,
           );
-          console.error(
+          this.logger.error(
+            IntegrationCardService.name,
             `urlBase -> ${this.client.url}`,
-            IntegrationCardService.name,
           );
-          console.error(
+          this.logger.error(
+            IntegrationCardService.name,
             `token -> ${JSON.stringify({
               client_id: this.client.id,
               client_secret: this.client.secret,
               audience: this.client.audience,
               grant_type: this.client.grantType,
             })}`,
-            IntegrationCardService.name,
           );
           return null;
         }

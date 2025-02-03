@@ -55,18 +55,18 @@ export class B2BinPayNotificationsController {
   @Post('status')
   // @CheckPoliciesAbility(new PolicyHandlerTransferRead())
   async status(@Req() req: any, @Body() data: any) {
-    this.logger.debug(data, 'B2BinPayNotificationsController.status');
+    this.logger.debug('B2BinPayNotificationsController.status', data);
     const headers = req?.headers;
     const body = req?.body;
     this.logger.debug(
-      headers,
       'B2BinPayNotificationsController.status:request.headers',
+      headers,
     );
     this.logger.debug(
-      body,
       'B2BinPayNotificationsController.status:request.body',
+      body,
     );
-    this.logger.debug(data, 'B2BinPayNotificationsController.status:body');
+    this.logger.debug('B2BinPayNotificationsController.status:body', data);
     /* const attributes = data.data.attributes;
     const relationships = data.data.relationships;
     const transferId = relationships.transfer?.data?.id;
@@ -312,7 +312,7 @@ export class B2BinPayNotificationsController {
           isApprove: true,
           approvedAt: attributes.updated_at,
         } as unknown as TransferCreateDto;
-        this.logger.debug(dto.name, `checkTransfer-save-${transfer.id}`);
+        this.logger.debug(`checkTransfer-save-${transfer.id}`, dto.name);
         this.builder.emitTransferEventClient(
           EventsNamesTransferEnum.createOne,
           dto,

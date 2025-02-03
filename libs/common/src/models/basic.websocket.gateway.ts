@@ -4,10 +4,10 @@ import { MessageBody, WsResponse } from '@nestjs/websockets';
 import * as fs from 'fs';
 import { Observable, Subscriber, map } from 'rxjs';
 import { Server } from 'socket.io';
+import * as XLSX from 'xlsx';
 import { CommonService } from '../common.service';
 import { ResponseDownloadWebsocketInterface } from '../interfaces/response.download.websocket.interface';
 import { BasicMicroserviceService } from './basic.microservices.service';
-import * as XLSX from 'xlsx';
 
 export class BasicWebsocketGateway<Schema> {
   protected server: Server;
@@ -36,7 +36,6 @@ export class BasicWebsocketGateway<Schema> {
       },
     ).pipe(
       map((item) => {
-        //Logger.debug(item);
         if (typeof onRead === 'function') {
           onRead(item);
         }
@@ -137,7 +136,6 @@ export class BasicWebsocketGateway<Schema> {
     filename: string,
   ) {
     setTimeout(() => {
-      //Logger.debug(`storage/${filename}`, 'Delete on Complete');
       const fileUri = `storage/${filename}`;
       if (fs.existsSync(fileUri)) {
         fs.unlinkSync(fileUri);

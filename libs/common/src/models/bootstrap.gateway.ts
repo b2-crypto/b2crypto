@@ -19,7 +19,6 @@ export async function bootstrapGateway(
   if (!isNumber(port)) {
     return false;
   }
-  console.log(port, 'Deploy port');
   const app = await NestFactory.create(module, {
     //logger: false,
     cors: true,

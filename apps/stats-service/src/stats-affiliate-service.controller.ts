@@ -69,8 +69,8 @@ export class StatsAffiliateServiceController {
   ): Promise<Array<StatsDateAffiliateDocument>> {
     CommonService.ack(ctx);
     this.logger.debug(
-      JSON.stringify(checkAllDto),
       'Stats Affiliate service controller',
+      JSON.stringify(checkAllDto),
     );
     /* const rta =
       await this.statsAffiliateServiceService.checkAllStatsDateAffiliate(

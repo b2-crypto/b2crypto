@@ -443,7 +443,7 @@ export class AuthServiceController {
         emailData,
       );
     } catch (error) {
-      this.logger.error('Error sending user registration email', error.stack);
+      this.logger.error('Error sending user registration email', error);
     }
 
     return createdUser;

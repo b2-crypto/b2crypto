@@ -1,13 +1,16 @@
 import { Traceable } from '@amplication/opentelemetry-nestjs';
 import { HttpService } from '@nestjs/axios';
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import { lastValueFrom } from 'rxjs';
 
 @Traceable()
 @Injectable()
 export class PomeloRestClient {
   constructor(
+    @InjectPinoLogger(PomeloRestClient.name)
+    protected readonly logger: PinoLogger,
     private httpService: HttpService,
     private readonly configService: ConfigService,
   ) {}
@@ -39,7 +42,7 @@ export class PomeloRestClient {
       const data = await (await lastValueFrom(obsResponse)).data;
       return data.access_token;
     } catch (error) {
-      Logger.error(error);
+      this.logger.error('Error authenticaticate', error);
       throw new Error(error);
     }
   }
@@ -63,7 +66,7 @@ export class PomeloRestClient {
         await lastValueFrom(obsResponse)
       ).data;
     } catch (error) {
-      Logger.error(error);
+      this.logger.error('Error getSensitiveInfoToken', error);
       throw new Error(error);
     }
   }

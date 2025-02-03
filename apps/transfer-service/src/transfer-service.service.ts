@@ -300,7 +300,7 @@ export class TransferServiceService
       ) {
         try {
           const url = transfer.account.url ?? 'https://api.b2binpay.com';
-          this.logger.debug(url, 'URL B2BinPay');
+          this.logger.debug('URL B2BinPay', url);
           const integration =
             await this.integrationService.getCryptoIntegration(
               account,
@@ -1724,7 +1724,6 @@ export class TransferServiceService
   }
 
   private addDataToFile(item, filename, isFirst, onlyHeaders = false) {
-    //this.logger.debug(JSON.stringify(item), filename);
     this.builder.emitFileEventClient<File>(EventsNamesFileEnum.addDataToFile, {
       isFirst,
       onlyHeaders,

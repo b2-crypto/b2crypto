@@ -217,11 +217,9 @@ export class PspAccountServiceService {
   }
 
   async checkStatsForAllPspAccount() {
-    //this.logger.debug('Start', 'Check all pspAccount');
     let pagePspAccount = await this.lib.findAll();
     while (pagePspAccount?.nextPage != 1) {
       for (let h = 0; h < pagePspAccount.elementsPerPage; h++) {
-        //this.logger.debug(pagePspAccount.list[h].name, 'Checking pspAccount');
         this.checkStats({
           pspAccountId: pagePspAccount.list[h]?._id,
           checkType: CheckStatsType.PSP_ACCOUNT,

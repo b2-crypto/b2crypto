@@ -123,13 +123,13 @@ export class StatsServiceService {
           StatusLeadEnum.RET,
         );
         this.logger.debug(
-          `${++_i} / ${leadsPage.totalElements}`,
           'Progress lead',
+          `${++_i} / ${leadsPage.totalElements}`,
         );
       }
       this.logger.debug(
-        `${query.page} / ${leadsPage.lastPage}`,
         'Progress lead page',
+        `${query.page} / ${leadsPage.lastPage}`,
       );
       query.page = leadsPage.nextPage;
     } while (query.page != 1);
@@ -569,7 +569,7 @@ export class StatsServiceService {
         r[a.lead?._id].push(a);
       } else {
         //r['null'].push(a);
-        this.logger.debug(a, 'No lead');
+        this.logger.debug('No lead', a);
       }
       return r;
     }, Object.create(null));
@@ -776,9 +776,8 @@ export class StatsServiceService {
         break;
     }
     const amount = transfer.amount * sign;
-    //this.logger.debug(lead.email, 'Lead email before counted');
+
     if (!hasCountedLead) {
-      //this.logger.debug(lead.email, 'Lead email counted');
       documentStats.quantityLeads++;
       if (transfer.isApprove) {
         if (lead?.crmDepartment.toString() === retentionDpt._id.toString()) {

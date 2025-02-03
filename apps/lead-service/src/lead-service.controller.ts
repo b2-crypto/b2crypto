@@ -511,8 +511,8 @@ export class LeadServiceController implements GenericServiceController {
         page: pageLeads,
       });
       this.logger.debug(
-        `Page ${pageLeads} / ${leads.lastPage}`,
         'Check stats affiliate lead email',
+        `Page ${pageLeads} / ${leads.lastPage}`,
       );
       pageLeads = leads.nextPage;
       for (const lead of leads.list) {
@@ -986,7 +986,7 @@ export class LeadServiceController implements GenericServiceController {
       },
     });
     for (const lead of leadsWithoutTpId.list) {
-      this.logger.debug(`Checked ${lead.email}`, LeadServiceController.name);
+      this.logger.debug(LeadServiceController.name, `Checked ${lead.email}`);
     }
     CommonService.ack(ctx);
     this.logger.debug(

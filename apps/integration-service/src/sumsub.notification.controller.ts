@@ -9,7 +9,6 @@ import {
   Body,
   Controller,
   HttpCode,
-  NotFoundException,
   Post,
   Req,
   UseGuards,
@@ -39,10 +38,7 @@ export class SumsubNotificationIntegrationController {
     await this.sumsubService.validateClient(req.clientApi);
     this.logger.debug('Notification Reviewed body', notification);
     this.logger.debug('Notification Reviewed headers', req.headers);
-    const user = await this.sumsubService.updateUserByReviewed(notification);
-
-    if (!user) throw new NotFoundException('User not found');
-
+    await this.sumsubService.updateUserByReviewed(notification);
     return {
       statusCode: 200,
       description: 'received reviewed',
@@ -58,10 +54,7 @@ export class SumsubNotificationIntegrationController {
   ): Promise<any> {
     this.logger.debug('Notification Reviewed body', notification);
     this.logger.debug('Notification Reviewed headers', req.headers);
-    const user = await this.sumsubService.updateUserByPending(notification);
-
-    if (!user) throw new NotFoundException('User not found');
-
+    await this.sumsubService.updateUserByPending(notification);
     return {
       statusCode: 200,
       description: 'received pending',
@@ -77,10 +70,7 @@ export class SumsubNotificationIntegrationController {
   ): Promise<any> {
     this.logger.debug('Notification Reviewed body', notification);
     this.logger.debug('Notification Reviewed headers', req.headers);
-    const user = await this.sumsubService.updateUserByOnHold(notification);
-
-    if (!user) throw new NotFoundException('User not found');
-
+    await this.sumsubService.updateUserByOnHold(notification);
     return {
       statusCode: 200,
       description: 'received on hold',

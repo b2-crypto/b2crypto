@@ -148,8 +148,8 @@ export class UserServiceController implements GenericServiceController {
       const users = await this.findAll({ page });
       if (users?.list?.length > 0) {
         this.logger.debug(
-          `Users: ${users?.list?.length} & Page: ${page}`,
           `MassiveEmail.${UserServiceController.name}`,
+          `Users: ${users?.list?.length} & Page: ${page}`,
         );
         page++;
         totalPages = users?.lastPage ?? 0;
@@ -163,8 +163,8 @@ export class UserServiceController implements GenericServiceController {
             };
             await this.changePassword(user?.id, changePassword);
             this.logger.debug(
-              `${user?.email}`,
               `MassiveEmail.${UserServiceController.name}`,
+              `${user?.email}`,
             );
             const emailData = {
               destinyText: user.email,

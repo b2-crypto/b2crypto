@@ -273,7 +273,6 @@ export class MessageServiceService {
       // if (
       //   this.configService.get<string>('ENVIRONMENT') !== EnvironmentEnum.stage
       // ) {
-      //   Logger.debug(message.destinyText, 'Sended email');
       //   return { success: true };
       // }
 

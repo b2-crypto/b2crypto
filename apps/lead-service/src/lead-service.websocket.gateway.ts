@@ -134,7 +134,6 @@ export class LeadServiceWebsocketGateway extends BasicWebsocketGateway<Lead> {
       },
     ).pipe(
       map((item) => {
-        //Logger.debug(item);
         file.then(() => {
           this.onRead(strQuery, filename, downloadEvt, item);
         });

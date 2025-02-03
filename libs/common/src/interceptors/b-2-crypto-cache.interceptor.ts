@@ -12,14 +12,6 @@ export class B2CryptoCacheInterceptor extends CacheInterceptor {
       context.getHandler(),
     );
     const req = context.switchToHttp().getRequest();
-    console.log(
-      `Ignore Caching: ${!ignoreCaching}`,
-      'B2CryptoCacheInterceptor',
-    );
-    console.log(
-      `Authorization: ${!!req.headers['authorization']}`,
-      'B2CryptoCacheInterceptor',
-    );
     return (
       !ignoreCaching ||
       !!req.headers['authorization'] ||
