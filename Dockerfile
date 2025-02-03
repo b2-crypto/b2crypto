@@ -2,7 +2,7 @@ FROM public.ecr.aws/docker/library/fedora:latest AS build
 WORKDIR /app
 COPY . .
 RUN dnf install nodejs -y
-RUN dnf install pnpm -y
+RUN npm install -g pnpm@^9.15.5
 RUN pnpm install
 RUN pnpm run build
 
