@@ -1,3 +1,4 @@
+import { Traceable } from '@amplication/opentelemetry-nestjs';
 import { CommonService } from '@common/common';
 import { BasicServiceModel } from '@common/common/models/basic-service.model';
 import { QuerySearchAnyDto } from '@common/common/models/query_search-any.dto';
@@ -8,10 +9,7 @@ import { StatsDatePspAccountDocument } from '@stats/stats/entities/mongoose/stat
 import { isArray, isDateString, isMongoId } from 'class-validator';
 import { ObjectId } from 'mongodb';
 import { Model } from 'mongoose';
-
-import { Traceable } from '@amplication/opentelemetry-nestjs';
-import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { Logger } from 'winston';
+import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 
 @Traceable()
 @Injectable()
@@ -22,7 +20,8 @@ export class StatsDatePspAccountServiceMongooseService extends BasicServiceModel
   StatsDateUpdateDto
 > {
   constructor(
-    @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
+    @InjectPinoLogger(StatsDatePspAccountServiceMongooseService.name)
+    protected readonly logger: PinoLogger,
     @Inject('STATS_DATE_PSP_ACCOUNT_MODEL_MONGOOSE')
     private statsDatePspAccountModel: Model<StatsDatePspAccountDocument>,
   ) {

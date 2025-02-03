@@ -10,13 +10,15 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+permissions:
+  actions: read
+  pull-requests: write
+  contents: write
+
 jobs:
   deploy:
     if: github.event.pull_request.merged == true
-    runs-on: ubuntu-22.04
-    strategy:
-      matrix:
-        node-version: [20.x]
+    runs-on: ubuntu-24.04
     permissions:
       pull-requests: write
       contents: write
@@ -30,13 +32,9 @@ jobs:
         with:
           length: 8
 
-      - name: Setup Node
-        uses: actions/setup-node@v4
+      - uses: pnpm/action-setup@v4
         with:
-          node-version: 20
-
-      - name: Setup pnpm
-        run: corepack enable pnpm
+          version: 9
 
       - name: Install dependencies
         run: pnpm install

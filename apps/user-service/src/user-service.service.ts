@@ -3,6 +3,7 @@ import { Account } from '@account/account/entities/mongoose/account.schema';
 import CardTypesAccountEnum from '@account/account/enum/card.types.account.enum';
 import StatusAccountEnum from '@account/account/enum/status.account.enum';
 import TypesAccountEnum from '@account/account/enum/types.account.enum';
+import { Traceable } from '@amplication/opentelemetry-nestjs';
 import { BuildersService } from '@builder/builders';
 import { CategoryInterface } from '@category/category/entities/category.interface';
 import { CommonService } from '@common/common';
@@ -36,18 +37,16 @@ import EventsNamesPspAccountEnum from 'apps/psp-service/src/enum/events.names.ps
 import EventsNamesTransferEnum from 'apps/transfer-service/src/enum/events.names.transfer.enum';
 import { isMongoId } from 'class-validator';
 import { ObjectId } from 'mongodb';
-import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { Logger } from 'winston';
+import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import EventsNamesUserEnum from './enum/events.names.user.enum';
-
-import { Traceable } from '@amplication/opentelemetry-nestjs';
 
 @Traceable()
 @Injectable()
 export class UserServiceService {
   private eventClient: ClientProxy;
   constructor(
-    @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
+    @InjectPinoLogger(UserServiceService.name)
+    protected readonly logger: PinoLogger,
     @Inject(UserServiceMongooseService)
     private lib: UserServiceMongooseService,
     @Inject(BuildersService)

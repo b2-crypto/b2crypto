@@ -9,14 +9,13 @@ import {
   ATTR_SERVICE_NAME,
   ATTR_SERVICE_VERSION,
 } from '@opentelemetry/semantic-conventions';
-import { OpenTelemetryTransportV3 } from '@opentelemetry/winston-transport';
-import { utilities } from 'nest-winston';
-import { createLogger, format, transports } from 'winston';
+
+export const serviceName = `${process.env.APP_NAME || 'b2crypto'}.${
+  process.env.STACK || 'dev'
+}`;
 
 const resource = new Resource({
-  [ATTR_SERVICE_NAME]: `${process.env.APP_NAME || 'b2crypto'}.${
-    process.env.STACK || 'dev'
-  }`,
+  [ATTR_SERVICE_NAME]: serviceName,
   [ATTR_SERVICE_VERSION]: process.env.APP_VERSION || '1.0.0',
 });
 
@@ -64,24 +63,4 @@ process.on('SIGTERM', async () => {
       (err) => console.log('OpenTelemetry SDK shutdown failed', err),
     )
     .finally(() => process.exit(0));
-});
-
-export const logger = createLogger({
-  level: 'info',
-  format: format.json(),
-  transports: [
-    new transports.Console({
-      format: format.combine(
-        format.timestamp(),
-        format.ms(),
-        utilities.format.nestLike(process.env.APP_NAME, {
-          colors: true,
-          prettyPrint: true,
-          processId: true,
-          appName: true,
-        }),
-      ),
-    }),
-    new OpenTelemetryTransportV3(),
-  ],
 });

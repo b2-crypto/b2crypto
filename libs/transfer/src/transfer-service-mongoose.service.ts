@@ -1,4 +1,5 @@
 import TypesAccountEnum from '@account/account/enum/types.account.enum';
+import { Traceable } from '@amplication/opentelemetry-nestjs';
 import dbIntegrationEnum from '@builder/builders/enums/db-integration.enum';
 import { CommonService } from '@common/common';
 import { BasicServiceModel } from '@common/common/models/basic-service.model';
@@ -13,12 +14,9 @@ import {
 import { isArray, isMongoId } from 'class-validator';
 import { ObjectId } from 'mongodb';
 import { Aggregate, Model } from 'mongoose';
+import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import { ApproveOrRejectDepositDto } from './dto/approve.or.reject.deposit.dto';
 import { OperationTransactionType } from './enum/operation.transaction.type.enum';
-
-import { Traceable } from '@amplication/opentelemetry-nestjs';
-import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { Logger } from 'winston';
 
 @Traceable()
 @Injectable()
@@ -29,7 +27,8 @@ export class TransferServiceMongooseService extends BasicServiceModel<
   TransferUpdateDto
 > {
   constructor(
-    @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
+    @InjectPinoLogger(TransferServiceMongooseService.name)
+    protected readonly logger: PinoLogger,
     @Inject('TRANSFER_MODEL_MONGOOSE')
     private transferModel: Model<TransferDocument>,
   ) {

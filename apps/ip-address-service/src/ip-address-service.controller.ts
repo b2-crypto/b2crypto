@@ -11,13 +11,10 @@ import {
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 
+import { Traceable } from '@amplication/opentelemetry-nestjs';
 import { AllowAnon } from '@auth/auth/decorators/allow-anon.decorator';
-import { PolicyHandlerIpAddressCreate } from '@auth/auth/policy/ip-address/policity.handler.ip.address.create';
-import { PolicyHandlerIpAddressDelete } from '@auth/auth/policy/ip-address/policity.handler.ip.address.delete';
-import { PolicyHandlerIpAddressRead } from '@auth/auth/policy/ip-address/policity.handler.ip.address.read';
-import { PolicyHandlerIpAddressUpdate } from '@auth/auth/policy/ip-address/policity.handler.ip.address.update';
-import { CheckPoliciesAbility } from '@auth/auth/policy/policy.handler.ability';
 import { CommonService } from '@common/common';
+import { NoCache } from '@common/common/decorators/no-cache.decorator';
 import GenericServiceController from '@common/common/interfaces/controller.generic.interface';
 import { QuerySearchAnyDto } from '@common/common/models/query_search-any.dto';
 import { UpdateAnyDto } from '@common/common/models/update-any.dto';
@@ -31,9 +28,9 @@ import {
 } from '@nestjs/microservices';
 import EventsNamesIpAddressEnum from './enum/events.names.ip.address.enum';
 import { IpAddressServiceService } from './ip-address-service.service';
-import { NoCache } from '@common/common/decorators/no-cache.decorator';
 
 @ApiTags('IPADDRESS')
+@Traceable()
 @Controller('ipAddress')
 export class IpAddressServiceController implements GenericServiceController {
   constructor(private readonly ipaddressService: IpAddressServiceService) {}

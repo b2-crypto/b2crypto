@@ -1,3 +1,4 @@
+import { Traceable } from '@amplication/opentelemetry-nestjs';
 import { ApiKeyCheck } from '@auth/auth/decorators/api-key-check.decorator';
 import { ApiKeyAuthGuard } from '@auth/auth/guards/api.key.guard';
 import { SumsubSignatureGuard } from '@auth/auth/guards/sumsub.signature.guard';
@@ -8,22 +9,22 @@ import {
   Body,
   Controller,
   HttpCode,
-  Inject,
   Post,
   Req,
   UseGuards,
 } from '@nestjs/common';
-import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { Logger } from 'winston';
+import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import { SumsubApplicantReviewed } from './../../../libs/integration/src/identity/generic/domain/process/sumsub.applicant.reviewed.dto';
 import { SumsubNotificationIntegrationService } from './services/sumsub.notification.integration.service';
 
+@Traceable()
 @Controller('sumsub')
 @UseGuards(ApiKeyAuthGuard, SumsubSignatureGuard)
 //@UseInterceptors(SumsubSignatureInterceptor)
 export class SumsubNotificationIntegrationController {
   constructor(
-    @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
+    @InjectPinoLogger(SumsubNotificationIntegrationController.name)
+    protected readonly logger: PinoLogger,
     private readonly sumsubService: SumsubNotificationIntegrationService,
   ) {}
 

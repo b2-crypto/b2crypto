@@ -5,6 +5,7 @@ import { AccountDocument } from '@account/account/entities/mongoose/account.sche
 import StatusAccountEnum from '@account/account/enum/status.account.enum';
 import TypesAccountEnum from '@account/account/enum/types.account.enum';
 import WalletTypesAccountEnum from '@account/account/enum/wallet.types.account.enum';
+import { Traceable } from '@amplication/opentelemetry-nestjs';
 import { BrandEntity } from '@brand/brand/entities/brand.entity';
 import { BuildersService } from '@builder/builders';
 import { CommonService } from '@common/common';
@@ -36,10 +37,7 @@ import EventsNamesMessageEnum from 'apps/message-service/src/enum/events.names.m
 import EventsNamesStatusEnum from 'apps/status-service/src/enum/events.names.status.enum';
 import EventsNamesTransferEnum from 'apps/transfer-service/src/enum/events.names.transfer.enum';
 import * as fs from 'fs';
-import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { Logger } from 'winston';
-
-import { Traceable } from '@amplication/opentelemetry-nestjs';
+import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 
 @Traceable()
 @Injectable()
@@ -48,7 +46,7 @@ export class AccountServiceService
 {
   async cleanWallet(query: QuerySearchAnyDto) {
     throw new NotImplementedException();
-    // this.logger.debug('Start', `Clean wallet`);
+    //this.logger.debug('Start', `Clean wallet`);
     // query = query || new QuerySearchAnyDto();
     // query.where = query.where || {};
     // query.where.type = TypesAccountEnum.WALLET;
@@ -59,7 +57,7 @@ export class AccountServiceService
     // await this.cleanWalletsWithTransfers(query, 'LOCK');
     // query.where.statusText = StatusAccountEnum.UNLOCK;
     // await this.cleanWalletsWithTransfers(query, 'UNLOCK');
-    // this.logger.debug('End', `Clean wallet`);
+    //this.logger.debug('End', `Clean wallet`);
     // return {
     //   statusCode: 200,
     //   message: 'ok',
@@ -151,7 +149,8 @@ export class AccountServiceService
     return Promise.all(promises);
   }
   constructor(
-    @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
+    @InjectPinoLogger(AccountServiceService.name)
+    protected readonly logger: PinoLogger,
     private configService: ConfigService,
     @Inject(BuildersService)
     private readonly builder: BuildersService,

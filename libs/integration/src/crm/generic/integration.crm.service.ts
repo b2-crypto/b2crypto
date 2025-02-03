@@ -1,11 +1,7 @@
 import { CommonService } from '@common/common';
 import { EnvironmentEnum } from '@common/common/enums/environment.enum';
 import { CrmDocument } from '@crm/crm/entities/mongoose/crm.schema';
-import {
-  BadRequestException,
-  Inject,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { BadRequestException, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { RpcException } from '@nestjs/microservices';
 import { TransferInterface } from '@transfer/transfer/entities/transfer.interface';
@@ -16,9 +12,8 @@ import axios, {
   CreateAxiosDefaults,
 } from 'axios';
 import { isObject } from 'class-validator';
-import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
+import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import { Observable } from 'rxjs';
-import { Logger } from 'winston';
 import { AssignLeadLeverateRequestDto } from '../leverate-integration/dto/assign.lead.leverate.request.dto';
 import { CrmCreateCreditDto } from './dto/crm.create.credit.dto';
 import { CrmCreateWithdrawalDto } from './dto/crm.create.withdrawal.dto';
@@ -92,7 +87,8 @@ export class IntegrationCrmService<
   protected tokenCrm: string;
 
   constructor(
-    @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
+    @InjectPinoLogger(IntegrationCrmService.name)
+    protected readonly logger: PinoLogger,
     public crm: CrmDocument,
     protected configService: ConfigService,
   ) {}

@@ -1,5 +1,6 @@
 import StatusAccountEnum from '@account/account/enum/status.account.enum';
 import TypesAccountEnum from '@account/account/enum/types.account.enum';
+import { Traceable } from '@amplication/opentelemetry-nestjs';
 import { AllowAnon } from '@auth/auth/decorators/allow-anon.decorator';
 import { ApiKeyCheck } from '@auth/auth/decorators/api-key-check.decorator';
 import { ApiKeyAuthGuard } from '@auth/auth/guards/api.key.guard';
@@ -36,17 +37,18 @@ import EventsNamesPspAccountEnum from 'apps/psp-service/src/enum/events.names.ps
 import EventsNamesTransferEnum from 'apps/transfer-service/src/enum/events.names.transfer.enum';
 import EventsNamesUserEnum from 'apps/user-service/src/enum/events.names.user.enum';
 import { readFileSync } from 'fs';
-import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
+import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import * as pug from 'pug';
-import { Logger } from 'winston';
 import { ClientTransferCreateDto } from './dto/client.transfer.create.dto';
 import { ClientsTaskNamesEnum } from './enums/clients.task.names.enum';
 
+@Traceable()
 @Controller('clients')
 export class ClientsIntegrationController {
   private pathTemplate = './apps/integration-service/src/templates';
   constructor(
-    @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
+    @InjectPinoLogger(ClientsIntegrationController.name)
+    protected readonly logger: PinoLogger,
     private readonly builder: BuildersService,
     @Inject(SchedulerRegistry)
     private schedulerRegistry: SchedulerRegistry,

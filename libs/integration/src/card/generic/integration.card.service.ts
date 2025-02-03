@@ -2,19 +2,14 @@ import { ConfigCardActivateDto } from '@account/account/dto/config.card.activate
 import { AccountDocument } from '@account/account/entities/mongoose/account.schema';
 import { CommonService } from '@common/common';
 import { EnvironmentEnum } from '@common/common/enums/environment.enum';
-import {
-  BadRequestException,
-  Inject,
-  NotImplementedException,
-} from '@nestjs/common';
+import { BadRequestException, NotImplementedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import axios, {
   AxiosInstance,
   AxiosResponse,
   CreateAxiosDefaults,
 } from 'axios';
-import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { Logger } from 'winston';
+import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import { CardDto, CardSearchDto } from './dto/card.dto';
 import { ClientCardDto } from './dto/client.card.dto';
 import { ShippingDto } from './dto/shipping.dto';
@@ -50,7 +45,8 @@ export class IntegrationCardService<
   protected tokenInformationCard: string;
 
   constructor(
-    @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
+    @InjectPinoLogger(IntegrationCardService.name)
+    protected readonly logger: PinoLogger,
     protected configService: ConfigService,
     public account?: AccountDocument,
   ) {

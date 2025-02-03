@@ -12,6 +12,7 @@ import {
 } from '@nestjs/common';
 import { ApiHeader, ApiResponse, ApiSecurity, ApiTags } from '@nestjs/swagger';
 
+import { Traceable } from '@amplication/opentelemetry-nestjs';
 import { AllowAnon } from '@auth/auth/decorators/allow-anon.decorator';
 import { ApiKeyCheck } from '@auth/auth/decorators/api-key-check.decorator';
 import { ApiKeyAffiliateAuthGuard } from '@auth/auth/guards/api.key.affiliate.guard';
@@ -42,6 +43,7 @@ import { PspAccountResponseDto } from './dto/psp.account.response.dto';
 import EventsNamesCategoryEnum from './enum/events.names.category.enum';
 
 @ApiTags('CATEGORY')
+@Traceable()
 @Controller('category')
 export class CategoryServiceController implements GenericServiceController {
   constructor(private readonly categoryService: CategoryServiceService) {}

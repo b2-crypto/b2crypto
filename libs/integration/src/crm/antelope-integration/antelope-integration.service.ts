@@ -1,7 +1,9 @@
+import { Traceable } from '@amplication/opentelemetry-nestjs';
 import { CrmDocument } from '@crm/crm/entities/mongoose/crm.schema';
 import { AntelopeRegisterLeadDto } from '@integration/integration/crm/antelope-integration/dto/antelope-register-lead.dto';
-import { Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import { GetDepositDto } from '../generic/dto/get-deposit.dto';
 import { GetSalesStatusesDto } from '../generic/dto/get-sales-statuses.dto';
 import { GetStatsDto } from '../generic/dto/get-stats.dto';
@@ -17,10 +19,6 @@ import { IntegrationCrmService } from '../generic/integration.crm.service';
 import { GetLeadDataFromCRMInterface } from '../generic/interface/get.lead.data.from.crm.interface';
 import { AntelopeApiUserResultDto } from './result/antelope.api.user.result.dto';
 import { AntelopeRegisterResultDto } from './result/antelope.register.result.dto';
-
-import { Traceable } from '@amplication/opentelemetry-nestjs';
-import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { Logger } from 'winston';
 
 @Traceable()
 @Injectable()
@@ -44,7 +42,8 @@ export class AntelopeIntegrationService
   implements GetLeadDataFromCRMInterface
 {
   constructor(
-    @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
+    @InjectPinoLogger(AntelopeIntegrationService.name)
+    protected readonly logger: PinoLogger,
     _crm: CrmDocument,
     protected configService: ConfigService,
   ) {

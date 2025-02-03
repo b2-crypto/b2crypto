@@ -1,3 +1,4 @@
+import { Traceable } from '@amplication/opentelemetry-nestjs';
 import { BuildersService } from '@builder/builders';
 import { CommonService } from '@common/common';
 import { ResponsePaginator } from '@common/common/interfaces/response-pagination.interface';
@@ -13,19 +14,17 @@ import { StatusDocument } from '@status/status/entities/mongoose/status.schema';
 import EventsNamesTransferEnum from 'apps/transfer-service/src/enum/events.names.transfer.enum';
 import axios from 'axios';
 import { isArray } from 'class-validator';
-import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { Logger } from 'winston';
+import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import CheckStatsType from '../../../libs/stats/src/enum/check.stats.type';
 import EventsNamesStatusEnum from '../../status-service/src/enum/events.names.status.enum';
 import EventsNamesPspAccountEnum from './enum/events.names.psp.acount.enum';
-
-import { Traceable } from '@amplication/opentelemetry-nestjs';
 
 @Traceable()
 @Injectable()
 export class PspServiceService {
   constructor(
-    @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
+    @InjectPinoLogger(PspServiceService.name)
+    protected readonly logger: PinoLogger,
     @Inject(BuildersService)
     private readonly builder: BuildersService,
     @Inject(PspServiceMongooseService)

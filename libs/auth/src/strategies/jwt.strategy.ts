@@ -1,9 +1,8 @@
+import { Traceable } from '@amplication/opentelemetry-nestjs';
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
-
-import { Traceable } from '@amplication/opentelemetry-nestjs';
 
 @Traceable()
 @Injectable()

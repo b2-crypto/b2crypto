@@ -1,3 +1,4 @@
+import { Traceable } from '@amplication/opentelemetry-nestjs';
 import { BrandCreateDto } from '@brand/brand/dto/brand.create.dto';
 import { BrandUpdateDto } from '@brand/brand/dto/brand.update.dto';
 import { BrandDocument } from '@brand/brand/entities/mongoose/brand.schema';
@@ -15,17 +16,15 @@ import EventsNamesLeadEnum from 'apps/lead-service/src/enum/events.names.lead.en
 import EventsNamesStatusEnum from 'apps/status-service/src/enum/events.names.status.enum';
 import axios from 'axios';
 import { BrandServiceMongooseService } from 'libs/brand/src';
-import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
+import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import { BadRequestError } from 'passport-headerapikey';
-import { Logger } from 'winston';
-
-import { Traceable } from '@amplication/opentelemetry-nestjs';
 
 @Traceable()
 @Injectable()
 export class BrandServiceService {
   constructor(
-    @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
+    @InjectPinoLogger(BrandServiceService.name)
+    protected readonly logger: PinoLogger,
     @Inject(BuildersService)
     private readonly builder: BuildersService,
     @Inject(BrandServiceMongooseService)

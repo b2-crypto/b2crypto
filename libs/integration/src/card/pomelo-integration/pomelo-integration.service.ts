@@ -1,9 +1,7 @@
 import { AccountDocument } from '@account/account/entities/mongoose/account.schema';
-import { Inject } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { AxiosInstance } from 'axios';
-import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { Logger } from 'winston';
+import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import { CardDto, CardSearchDto } from '../generic/dto/card.dto';
 import { ShippingDto } from '../generic/dto/shipping.dto';
 import { UserCardDto } from '../generic/dto/user.card.dto';
@@ -21,7 +19,8 @@ export class PomeloIntegrationService extends IntegrationCardService<
   protected tokenInformationCard: string;
 
   constructor(
-    @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
+    @InjectPinoLogger(PomeloIntegrationService.name)
+    protected readonly logger: PinoLogger,
     protected configService: ConfigService,
     _account?: AccountDocument,
   ) {

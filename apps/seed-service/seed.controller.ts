@@ -1,8 +1,10 @@
-import { Controller, Get, BadRequestException } from '@nestjs/common';
+import { Traceable } from '@amplication/opentelemetry-nestjs';
+import { BadRequestException, Controller, Get } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { SeedService } from './seed.service';
 
 @ApiTags('Seed')
+@Traceable()
 @Controller('seed')
 export class SeedController {
   constructor(private readonly seedService: SeedService) {}

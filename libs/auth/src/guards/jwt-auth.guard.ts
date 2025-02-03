@@ -1,23 +1,22 @@
+import { Traceable } from '@amplication/opentelemetry-nestjs';
 import { CommonService } from '@common/common';
 import { ProcessHeaderDto } from '@integration/integration/dto/pomelo.process.header.dto';
 import { PomeloEnum } from '@integration/integration/enum/pomelo.enum';
-import { ExecutionContext, Inject, Injectable } from '@nestjs/common';
+import { ExecutionContext, Injectable } from '@nestjs/common';
 import { PATH_METADATA } from '@nestjs/common/constants';
 import { Reflector } from '@nestjs/core';
 import { AuthGuard } from '@nestjs/passport';
-import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { Logger } from 'winston';
+import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import { IS_ANON } from '../decorators/allow-anon.decorator';
 import { IS_API_KEY_CHECK } from '../decorators/api-key-check.decorator';
 import { IS_REFRESH } from '../decorators/refresh.decorator';
-
-import { Traceable } from '@amplication/opentelemetry-nestjs';
 
 @Traceable()
 @Injectable()
 export class JwtAuthGuard extends AuthGuard('jwt') {
   constructor(
-    @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
+    @InjectPinoLogger(JwtAuthGuard.name)
+    protected readonly logger: PinoLogger,
     private reflector: Reflector,
   ) {
     super();

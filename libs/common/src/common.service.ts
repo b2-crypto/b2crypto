@@ -1,3 +1,4 @@
+import { Traceable } from '@amplication/opentelemetry-nestjs';
 import CountryCodeEnum from '@common/common/enums/country.code.b2crypto.enum';
 import { PomeloEnum } from '@integration/integration/enum/pomelo.enum';
 import {
@@ -18,8 +19,6 @@ import * as http from 'http';
 import { CountryCode } from 'libphonenumber-js';
 import { FetchData } from './models/fetch-data.model';
 import { QuerySearchAnyDto } from './models/query_search-any.dto';
-
-import { Traceable } from '@amplication/opentelemetry-nestjs';
 
 @Traceable()
 @Injectable()
@@ -262,7 +261,6 @@ export class CommonService {
         attrVal[smaller] = range[smaller];
       }
     }
-
     return attrVal;
   }
 
@@ -373,7 +371,6 @@ export class CommonService {
       request?.headers[PomeloEnum.POMELO_WHITELISTED_HEADER_FORWARDED] ||
       request?.headers[PomeloEnum.POMELO_WHITELISTED_HEADER_REAL] ||
       '';
-
     const whitelisted = process.env.POMELO_WHITELISTED_IPS;
     return (
       whitelisted?.replace(/\s/g, '')?.split(',')?.includes(caller) || false

@@ -1,3 +1,4 @@
+import { Traceable } from '@amplication/opentelemetry-nestjs';
 import { PomeloEnum } from '@integration/integration/enum/pomelo.enum';
 import {
   CallHandler,
@@ -9,8 +10,6 @@ import { RpcException } from '@nestjs/microservices';
 import { ResponseB2CryptoService } from '@response-b2crypto/response-b2crypto';
 import { isArray, isNumber, isString } from 'class-validator';
 import { catchError, map, Observable, throwError } from 'rxjs';
-
-import { Traceable } from '@amplication/opentelemetry-nestjs';
 
 @Traceable()
 @Injectable()

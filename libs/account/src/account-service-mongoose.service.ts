@@ -1,3 +1,4 @@
+import { Traceable } from '@amplication/opentelemetry-nestjs';
 import { CommonService } from '@common/common';
 import { BasicServiceModel } from '@common/common/models/basic-service.model';
 import { QuerySearchAnyDto } from '@common/common/models/query_search-any.dto';
@@ -5,13 +6,10 @@ import { Inject, Injectable } from '@nestjs/common';
 import { isArray, isMongoId } from 'class-validator';
 import { ObjectId } from 'mongodb';
 import { Model } from 'mongoose';
+import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import { AccountCreateDto } from './dto/account.create.dto';
 import { AccountUpdateDto } from './dto/account.update.dto';
 import { Account, AccountDocument } from './entities/mongoose/account.schema';
-
-import { Traceable } from '@amplication/opentelemetry-nestjs';
-import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { Logger } from 'winston';
 
 @Traceable()
 @Injectable()
@@ -22,7 +20,8 @@ export class AccountServiceMongooseService extends BasicServiceModel<
   AccountUpdateDto
 > {
   constructor(
-    @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
+    @InjectPinoLogger(AccountServiceMongooseService.name)
+    protected readonly logger: PinoLogger,
     @Inject('ACCOUNT_MODEL_MONGOOSE')
     private accountModel: Model<AccountDocument>,
   ) {

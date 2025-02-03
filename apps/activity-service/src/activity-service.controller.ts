@@ -1,6 +1,7 @@
 import { ActivityCreateDto } from '@activity/activity/dto/activity.create.dto';
 import { ActivityUpdateDto } from '@activity/activity/dto/activity.update.dto';
 import { ActivityDocument } from '@activity/activity/entities/mongoose/activity.schema';
+import { Traceable } from '@amplication/opentelemetry-nestjs';
 import { AllowAnon } from '@auth/auth/decorators/allow-anon.decorator';
 import { BuildersService } from '@builder/builders';
 import { CommonService } from '@common/common';
@@ -31,6 +32,7 @@ import { ActivityServiceService } from './activity-service.service';
 import EventsNamesActivityEnum from './enum/events.names.activity.enum';
 
 @ApiTags('ACTIVITY')
+@Traceable()
 @Controller('activity')
 export class ActivityServiceController implements GenericServiceController {
   constructor(

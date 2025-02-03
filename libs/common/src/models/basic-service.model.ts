@@ -3,11 +3,10 @@ import { CommonService } from '@common/common';
 import { CreateAnyDto } from '@common/common/models/create-any.dto';
 import { QuerySearchAnyDto } from '@common/common/models/query_search-any.dto';
 import { UpdateAnyDto } from '@common/common/models/update-any.dto';
-import { BadRequestException, Inject } from '@nestjs/common';
+import { BadRequestException } from '@nestjs/common';
 import { isDate, isDateString } from 'class-validator';
 import { ClientSession, isObjectIdOrHexString, ObjectId } from 'mongoose';
-import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { Logger } from 'winston';
+import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import { ResponsePaginator } from '../interfaces/response-pagination.interface';
 import { ServiceModelInterface } from '../interfaces/service-model.interface';
 
@@ -30,7 +29,8 @@ export class BasicServiceModel<
   nameOrm: number;
 
   constructor(
-    @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
+    @InjectPinoLogger(BasicServiceModel.name)
+    protected readonly logger: PinoLogger,
     model: TBasicModel | any,
   ) {
     this.model = model;

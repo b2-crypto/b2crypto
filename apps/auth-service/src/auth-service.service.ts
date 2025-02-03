@@ -1,3 +1,4 @@
+import { Traceable } from '@amplication/opentelemetry-nestjs';
 import { BuildersService } from '@builder/builders';
 import { CommonService } from '@common/common';
 import ResourcesEnum from '@common/common/enums/ResourceEnum';
@@ -12,16 +13,14 @@ import EventsNamesCategoryEnum from 'apps/category-service/src/enum/events.names
 import EventsNamesMessageEnum from 'apps/message-service/src/enum/events.names.message.enum';
 import EventsNamesPersonEnum from 'apps/person-service/src/enum/events.names.person.enum';
 import EventsNamesUserEnum from 'apps/user-service/src/enum/events.names.user.enum';
-import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { Logger } from 'winston';
-
-import { Traceable } from '@amplication/opentelemetry-nestjs';
+import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 
 @Traceable()
 @Injectable()
 export class AuthService {
   constructor(
-    @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
+    @InjectPinoLogger(AuthService.name)
+    protected readonly logger: PinoLogger,
     @Inject(BuildersService)
     private builder: BuildersService,
     @Inject(CACHE_MANAGER)

@@ -1,10 +1,9 @@
+import { Traceable } from '@amplication/opentelemetry-nestjs';
 import { ProcessHeaderDto } from '@integration/integration/dto/pomelo.process.header.dto';
 import { PomeloEnum } from '@integration/integration/enum/pomelo.enum';
 import { ExecutionContext, Injectable } from '@nestjs/common';
 import { PomeloProcessConstants } from './pomelo.integration.process.constants';
 import { PomeloSignatureUtils } from './pomelo.integration.process.signature';
-
-import { Traceable } from '@amplication/opentelemetry-nestjs';
 
 @Traceable()
 @Injectable()

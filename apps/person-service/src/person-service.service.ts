@@ -1,10 +1,9 @@
+import { Traceable } from '@amplication/opentelemetry-nestjs';
 import { QuerySearchAnyDto } from '@common/common/models/query_search-any.dto';
 import { Inject, Injectable } from '@nestjs/common';
 import { PersonServiceMongooseService } from '@person/person';
 import { PersonCreateDto } from '@person/person/dto/person.create.dto';
 import { PersonUpdateDto } from '@person/person/dto/person.update.dto';
-
-import { Traceable } from '@amplication/opentelemetry-nestjs';
 
 @Traceable()
 @Injectable()

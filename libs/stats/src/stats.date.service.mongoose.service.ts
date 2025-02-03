@@ -1,3 +1,4 @@
+import { Traceable } from '@amplication/opentelemetry-nestjs';
 import { CommonService } from '@common/common';
 import { BasicServiceModel } from '@common/common/models/basic-service.model';
 import { QuerySearchAnyDto } from '@common/common/models/query_search-any.dto';
@@ -6,13 +7,10 @@ import { StatsDateDocuments } from 'apps/stats-service/src/enum/stats.date.type'
 import { isArray, isMongoId } from 'class-validator';
 import { ObjectId } from 'mongodb';
 import { ClientSession, Connection, Model } from 'mongoose';
+import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import { StatsDateAllCreateDto } from './dto/stats.date.all.create.dto';
 import { StatsDateAllUpdateDto } from './dto/stats.date.all.update.dto';
 import { StatsDateDocument } from './entities/mongoose/stats.date.schema';
-
-import { Traceable } from '@amplication/opentelemetry-nestjs';
-import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { Logger } from 'winston';
 
 @Traceable()
 @Injectable()
@@ -23,7 +21,8 @@ export class StatsDateServiceMongooseService extends BasicServiceModel<
   StatsDateAllUpdateDto
 > {
   constructor(
-    @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
+    @InjectPinoLogger(StatsDateServiceMongooseService.name)
+    protected readonly logger: PinoLogger,
     @Inject('STATS_DATE_MODEL_MONGOOSE')
     private statsDateModel: Model<StatsDateDocuments>,
     @Inject('MONGOOSE_CONNECTION')

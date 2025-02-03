@@ -19,6 +19,7 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 
+import { Traceable } from '@amplication/opentelemetry-nestjs';
 import { AllowAnon } from '@auth/auth/decorators/allow-anon.decorator';
 import { ApiKeyAuthGuard } from '@auth/auth/guards/api.key.guard';
 import { CommonService } from '@common/common';
@@ -43,6 +44,7 @@ import EventsNamesPersonEnum from './enum/events.names.person.enum';
 import { PersonServiceService } from './person-service.service';
 
 @ApiTags(SwaggerSteakeyConfigEnum.TAG_PROFILE)
+@Traceable()
 @Controller('persons')
 export class PersonServiceController implements GenericServiceController {
   constructor(
@@ -97,6 +99,7 @@ export class PersonServiceController implements GenericServiceController {
       createPersonDto.taxIdentificationType ?? createPersonDto.typeDocId;
     createPersonDto.taxIdentificationValue =
       createPersonDto.taxIdentificationValue ?? createPersonDto.numDocId;
+
     if (!createPersonDto.user) {
       const user = await this.userService.getOne(req.user.id);
       if (!user._id) {

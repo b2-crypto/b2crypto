@@ -77,11 +77,11 @@ import { ConfigCardActivateDto } from '@account/account/dto/config.card.activate
 import { PinUpdateDto } from '@account/account/dto/pin.update.dto';
 import { AccountInterface } from '@account/account/entities/account.interface';
 import WalletTypesAccountEnum from '@account/account/enum/wallet.types.account.enum';
+import { Traceable } from '@amplication/opentelemetry-nestjs';
 import { CategoryInterface } from '@category/category/entities/category.interface';
 import DocIdTypeEnum from '@common/common/enums/DocIdTypeEnum';
 import { PspAccountInterface } from '@psp-account/psp-account/entities/psp-account.interface';
-import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { Logger } from 'winston';
+import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import { ResponsePaginator } from '../../../libs/common/src/interfaces/response-pagination.interface';
 import { AccountServiceController } from './account-service.controller';
 import { AccountServiceService } from './account-service.service';
@@ -89,10 +89,12 @@ import { AfgNamesEnum } from './enum/afg.names.enum';
 import EventsNamesAccountEnum from './enum/events.names.account.enum';
 
 @ApiTags(SwaggerSteakeyConfigEnum.TAG_CARD)
+@Traceable()
 @Controller('cards')
 export class CardServiceController extends AccountServiceController {
   constructor(
-    @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
+    @InjectPinoLogger(CardServiceController.name)
+    protected readonly logger: PinoLogger,
     readonly cardService: AccountServiceService,
     @Inject(UserServiceService)
     private readonly userService: UserServiceService,
@@ -469,8 +471,8 @@ export class CardServiceController extends AccountServiceController {
         );
       }
       this.logger.error(
-        JSON.stringify(err),
         `Account Card not created ${account.owner}`,
+        JSON.stringify(err),
       );
       if (err.response) {
         err.response.details = err.response.details ?? [];

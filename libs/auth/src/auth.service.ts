@@ -1,5 +1,6 @@
 import { AffiliateServiceMongooseService } from '@affiliate/affiliate';
 import { AffiliateInterface } from '@affiliate/affiliate/domain/entities/affiliate.interface';
+import { Traceable } from '@amplication/opentelemetry-nestjs';
 import { BuildersService } from '@builder/builders';
 import { CommonService } from '@common/common';
 import { ResponsePaginator } from '@common/common/interfaces/response-pagination.interface';
@@ -19,20 +20,18 @@ import { UserInterface } from '@user/user/entities/user.interface';
 import EventsNamesAffiliateEnum from 'apps/affiliate-service/src/enum/events.names.affiliate.enum';
 import * as bcrypt from 'bcrypt';
 import { randomUUID } from 'crypto';
-import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
+import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import * as qrcode from 'qrcode';
 import * as speakeasy from 'speakeasy';
-import { Logger } from 'winston';
 import { UserDocument } from '../../user/src/entities/mongoose/user.schema';
 import { UserLoginDto } from './dto/user.login.dto';
-
-import { Traceable } from '@amplication/opentelemetry-nestjs';
 
 @Traceable()
 @Injectable()
 export class AuthService {
   constructor(
-    @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
+    @InjectPinoLogger(AuthService.name)
+    protected readonly logger: PinoLogger,
     private readonly configService: ConfigService,
     private readonly jwtService: JwtService,
     @Inject(CrmServiceMongooseService)

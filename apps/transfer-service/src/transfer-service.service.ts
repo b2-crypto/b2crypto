@@ -2,6 +2,7 @@ import { AccountUpdateDto } from '@account/account/dto/account.update.dto';
 import { AccountInterface } from '@account/account/entities/account.interface';
 import { AccountDocument } from '@account/account/entities/mongoose/account.schema';
 import { AffiliateDocument } from '@affiliate/affiliate/infrastructure/mongoose/affiliate.schema';
+import { Traceable } from '@amplication/opentelemetry-nestjs';
 import { BuildersService } from '@builder/builders';
 import { CategoryInterface } from '@category/category/entities/category.interface';
 import { CommonService } from '@common/common';
@@ -71,13 +72,10 @@ import { isArray, isMongoId } from 'class-validator';
 import * as fs from 'fs';
 import { BrandInterface } from 'libs/brand/src/entities/brand.interface';
 import { ObjectId } from 'mongodb';
-import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { Logger } from 'winston';
+import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import { ApproveOrRejectDepositDto } from '../../../libs/transfer/src/dto/approve.or.reject.deposit.dto';
 import { TransferLeadStatsDto } from './dto/transfer.lead.stat.dto';
 import EventsNamesTransferEnum from './enum/events.names.transfer.enum';
-
-import { Traceable } from '@amplication/opentelemetry-nestjs';
 
 @Traceable()
 @Injectable()
@@ -87,7 +85,8 @@ export class TransferServiceService
   private eventClient: ClientProxy;
 
   constructor(
-    @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
+    @InjectPinoLogger(TransferServiceService.name)
+    protected readonly logger: PinoLogger,
     @Inject(StatusServiceService)
     private statusService: StatusServiceService,
     @Inject(PspAccountServiceService)

@@ -1,9 +1,8 @@
+import { Traceable } from '@amplication/opentelemetry-nestjs';
 import { PomeloProcessConstants } from '@common/common/utils/pomelo.integration.process.constants';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Inject, Injectable } from '@nestjs/common';
 import { Cache } from 'cache-manager';
-
-import { Traceable } from '@amplication/opentelemetry-nestjs';
 
 @Traceable()
 @Injectable()

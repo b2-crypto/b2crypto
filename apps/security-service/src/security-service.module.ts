@@ -4,8 +4,8 @@ import { BuildersModule } from '@builder/builders'; // Asegúrate de que esta ru
 import { IntegrationModule } from '@integration/integration'; // Asegúrate de que esta ruta de importación sea correcta
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-// import { SecurityServiceController } from './security-service.controller';
 import { SecurityServiceService } from './security-service.service';
+
 @Module({
   imports: [
     BuildersModule,

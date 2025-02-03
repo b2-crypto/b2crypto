@@ -1,17 +1,16 @@
-import { HttpService } from '@nestjs/axios';
-import { Inject, Injectable } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { lastValueFrom } from 'rxjs';
-import { Logger } from 'winston';
-
 import { Traceable } from '@amplication/opentelemetry-nestjs';
+import { HttpService } from '@nestjs/axios';
+import { Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
+import { lastValueFrom } from 'rxjs';
 
 @Traceable()
 @Injectable()
 export class PomeloRestClient {
   constructor(
-    @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
+    @InjectPinoLogger(PomeloRestClient.name)
+    protected readonly logger: PinoLogger,
     private httpService: HttpService,
     private readonly configService: ConfigService,
   ) {}

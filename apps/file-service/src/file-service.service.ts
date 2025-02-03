@@ -1,3 +1,4 @@
+import { Traceable } from '@amplication/opentelemetry-nestjs';
 import { QuerySearchAnyDto } from '@common/common/models/query_search-any.dto';
 import { FileServiceMongooseService } from '@file/file';
 import { FileCreateDto } from '@file/file/dto/file.create.dto';
@@ -5,8 +6,6 @@ import { FileUpdateDto } from '@file/file/dto/file.update.dto';
 import { Inject, Injectable } from '@nestjs/common';
 import * as fs from 'fs';
 import * as XLSX from 'xlsx';
-
-import { Traceable } from '@amplication/opentelemetry-nestjs';
 
 @Traceable()
 @Injectable()

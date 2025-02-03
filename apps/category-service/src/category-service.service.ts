@@ -1,3 +1,4 @@
+import { Traceable } from '@amplication/opentelemetry-nestjs';
 import { BuildersService } from '@builder/builders';
 import { CategoryServiceMongooseService } from '@category/category';
 import { CategoryCreateDto } from '@category/category/dto/category.create.dto';
@@ -15,8 +16,6 @@ import EventsNamesPermissionEnum from 'apps/permission-service/src/enum/events.n
 import EventsNamesPspAccountEnum from 'apps/psp-service/src/enum/events.names.psp.acount.enum';
 import { CategoryResponseDto } from './dto/category.response.dto';
 import { PspAccountResponseDto } from './dto/psp.account.response.dto';
-
-import { Traceable } from '@amplication/opentelemetry-nestjs';
 
 @Traceable()
 @Injectable()

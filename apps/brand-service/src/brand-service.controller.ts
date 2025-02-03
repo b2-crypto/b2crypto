@@ -13,17 +13,14 @@ import {
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 
+import { Traceable } from '@amplication/opentelemetry-nestjs';
 import { AllowAnon } from '@auth/auth/decorators/allow-anon.decorator';
 import { ApiKeyCheck } from '@auth/auth/decorators/api-key-check.decorator';
-import { PolicyHandlerBrandCreate } from '@auth/auth/policy/brand/policity.handler.brand.create';
-import { PolicyHandlerBrandDelete } from '@auth/auth/policy/brand/policity.handler.brand.delete';
-import { PolicyHandlerBrandRead } from '@auth/auth/policy/brand/policity.handler.brand.read';
-import { PolicyHandlerBrandUpdate } from '@auth/auth/policy/brand/policity.handler.brand.update';
-import { CheckPoliciesAbility } from '@auth/auth/policy/policy.handler.ability';
 import { BrandCreateDto } from '@brand/brand/dto/brand.create.dto';
 import { BrandUpdateDto } from '@brand/brand/dto/brand.update.dto';
 import { BrandDocument } from '@brand/brand/entities/mongoose/brand.schema';
 import { CommonService } from '@common/common';
+import { NoCache } from '@common/common/decorators/no-cache.decorator';
 import GenericServiceController from '@common/common/interfaces/controller.generic.interface';
 import { QuerySearchAnyDto } from '@common/common/models/query_search-any.dto';
 import { UpdateAnyDto } from '@common/common/models/update-any.dto';
@@ -38,9 +35,9 @@ import { AuthGuard } from '@nestjs/passport';
 import { ConfigCheckStatsDto } from '@stats/stats/dto/config.check.stats.dto';
 import { BrandServiceService } from './brand-service.service';
 import EventsNamesBrandEnum from './enum/events.names.brand.enum';
-import { NoCache } from '@common/common/decorators/no-cache.decorator';
 
 @ApiTags('BRAND')
+@Traceable()
 @Controller('brand')
 export class BrandServiceController implements GenericServiceController {
   constructor(private readonly brandService: BrandServiceService) {}

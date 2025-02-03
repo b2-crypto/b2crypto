@@ -1,3 +1,4 @@
+import { Traceable } from '@amplication/opentelemetry-nestjs';
 import { PomeloSignatureGuard } from '@auth/auth/guards/pomelo.signature.guard';
 import { PomeloSignatureInterceptor } from '@common/common/interceptors/pomelo.signature.interceptor';
 import {
@@ -11,20 +12,20 @@ import {
   Controller,
   Headers,
   HttpCode,
-  Inject,
   Post,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
-import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { Logger } from 'winston';
+import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import { PomeloIntegrationProcessService } from './services/pomelo.integration.process.service';
 import { PomeloIntegrationSFTPService } from './services/pomelo.integration.sftp.service';
 
+@Traceable()
 @Controller()
 export class PomeloIntegrationServiceController {
   constructor(
-    @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
+    @InjectPinoLogger(PomeloIntegrationServiceController.name)
+    protected readonly logger: PinoLogger,
     private readonly integrationServiceService: PomeloIntegrationProcessService,
     private readonly sftpService: PomeloIntegrationSFTPService,
   ) {}

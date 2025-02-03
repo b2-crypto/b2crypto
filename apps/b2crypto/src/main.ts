@@ -1,5 +1,5 @@
 /* eslint-disable */
-import { logger, sdk } from './opentelemetry';
+import { sdk } from './opentelemetry';
 
 sdk.start();
 /* eslint-disable */
@@ -22,19 +22,19 @@ import { StatusServiceModule } from 'apps/status-service/src/status-service.modu
 import { TransferServiceModule } from 'apps/transfer-service/src/transfer-service.module';
 import * as basicAuth from 'express-basic-auth';
 import { SwaggerSteakeyConfigEnum } from 'libs/config/enum/swagger.stakey.config.enum';
-import { WINSTON_MODULE_PROVIDER, WinstonModule } from 'nest-winston';
+import { Logger } from 'nestjs-pino';
 import { UserServiceModule } from '../../user-service/src/user-service.module';
 import { AppHttpModule } from './app.http.module';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppHttpModule, {
-    logger: WinstonModule.createLogger({
-      instance: logger,
-    }),
+    bufferLogs: true,
   });
 
   const configService = app.get(ConfigService);
-  const loggerService = app.get(WINSTON_MODULE_PROVIDER);
+  const loggerService = app.get(Logger);
+
+  app.useLogger(loggerService);
 
   const validationPipes = new ValidationPipe({
     whitelist: true,
@@ -52,7 +52,6 @@ async function bootstrap() {
   addSwaggerIntegration(app);
   addSwaggerStakeyCard(app);
 
-  // app.enableCors();
   app.enableCors({
     origin: '*',
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
@@ -73,8 +72,8 @@ async function bootstrap() {
   await app.startAllMicroservices();
   await app.listen(configService.get('PORT') ?? 3000);
 
-  loggerService.info('Timezone', process.env.TZ);
-  loggerService.info('Listening on port ' + configService.get('PORT'));
+  loggerService.log('Timezone', process.env.TZ);
+  loggerService.log('Listening on port ' + configService.get('PORT'));
   if (typeof process.send === 'function') {
     process.send('ready');
   }
@@ -238,3 +237,4 @@ const filterDocumentsPathsByTags = (
 };
 
 bootstrap();
+// ClusterService.clusterize(bootstrap);

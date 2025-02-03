@@ -1,9 +1,8 @@
+import { Traceable } from '@amplication/opentelemetry-nestjs';
 import ActionsEnum from '@common/common/enums/ActionEnum';
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import ResponseB2Crypto from './models/ResponseB2Crypto';
-
-import { Traceable } from '@amplication/opentelemetry-nestjs';
 
 @Traceable()
 @Injectable()

@@ -1,3 +1,4 @@
+import { Traceable } from '@amplication/opentelemetry-nestjs';
 import dbIntegrationEnum from '@builder/builders/enums/db-integration.enum';
 import { CommonService } from '@common/common/common.service';
 import { BasicServiceModel } from '@common/common/models/basic-service.model';
@@ -9,12 +10,9 @@ import { UserRegisterDto } from '@user/user/dto/user.register.dto';
 import { UserUpdateDto } from '@user/user/dto/user.update.dto';
 import { UserDocument } from '@user/user/entities/mongoose/user.schema';
 import { Model } from 'mongoose';
+import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import * as qrcode from 'qrcode';
 import * as speakeasy from 'speakeasy';
-
-import { Traceable } from '@amplication/opentelemetry-nestjs';
-import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { Logger } from 'winston';
 
 @Traceable()
 @Injectable()
@@ -25,7 +23,8 @@ export class UserServiceMongooseService extends BasicServiceModel<
   UserUpdateDto
 > {
   constructor(
-    @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
+    @InjectPinoLogger(UserServiceMongooseService.name)
+    protected readonly logger: PinoLogger,
     private readonly configService: ConfigService,
     @Inject('ROLE_MODEL_MONGOOSE')
     private readonly roleModel: Model<RoleDocument>,

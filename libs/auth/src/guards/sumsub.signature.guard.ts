@@ -1,3 +1,4 @@
+import { Traceable } from '@amplication/opentelemetry-nestjs';
 import { PomeloProcessConstants } from '@common/common/utils/pomelo.integration.process.constants';
 import { SumsubHttpUtils } from '@common/common/utils/sumsub.integration.process.http.utils';
 import { SumsubSignatureUtils } from '@common/common/utils/sumsub.integration.process.signature';
@@ -5,20 +6,16 @@ import {
   CanActivate,
   ExecutionContext,
   HttpException,
-  Inject,
   Injectable,
 } from '@nestjs/common';
-import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { Logger } from 'winston';
-
-import { Traceable } from '@amplication/opentelemetry-nestjs';
+import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 
 @Traceable()
 @Injectable()
 export class SumsubSignatureGuard implements CanActivate {
   constructor(
-    @Inject(WINSTON_MODULE_PROVIDER)
-    private readonly logger: Logger,
+    @InjectPinoLogger(SumsubSignatureGuard.name)
+    protected readonly logger: PinoLogger,
     private readonly signatureUtil: SumsubSignatureUtils,
     private readonly constants: PomeloProcessConstants,
     private readonly utils: SumsubHttpUtils,

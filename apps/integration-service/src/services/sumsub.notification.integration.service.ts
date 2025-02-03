@@ -1,9 +1,9 @@
+import { Traceable } from '@amplication/opentelemetry-nestjs';
 import { BuildersService } from '@builder/builders';
 import { SumsubApplicantOnHold } from '@integration/integration/identity/generic/domain/process/sumsub.applicant.onhold.dto';
 import { SumsubApplicantPending } from '@integration/integration/identity/generic/domain/process/sumsub.applicant.pending.dto';
 import { SumsubApplicantReviewed } from '@integration/integration/identity/generic/domain/process/sumsub.applicant.reviewed.dto';
 import {
-  Inject,
   Injectable,
   NotFoundException,
   UnauthorizedException,
@@ -12,16 +12,14 @@ import { UserVerifyIdentitySchema } from '@user/user/entities/mongoose/user.veri
 import { UserEntity } from '@user/user/entities/user.entity';
 import EventsNamesUserEnum from 'apps/user-service/src/enum/events.names.user.enum';
 import { isMongoId } from 'class-validator';
-import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { Logger } from 'winston';
-
-import { Traceable } from '@amplication/opentelemetry-nestjs';
+import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 
 @Traceable()
 @Injectable()
 export class SumsubNotificationIntegrationService {
   constructor(
-    @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
+    @InjectPinoLogger(SumsubNotificationIntegrationService.name)
+    protected readonly logger: PinoLogger,
     private readonly builder: BuildersService,
   ) {}
 
