@@ -18,10 +18,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
-      # - name: Setup Node
-      #   uses: actions/setup-node@v4
-      #   with:
-      #     node-version: 20
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
 
       - name: Setup pnpm
         run: corepack enable pnpm
@@ -63,10 +63,10 @@ jobs:
         with:
           length: 8
 
-      # - name: Setup Node
-      #   uses: actions/setup-node@v4
-      #   with:
-      #     node-version: 20
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
 
       - name: Setup pnpm
         run: corepack enable pnpm
@@ -75,7 +75,7 @@ jobs:
         run: pnpm install
 
       - name: Pulumi Preview
-        uses: pulumi/actions@v6
+        uses: pulumi/actions@v5
         with:
           command: preview
           stack-name: ${{ github.event.pull_request.base.ref == 'main' && 'b2fintech/production' || github.event.pull_request.base.ref == 'test' && 'b2fintech/testing' || 'b2fintech/staging' }}
