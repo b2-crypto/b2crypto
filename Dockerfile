@@ -13,13 +13,14 @@ RUN pnpm run build
 
 FROM base AS final
 WORKDIR /app
+COPY .env /app/.env
 COPY --from=build /app/dist/apps/b2crypto ./dist/apps/b2crypto
 COPY --from=build /app/package*.json ./
 COPY --from=build /app/sftp ./sftp
 COPY --from=build /app/libs/message/src/templates ./libs/message/src/templates
 RUN pnpm install --production
 
-ENV ENVIRONMENT=""
+ENV ENVIRONMENT="dev"
 ENV APP_NAME=""
 ENV APP_VERSION=""
 ENV STACK=""
