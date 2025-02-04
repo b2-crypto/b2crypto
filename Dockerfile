@@ -1,5 +1,6 @@
 FROM public.ecr.aws/docker/library/node:20.17.0-alpine3.20 AS base
 WORKDIR /app
+RUN apk add --update --no-cache curl
 RUN apk add --update --no-cache python3 py3-pip
 RUN apk add --update --no-cache make gcc g++
 RUN npm install -g pnpm@^9.15.5
