@@ -28,7 +28,6 @@ import { AccountServiceController } from './account-service.controller';
 import { AccountServiceService } from './account-service.service';
 import { CardServiceController } from './card-service.controller';
 import { WalletServiceController } from './wallet-service.controller';
-import { WalletServiceService } from './wallet-service.service';
 
 @Module({
   imports: [
@@ -56,7 +55,6 @@ import { WalletServiceService } from './wallet-service.service';
     WalletServiceController,
   ],
   providers: [
-    WalletServiceService,
     StatusServiceService,
     CategoryServiceService,
     GroupServiceService,
@@ -77,7 +75,6 @@ import { WalletServiceService } from './wallet-service.service';
       provide: APP_FILTER,
       useClass: ResponseHttpExceptionFilter,
     },
-    WalletServiceService,
   ] as IProvider[],
 })
 export class AccountServiceModule {}

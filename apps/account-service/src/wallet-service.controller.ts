@@ -39,18 +39,14 @@ import {
   Query,
   Req,
   UnauthorizedException,
-  UseGuards,
-  ValidationPipe,
+  UseGuards
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Ctx, EventPattern, Payload, RmqContext } from '@nestjs/microservices';
 import {
   ApiBearerAuth,
-  ApiExcludeEndpoint,
-  ApiOperation,
-  ApiResponse,
-  ApiSecurity,
-  ApiTags,
+  ApiExcludeEndpoint, ApiSecurity,
+  ApiTags
 } from '@nestjs/swagger';
 import { TransferCreateDto } from '@transfer/transfer/dto/transfer.create.dto';
 import { OperationTransactionType } from '@transfer/transfer/enum/operation.transaction.type.enum';
@@ -70,13 +66,7 @@ import { mongo } from 'mongoose';
 import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import { AccountServiceController } from './account-service.controller';
 import { AccountServiceService } from './account-service.service';
-import { WithdrawalExecuteDto } from './dtos/WithdrawalExecuteDto';
-import { WithdrawalPreorderDto } from './dtos/WithdrawalPreorderDto';
 import EventsNamesAccountEnum from './enum/events.names.account.enum';
-import { PreorderResponse } from './interfaces/preorderResponse';
-import { WithdrawalResponse } from './interfaces/withdrawalResponse';
-import { WithdrawalError } from './utils/errors';
-import { WalletServiceService } from './wallet-service.service';
 
 @ApiTags(SwaggerSteakeyConfigEnum.TAG_WALLET)
 @Traceable()
@@ -88,8 +78,6 @@ export class WalletServiceController extends AccountServiceController {
     @InjectPinoLogger(WalletServiceController.name)
     protected readonly logger: PinoLogger,
     private readonly walletService: AccountServiceService,
-    @Inject(WalletServiceService)
-    private readonly walletServiceService: WalletServiceService,
     @Inject(UserServiceService)
     private readonly userService: UserServiceService,
     @Inject(BuildersService)
@@ -1197,9 +1185,8 @@ export class WalletServiceController extends AccountServiceController {
         EventsNamesTransferEnum.createOne,
         {
           name: `Withdrawal wallet ${from.name}`,
-          description: `Withdrawal from ${from.name} to ${
-            to?.name ?? createDto.to
-          }`,
+          description: `Withdrawal from ${from.name} to ${to?.name ?? createDto.to
+            }`,
           currency: from.currency,
           idPayment: rta?.data?.id,
           responsepayment: rta?.data,
@@ -1686,75 +1673,4 @@ export class WalletServiceController extends AccountServiceController {
     return this.createOne(createDto);
   }
 
-  @Post('external-withdrawal-preorder')
-  @ApiOperation({
-    summary: 'Create withdrawal preorder',
-    description:
-      'Creates a preorder for withdrawing funds. Validates account, balance, and fees.',
-  })
-  @ApiResponse({
-    status: 201,
-    description: 'Preorder created successfully',
-  })
-  @ApiResponse({
-    status: 400,
-    description: 'Bad Request - Invalid parameters or business rules violation',
-  })
-  @ApiResponse({
-    status: 500,
-    description: 'Internal server error',
-  })
-  async createPreorder(
-    @Body(new ValidationPipe({ whitelist: true })) dto: WithdrawalPreorderDto,
-  ): Promise<PreorderResponse> {
-    try {
-      return await this.walletServiceService.validatePreorder(dto);
-    } catch (error) {
-      this.logger.error('Error in createPreorder endpoint', error);
-      if (error instanceof WithdrawalError) {
-        throw new BadRequestException({
-          code: error.code,
-          message: error.message,
-          details: error.details,
-        });
-      }
-      throw error;
-    }
-  }
-
-  @Post('external-withdrawal-confirm')
-  @ApiOperation({
-    summary: 'Execute withdrawal',
-    description:
-      'Executes a previously created withdrawal preorder after validations.',
-  })
-  @ApiResponse({
-    status: 201,
-    description: 'Withdrawal executed successfully',
-  })
-  @ApiResponse({
-    status: 400,
-    description: 'Bad Request - Invalid preorder or business rules violation',
-  })
-  @ApiResponse({
-    status: 500,
-    description: 'Internal server error',
-  })
-  async executeWithdrawal(
-    @Body(new ValidationPipe({ whitelist: true })) dto: WithdrawalExecuteDto,
-  ): Promise<WithdrawalResponse> {
-    try {
-      return await this.walletServiceService.executeWithdrawal(dto);
-    } catch (error) {
-      this.logger.error('Error in executeWithdrawal endpoint', error);
-      if (error instanceof WithdrawalError) {
-        throw new BadRequestException({
-          code: error.code,
-          message: error.message,
-          details: error.details,
-        });
-      }
-      throw error;
-    }
-  }
 }
