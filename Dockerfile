@@ -1,19 +1,17 @@
-FROM public.ecr.aws/docker/library/fedora:latest AS base
+FROM public.ecr.aws/docker/library/node:20.17.0-alpine3.20 AS base
 WORKDIR /app
-COPY ./package*.json ./
-RUN dnf install python3 -y
-RUN dnf install python3-pip -y
-RUN dnf install make -y
-RUN dnf install gcc -y
-RUN dnf install g++ -y
-RUN dnf install nodejs -y
+COPY . .
+RUN apk add --update --no-cache python3 py3-pip
+RUN apk add --update --no-cache make gcc g++
 RUN npm install -g pnpm@^9.15.5
 RUN pnpm config set store-dir .pnpm-store
 
 FROM base AS deps-dev
+WORKDIR /app
 RUN pnpm install
 
 FROM base AS deps
+WORKDIR /app
 RUN pnpm install --production
 
 FROM deps-dev AS build
@@ -29,7 +27,6 @@ COPY --from=build /app/dist/apps/b2crypto ./dist/apps/b2crypto
 COPY --from=build /app/package*.json ./
 COPY --from=build /app/sftp ./sftp
 COPY --from=build /app/libs/message/src/templates ./libs/message/src/templates
-RUN apk add --update curl
 
 ENV ENVIRONMENT=""
 ENV APP_NAME=""
