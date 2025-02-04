@@ -13,8 +13,10 @@ RUN pnpm config set store-dir .pnpm-store
 FROM base AS deps-dev
 RUN pnpm install
 
-FROM base AS deps
-RUN pnpm install --production
+# FROM base AS deps
+# RUN pnpm install --production
+FROM deps-dev AS deps
+RUN pnpm prune --production
 
 FROM deps-dev AS build
 WORKDIR /app
