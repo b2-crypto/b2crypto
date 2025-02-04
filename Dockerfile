@@ -13,7 +13,6 @@ RUN pnpm run build
 
 FROM base AS final
 WORKDIR /app
-COPY .env /app/.env
 COPY --from=build /app/dist/apps/b2crypto ./dist/apps/b2crypto
 COPY --from=build /app/package*.json ./
 COPY --from=build /app/sftp ./sftp
