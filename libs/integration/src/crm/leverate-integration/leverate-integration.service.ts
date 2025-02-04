@@ -130,7 +130,7 @@ export class LeverateIntegrationService
     if (expTimeToken) {
       const expire = new Date(expTimeToken);
       const now = new Date();
-      this.logger.debug(
+      this.logger.info(
         'Has expired crm token',
         expire.getTime() <= now.getTime(),
       );

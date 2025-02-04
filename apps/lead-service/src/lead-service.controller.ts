@@ -475,7 +475,7 @@ export class LeadServiceController implements GenericServiceController {
           return transfer.isApprove;
         })[0];
         if (firstTransferPayed) {
-          this.logger.debug(`Updated ${lead.email} partial FTD`);
+          this.logger.info(`Updated ${lead.email} partial FTD`);
           this.builder.emitLeadEventClient(EventsNamesLeadEnum.updateOne, {
             id: lead._id,
             partialFtdAmount: firstTransferPayed.amount,
@@ -487,7 +487,7 @@ export class LeadServiceController implements GenericServiceController {
       if (leads.nextPage != 1) {
         totalPages = page;
       }
-      this.logger.debug(`Updated ${page} page of ${leads.lastPage}`);
+      this.logger.info(`Updated ${page} page of ${leads.lastPage}`);
       page = leads.nextPage;
     } while (page != 1);
     return {
@@ -510,7 +510,7 @@ export class LeadServiceController implements GenericServiceController {
         where: query ?? {},
         page: pageLeads,
       });
-      this.logger.debug(
+      this.logger.info(
         'Check stats affiliate lead email',
         `Page ${pageLeads} / ${leads.lastPage}`,
       );
@@ -986,10 +986,10 @@ export class LeadServiceController implements GenericServiceController {
       },
     });
     for (const lead of leadsWithoutTpId.list) {
-      this.logger.debug(LeadServiceController.name, `Checked ${lead.email}`);
+      this.logger.info(LeadServiceController.name, `Checked ${lead.email}`);
     }
     CommonService.ack(ctx);
-    this.logger.debug(
+    this.logger.info(
       LeadServiceController.name,
       leadsWithoutTpId.totalElements,
     );

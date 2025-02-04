@@ -68,7 +68,7 @@ export class SumsubNotificationIntegrationService {
       verifyIdentityLevelName: notification.levelName,
       verifyIdentity: user.verifyIdentity,
     });
-    this.logger.debug(
+    this.logger.info(
       'User Updated',
       'Reviewed.SumsubNotificationIntegrationService',
     );
@@ -102,7 +102,7 @@ export class SumsubNotificationIntegrationService {
       verifyIdentityResponse: user.verifyIdentityResponse,
       verifyIdentityStatus: notification.reviewStatus,
     });
-    this.logger.debug(
+    this.logger.info(
       'Pending.SumsubNotificationIntegrationService',
       'User Updated',
     );
@@ -137,7 +137,7 @@ export class SumsubNotificationIntegrationService {
       verifyIdentityStatus: notification.reviewStatus,
       verifyIdentityLevelName: notification.levelName,
     });
-    this.logger.debug(
+    this.logger.info(
       'OnHold.SumsubNotificationIntegrationService',
       'User Updated',
     );

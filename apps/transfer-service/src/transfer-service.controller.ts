@@ -121,7 +121,7 @@ export class TransferServiceController implements GenericServiceController {
       tx.statusPayment === BoldStatusEnum.NO_TRANSACTION_FOUND ||
       tx.statusPayment === BoldStatusEnum.REJECTED
     ) {
-      this.logger.debug(
+      this.logger.info(
         'Transaction has finish before',
         JSON.stringify(transferBold),
       );
@@ -214,7 +214,7 @@ export class TransferServiceController implements GenericServiceController {
         throw new NotFoundException();
       }
       const tx = txs.list[0];
-      this.logger.debug(
+      this.logger.info(
         `Check types account - ${tx.numericId} - Transfer: ${tx._id}`,
         `${tx.account.type}-${tx.account.accountType}`,
       );
@@ -399,7 +399,7 @@ export class TransferServiceController implements GenericServiceController {
   @Post('bold/status')
   // @CheckPoliciesAbility(new PolicyHandlerTransferRead())
   async boldStatus(@Body() data: any) {
-    this.logger.debug('BoldStatus', data);
+    this.logger.info('BoldStatus', data);
   }
 
   @Post('deposit')
@@ -552,7 +552,7 @@ export class TransferServiceController implements GenericServiceController {
             ...query,
           })
           .then(async (transfers) => {
-            this.logger.debug(
+            this.logger.info(
               'Check by accounts',
               `page ${transfers.currentPage}/${transfers.lastPage}`,
             );
@@ -560,7 +560,7 @@ export class TransferServiceController implements GenericServiceController {
             for (const transfer of transfers.list) {
               if (!transfer.account) {
                 const tx = await this.transferService.getOne(transfer._id);
-                this.logger.debug(
+                this.logger.info(
                   `${transfer.name}-${transfer.description}`,
                   `${transfer.numericId} - Transfer: ${transfer._id}`,
                 );
@@ -1010,9 +1010,9 @@ export class TransferServiceController implements GenericServiceController {
         webhookTransferDto.descriptionStatusPayment;
       transferDto.confirmedAt = new Date();
 
-      this.logger.debug('Transfer DTO', JSON.stringify(transferDto));
+      this.logger.info('Transfer DTO', JSON.stringify(transferDto));
       const tx = await this.transferService.newTransfer(transferDto);
-      this.logger.debug('Transfer created', tx);
+      this.logger.info('Transfer created', tx);
       const promises = [];
       const transferDtoBrand = {
         ...transferDto,
@@ -1052,7 +1052,7 @@ export class TransferServiceController implements GenericServiceController {
             transferDtoBrand.operationType = OperationTransactionType.payment;
             transferDtoBrand.typeTransaction = paymentCard._id.toString();
             transferDtoBrand.page = webhookTransferDto.page;
-            this.logger.debug(
+            this.logger.info(
               'Transfer DTO Brand',
               JSON.stringify(transferDtoBrand),
             );
@@ -1122,7 +1122,7 @@ export class TransferServiceController implements GenericServiceController {
       );
       page = transfersToCheck.nextPage;
       nextPage = transfersToCheck.nextPage;
-      this.logger.debug(
+      this.logger.info(
         TransferServiceController.name,
         `Saved page of PSP ACCOUNT ${pspAccountId} lead's. ${transfersToCheck.currentPage} / ${transfersToCheck.lastPage} pages`,
       );

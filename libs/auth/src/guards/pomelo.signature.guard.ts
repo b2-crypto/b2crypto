@@ -9,6 +9,7 @@ import {
   CanActivate,
   ExecutionContext,
   HttpException,
+  HttpStatus,
   Injectable,
 } from '@nestjs/common';
 import { PATH_METADATA } from '@nestjs/common/constants';
@@ -28,23 +29,23 @@ export class PomeloSignatureGuard implements CanActivate {
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    this.logger.debug('Checking Pomelo signature', 'PomeloSignatureGuard');
+    this.logger.info('Checking Pomelo signature', 'PomeloSignatureGuard');
     this.headersToLowercase(context);
     const headers = this.utils.extractRequestHeaders(context);
     const path =
       this.reflector
         .get<string[]>(PATH_METADATA, context.getHandler())
         ?.toString() || '';
-    this.logger.debug(`Path: ${path}`, 'SignatureGuard');
-    this.logger.debug(
+    this.logger.info(`Path: ${path}`, 'SignatureGuard');
+    this.logger.info(
       `Headers endpoint: ${JSON.stringify(headers.endpoint)}`,
       'SignatureGuard',
     );
-    this.logger.debug(
+    this.logger.info(
       'checkWhitelistedIps',
       CommonService.checkWhitelistedIps(context),
     );
-    this.logger.debug(
+    this.logger.info(
       'checkValidEndpoint',
       this.checkValidEndpoint(path, headers),
     );
@@ -52,19 +53,22 @@ export class PomeloSignatureGuard implements CanActivate {
       CommonService.checkWhitelistedIps(context) &&
       this.checkValidEndpoint(path, headers)
     ) {
-      this.logger.debug(`Authorizing request.`, 'SignatureGuard');
+      this.logger.info(`Authorizing request.`, 'SignatureGuard');
       if (
         path == PomeloEnum.POMELO_AUTHORIZATION_PATH.toString() &&
         !this.checkSignatureIsNotExpired(headers.timestamp)
       ) {
-        throw new HttpException(this.constants.RESPONSE_SIGNATURE_EXPIRE, 401);
+        throw new HttpException(
+          this.constants.RESPONSE_SIGNATURE_EXPIRE,
+          HttpStatus.UNAUTHORIZED,
+        );
       }
       const isValid = await this.signatureUtil.checkSignature(
         headers,
         context.switchToHttp().getRequest().body,
       );
       if (!isValid) {
-        this.logger.debug(
+        this.logger.info(
           `Signing invalid signature response`,
           'SignatureGuard',
         );
@@ -74,16 +78,19 @@ export class PomeloSignatureGuard implements CanActivate {
           headers,
           PomeloEnum.POMELO_SIGNATURE_HEADER,
         );
-        throw new HttpException(this.constants.RESPONSE_INVALID_SIGNATURE, 400);
+        throw new HttpException(
+          this.constants.RESPONSE_INVALID_SIGNATURE,
+          HttpStatus.BAD_REQUEST,
+        );
       }
       return isValid;
     }
-    this.logger.debug('Not Authorized', 'SignatureGuard');
+    this.logger.info('Not Authorized', 'SignatureGuard');
     return false;
   }
 
   private checkValidEndpoint(path: string, headers: ProcessHeaderDto): boolean {
-    this.logger.debug('Check valid endpoint', 'checkValidEndpoint');
+    this.logger.info('Check valid endpoint', 'checkValidEndpoint');
     if (path !== PomeloEnum.POMELO_ADJUSTMENT_PATH)
       return path === headers.endpoint;
 

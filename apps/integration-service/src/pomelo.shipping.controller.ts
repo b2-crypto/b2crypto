@@ -33,7 +33,7 @@ export class PomeloShippingController {
   async handleShippingNotification(
     @Body() notification: ShippingNotifications,
   ): Promise<any> {
-    this.logger.debug(
+    this.logger.info(
       `Idempotency: ${notification.idempotency_key}`,
       'NotificationHandler - handleShippingNotification',
     );
@@ -43,7 +43,7 @@ export class PomeloShippingController {
   @Post(PomeloEnum.POMELO_SHIPPING_CARD_EVENTS)
   @HttpCode(204)
   async handleCardEvents(@Body() event: CardEvents): Promise<any> {
-    this.logger.debug(`Idempotency: ${event.idempotency_key}`, 'EventHandler');
+    this.logger.info(`Idempotency: ${event.idempotency_key}`, 'EventHandler');
     return await this.shippingService.handleCardEvents(event);
   }
 }

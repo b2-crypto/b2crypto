@@ -107,7 +107,7 @@ export class PoliciesGuard implements CanActivate {
       ipaddr.process(request?.connection?.remoteAddress).toString() ||
       request?.connection?.remoteAddress ||
       '';
-    this.logger.debug('SignatureGuard', `IpCaller: ${caller}`);
+    this.logger.info('SignatureGuard', `IpCaller: ${caller}`);
     const whitelisted = process.env.POMELO_WHITELISTED_IPS;
     return whitelisted?.split(',')?.includes(caller) || false;
   }

@@ -37,7 +37,7 @@ export class JobService {
     timeZone: process.env.TZ,
   })
   async sendLast6hHistoryTransfer() {
-    this.logger.debug(
+    this.logger.info(
       'Sended last 6h history transfer',
       `${this.env} - ${JobService.name}`,
     );
@@ -57,7 +57,7 @@ export class JobService {
     timeZone: process.env.TZ,
   })
   async sendBalanceCardReportsCron() {
-    this.logger.debug(
+    this.logger.info(
       'Sended balance card report',
       `${this.env} - ${JobService.name}`,
     );
@@ -77,7 +77,7 @@ export class JobService {
     timeZone: process.env.TZ,
   })
   checkBalanceUserCron() {
-    this.logger.debug(
+    this.logger.info(
       'Checked balance users',
       `${this.env} - ${JobService.name}`,
     );
@@ -93,7 +93,7 @@ export class JobService {
     timeZone: process.env.TZ,
   })
   checkCardsInPomelo() {
-    this.logger.debug(
+    this.logger.info(
       'Checking Cards in pomelo',
       `${this.env} - ${JobService.name}`,
     );
@@ -109,7 +109,7 @@ export class JobService {
     timeZone: process.env.TZ,
   })
   sweepOmibus() {
-    this.logger.debug('Job sweep omibus', `${this.env} - ${JobService.name}`);
+    this.logger.info('Job sweep omibus', `${this.env} - ${JobService.name}`);
     if (this.env === EnvironmentEnum.prod) {
       // this.builder.emitAccountEventClient(
       //   EventsNamesAccountEnum.sweepOmnibus,
@@ -126,7 +126,7 @@ export class JobService {
       'Disabled Job checkB2BinPayTransfers',
       `${this.env} - ${JobService.name}`,
     );
-    // this.logger.debug(
+    // this.logger.info(
     //   'Checking B2BinPay transfers',
     //   `${this.env} - ${JobService.name}`,
     // );

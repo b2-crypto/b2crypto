@@ -38,7 +38,7 @@ export class PomeloIntegrationServiceController {
     @Body() notification: NotificationDto,
     @Headers() headers: any,
   ): Promise<any> {
-    this.logger.debug(
+    this.logger.info(
       'NotificationHandler - processNotification',
       `Idempotency: ${notification.idempotency_key}`,
     );
@@ -57,9 +57,9 @@ export class PomeloIntegrationServiceController {
     @Headers(PomeloEnum.POMELO_IDEMPOTENCY_HEADER) idempotency: string,
     @Headers() headers: any,
   ): Promise<any> {
-    this.logger.debug(`Idempotency: ${idempotency}`, 'AdjustmentHandler');
+    this.logger.info(`Idempotency: ${idempotency}`, 'AdjustmentHandler');
     adjustment.idempotency = idempotency;
-    this.logger.debug('AdjustmentHandler', adjustment);
+    this.logger.info('AdjustmentHandler', adjustment);
     return await this.integrationServiceService.processAdjustment(
       adjustment,
       headers,
@@ -75,9 +75,9 @@ export class PomeloIntegrationServiceController {
     @Headers(PomeloEnum.POMELO_IDEMPOTENCY_HEADER) idempotency: string,
     @Headers() headers: any,
   ): Promise<any> {
-    this.logger.debug(`Idempotency: ${idempotency}`, 'AuthorizationHandler');
+    this.logger.info(`Idempotency: ${idempotency}`, 'AuthorizationHandler');
     authorization.idempotency = idempotency;
-    this.logger.debug('AuthorizationHandler', authorization);
+    this.logger.info('AuthorizationHandler', authorization);
     return await this.integrationServiceService.processAuthorization(
       authorization,
       headers,

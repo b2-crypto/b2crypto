@@ -208,7 +208,7 @@ export class TransferServiceService
             searchText: item.searchText,
           },
         );
-        this.logger.debug(
+        this.logger.info(
           `${item.numericId} - ${item.leadEmail}`,
           `Updated searchText page ${elems.currentPage} / ${elems.lastPage}`,
         );
@@ -300,7 +300,7 @@ export class TransferServiceService
       ) {
         try {
           const url = transfer.account.url ?? 'https://api.b2binpay.com';
-          this.logger.debug('URL B2BinPay', url);
+          this.logger.info('URL B2BinPay', url);
           const integration =
             await this.integrationService.getCryptoIntegration(
               account,
@@ -602,7 +602,7 @@ export class TransferServiceService
         }
       }
       if (transferSaved.confirmedAt) {
-        this.logger.debug(
+        this.logger.info(
           'Saving on CRM',
           `Num ${transferSaved.numericId} - ${
             transferSaved.isApprove ? 'Approved' : transferSaved.statusPayment
@@ -1468,7 +1468,7 @@ export class TransferServiceService
 
   async checkStatsPspAccount(transfersLeadStat: Array<TransferLeadStatsDto>) {
     const statDate = new StatsDateCreateDto();
-    this.logger.debug(
+    this.logger.info(
       'checkStatsPspAccount',
       `${TransferServiceService.name}:902`,
     );
@@ -1558,7 +1558,7 @@ export class TransferServiceService
       ],
       name,
     );
-    this.logger.debug(name, `${params.name} sended`);
+    this.logger.info(name, `${params.name} sended`);
   }
 
   private printShortDate(date?: Date): string {
@@ -1594,7 +1594,7 @@ export class TransferServiceService
       },
     ];
     const attachments = await Promise.all(promisesAttachments);
-    this.logger.debug('History sended', TransferServiceService.name);
+    this.logger.info('History sended', TransferServiceService.name);
     destiny.forEach((destiny) => {
       this.sendEmail({
         destinyText: destiny.email,
@@ -1641,12 +1641,12 @@ export class TransferServiceService
     const objBase = this.getCustomObj(headers);
     // File created
     this.addDataToFile(objBase, filename, true, true);
-    this.logger.debug('File created', TransferServiceService.name);
+    this.logger.info('File created', TransferServiceService.name);
     const minSecWait = 2000;
     return new Promise((res) => {
       // Wait file creation
       setTimeout(async () => {
-        this.logger.debug(`Rows ${list.length}`, TransferServiceService.name);
+        this.logger.info(`Rows ${list.length}`, TransferServiceService.name);
         let time = 0;
         list.forEach((item) => {
           const customItem = this.getCustomObj(headers, item);
@@ -1658,7 +1658,7 @@ export class TransferServiceService
             idx,
           );
         });
-        this.logger.debug('Total seg', time / 1000);
+        this.logger.info('Total seg', time / 1000);
         setTimeout(async () => {
           // Wait file sending
           this.responseFileContent({
@@ -1690,7 +1690,7 @@ export class TransferServiceService
             encodeBase64: content,
           });
         }
-        this.logger.debug(`File "${filename}" sent`, listName);
+        this.logger.info(`File "${filename}" sent`, listName);
         res({
           // encoded string as an attachment
           filename: filename,
@@ -1701,7 +1701,7 @@ export class TransferServiceService
           fs.unlinkSync(fileUri);
         }
       } else {
-        this.logger.debug(`File "${filename}" not found`, listName);
+        this.logger.info(`File "${filename}" not found`, listName);
         this.responseFileContent({ filename, fileUri, listName, res });
       }
     }, 20000);
