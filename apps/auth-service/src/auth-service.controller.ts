@@ -689,7 +689,7 @@ export class AuthServiceController {
     const otpTTL =
       msOTP ??
       this.configService.get<number>('OTP_VALIDATION_TIME_SECONDS', 120) * 1000;
-    const email = user.email.toLocaleLowerCase();
+    const email = user.email.toLowerCase();
 
     const otpSended =
       (await this.getOtpGenerated(email)) ?? CommonService.getOTP();
