@@ -41,7 +41,7 @@ export const loggerConfig = {
 
         return {
           ...data,
-          body: bodySanitized,
+          // body: bodySanitized,
           headers: {
             ...data.headers,
             [CORRELATION_ID_HEADER]: data.correlationId,
