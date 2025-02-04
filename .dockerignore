@@ -3,5 +3,7 @@
 **/docker-compose.y*ml
 **/.dockerignore
 **/node_modules
+**/.pnpm-store
+**/.pnpm-debug.log
 npm-debug.log
 dist
