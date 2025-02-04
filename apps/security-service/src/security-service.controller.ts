@@ -472,7 +472,7 @@ export class SecurityServiceController {
         resourceName: ResourcesEnum.USER,
       };
     }
-    this.logger.debug('OTP Sended', data);
+    this.logger.info('OTP Sended', data);
     this.builder.emitMessageEventClient(
       EventsNamesMessageEnum.sendEmailOtpNotification,
       data,

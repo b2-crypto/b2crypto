@@ -144,7 +144,7 @@ export class BrandServiceService {
   }
 
   async checkStatsTransfer(configCheckStats: ConfigCheckStatsDto) {
-    this.logger.debug('CHECK STATS BRANDS TRANSFER');
+    this.logger.info('CHECK STATS BRANDS TRANSFER');
   }
 
   async checkCashierBrands() {

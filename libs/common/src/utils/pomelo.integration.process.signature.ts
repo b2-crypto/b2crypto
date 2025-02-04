@@ -23,7 +23,7 @@ export class PomeloSignatureUtils {
   ): Promise<boolean> {
     try {
       if (headers && body) {
-        this.logger.debug(
+        this.logger.info(
           'Pomelo Check Signature - headers',
           `Headers: ${JSON.stringify(headers)}`,
         );

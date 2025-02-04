@@ -69,7 +69,7 @@ export class FireBlocksNotificationsController {
   @NoCache()
   async resendFireblocksNotifications() {
     const rta = await (await this.getFireblocksType()).resendNotifications();
-    this.logger.debug(
+    this.logger.info(
       'resendFireblocksNotifications',
       JSON.stringify(rta, null, 2),
     );
@@ -81,10 +81,10 @@ export class FireBlocksNotificationsController {
   // @CheckPoliciesAbility(new PolicyHandlerTransferRead())
   async webhook(@Req() req: any, @Body() data: any) {
     //const isVerified = this.verifySign(req);
-    //this.logger.debug(isVerified, 'getTransferDto.isVerified');
+    //this.logger.info(isVerified, 'getTransferDto.isVerified');
     //if (isVerified) {
     const rta = data.data;
-    this.logger.debug('-start', rta);
+    this.logger.info('-start', rta);
     if (
       rta.id &&
       rta.status &&
@@ -134,11 +134,11 @@ export class FireBlocksNotificationsController {
           },
         );
       }
-      this.logger.debug(`${rta?.id} - ${rta.status}`, rta?.status);
+      this.logger.info(`${rta?.id} - ${rta.status}`, rta?.status);
     }
     //}
     //return isVerified ? 'ok' : 'fail';
-    //this.logger.debug(this.verifySign(req), 'getTransferDto.isVerified');
+    //this.logger.info(this.verifySign(req), 'getTransferDto.isVerified');
     return {
       statusCode: 200,
       message: 'ok',
@@ -154,7 +154,7 @@ export class FireBlocksNotificationsController {
     verifier.end();
 
     const isVerified = verifier.verify(this.publicKey, signature, 'base64');
-    this.logger.debug('Verified:', isVerified);
+    this.logger.info('Verified:', isVerified);
     return isVerified;
   }
 
@@ -194,7 +194,7 @@ export class FireBlocksNotificationsController {
     // const ownerId = brand.owner;
     const ownerId = ownerIdWallet.replace('-vault', '');
     if (!isMongoId(ownerId)) {
-      this.logger.debug(`Invalid ownerId ${ownerIdWallet}`, ownerId);
+      this.logger.info(`Invalid ownerId ${ownerIdWallet}`, ownerId);
       return null;
     }
     const crm = await this.getFireblocksCrm();

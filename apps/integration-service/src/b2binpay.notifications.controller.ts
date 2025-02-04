@@ -36,12 +36,12 @@ export class B2BinPayNotificationsController {
   @Post('status-deposit')
   // @CheckPoliciesAbility(new PolicyHandlerTransferRead())
   async statusDeposit(@Req() req: any, @Body() data: any) {
-    this.logger.debug('B2BinPayNotificationsController.statusDeposit', data);
-    this.logger.debug(
+    this.logger.info('B2BinPayNotificationsController.statusDeposit', data);
+    this.logger.info(
       'B2BinPayNotificationsController.statusDeposit:request.headers',
       req.headers,
     );
-    this.logger.debug(
+    this.logger.info(
       'B2BinPayNotificationsController.statusDeposit:request.body',
       req.body,
     );
@@ -55,18 +55,18 @@ export class B2BinPayNotificationsController {
   @Post('status')
   // @CheckPoliciesAbility(new PolicyHandlerTransferRead())
   async status(@Req() req: any, @Body() data: any) {
-    this.logger.debug('B2BinPayNotificationsController.status', data);
+    this.logger.info('B2BinPayNotificationsController.status', data);
     const headers = req?.headers;
     const body = req?.body;
-    this.logger.debug(
+    this.logger.info(
       'B2BinPayNotificationsController.status:request.headers',
       headers,
     );
-    this.logger.debug(
+    this.logger.info(
       'B2BinPayNotificationsController.status:request.body',
       body,
     );
-    this.logger.debug('B2BinPayNotificationsController.status:body', data);
+    this.logger.info('B2BinPayNotificationsController.status:body', data);
     /* const attributes = data.data.attributes;
     const relationships = data.data.relationships;
     const transferId = relationships.transfer?.data?.id;
@@ -187,7 +187,7 @@ export class B2BinPayNotificationsController {
     @Ctx() ctx: RmqContext,
   ) {
     CommonService.ack(ctx);
-    this.logger.debug('checkTransferInB2BinPay', typeIntegration);
+    this.logger.info('checkTransferInB2BinPay', typeIntegration);
     let accounts: ResponsePaginator<AccountDocument> = {
       nextPage: 1,
       prevPage: 0,
@@ -210,7 +210,7 @@ export class B2BinPayNotificationsController {
           },
         },
       );
-      this.logger.debug(
+      this.logger.info(
         `checkTransferInB2BinPay.totalElements - page ${accounts.currentPage}`,
         accounts.list.length,
       );
@@ -312,7 +312,7 @@ export class B2BinPayNotificationsController {
           isApprove: true,
           approvedAt: attributes.updated_at,
         } as unknown as TransferCreateDto;
-        this.logger.debug(`checkTransfer-save-${transfer.id}`, dto.name);
+        this.logger.info(`checkTransfer-save-${transfer.id}`, dto.name);
         this.builder.emitTransferEventClient(
           EventsNamesTransferEnum.createOne,
           dto,

@@ -147,7 +147,7 @@ export class IntegrationIdentityService
       const signature = this.createSignature(metadata);
       headers[SumsubEnum.SUMSUB_HEADER_TIMESTAMP] = metadata.ts;
       headers[SumsubEnum.SUMSUB_HEADER_SIGNATURE] = signature;
-      this.logger.debug('fetchConfig - generateUrlApplicant', headers);
+      this.logger.info('fetchConfig - generateUrlApplicant', headers);
       return this.fetch(metadata.method, metadata.url, null, headers)
         .then((response) => {
           return response;

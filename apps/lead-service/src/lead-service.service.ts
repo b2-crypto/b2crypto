@@ -1361,7 +1361,7 @@ export class LeadServiceService
           >(EventsNamesStatsEnum.checkAllStatsAffiliate, {
             list: leadsToCheck.list,
           });
-        /* this.logger.debug(
+        /* this.logger.info(
           `Checked ${leadsToCheck.totalElements} result ${listStatsAffiliate?.length} total stats generated on page ${leadsToCheck.currentPage} for ${affiliateId} Affiliate`,
           LeadServiceService.name,
         ); */
@@ -1369,7 +1369,7 @@ export class LeadServiceService
       }
       page = leadsToCheck.nextPage;
       nextPage = leadsToCheck.nextPage;
-      this.logger.debug(
+      this.logger.info(
         'Check leads affiliate stats',
         `Saved page ${leadsToCheck.currentPage} of AFFILIATE ${affiliateId} lead's. Next page ${nextPage}/${leadsToCheck.lastPage}`,
       );
@@ -1408,7 +1408,7 @@ export class LeadServiceService
     affiliateList = [],
     daysBefore = 0,
   ) {
-    this.logger.debug(
+    this.logger.info(
       `Checking leads modified`,
       'checkStatusFromLeadsListByStatus',
     );

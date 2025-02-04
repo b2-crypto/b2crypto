@@ -225,7 +225,7 @@ export class IntegrationCrmService<
   async affiliateAssignLead(
     assignLeadDto: AssignLeadLeverateRequestDto,
   ): Promise<TUserResponse> {
-    this.logger.debug('Assignat lead', JSON.stringify(assignLeadDto));
+    this.logger.info('Assignat lead', JSON.stringify(assignLeadDto));
     if (
       this.configService.get<string>('ENVIRONMENT') === EnvironmentEnum.prod
     ) {
@@ -383,12 +383,12 @@ export class IntegrationCrmService<
       if (this.crm.clientZone.indexOf('http') !== 0) {
         this.crm.clientZone = `https://${this.crm.clientZone}`;
       }
-      this.logger.debug('Clientzone autologin', this.crm.clientZone);
-      this.logger.debug(
+      this.logger.info('Clientzone autologin', this.crm.clientZone);
+      this.logger.info(
         'route autologin',
         this.routesMap.affiliateRegenerateUserAutoLoginUrl,
       );
-      this.logger.debug('data autologin', regenerateUserAutoLoginUrlDto);
+      this.logger.info('data autologin', regenerateUserAutoLoginUrlDto);
       const rta = await axios.post(
         `${this.crm.clientZone}/${this.routesMap.affiliateRegenerateUserAutoLoginUrl}`,
         regenerateUserAutoLoginUrlDto,
@@ -431,7 +431,7 @@ export class IntegrationCrmService<
       true,
     );
     const data: TPaymentResponse = rta?.data ?? rta;
-    this.logger.debug(
+    this.logger.info(
       `crm register payment to ${registerPaymentDto['leadEmail']}`,
       data,
     );

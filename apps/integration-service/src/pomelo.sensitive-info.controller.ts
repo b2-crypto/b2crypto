@@ -37,7 +37,7 @@ export class PomeloSensitiveInfoController {
   @HttpCode(200)
   async issuePomeloPrivateInfoToken(@Request() req: Request): Promise<any> {
     const b2cryptoUser = req['user']?.id || '';
-    this.logger.debug(
+    this.logger.info(
       `Looking for user: ${b2cryptoUser}`,
       'PomeloSensitiveInfoController',
     );
