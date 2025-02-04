@@ -27,6 +27,10 @@ export class AccountUpdateDto extends PartialType(AccountCreateDto) {
 
   @IsNumber()
   @IsOptional()
+  amountCustodial?: number;
+
+  @IsNumber()
+  @IsOptional()
   partialFtdAmount?: number;
 
   @IsDate()

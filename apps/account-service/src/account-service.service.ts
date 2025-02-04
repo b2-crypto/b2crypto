@@ -25,6 +25,7 @@ import {
   BadRequestException,
   Inject,
   Injectable,
+  Logger,
   NotImplementedException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
@@ -37,13 +38,23 @@ import EventsNamesMessageEnum from 'apps/message-service/src/enum/events.names.m
 import EventsNamesStatusEnum from 'apps/status-service/src/enum/events.names.status.enum';
 import EventsNamesTransferEnum from 'apps/transfer-service/src/enum/events.names.transfer.enum';
 import * as fs from 'fs';
+import { PreorderData, PreorderResponse } from './interfaces/preorderResponse';
+import { WITHDRAWAL_CONFIG } from './withdrawal.config';
+import { WithdrawalError } from './utils/errors';
+import { WithdrawalPreorderDto } from './dtos/WithdrawalPreorderDto';
+import { WithdrawalExecuteDto } from './dtos/WithdrawalExecuteDto';
+import { WithdrawalResponse } from './interfaces/withdrawalResponse';
+import { DepositDto } from '@integration/integration/crypto/generic/dto/deposit.dto';
+import { QrDepositDto } from './dtos/qr-deposit.dto';
+import { NetworkEnum } from './enum/network.enum';
+import { QrDepositResponse } from './interfaces/qr-deposit-response.interface';
 import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 
 @Traceable()
 @Injectable()
 export class AccountServiceService
-  implements BasicMicroserviceService<AccountDocument>
-{
+  implements BasicMicroserviceService<AccountDocument> {
+  private readonly preorders = new Map<string, PreorderData>();
   async cleanWallet(query: QuerySearchAnyDto) {
     throw new NotImplementedException();
     //this.logger.debug('Start', `Clean wallet`);
@@ -157,7 +168,7 @@ export class AccountServiceService
     @Inject(AccountServiceMongooseService)
     private lib: AccountServiceMongooseService,
     private readonly integration: IntegrationService,
-  ) {}
+  ) { }
   async download(
     query: QuerySearchAnyDto,
     context?: any,
@@ -480,13 +491,11 @@ export class AccountServiceService
           date,
         ),
       ];
-      const name = `${
-        process.env.ENVIRONMENT !== EnvironmentEnum.prod
-          ? process.env.ENVIRONMENT
-          : ''
-      } Balance Report ${
-        query.where?.type ?? 'all types'
-      } - ${this.printShortDate(date)} UTC`;
+      const name = `${process.env.ENVIRONMENT !== EnvironmentEnum.prod
+        ? process.env.ENVIRONMENT
+        : ''
+        } Balance Report ${query.where?.type ?? 'all types'
+        } - ${this.printShortDate(date)} UTC`;
       this.sendEmailToList(promises, name);
       this.logger.debug('Balance Report sended', name);
     });
@@ -694,4 +703,149 @@ export class AccountServiceService
   //   }
   //   return cryptoList;
   // }
+
+
+  async validateWithdrawalPreorder(dto: WithdrawalPreorderDto): Promise<PreorderResponse> {
+    const sourceWallet = await this.lib.findOne(dto.walletId);
+    if (!sourceWallet) {
+      throw new WithdrawalError('INVALID_WALLET', 'Wallet not found');
+    }
+
+    const networkFee = dto.amount * WITHDRAWAL_CONFIG.fees.networks[dto.network];
+    const baseFee = WITHDRAWAL_CONFIG.fees.base;
+    const totalAmount = dto.amount + networkFee + baseFee;
+
+    if (sourceWallet.amountCustodial < totalAmount) {
+      throw new WithdrawalError('INSUFFICIENT_FUNDS', 'Insufficient balance');
+    }
+
+    const preorderId = `WD_${Date.now()}`;
+    const preorder: PreorderData = {
+      ...dto,
+      totalAmount,
+      networkFee,
+      baseFee,
+      fees: { networkFee, baseFee },
+      createdAt: new Date()
+    };
+
+    this.preorders.set(preorderId, preorder);
+
+    return {
+      preorderId,
+      totalAmount,
+      fees: { networkFee, baseFee },
+      netAmount: dto.amount,
+      expiresAt: new Date(Date.now() + WITHDRAWAL_CONFIG.timing.maxConfirmationTime * 1000)
+    };
+  }
+
+  async executeWithdrawalOrder(dto: WithdrawalExecuteDto): Promise<WithdrawalResponse> {
+    const preorder = this.preorders.get(dto.preorderId);
+    if (!preorder) {
+      throw new WithdrawalError('INVALID_PREORDER', 'Preorder not found');
+    }
+
+    try {
+      const sourceWallet = await this.lib.findOne(preorder.walletId);
+      if (!sourceWallet) {
+        throw new WithdrawalError('INVALID_WALLET', 'Source wallet not found');
+      }
+
+      const fireblocksCrm = await this.builder.getPromiseCrmEventClient(
+        EventsNamesCrmEnum.findOneByName,
+        IntegrationCryptoEnum.FIREBLOCKS,
+      );
+
+      const cryptoType = await this.integration.getCryptoIntegration(
+        null,
+        IntegrationCryptoEnum.FIREBLOCKS,
+        '',
+      );
+
+      const depositDto = {
+        vaultAccountId: sourceWallet.accountId,
+        amount: preorder.amount.toString(),
+        address: preorder.destinationAddress,
+        description: 'Withdrawal',
+        external: true
+      } as unknown as DepositDto;
+
+      const txResponse = await cryptoType.createDeposit(depositDto);
+      const [transaction] = txResponse.data;
+
+      const updateDto = new AccountUpdateDto();
+      updateDto.id = preorder.walletId;
+      updateDto.amountCustodial = sourceWallet.amountCustodial - preorder.totalAmount;
+
+      await this.lib.update(preorder.walletId, updateDto);
+
+      this.preorders.delete(dto.preorderId);
+
+      return {
+        transactionId: transaction?.transactionId || transaction?.id || String(Date.now()),
+        status: 'PENDING',
+        amount: preorder.amount,
+        fees: {
+          networkFee: preorder.fees.networkFee,
+          baseFee: preorder.fees.baseFee,
+          totalFee: preorder.fees.networkFee + preorder.fees.baseFee
+        },
+        timestamp: new Date()
+      };
+    } catch (error) {
+      Logger.error('Withdrawal execution failed', error, AccountServiceService.name);
+      throw new WithdrawalError('EXECUTION_FAILED', 'Failed to execute withdrawal', {
+        details: error.message
+      });
+    }
+  }
+  async generateDepositQr(dto: QrDepositDto): Promise<QrDepositResponse> {
+    try {
+      const wallet = await this.lib.findOne(dto.walletId);
+      if (!wallet) {
+        throw new BadRequestException('Wallet not found');
+      }
+
+      const fireblocksCrm = await this.builder.getPromiseCrmEventClient(
+        EventsNamesCrmEnum.findOneByName,
+        IntegrationCryptoEnum.FIREBLOCKS,
+      );
+
+      const cryptoType = await this.integration.getCryptoIntegration(
+        null,
+        IntegrationCryptoEnum.FIREBLOCKS,
+        '',
+      );
+
+      const depositAddress = await cryptoType.createDeposit({
+        vaultAccountId: wallet.accountId,
+        network: dto.network,
+        amount: dto.amount.toString(),
+      } as unknown as DepositDto);
+
+
+      const [addressData] = depositAddress.data;
+      const address = addressData.address;
+
+      let scanUrl = '';
+      if (dto.network === NetworkEnum.TRON) {
+        scanUrl = `https://tronscan.org/#/address/${address}`;
+      } else if (dto.network === NetworkEnum.ARBITRUM) {
+        scanUrl = `https://arbiscan.io/address/${address}`;
+      }
+
+      return {
+        address,
+        qrCode: address,
+        network: dto.network,
+        amount: dto.amount,
+        scanUrl,
+        timestamp: new Date()
+      };
+    } catch (error) {
+      Logger.error('QR deposit generation failed', error, AccountServiceService.name);
+      throw new BadRequestException('Failed to generate deposit QR');
+    }
+  }
 }
