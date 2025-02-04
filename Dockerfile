@@ -1,6 +1,8 @@
 FROM public.ecr.aws/docker/library/fedora:latest AS base
 WORKDIR /app
 COPY ./package*.json ./
+RUN dnf install python3 -y
+RUN dnf install python3-pip -y
 RUN dnf install nodejs -y
 RUN npm install -g pnpm@^9.15.5
 RUN pnpm config set store-dir .pnpm-store
