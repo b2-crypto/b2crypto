@@ -210,7 +210,7 @@ export class PomeloIntegrationProcessService {
       );
 
       if (authorize && Number(amount.amount) * commisionNational > 0) {
-        this.logger.debug(
+        this.logger.info(
           `${response?.message} - $${amount.amount * commisionNational}`,
           'Commision to B2Fintech',
         );
@@ -243,7 +243,7 @@ export class PomeloIntegrationProcessService {
         Number(amount.amount) * commisionInternational > 0 &&
         process.transaction.origin.toLowerCase() === 'international'
       ) {
-        this.logger.debug(
+        this.logger.info(
           `${response?.message} - $${amount.amount * commisionInternational}`,
           'Commision to B2Fintech',
         );
@@ -272,7 +272,7 @@ export class PomeloIntegrationProcessService {
         );
       }
     } catch (error) {
-      this.logger.debug(
+      this.logger.info(
         PomeloIntegrationProcessService.name,
         `Error creatin transfer: ${error}`,
       );
@@ -315,12 +315,12 @@ export class PomeloIntegrationProcessService {
     usdAmount: number,
   ): Promise<any> {
     try {
-      this.logger.debug('JSON.stringify(process)', 'ExecuteProcess start');
+      this.logger.info('JSON.stringify(process)', 'ExecuteProcess start');
       /* if (
         process?.installments &&
         parseInt(process?.installments?.quantity) > 1
       ) {
-        this.logger.debug(
+        this.logger.info(
           'Invalid Installments: ' + process?.installments?.quantity,
           'ExecuteProcess',
         );
@@ -332,7 +332,7 @@ export class PomeloIntegrationProcessService {
       const cardId = process?.card?.id || '';
       const movement = PomeloProcessEnum[process?.transaction?.type];
       if (usdAmount < 0) {
-        this.logger.debug('Invalid Amount: ' + usdAmount, 'ExecuteProcess');
+        this.logger.info('Invalid Amount: ' + usdAmount, 'ExecuteProcess');
         return this.buildErrorResponse(
           CardsEnum.CARD_PROCESS_INVALID_AMOUNT,
           authorize,
@@ -416,7 +416,7 @@ export class PomeloIntegrationProcessService {
     notification: NotificationDto,
     headers: any,
   ): Promise<any> {
-    this.logger.debug('ProcessNotification', 'Message Received');
+    this.logger.info('ProcessNotification', 'Message Received');
     let cachedResult = await this.cache.getResponse(
       notification.idempotency_key,
     );
@@ -480,7 +480,7 @@ export class PomeloIntegrationProcessService {
         },
       };
 
-      this.logger.debug(
+      this.logger.info(
         'Purchases/Transaction Adjustments Email Prepared',
         data,
       );

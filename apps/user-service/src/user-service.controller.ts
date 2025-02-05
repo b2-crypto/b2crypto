@@ -147,7 +147,7 @@ export class UserServiceController implements GenericServiceController {
     do {
       const users = await this.findAll({ page });
       if (users?.list?.length > 0) {
-        this.logger.debug(
+        this.logger.info(
           `MassiveEmail.${UserServiceController.name}`,
           `Users: ${users?.list?.length} & Page: ${page}`,
         );
@@ -162,7 +162,7 @@ export class UserServiceController implements GenericServiceController {
               confirmPassword: pwd,
             };
             await this.changePassword(user?.id, changePassword);
-            this.logger.debug(
+            this.logger.info(
               `MassiveEmail.${UserServiceController.name}`,
               `${user?.email}`,
             );
@@ -481,7 +481,7 @@ export class UserServiceController implements GenericServiceController {
               level: user.level,
             } as unknown as UserUpdateDto)
             .then((usr) => {
-              this.logger.debug(
+              this.logger.info(
                 `Apply level ${user.level?.name} to user ${user.email}`,
                 `page ${query.page}/${users.lastPage}`,
               );

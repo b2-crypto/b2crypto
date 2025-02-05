@@ -28,7 +28,7 @@ export class B2CoreMigrationService {
       const results = await this.getFileRows(file);
       for (let i = 0; i < results.length; i++) {
         const data = results[i];
-        this.logger.debug(
+        this.logger.info(
           B2CoreMigrationService.name,
           JSON.stringify(data['Email']),
         );
@@ -36,7 +36,7 @@ export class B2CoreMigrationService {
           const email = data['Email'];
           const user = await this.getUserByEmail(data);
           const walletAccount = this.buildAccount(data, user);
-          this.logger.debug(
+          this.logger.info(
             `Creating wallet: ${walletAccount.name}-${walletAccount.accountId}`,
             `${walletAccount.owner} - ${email}`,
           );
@@ -57,7 +57,7 @@ export class B2CoreMigrationService {
       const results = await this.getFileRows(file);
       for (let i = 0; i < results.length; i++) {
         const data = results[i];
-        this.logger.debug(
+        this.logger.info(
           B2CoreMigrationService.name,
           JSON.stringify(data['Email']),
         );
@@ -65,7 +65,7 @@ export class B2CoreMigrationService {
           const email = data['Email'];
           const user = await this.migrateUser(data);
           const walletAccount = this.buildAccount(data, user);
-          this.logger.debug(
+          this.logger.info(
             `Creating wallet: ${walletAccount.name}-${walletAccount.accountId}`,
             `${walletAccount.owner} - ${email}`,
           );
@@ -91,7 +91,7 @@ export class B2CoreMigrationService {
             results.push(data);
           })
           .on('end', () => {
-            this.logger.debug(B2CoreMigrationService.name, results);
+            this.logger.info(B2CoreMigrationService.name, results);
             res(results);
           });
       } catch (error) {
@@ -107,14 +107,14 @@ export class B2CoreMigrationService {
         createReadStream(file.path)
           .pipe(csv())
           .on('data', async (data) => {
-            this.logger.debug(
+            this.logger.info(
               JSON.stringify(data['Email']),
               B2CoreMigrationService.name,
             );
             results.push(this.getWallet(data));
           })
           .on('end', async () => {
-            this.logger.debug('Already', B2CoreMigrationService.name);
+            this.logger.info('Already', B2CoreMigrationService.name);
             const list = await Promise.all(results);
             Logger.debug(list, `${B2CoreMigrationService.name} - list`);
             res(list);
@@ -129,7 +129,7 @@ export class B2CoreMigrationService {
     const email = data['Email'];
     const user = await this.getUserByEmail(data);
     const walletAccount = this.buildAccount(data, user);
-    this.logger.debug(
+    this.logger.info(
       `Creating wallet: ${walletAccount.name}-${walletAccount.accountId}`,
       `${walletAccount.owner} - ${email}`,
     );
@@ -158,7 +158,7 @@ export class B2CoreMigrationService {
           },
         );
       }
-      this.logger.debug(
+      this.logger.info(
         `User ${email} ${user ? 'was found' : 'was NOT found'}`,
         B2CoreMigrationService.name,
       );
@@ -214,7 +214,7 @@ export class B2CoreMigrationService {
 
   private async migrateWalletAccount(walletAccount: any) {
     try {
-      this.logger.debug(
+      this.logger.info(
         B2CoreMigrationService.name,
         `Creating wallet: ${JSON.stringify(walletAccount)}`,
       );

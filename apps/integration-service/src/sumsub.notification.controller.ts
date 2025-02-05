@@ -36,8 +36,8 @@ export class SumsubNotificationIntegrationController {
     @Body() notification: SumsubApplicantReviewed,
   ) {
     await this.sumsubService.validateClient(req.clientApi);
-    this.logger.debug('Notification Reviewed body', notification);
-    this.logger.debug('Notification Reviewed headers', req.headers);
+    this.logger.info('Notification Reviewed body', notification);
+    this.logger.info('Notification Reviewed headers', req.headers);
     await this.sumsubService.updateUserByReviewed(notification);
     return {
       statusCode: 200,
@@ -52,8 +52,8 @@ export class SumsubNotificationIntegrationController {
     @Req() req: Request,
     @Body() notification: SumsubApplicantPending,
   ): Promise<any> {
-    this.logger.debug('Notification Reviewed body', notification);
-    this.logger.debug('Notification Reviewed headers', req.headers);
+    this.logger.info('Notification Reviewed body', notification);
+    this.logger.info('Notification Reviewed headers', req.headers);
     await this.sumsubService.updateUserByPending(notification);
     return {
       statusCode: 200,
@@ -68,8 +68,8 @@ export class SumsubNotificationIntegrationController {
     @Req() req: Request,
     @Body() notification: SumsubApplicantOnHold,
   ): Promise<any> {
-    this.logger.debug('Notification Reviewed body', notification);
-    this.logger.debug('Notification Reviewed headers', req.headers);
+    this.logger.info('Notification Reviewed body', notification);
+    this.logger.info('Notification Reviewed headers', req.headers);
     await this.sumsubService.updateUserByOnHold(notification);
     return {
       statusCode: 200,

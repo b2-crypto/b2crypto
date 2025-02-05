@@ -388,7 +388,7 @@ export class WalletServiceController extends AccountServiceController {
   }
 
   private async sendNotification(createdWallet: any, user: User) {
-    this.logger.debug('Sending notification new wallet');
+    this.logger.info('Sending notification new wallet');
     const emailData = {
       destinyText: user.email,
       vars: {
@@ -969,7 +969,7 @@ export class WalletServiceController extends AccountServiceController {
                 vaultTo.accountId,
               );
             }
-            this.logger.debug(
+            this.logger.info(
               'rta from -> to',
               JSON.stringify(rta.data, null, 2),
             );
@@ -992,7 +992,7 @@ export class WalletServiceController extends AccountServiceController {
                 true,
               );
             }
-            this.logger.debug(
+            this.logger.info(
               'rta from -> to?',
               JSON.stringify(rta.data, null, 2),
             );
@@ -1015,7 +1015,7 @@ export class WalletServiceController extends AccountServiceController {
             ),
           );
           const rtaProm = await Promise.all(promisesTx);
-          this.logger.debug(
+          this.logger.info(
             'Update amount custodial',
             JSON.stringify(rtaProm, null, 2),
           );
@@ -1055,7 +1055,7 @@ export class WalletServiceController extends AccountServiceController {
               vaultFrom.accountId,
               vaultBrandWithdraw.accountId,
             );
-            this.logger.debug(
+            this.logger.info(
               'rta from -> brand',
               JSON.stringify(rta.data, null, 2),
             );
@@ -1095,7 +1095,7 @@ export class WalletServiceController extends AccountServiceController {
                   },
                 }),
               );
-              this.logger.debug(
+              this.logger.info(
                 'rta brand -> to',
                 JSON.stringify(rta.data, null, 2),
               );
@@ -1116,7 +1116,7 @@ export class WalletServiceController extends AccountServiceController {
                   },
                 }),
               );
-              this.logger.debug(
+              this.logger.info(
                 'rta brand -> to?',
                 JSON.stringify(rta.data, null, 2),
               );
@@ -1131,7 +1131,7 @@ export class WalletServiceController extends AccountServiceController {
               ),
             );
             const rtaProm = await Promise.all(promisesTx);
-            this.logger.debug(
+            this.logger.info(
               'Update amount custodial to? -> brand',
               JSON.stringify(rtaProm, null, 2),
             );
@@ -1436,7 +1436,7 @@ export class WalletServiceController extends AccountServiceController {
     const valuts = {};
     const wallets = {};
     const promises = [];
-    this.logger.debug('Start sweep omnibus');
+    this.logger.info('Start sweep omnibus');
     do {
       walletList = await this.ewalletBuilder.getPromiseAccountEventClient(
         EventsNamesAccountEnum.findAll,
@@ -1520,7 +1520,7 @@ export class WalletServiceController extends AccountServiceController {
               return null;
             })
             .then((rta) => {
-              this.logger.debug(
+              this.logger.info(
                 `rta sweep deposit ${vaultFrom.name}_${from.name}`,
                 JSON.stringify(rta?.data, null, 2),
               );
@@ -1555,7 +1555,7 @@ export class WalletServiceController extends AccountServiceController {
               return null;
             })
             .then((rta) => {
-              this.logger.debug(
+              this.logger.info(
                 `rta sweep withdrawal ${vaultFrom.name}_${from.name}`,
                 JSON.stringify(rta?.data, null, 2),
               );
@@ -1578,7 +1578,7 @@ export class WalletServiceController extends AccountServiceController {
       }
     } while (walletList.nextPage != 1);
     await Promise.all(promises);
-    this.logger.debug('Finish sweep omnibus');
+    this.logger.info('Finish sweep omnibus');
   }
 
   private async getWallet(

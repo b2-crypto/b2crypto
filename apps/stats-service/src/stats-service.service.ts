@@ -122,12 +122,12 @@ export class StatsServiceService {
           lead.dateRetention,
           StatusLeadEnum.RET,
         );
-        this.logger.debug(
+        this.logger.info(
           'Progress lead',
           `${++_i} / ${leadsPage.totalElements}`,
         );
       }
-      this.logger.debug(
+      this.logger.info(
         'Progress lead page',
         `${query.page} / ${leadsPage.lastPage}`,
       );
@@ -569,7 +569,7 @@ export class StatsServiceService {
         r[a.lead?._id].push(a);
       } else {
         //r['null'].push(a);
-        this.logger.debug('No lead', a);
+        this.logger.info('No lead', a);
       }
       return r;
     }, Object.create(null));

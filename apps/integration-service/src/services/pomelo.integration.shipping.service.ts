@@ -27,8 +27,8 @@ export class PomeloIntegrationShippingService {
         statusCode: 204,
         body: {},
       };
-      this.logger.debug('Shipping-NotificationHandler', notification);
-      this.logger.debug(
+      this.logger.info('Shipping-NotificationHandler', notification);
+      this.logger.info(
         'Shipping-NotificationHandler',
         JSON.stringify(notification, null, 2),
       );
@@ -45,7 +45,7 @@ export class PomeloIntegrationShippingService {
         statusCode: 204,
         body: {},
       };
-      this.logger.debug(
+      this.logger.info(
         'CardEvents-NotificationHandler',
         JSON.stringify(event, null, 2),
       );

@@ -127,10 +127,10 @@ export class FireblocksIntegrationService extends IntegrationCryptoService<
           autoFuel: true, // Because gas station is enable
         },
       });
-      this.logger.debug('createVault', JSON.stringify(vault.data, null, 2));
+      this.logger.info('createVault', JSON.stringify(vault.data, null, 2));
       return vault.data;
     } catch (e) {
-      this.logger.debug('createVault', e);
+      this.logger.info('createVault', e);
     }
   }
   // creating a new vault account
@@ -158,7 +158,7 @@ export class FireblocksIntegrationService extends IntegrationCryptoService<
         walletUser = await this.fireblocks.vaults.createVaultAccountAsset(data);
       }
 
-      this.logger.debug('createWallet', JSON.stringify(walletUser, null, 2));
+      this.logger.info('createWallet', JSON.stringify(walletUser, null, 2));
       return walletUser.data;
     } catch (e) {
       if (e.message.indexOf('not found') > -1) {
@@ -181,12 +181,12 @@ export class FireblocksIntegrationService extends IntegrationCryptoService<
       const vaults = await this.fireblocks.vaults.getPagedVaultAccounts({
         limit,
       });
-      this.logger.debug(
+      this.logger.info(
         'getVaultPagedAccounts',
         JSON.stringify(vaults.data, null, 2),
       );
     } catch (e) {
-      this.logger.debug('getVaultPagedAccounts', e);
+      this.logger.info('getVaultPagedAccounts', e);
     }
   }
 
@@ -196,9 +196,9 @@ export class FireblocksIntegrationService extends IntegrationCryptoService<
         assetId,
         address,
       });
-      this.logger.debug('validateAddress', JSON.stringify(rta.data, null, 2));
+      this.logger.info('validateAddress', JSON.stringify(rta.data, null, 2));
     } catch (e) {
-      this.logger.debug('validateAddress', e);
+      this.logger.info('validateAddress', e);
     }
   }
 
@@ -237,7 +237,7 @@ export class FireblocksIntegrationService extends IntegrationCryptoService<
     const result = await this.fireblocks.transactions.createTransaction({
       transactionRequest: payload,
     });
-    this.logger.debug('createTransaction', JSON.stringify(result, null, 2));
+    this.logger.info('createTransaction', JSON.stringify(result, null, 2));
     return result;
   }
   async getTxStatus(txId: string): Promise<TransactionStateEnum | string> {
@@ -251,7 +251,7 @@ export class FireblocksIntegrationService extends IntegrationCryptoService<
         return 'Transaction does not exist';
       }
 
-      this.logger.debug('getTxStatus', messageToConsole);
+      this.logger.info('getTxStatus', messageToConsole);
       // while (tx.status !== TransactionStateEnum.Completed) {
       //   await new Promise((resolve) => setTimeout(resolve, 3000));
 

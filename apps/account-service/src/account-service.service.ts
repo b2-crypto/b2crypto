@@ -57,7 +57,7 @@ export class AccountServiceService
   private readonly preorders = new Map<string, PreorderData>();
   async cleanWallet(query: QuerySearchAnyDto) {
     throw new NotImplementedException();
-    //this.logger.debug('Start', `Clean wallet`);
+    //this.logger.info('Start', `Clean wallet`);
     // query = query || new QuerySearchAnyDto();
     // query.where = query.where || {};
     // query.where.type = TypesAccountEnum.WALLET;
@@ -68,7 +68,7 @@ export class AccountServiceService
     // await this.cleanWalletsWithTransfers(query, 'LOCK');
     // query.where.statusText = StatusAccountEnum.UNLOCK;
     // await this.cleanWalletsWithTransfers(query, 'UNLOCK');
-    //this.logger.debug('End', `Clean wallet`);
+    //this.logger.info('End', `Clean wallet`);
     // return {
     //   statusCode: 200,
     //   message: 'ok',
@@ -82,7 +82,7 @@ export class AccountServiceService
     const promises = [];
     while (query.page < lastPage) {
       ++query.page;
-      this.logger.debug(
+      this.logger.info(
         `Start page ${query.page}`,
         `Clean wallet with transfers`,
       );
@@ -94,15 +94,12 @@ export class AccountServiceService
           msg,
         ),
       );
-      this.logger.debug(
-        `End page ${query.page}`,
-        `Clean wallet with transfers`,
-      );
+      this.logger.info(`End page ${query.page}`, `Clean wallet with transfers`);
     }
     return Promise.all(promises);
   }
   async cleanWalletsWithTx(query: QuerySearchAnyDto, msg?: string) {
-    this.logger.debug(`Start page ${query.page}`, `Clean wallet with tx`);
+    this.logger.info(`Start page ${query.page}`, `Clean wallet with tx`);
     const promises = [];
     const walletsClean = await this.lib.findAll(query);
     const queryTx = {
@@ -119,7 +116,7 @@ export class AccountServiceService
       );
     if (transfersAccounts.totalElements) {
       const accountWithTx = transfersAccounts.list.map((t) => t.account);
-      this.logger.debug(
+      this.logger.info(
         `${accountWithTx.length}/${walletsClean.list.length}`,
         `Filter wallets with transfers page ${query.page}`,
       );
@@ -139,7 +136,7 @@ export class AccountServiceService
         (w) => !accountWithTx.includes(w._id.toString()),
       );
     } else {
-      this.logger.debug(
+      this.logger.info(
         'Not found transfers',
         `Filter wallets with transfers page ${query.page}`,
       );
@@ -153,7 +150,7 @@ export class AccountServiceService
       `Removed ${walletsClean.list.length} wallets`,
       `Filter wallets with transfers page ${query.page}`,
     );
-    this.logger.debug(
+    this.logger.info(
       `${walletsClean.list.length}/${walletsClean.totalElements}`,
       `Total ${msg} wallets to clean ${walletsClean.currentPage}/${walletsClean.lastPage}`,
     );
@@ -357,7 +354,7 @@ export class AccountServiceService
         },
       };
 
-      this.logger.debug('Account Request Confirmation Email Prepared', data);
+      this.logger.info('Account Request Confirmation Email Prepared', data);
       this.builder.emitMessageEventClient(
         EventsNamesMessageEnum.sendCardRequestConfirmationEmail,
         data,
@@ -452,7 +449,7 @@ export class AccountServiceService
   }
   getBalanceReport(query: QuerySearchAnyDto) {
     // TODO[hender - 2024/09/26] Receive 3 events but trigger only 1 from job
-    this.logger.debug('Start balance report', AccountServiceService.name);
+    this.logger.info('Start balance report', AccountServiceService.name);
     Promise.all([
       this.getBalanceByAccountTypeCard(query),
       //this.getBalanceByAccountTypeWallet(query),
@@ -461,7 +458,7 @@ export class AccountServiceService
       this.getBalanceByAccountByCard(query),
       //this.getBalanceByAccountByWallet(query),
     ]).then(async (results) => {
-      this.logger.debug('Report filter finish', AccountServiceService.name);
+      this.logger.info('Report filter finish', AccountServiceService.name);
       const [
         cardTotalAccumulated,
         //walletTotalAccumulated,
@@ -497,7 +494,7 @@ export class AccountServiceService
         } Balance Report ${query.where?.type ?? 'all types'
         } - ${this.printShortDate(date)} UTC`;
       this.sendEmailToList(promises, name);
-      this.logger.debug('Balance Report sended', name);
+      this.logger.info('Balance Report sended', name);
     });
   }
 
@@ -534,7 +531,7 @@ export class AccountServiceService
       },
     ];
     const attachments = await Promise.all(promisesAttachments);
-    this.logger.debug('Report finish', AccountServiceService.name);
+    this.logger.info('Report finish', AccountServiceService.name);
     destiny.forEach((destiny) => {
       this.sendEmail({
         destinyText: destiny.email,
@@ -581,7 +578,7 @@ export class AccountServiceService
     const objBase = this.getCustomObj(headers);
     // File created
     this.addDataToFile(objBase, filename, true, true);
-    this.logger.debug('File created', AccountServiceService.name);
+    this.logger.info('File created', AccountServiceService.name);
     return new Promise((res) => {
       // Wait file creation
       setTimeout(async () => {
@@ -620,7 +617,7 @@ export class AccountServiceService
             encodeBase64: content,
           });
         }
-        this.logger.debug(`File "${filename}" sent`, listName);
+        this.logger.info(`File "${filename}" sent`, listName);
         res({
           // encoded string as an attachment
           filename: filename,
@@ -631,7 +628,7 @@ export class AccountServiceService
           fs.unlinkSync(fileUri);
         }
       } else {
-        this.logger.debug(`File "${filename}" not found`, listName);
+        this.logger.info(`File "${filename}" not found`, listName);
         this.responseFileContent({ filename, fileUri, listName, res });
       }
     }, 20000);
