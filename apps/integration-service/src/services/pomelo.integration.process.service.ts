@@ -98,41 +98,32 @@ export class PomeloIntegrationProcessService {
         );
       }
     } catch (error) {
-      this.logger.debug(
-        `Error creatin transfer: ${error}`,
+      this.logger.info(
         PomeloIntegrationProcessService.name,
+        `Error creatin transfer: ${error}`,
       );
     }
   }
 
   private async getAmount(txn: any): Promise<any> {
-    let conversion: string;
-    try {
-      const to = process.env.DEFAULT_CURRENCY_CONVERSION_COIN;
-      const from = txn.amount.local.currency;
-      const amount = txn.amount.local.total;
-      conversion = `to: ${to} | from: ${from} | amount: ${amount}`;
-      let usd = 0;
-      if (parseInt(amount) > 0) {
-        usd = await this.currencyConversion.getCurrencyConversion(
-          to,
-          from,
-          amount,
-        );
-      }
-      return {
-        to,
-        from,
-        amount,
-        usd,
-      };
-    } catch (error) {
-      this.logger.error(
-        'PomeloProcess getAmount',
-        `Error: ${error} | Request: ${conversion}`,
-      );
-      throw new InternalServerErrorException(error);
-    }
+    const to = process.env.DEFAULT_CURRENCY_CONVERSION_COIN;
+    const from = txn.amount.local.currency;
+    const amount = txn.amount.local.total;
+    const conversion = `to: ${to} | from: ${from} | amount: ${amount}`;
+
+    this.logger.info('getAmount', conversion);
+
+    const usd =
+      parseInt(amount) > 0
+        ? await this.currencyConversion.getCurrencyConversion(to, from, amount)
+        : 0;
+
+    return {
+      to,
+      from,
+      amount,
+      usd,
+    };
   }
 
   private async executeProcess(
@@ -141,12 +132,12 @@ export class PomeloIntegrationProcessService {
     usdAmount: number,
   ): Promise<any> {
     try {
-      this.logger.debug('JSON.stringify(process)', 'ExecuteProcess start');
+      this.logger.info('JSON.stringify(process)', 'ExecuteProcess start');
       /* if (
         process?.installments &&
         parseInt(process?.installments?.quantity) > 1
       ) {
-        this.logger.debug(
+        this.logger.info(
           'Invalid Installments: ' + process?.installments?.quantity,
           'ExecuteProcess',
         );
@@ -158,7 +149,7 @@ export class PomeloIntegrationProcessService {
       const cardId = process?.card?.id || '';
       const movement = PomeloProcessEnum[process?.transaction?.type];
       if (usdAmount < 0) {
-        this.logger.debug('Invalid Amount: ' + usdAmount, 'ExecuteProcess');
+        this.logger.info('Invalid Amount: ' + usdAmount, 'ExecuteProcess');
         return this.buildErrorResponse(
           CardsEnum.CARD_PROCESS_INVALID_AMOUNT,
           authorize,
@@ -242,7 +233,7 @@ export class PomeloIntegrationProcessService {
     notification: NotificationDto,
     headers: any,
   ): Promise<any> {
-    this.logger.debug('ProcessNotification', 'Message Received');
+    this.logger.info('ProcessNotification', 'Message Received');
     let cachedResult = await this.cache.getResponse(
       notification.idempotency_key,
     );
@@ -306,7 +297,7 @@ export class PomeloIntegrationProcessService {
         },
       };
 
-      this.logger.debug(
+      this.logger.info(
         'Purchases/Transaction Adjustments Email Prepared',
         data,
       );
