@@ -1,6 +1,6 @@
 import { Traceable } from '@amplication/opentelemetry-nestjs';
 import { HttpService } from '@nestjs/axios';
-import { BadGatewayException, Injectable } from '@nestjs/common';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import { lastValueFrom } from 'rxjs';
 
@@ -43,9 +43,11 @@ export class FiatIntegrationClient {
         return res.data;
       })
       .catch((error) => {
-        this.logger.error('FiatIntegrationClient.getCurrencyConversion');
+        this.logger.error(
+          `FiatIntegrationClient.getCurrencyConversion: from=${from}, to=${to}, amount=${amount}`,
+        );
         this.logger.error(error);
-        throw new BadGatewayException(error);
+        throw new InternalServerErrorException(error);
       });
 
     return data.result;
