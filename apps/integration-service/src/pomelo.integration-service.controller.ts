@@ -76,8 +76,8 @@ export class PomeloIntegrationServiceController {
   }
 
   @Post(PomeloEnum.POMELO_AUTHORIZATION_PATH)
-  @UseGuards(PomeloSignatureGuard)
-  @UseInterceptors(PomeloSignatureInterceptor)
+  // @UseGuards(PomeloSignatureGuard)
+  // @UseInterceptors(PomeloSignatureInterceptor)
   @HttpCode(HttpStatus.OK)
   async processAuthorization(
     @Body() authorization: Authorization,
