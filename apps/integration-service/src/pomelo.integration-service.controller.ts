@@ -12,6 +12,7 @@ import {
   Controller,
   Headers,
   HttpCode,
+  HttpStatus,
   Post,
   UseGuards,
   UseInterceptors,
@@ -33,55 +34,67 @@ export class PomeloIntegrationServiceController {
   @Post(PomeloEnum.POMELO_NOTIFICATION_PATH)
   @UseGuards(PomeloSignatureGuard)
   @UseInterceptors(PomeloSignatureInterceptor)
-  @HttpCode(204)
+  @HttpCode(HttpStatus.NO_CONTENT)
   async processNotification(
     @Body() notification: NotificationDto,
     @Headers() headers: any,
   ): Promise<any> {
-    this.logger.debug(
-      `Idempotency: ${notification.idempotency_key}`,
+    this.logger.info(
       'NotificationHandler - processNotification',
+      `Idempotency: ${notification.idempotency_key}`,
     );
-    return await this.integrationServiceService.processNotification(
+    const result = await this.integrationServiceService.processNotification(
       notification,
       headers,
     );
+
+    this.logger.info('NotificationHandler', result);
+
+    return { ...result, statusCode: HttpStatus.NO_CONTENT };
   }
 
   @Post(PomeloEnum.POMELO_ADJUSTMENT_PATH)
   @UseGuards(PomeloSignatureGuard)
   @UseInterceptors(PomeloSignatureInterceptor)
-  @HttpCode(204)
+  @HttpCode(HttpStatus.NO_CONTENT)
   async processAdjustment(
     @Body() adjustment: Adjustment,
     @Headers(PomeloEnum.POMELO_IDEMPOTENCY_HEADER) idempotency: string,
     @Headers() headers: any,
   ): Promise<any> {
-    this.logger.debug(`Idempotency: ${idempotency}`, 'AdjustmentHandler');
+    this.logger.info(`Idempotency: ${idempotency}`, 'AdjustmentHandler');
     adjustment.idempotency = idempotency;
-    this.logger.debug('AdjustmentHandler', adjustment);
-    return await this.integrationServiceService.processAdjustment(
+    this.logger.info('AdjustmentHandler', adjustment);
+    const result = await this.integrationServiceService.processAdjustment(
       adjustment,
       headers,
     );
+
+    this.logger.info('AdjustmentHandler', result);
+
+    return { ...result, statusCode: HttpStatus.NO_CONTENT };
   }
 
   @Post(PomeloEnum.POMELO_AUTHORIZATION_PATH)
   @UseGuards(PomeloSignatureGuard)
   @UseInterceptors(PomeloSignatureInterceptor)
-  @HttpCode(200)
+  @HttpCode(HttpStatus.OK)
   async processAuthorization(
     @Body() authorization: Authorization,
     @Headers(PomeloEnum.POMELO_IDEMPOTENCY_HEADER) idempotency: string,
     @Headers() headers: any,
   ): Promise<any> {
-    this.logger.debug(`Idempotency: ${idempotency}`, 'AuthorizationHandler');
+    this.logger.info(`Idempotency: ${idempotency}`, 'AuthorizationHandler');
     authorization.idempotency = idempotency;
-    this.logger.debug('AuthorizationHandler', authorization);
-    return await this.integrationServiceService.processAuthorization(
+    this.logger.info('AuthorizationHandler', authorization);
+    const result = await this.integrationServiceService.processAuthorization(
       authorization,
       headers,
     );
+
+    this.logger.info('AuthorizationHandler', result);
+
+    return { ...result, statusCode: HttpStatus.OK };
   }
 
   @Post('/sftp/download')
