@@ -144,7 +144,10 @@ export class PersonServiceController implements GenericServiceController {
   @UseGuards(ApiKeyAuthGuard)
   // @CheckPoliciesAbility(new PolicyHandlerPersonUpdate())
   async updateOne(@Body() updatePersonDto: PersonUpdateDto, @Req() req?) {
-    const userId = updatePersonDto.user?.toString() || req.user.id;
+    const userId =
+      updatePersonDto.id?.toString() ||
+      updatePersonDto.user?.toString() ||
+      req.user.id;
     const user = await this.userService.getOne(userId);
     if (!user?._id) {
       throw new BadRequestError('User not found');
@@ -290,6 +293,17 @@ export class PersonServiceController implements GenericServiceController {
     @Ctx() ctx: RmqContext,
   ) {
     const person = this.updateOne(updateDto);
+    CommonService.ack(ctx);
+    return person;
+  }
+
+  @AllowAnon()
+  @MessagePattern(EventsNamesPersonEnum.updatePartialOne)
+  updatePartialOneEvent(
+    @Payload() updateDto: PersonUpdateDto,
+    @Ctx() ctx: RmqContext,
+  ) {
+    const person = this.personService.updatePartialOnePerson(updateDto);
     CommonService.ack(ctx);
     return person;
   }
