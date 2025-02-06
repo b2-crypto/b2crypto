@@ -1,4 +1,4 @@
 export enum NetworkEnum {
-  TRON = 'TRC20',
-    ARBITRUM = 'ARBITRUM'
-  }
+  TRON = 'TRX_USDT_S2UZ',
+  ARBITRUM = 'USDT_ARB'
+}
