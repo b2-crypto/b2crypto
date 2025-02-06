@@ -1,14 +1,21 @@
+import { Traceable } from '@amplication/opentelemetry-nestjs';
 import { ProcessBodyI } from '@integration/integration/dto/pomelo.process.body.dto';
 import { ProcessHeaderDto } from '@integration/integration/dto/pomelo.process.header.dto';
 import { PomeloCache } from '@integration/integration/util/pomelo.integration.process.cache';
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import * as crypto from 'crypto';
+import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 
+@Traceable()
 @Injectable()
 export class PomeloSignatureUtils {
   private API_DIC = JSON.parse(process.env.POMELO_SIGNATURE_SECRET_KEY_DIC);
 
-  constructor(private readonly cache: PomeloCache) {}
+  constructor(
+    @InjectPinoLogger(PomeloSignatureUtils.name)
+    protected readonly logger: PinoLogger,
+    private readonly cache: PomeloCache,
+  ) {}
 
   async checkSignature(
     headers: ProcessHeaderDto,
@@ -16,9 +23,9 @@ export class PomeloSignatureUtils {
   ): Promise<boolean> {
     try {
       if (headers && body) {
-        Logger.log(
-          `Headers: ${JSON.stringify(headers)}`,
+        this.logger.info(
           'Pomelo Check Signature - headers',
+          `Headers: ${JSON.stringify(headers)}`,
         );
         let signature = headers.signature;
         if (headers.signature.startsWith('hmac-sha256')) {
@@ -45,17 +52,17 @@ export class PomeloSignatureUtils {
           );
 
           if (!signaturesMatch) {
-            Logger.error(
-              `Signature mismatch. Received: ${signature}. Calculated: ${hashResult}`,
+            this.logger.error(
               'Pomelo Check Signature - signature vs calculated',
+              `Signature mismatch. Received: ${signature}. Calculated: ${hashResult}`,
             );
             return false;
           }
           return true;
         } else {
-          Logger.error(
-            `Unsupported signature algorithm, expecting hmac-sha256, got ${signature}`,
+          this.logger.error(
             'Pomelo Check Signature - algorithm',
+            `Unsupported signature algorithm, expecting hmac-sha256, got ${signature}`,
           );
           const response = await this.cache.setInvalidSignature(
             headers.idempotency,
@@ -64,7 +71,7 @@ export class PomeloSignatureUtils {
         }
       }
     } catch (error) {
-      Logger.error(error, 'Pomelo Check Signature error');
+      this.logger.error('Pomelo Check Signature error', error);
       return false;
     }
     return false;
@@ -87,7 +94,7 @@ export class PomeloSignatureUtils {
       const hashResult = hash.digest('base64');
       return 'hmac-sha256 ' + hashResult;
     } catch (error) {
-      Logger.error(error);
+      this.logger.error('Pomelo Sign Response error', error);
       return '';
     }
   }

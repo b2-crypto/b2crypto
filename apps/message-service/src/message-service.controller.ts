@@ -3,7 +3,6 @@ import {
   Controller,
   Delete,
   Get,
-  Logger,
   Param,
   ParseArrayPipe,
   Patch,
@@ -12,8 +11,10 @@ import {
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 
+import { Traceable } from '@amplication/opentelemetry-nestjs';
 import { AllowAnon } from '@auth/auth/decorators/allow-anon.decorator';
 import { CommonService } from '@common/common';
+import { NoCache } from '@common/common/decorators/no-cache.decorator';
 import GenericServiceController from '@common/common/interfaces/controller.generic.interface';
 import { QuerySearchAnyDto } from '@common/common/models/query_search-any.dto';
 import { UpdateAnyDto } from '@common/common/models/update-any.dto';
@@ -27,14 +28,19 @@ import {
   Payload,
   RmqContext,
 } from '@nestjs/microservices';
+import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import EventsNamesMessageEnum from './enum/events.names.message.enum';
 import { MessageServiceService } from './message-service.service';
-import { NoCache } from '@common/common/decorators/no-cache.decorator';
 
 @ApiTags('MESSAGE')
+@Traceable()
 @Controller('message')
 export class MessageServiceController implements GenericServiceController {
-  constructor(private readonly messageService: MessageServiceService) {}
+  constructor(
+    @InjectPinoLogger(MessageServiceController.name)
+    protected readonly logger: PinoLogger,
+    private readonly messageService: MessageServiceService,
+  ) {}
 
   @NoCache()
   @Get('all')
@@ -181,7 +187,10 @@ export class MessageServiceController implements GenericServiceController {
     try {
       this.messageService.sendEmailDisclaimer(lead);
     } catch (err) {
-      Logger.error(err, `${MessageServiceController.name}-sendEmailDisclaimer`);
+      this.logger.error(
+        `${MessageServiceController.name}-sendEmailDisclaimer`,
+        err,
+      );
     }
   }
 
@@ -195,9 +204,9 @@ export class MessageServiceController implements GenericServiceController {
     try {
       await this.messageService.sendEmailOtpNotification(message);
     } catch (err) {
-      Logger.error(
-        err,
+      this.logger.error(
         `${MessageServiceController.name}-sendEmailOtpNotification`,
+        err,
       );
     }
   }
@@ -212,7 +221,7 @@ export class MessageServiceController implements GenericServiceController {
     try {
       await this.messageService.sendEmailBalanceReport(message);
     } catch (err) {
-      Logger.error(err, MessageServiceController.name);
+      this.logger.error(MessageServiceController.name, err);
     }
   }
 
@@ -226,9 +235,9 @@ export class MessageServiceController implements GenericServiceController {
     try {
       await this.messageService.sendCardRequestConfirmationEmail(message);
     } catch (err) {
-      Logger.error(
-        err,
+      this.logger.error(
         `${MessageServiceController.name}-sendCardRequestConfirmationEmail`,
+        err,
       );
     }
   }
@@ -243,9 +252,9 @@ export class MessageServiceController implements GenericServiceController {
     try {
       await this.messageService.sendProfileRegistrationCreation(message);
     } catch (err) {
-      Logger.error(
-        err,
+      this.logger.error(
         `${MessageServiceController.name}-sendProfileRegistrationCreation`,
+        err,
       );
     }
   }
@@ -260,9 +269,9 @@ export class MessageServiceController implements GenericServiceController {
     try {
       await this.messageService.sendVirtualPhysicalCards(message);
     } catch (err) {
-      Logger.error(
-        err,
+      this.logger.error(
         `${MessageServiceController.name}-sendVirtualPhysicalCards`,
+        err,
       );
     }
   }
@@ -277,7 +286,10 @@ export class MessageServiceController implements GenericServiceController {
     try {
       await this.messageService.sendAdjustments(message);
     } catch (err) {
-      Logger.error(err, `${MessageServiceController.name}-sendAdjustments`);
+      this.logger.error(
+        `${MessageServiceController.name}-sendAdjustments`,
+        err,
+      );
     }
   }
 
@@ -291,9 +303,9 @@ export class MessageServiceController implements GenericServiceController {
     try {
       await this.messageService.sendCryptoWalletsManagement(message);
     } catch (err) {
-      Logger.error(
-        err,
+      this.logger.error(
         `${MessageServiceController.name}-sendCryptoWalletsManagement`,
+        err,
       );
     }
   }
@@ -308,9 +320,9 @@ export class MessageServiceController implements GenericServiceController {
     try {
       await this.messageService.sendSecurityNotifications(message);
     } catch (err) {
-      Logger.error(
-        err,
+      this.logger.error(
         `${MessageServiceController.name}-sendSecurityNotifications`,
+        err,
       );
     }
   }
@@ -325,9 +337,9 @@ export class MessageServiceController implements GenericServiceController {
     try {
       await this.messageService.sendPasswordRestoredEmail(message);
     } catch (err) {
-      Logger.error(
-        err,
+      this.logger.error(
         `${MessageServiceController.name}-sendPasswordRestoredEmail`,
+        err,
       );
     }
   }
@@ -341,7 +353,10 @@ export class MessageServiceController implements GenericServiceController {
     try {
       await this.messageService.sendPurchases(message);
     } catch (err) {
-      Logger.error(err, `${MessageServiceController.name}-sendPurchasesEmail`);
+      this.logger.error(
+        `${MessageServiceController.name}-sendPurchasesEmail`,
+        err,
+      );
     }
   }
   @AllowAnon()
@@ -354,9 +369,9 @@ export class MessageServiceController implements GenericServiceController {
     try {
       await this.messageService.sendPreRegisterEmail(message);
     } catch (err) {
-      Logger.error(
-        err,
+      this.logger.error(
         `${MessageServiceController.name}-sendPreRegisterEmail`,
+        err,
       );
     }
   }

@@ -1,36 +1,37 @@
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
-import { IntegrationCrmService } from '../generic/integration.crm.service';
+import { Traceable } from '@amplication/opentelemetry-nestjs';
+import { CrmDocument } from '@crm/crm/entities/mongoose/crm.schema';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import { RpcException } from '@nestjs/microservices';
+import { TransferInterface } from '@transfer/transfer/entities/transfer.interface';
+import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
+import { CrmGenerateTokenResponseDto } from '../generic/dto/crm.generate.token.response.dto';
+import { GenerateTokenCrmRequestDto } from '../generic/dto/generate.token.crm.dto';
 import { GetDepositDto } from '../generic/dto/get-deposit.dto';
 import { GetSalesStatusesDto } from '../generic/dto/get-sales-statuses.dto';
 import { GetStatsDto } from '../generic/dto/get-stats.dto';
 import { GetUserDto } from '../generic/dto/get-user.dto';
 import { GetUsersDto } from '../generic/dto/get-users.dto';
 import { RegenerateUserAutoLoginUrlDto } from '../generic/dto/regenerate-user-auto-login-url.dto';
+import { RegisterPaymentDto } from '../generic/dto/register-payment.dto';
 import { RegisterUserDto } from '../generic/dto/register-user.dto';
 import { SyncUserNoteDto } from '../generic/dto/sync-user-note-dto.dto';
 import { SyncUserTransactionDto } from '../generic/dto/sync-user-transaction.dto';
 import { TrackVisitDto } from '../generic/dto/track-visit.dto';
-import { UserResponseDto } from '../generic/dto/user.response.dto';
-import { RegisterLeadLeverateRequestDto } from './dto/register.lead.leverate.request.dto';
-import { LeverateRegisterResponseDto } from './result/leverate.register.response.dto';
-import { GetLeadDataFromCRMInterface } from '../generic/interface/get.lead.data.from.crm.interface';
-import { GenerateCrmTokenInterface } from '../generic/interface/generate.crm.token.interface';
-import { CrmGenerateTokenResponseDto } from '../generic/dto/crm.generate.token.response.dto';
-import { GenerateTokenCrmRequestDto } from '../generic/dto/generate.token.crm.dto';
-import { CrmDocument } from '@crm/crm/entities/mongoose/crm.schema';
-import { PaymentResponseDto } from '../generic/dto/payment.response.dto';
-import { RegisterPaymentDto } from '../generic/dto/register-payment.dto';
 import { UpdatePaymentDto } from '../generic/dto/update.payment.dto';
-import { CrmCreateWithdrawalDto } from '../generic/dto/crm.create.withdrawal.dto';
-import { TransferInterface } from '@transfer/transfer/entities/transfer.interface';
-import { LeverateRegenerateUserAutoLoginUrlDto } from './result/regenerate-user-auto-login-url.response';
-import { RpcException } from '@nestjs/microservices';
-import { LeadAccountDetailsResponse } from './dto/lead.account.details.response.dto';
-import { InfoResponseLeverateDto } from './dto/result.response.leverate.dto';
-import { MonetaryTransactionRequestLeverateDto } from './dto/create.monetary.transaction.request.dto';
+import { UserResponseDto } from '../generic/dto/user.response.dto';
+import { IntegrationCrmService } from '../generic/integration.crm.service';
+import { GenerateCrmTokenInterface } from '../generic/interface/generate.crm.token.interface';
+import { GetLeadDataFromCRMInterface } from '../generic/interface/get.lead.data.from.crm.interface';
 import { AssignLeadLeverateRequestDto } from './dto/assign.lead.leverate.request.dto';
-import { ConfigService } from '@nestjs/config';
+import { MonetaryTransactionRequestLeverateDto } from './dto/create.monetary.transaction.request.dto';
+import { LeadAccountDetailsResponse } from './dto/lead.account.details.response.dto';
+import { RegisterLeadLeverateRequestDto } from './dto/register.lead.leverate.request.dto';
+import { InfoResponseLeverateDto } from './dto/result.response.leverate.dto';
+import { LeverateRegisterResponseDto } from './result/leverate.register.response.dto';
+import { LeverateRegenerateUserAutoLoginUrlDto } from './result/regenerate-user-auto-login-url.response';
 
+@Traceable()
 @Injectable()
 export class LeverateIntegrationService
   extends IntegrationCrmService<
@@ -55,8 +56,13 @@ export class LeverateIntegrationService
   >
   implements GetLeadDataFromCRMInterface, GenerateCrmTokenInterface
 {
-  constructor(_crm: CrmDocument, protected configService: ConfigService) {
-    super(_crm, configService);
+  constructor(
+    @InjectPinoLogger(LeverateIntegrationService.name)
+    protected readonly logger: PinoLogger,
+    _crm: CrmDocument,
+    protected configService: ConfigService,
+  ) {
+    super(logger, _crm, configService);
     super.setRouteMap({
       // Affiliate
       generateApiKey: '',
@@ -105,12 +111,12 @@ export class LeverateIntegrationService
         this.crm.expTimeToken = new Date(rta.data.expTime);
         await this.crm.save();
       } catch (err) {
-        Logger.error(
-          `${url}`,
+        this.logger.error(
           `${LeverateIntegrationService.name}:generateCrmToken`,
+          `${url}`,
         );
-        Logger.error(`${url}`, LeverateIntegrationService.name);
-        Logger.error(err, LeverateIntegrationService.name);
+        this.logger.error(LeverateIntegrationService.name, `${url}`);
+        this.logger.error(LeverateIntegrationService.name, err);
       }
     }
     super.setTokenCrm(this.crm.token);
@@ -124,7 +130,10 @@ export class LeverateIntegrationService
     if (expTimeToken) {
       const expire = new Date(expTimeToken);
       const now = new Date();
-      Logger.debug(expire.getTime() <= now.getTime(), 'Has expired crm token');
+      this.logger.info(
+        'Has expired crm token',
+        expire.getTime() <= now.getTime(),
+      );
       return expire.getTime() <= now.getTime();
     }
     return true;
@@ -133,9 +142,9 @@ export class LeverateIntegrationService
   async crmRegisterPayment(
     transfer: TransferInterface,
   ): Promise<InfoResponseLeverateDto> {
-    Logger.warn(
-      `Transfer ${transfer._id} - ${transfer.numericId}`,
+    this.logger.warn(
       'crmCreateDeposit',
+      `Transfer ${transfer._id} - ${transfer.numericId}`,
     );
     await this.generateCrmToken({
       organization: this.crm.organizationCrm,
@@ -152,9 +161,9 @@ export class LeverateIntegrationService
   async crmCreateWithdrawal(
     transfer: TransferInterface,
   ): Promise<InfoResponseLeverateDto> {
-    Logger.warn(
-      `Transfer ${transfer._id} - ${transfer.numericId}`,
+    this.logger.warn(
       'crmCreateWithdrawal',
+      `Transfer ${transfer._id} - ${transfer.numericId}`,
     );
     await this.generateCrmToken({
       organization: this.crm.organizationCrm,
@@ -169,9 +178,9 @@ export class LeverateIntegrationService
   async crmCreateCredit(
     transfer: TransferInterface,
   ): Promise<InfoResponseLeverateDto> {
-    Logger.warn(
-      `Transfer ${transfer._id} - ${transfer.numericId}`,
+    this.logger.warn(
       'crmCreateCredit',
+      `Transfer ${transfer._id} - ${transfer.numericId}`,
     );
     await this.generateCrmToken({
       organization: this.crm.organizationCrm,

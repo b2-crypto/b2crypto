@@ -19,6 +19,7 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 
+import { Traceable } from '@amplication/opentelemetry-nestjs';
 import { AllowAnon } from '@auth/auth/decorators/allow-anon.decorator';
 import { ApiKeyAuthGuard } from '@auth/auth/guards/api.key.guard';
 import { CommonService } from '@common/common';
@@ -32,6 +33,7 @@ import {
   Payload,
   RmqContext,
 } from '@nestjs/microservices';
+import LocationDto from '@person/person/dto/location.dto';
 import { PersonCreateDto } from '@person/person/dto/person.create.dto';
 import { PersonUpdateDto } from '@person/person/dto/person.update.dto';
 import { AddressSchema } from '@person/person/entities/mongoose/address.schema';
@@ -40,9 +42,9 @@ import { SwaggerSteakeyConfigEnum } from 'libs/config/enum/swagger.stakey.config
 import { BadRequestError } from 'passport-headerapikey';
 import EventsNamesPersonEnum from './enum/events.names.person.enum';
 import { PersonServiceService } from './person-service.service';
-import LocationDto from '@person/person/dto/location.dto';
 
 @ApiTags(SwaggerSteakeyConfigEnum.TAG_PROFILE)
+@Traceable()
 @Controller('persons')
 export class PersonServiceController implements GenericServiceController {
   constructor(
@@ -96,8 +98,8 @@ export class PersonServiceController implements GenericServiceController {
     createPersonDto.taxIdentificationType =
       createPersonDto.taxIdentificationType ?? createPersonDto.typeDocId;
     createPersonDto.taxIdentificationValue =
-      createPersonDto.taxIdentificationValue ??
-      parseInt(createPersonDto.numDocId);
+      createPersonDto.taxIdentificationValue ?? createPersonDto.numDocId;
+
     if (!createPersonDto.user) {
       const user = await this.userService.getOne(req.user.id);
       if (!user._id) {
@@ -142,7 +144,10 @@ export class PersonServiceController implements GenericServiceController {
   @UseGuards(ApiKeyAuthGuard)
   // @CheckPoliciesAbility(new PolicyHandlerPersonUpdate())
   async updateOne(@Body() updatePersonDto: PersonUpdateDto, @Req() req?) {
-    const userId = updatePersonDto.user?.toString() || req.user.id;
+    const userId =
+      updatePersonDto.id?.toString() ||
+      updatePersonDto.user?.toString() ||
+      req.user.id;
     const user = await this.userService.getOne(userId);
     if (!user?._id) {
       throw new BadRequestError('User not found');

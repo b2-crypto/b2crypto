@@ -4,28 +4,28 @@ config:
   aws:region: us-east-2
   aws:secretKey:
     secure: AAABABuqE+VNzSljzoxE833bALLKLHE4LNx4qgLkGbpiwnOQ1/yBN0lWwQUggzwMv6CjUcPYbT1G8VZLEs/GlYEr+xzQmv3S
-  b2crypto-iac:API_KEY_EMAIL_APP: ""
+  b2crypto-iac:API_KEY_EMAIL_APP: ''
   b2crypto-iac:APP_NAME: B2Crypto
   b2crypto-iac:AUTH_EXPIRE_IN: 8h
-  b2crypto-iac:AUTH_MAX_SECONDS_TO_REFRESH: "60"
+  b2crypto-iac:AUTH_MAX_SECONDS_TO_REFRESH: '60'
   b2crypto-iac:AUTH_SECRET:
     secure: AAABAACcu7djHCRDvCp/w1vYvWfRp2IHsFBnLfB+dzZCj4bXKrlbGQ==
-  b2crypto-iac:AUTHORIZATIONS_BLOCK_BALANCE_PERCENTAGE: "0.1"
+  b2crypto-iac:AUTHORIZATIONS_BLOCK_BALANCE_PERCENTAGE: '0.1'
   b2crypto-iac:AWS_SES_FROM_DEFAULT:
     secure: AAABAMtAbti6kEKbIrKonhXYrnTxwoY/RdfosMDJpe7HEt8/eGwLEns11ADU6IBUoZGojHc=
   b2crypto-iac:AWS_SES_HOST:
     secure: AAABAKxXPSchWJZaLVdTSdCxjQB5yYikBJjoMedHCpvrji0g4ZCWFVp/1oAb5yFJBLneXOhsIAq6wn8WniL2pzXq
   b2crypto-iac:AWS_SES_PASSWORD:
     secure: AAABAEm4h+qKxKiHMNI9a/KIBxr+sqgKsUQ6BaSkpkyfzVB2AcKtpJA1oUpgGgiGZ59lYG89TSJXqV0ATxKNjEIXMXK4UH2jxKkj9g==
-  b2crypto-iac:AWS_SES_PORT: "587"
+  b2crypto-iac:AWS_SES_PORT: '587'
   b2crypto-iac:AWS_SES_SMTP_PASSWORD:
     secure: AAABADN2ubIV3H7Rysitw98CD+DK6Kmh24sKZiIYyUrcZe2RznV3t8z/G8x0diKjQj10SQxqE4Yaw8/5nyiyaRnqofz0vLYbvd/57A==
   b2crypto-iac:AWS_SES_SMTP_USERNAME:
     secure: AAABAAUnuRNmjwHkWiRfEvSl8M/ViSvF4y46TU8ktGN4N+C2kh4Lewpey6aZ3N24NpVBcQ==
   b2crypto-iac:AWS_SES_USERNAME:
     secure: AAABAKw8A53gVDH/PGT8pBAGkBtC3R30kNyXRPAllk/ImUz3CCNjKn0wAgT0HpFAeM8kfg==
-  b2crypto-iac:CACHE_MAX_ITEMS: "50"
-  b2crypto-iac:CACHE_TTL: "20"
+  b2crypto-iac:CACHE_MAX_ITEMS: '50'
+  b2crypto-iac:CACHE_TTL: '20'
   b2crypto-iac:CURRENCY_CONVERSION_API_KEY:
     secure: AAABAIvSdYXyQUyKPvF5sK9yqiRYwughFf2il47DK6T7THzBBclm9FrPkFpDOeJ6bzdufFeXcxEpsZJt1VQXVw==
   b2crypto-iac:CURRENCY_CONVERSION_API_URL:
@@ -34,8 +34,8 @@ config:
   b2crypto-iac:DATABASE_URL:
     secure: AAABAKP/g2uKwubiYPzrvrjLqf3Q+Wr7hzFDoAF8O18zJzeEvYMHtOICf1zeA2VcfX5QPUNUEZ3ejvmTlH8TNM2kdudlu6HkBx/o3Bwu2ZcnjepM5/HO5Xf0PSju8JqO9VDS3Sy8feVXeJ0cyB1BrN6kdQGlVYtPF+I4Uh3rq3oZQoFRIPLhjiXQhurmoPhOHzWZZi62LfVGPJIppNE=
   b2crypto-iac:DEFAULT_CURRENCY_CONVERSION_COIN: USD
-  b2crypto-iac:ENVIRONMENT: TEST
-  b2crypto-iac:GOOGLE_2FA: "false"
+  b2crypto-iac:ENVIRONMENT: PROD
+  b2crypto-iac:GOOGLE_2FA: 'false'
   b2crypto-iac:POMELO_API_URL:
     secure: AAABAP22z4Koc4rDw4kajPGmDev1Uu9jQVX9XnJGSFsqJtBEUopaukPHvaFfCfpawmYec8v9Q8FGVgvIWQ==
   b2crypto-iac:POMELO_AUDIENCE:
@@ -58,13 +58,13 @@ config:
     secure: AAABABvtW1K1SECCpbzZub5PZaql2sk1JKooUBTzspvNPxOUvonXGGmAZb1QmqjFsotce8WNn6YQffLx8YbSIJeTwHtH0rCm88grbG1mKJr1aIc7YQNtdNVuUnvsqV68SzoqOFNgCWTmFqdkcxBr0uTkySYRh9VwarwZUojiuA==
   b2crypto-iac:POMELO_WHITELISTED_IPS:
     secure: AAABAML1deOAuPNM/3p7Ejm7+ij0VKRZ1yE9UG6IBprXVN85JSNaNTM2FmLs67HXCzCzTWwRmNqQDQDIwZehm952oGJ6hfutmda/BGCGhHU81Ni2cYlyGp0J
-  b2crypto-iac:POMELO_WHITELISTED_IPS_CHECK: "ON"
-  b2crypto-iac:PORT: "80"
+  b2crypto-iac:POMELO_WHITELISTED_IPS_CHECK: 'ON'
+  b2crypto-iac:PORT: '80'
   b2crypto-iac:RABBIT_MQ_HOST:
     secure: AAABALkTWwp/fXGJwhDdlMkzkqx9kR8Tn4Dm9APjQMOulGExPoviTFBzNRqxOTHa8TI1qReV4diR5rwLT1hIkbhfmVabNH/2c9H4cfbXow8n0l0d1qGykJiKa4cWdTfCgw==
   b2crypto-iac:RABBIT_MQ_PASSWORD:
     secure: AAABACbdgTq8QoW+qyuyGV8UXValK9NdZC1wQcmaFFPKXIjy5298kwbfsQaSMnNt0ADLPw0A3uXEYSNKQ3xH0w==
-  b2crypto-iac:RABBIT_MQ_PORT: "5671"
+  b2crypto-iac:RABBIT_MQ_PORT: '5671'
   b2crypto-iac:RABBIT_MQ_QUEUE: TEST
   b2crypto-iac:RABBIT_MQ_USERNAME:
     secure: AAABAGc6jwXVA++Jzc0eUhBAP6hkLRe2fqCyCZOgo14k8tWIe+qWlA==
@@ -72,13 +72,13 @@ config:
     secure: AAABAJb8yMo4SMEJ/gGnb9tL3bSlSDKIKKPaAY0z4RzZ/OQor0p8lH3mOKbxqB7c8x+oYlrk2Uz8Al4MHKA5NJmLrX42PGUzezSJLT7g5puBRivVtw==
   b2crypto-iac:REDIS_PASSWORD:
     secure: AAABAO3cc9HXLddzAjac2SUfwgP/JeANMn2bzYRGdv32v0LOcCDByxo47ejre/aPT4xWyFG/pcnOboKLn8m+YA==
-  b2crypto-iac:REDIS_PORT: "10790"
+  b2crypto-iac:REDIS_PORT: '10790'
   b2crypto-iac:REDIS_USERNAME:
     secure: AAABAPQX7nhvW7FxOM4doR8oQUaL7vUmBC8Q6M4f0H/t+L5Qptta
   b2crypto-iac:STACK: testing
-  b2crypto-iac:TESTING: "false"
+  b2crypto-iac:TESTING: 'false'
   b2crypto-iac:TZ: UTC
-  b2crypto-iac:URL_API_EMAIL_APP: ""
+  b2crypto-iac:URL_API_EMAIL_APP: ''
   b2crypto-iac:VPC_CIDR_BLOCK: 10.1.0.0/16
   mongodbatlas:privateKey:
     secure: AAABAHZTgYkWOY0JdG/bp6KxaAdRg1ucr/kQfq7Q1BeJLF/Lrwg/w3nofia15iY3/QTrqHkBy7fPI6DgWwN8z5yPdZo=
@@ -100,9 +100,9 @@ config:
     secure: AAABAE46H/oUzkXhpSeSBGu+NanfJhr6Ci4HrgIuP495GAczGwU5JL/G+dg=
   b2crypto-iac:ETL_POSTGRE_DATABASE:
     secure: AAABAHy/EmBIanVcDpyt6vjVOdsWkKigt8sc2Xq95PcRxoR2tPg=
-  b2crypto-iac:MAX_CAPACITY_AUTOSCALING: "3"
-  b2crypto-iac:MIN_CAPACITY_AUTOSCALING: "1"
-  b2crypto-iac:DESIRED_COUNT_TASK: "1"
+  b2crypto-iac:MAX_CAPACITY_AUTOSCALING: '3'
+  b2crypto-iac:MIN_CAPACITY_AUTOSCALING: '1'
+  b2crypto-iac:DESIRED_COUNT_TASK: '1'
   b2crypto-iac:RABBIT_MQ_INSTANCE_TYPE: mq.t3.micro
   b2crypto-iac:LOGO_URL: https://message-templates-resource.s3.eu-west-3.amazonaws.com/logo/b2pay.png
   b2crypto-iac:SOCIAL_MEDIA_ICONS: '{"facebook":"https://message-templates-resource.s3.eu-west-3.amazonaws.com/social/facebook.png","instagram":"https://message-templates-resource.s3.eu-west-3.amazonaws.com/social/instagram.png","linkedin":"https://message-templates-resource.s3.eu-west-3.amazonaws.com/social/linkedin.png","youtube":"https://message-templates-resource.s3.eu-west-3.amazonaws.com/social/youtube.png"}'
@@ -128,13 +128,13 @@ config:
   b2crypto-iac:SUBDOMAIN_PREFIX_OPTL_COLLECTOR: optlcollectortest
   b2crypto-iac:SUBDOMAIN_PREFIX_OPTL_UI: optluitest
   b2crypto-iac:OPTL_OPEN_SEARCH_INSTANCE_TYPE: t3.small.search
-  b2crypto-iac:OPTL_OPEN_SEARCH_INSTANCE_COUNT: "1"
-  b2crypto-iac:OPTL_COLLECTOR_MAX_CAPACITY_AUTOSCALING: "10"
-  b2crypto-iac:OPTL_COLLECTOR_MIN_CAPACITY_AUTOSCALING: "1"
-  b2crypto-iac:OPTL_OPEN_SEARCH_ZONE_AWARENESS_AVAILABILITY_COUNT: "1"
-  b2crypto-iac:OPTL_OPEN_SEARCH_EBS_VOLUME_SIZE: "10"
-  b2crypto-iac:OPTL_COLLECTOR_DESIRED_COUNT_TASK: "1"
-  b2crypto-iac:OPTL_OPEN_SEARCH_ZONE_AWARENESS_ENABLED: "false"
+  b2crypto-iac:OPTL_OPEN_SEARCH_INSTANCE_COUNT: '1'
+  b2crypto-iac:OPTL_COLLECTOR_MAX_CAPACITY_AUTOSCALING: '10'
+  b2crypto-iac:OPTL_COLLECTOR_MIN_CAPACITY_AUTOSCALING: '1'
+  b2crypto-iac:OPTL_OPEN_SEARCH_ZONE_AWARENESS_AVAILABILITY_COUNT: '1'
+  b2crypto-iac:OPTL_OPEN_SEARCH_EBS_VOLUME_SIZE: '10'
+  b2crypto-iac:OPTL_COLLECTOR_DESIRED_COUNT_TASK: '1'
+  b2crypto-iac:OPTL_OPEN_SEARCH_ZONE_AWARENESS_ENABLED: 'false'
   b2crypto-iac:V1_DB_USER:
     secure: AAABAK62BUgZkUxbrvH8fY6H7xSulL4jLDn8XU0aeYU=
   b2crypto-iac:V1_DB_PWD:
@@ -144,13 +144,12 @@ config:
   b2crypto-iac:V1_DB_PORT:
     secure: AAABAM4kzD3DjyzzmBJO7G4St6rRfwDzPTut88UVyVI=
   b2crypto-iac:V1_DB_NAME:
-    secure: AAABALf5qVAUVEgz8zQGV7uncxznfbNVwFN6acI4r9M=
-  b2crypto-iac:AWS_ACCESS_KEY:
-    secure: AAABAAf+y003TFcj4+/pulQTI4C0rn5cGg2NeaWHU5E=
-  b2crypto-iac:AWS_SECRET_KEY:
-    secure: AAABANhcwSPgY+DTvQI28oJvf7k6Vt+9sou3wwdqcNk=
-  b2crypto-iac:PROJECT_NAME: b2crypto
-  b2crypto-iac:TASK_CPU_MONOLITH: "1024"
-  b2crypto-iac:TASK_MEMORY_MONOLITH: "2048"
-  b2crypto-iac:MQ_UUID: 019499de-9036-7676-94ce-54b02cb9e62e
-  b2crypto-iac:SUBDOMAIN_PREFIX_RABBITMQ: rabbitmqtest
+    secure: AAABAJqqCLtNaTSspvUShsBeu2nzUZaWn7eWth+rliQ=
+  b2crypto-iac:OTP_VALIDATION_TIME_SECONDS: '120'
+  b2crypto-iac:APP_VERSION: 0.9.0
+  b2crypto-iac:OTLP_HOST:
+    secure: AAABAK6nDqAaWQfclIfc9AM8Gh4ydjs9XXbgAEt5CCBnmvqiWD9Q9GZge5hbIoIj/GxDLLZNWFSs+cjVzpw=
+  b2crypto-iac:OTLP_API_KEY:
+    secure: AAABAK5+BpTwAkg6vhuWO19wqRK6IDG/XTO26N0dKYQ6TFXxmqXBsNzGQLyF598/q1//XSXTgAult3rN8wIPwBd/t+A=
+  b2crypto-iac:TASK_CPU_MONOLITH: '1024'
+  b2crypto-iac:TASK_MEMORY_MONOLITH: '2048'

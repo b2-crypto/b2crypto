@@ -21,12 +21,12 @@ export const databaseProviders = [
           keepAliveInitialDelay: 300000,
         });
         if (configService.get('ENVIRONMENT') !== EnvironmentEnum.prod) {
-          Logger.log(dbUrl, `Database "${dbName}" connect to:`);
+          Logger.debug(`Database "${dbName}" connect to:`, dbUrl);
         }
 
         return connection;
       } catch (error) {
-        Logger.error(error);
+        Logger.error(error.message, error);
         return error;
       }
     },

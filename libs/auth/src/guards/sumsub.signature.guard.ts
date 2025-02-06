@@ -1,3 +1,4 @@
+import { Traceable } from '@amplication/opentelemetry-nestjs';
 import { PomeloProcessConstants } from '@common/common/utils/pomelo.integration.process.constants';
 import { SumsubHttpUtils } from '@common/common/utils/sumsub.integration.process.http.utils';
 import { SumsubSignatureUtils } from '@common/common/utils/sumsub.integration.process.signature';
@@ -6,12 +7,15 @@ import {
   ExecutionContext,
   HttpException,
   Injectable,
-  Logger,
 } from '@nestjs/common';
+import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 
+@Traceable()
 @Injectable()
 export class SumsubSignatureGuard implements CanActivate {
   constructor(
+    @InjectPinoLogger(SumsubSignatureGuard.name)
+    protected readonly logger: PinoLogger,
     private readonly signatureUtil: SumsubSignatureUtils,
     private readonly constants: PomeloProcessConstants,
     private readonly utils: SumsubHttpUtils,
@@ -20,14 +24,14 @@ export class SumsubSignatureGuard implements CanActivate {
   async canActivate(context: ExecutionContext): Promise<boolean> {
     this.headersToLowercase(context);
     const headers = this.utils.extractRequestHeaders(context);
-    Logger.log(`Authorizing request.`, 'Sumsub Signature Guard');
+    this.logger.info(`Authorizing request.`, 'Sumsub Signature Guard');
     const request = context.switchToHttp().getRequest();
     const isValid = await this.signatureUtil.checkSignature(
       headers,
       request.body,
     );
     if (!isValid) {
-      Logger.log(`Signing invalid signature response`, 'SignatureGuard');
+      this.logger.info(`Signing invalid signature response`, 'SignatureGuard');
       throw new HttpException(this.constants.RESPONSE_INVALID_SIGNATURE, 400);
     }
     return isValid;

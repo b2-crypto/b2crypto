@@ -1,8 +1,9 @@
+import { Traceable } from '@amplication/opentelemetry-nestjs';
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { RmqContext } from '@nestjs/microservices';
-import { QueueAdminModule } from './queue.admin.provider.module';
 
+@Traceable()
 @Injectable()
 export class QueueAdminService {
   constructor(private readonly configService: ConfigService) {}

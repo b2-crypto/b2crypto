@@ -1,22 +1,28 @@
+import { Traceable } from '@amplication/opentelemetry-nestjs';
 import { BuildersService } from '@builder/builders';
 import { SumsubApplicantOnHold } from '@integration/integration/identity/generic/domain/process/sumsub.applicant.onhold.dto';
 import { SumsubApplicantPending } from '@integration/integration/identity/generic/domain/process/sumsub.applicant.pending.dto';
 import { SumsubApplicantReviewed } from '@integration/integration/identity/generic/domain/process/sumsub.applicant.reviewed.dto';
 import {
-  BadRequestException,
   Injectable,
-  Logger,
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { UserVerifyIdentitySchema } from '@user/user/entities/mongoose/user.verify.identity.schema';
 import { UserEntity } from '@user/user/entities/user.entity';
+import EventsNamesPersonEnum from 'apps/person-service/src/enum/events.names.person.enum';
 import EventsNamesUserEnum from 'apps/user-service/src/enum/events.names.user.enum';
 import { isMongoId } from 'class-validator';
+import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 
+@Traceable()
 @Injectable()
 export class SumsubNotificationIntegrationService {
-  constructor(private readonly builder: BuildersService) {}
+  constructor(
+    @InjectPinoLogger(SumsubNotificationIntegrationService.name)
+    protected readonly logger: PinoLogger,
+    private readonly builder: BuildersService,
+  ) {}
 
   async validateClient(clientId: string) {
     const client = await this.builder.getPromiseUserEventClient(
@@ -33,29 +39,34 @@ export class SumsubNotificationIntegrationService {
   }
   async updateUserByReviewed(notification: SumsubApplicantReviewed) {
     if (!isMongoId(notification.externalUserId)) {
-      Logger.error(
-        `User id "${notification.externalUserId}" isn't valid`,
+      this.logger.error(
         'Reviewed.SumsubNotificationIntegrationService',
+        `User id "${notification.externalUserId}" isn't valid`,
       );
       return null;
     }
+
     const user = await this.builder.getPromiseUserEventClient<UserEntity>(
       EventsNamesUserEnum.findOneById,
       notification.externalUserId,
     );
+
     if (!user) {
-      Logger.error(
-        'User not found',
+      this.logger.error(
         'Reviewed.SumsubNotificationIntegrationService',
+        'User not found',
       );
       return null;
     }
+
     user.verifyIdentityResponse =
       user.verifyIdentityResponse ?? new UserVerifyIdentitySchema();
     user.verifyIdentityResponse.reviewed = notification;
+
     if (notification.reviewStatus === 'completed') {
       user.verifyIdentity = notification.reviewResult.reviewAnswer === 'GREEN';
     }
+
     this.builder.emitUserEventClient(EventsNamesUserEnum.updateOne, {
       id: user._id,
       verifyIdentityResponse: user.verifyIdentityResponse,
@@ -63,15 +74,27 @@ export class SumsubNotificationIntegrationService {
       verifyIdentityLevelName: notification.levelName,
       verifyIdentity: user.verifyIdentity,
     });
-    Logger.log('User Updated', 'Reviewed.SumsubNotificationIntegrationService');
+    this.logger.info(
+      'User Updated',
+      'Reviewed.SumsubNotificationIntegrationService',
+    );
+
+    this.builder.emitPersonEventClient(EventsNamesPersonEnum.updateOne, {
+      id: user.personalData,
+      verifiedIdentity: true,
+    });
+    this.logger.info(
+      'Profile Updated',
+      'Reviewed.SumsubNotificationIntegrationService',
+    );
 
     return user;
   }
   async updateUserByPending(notification: SumsubApplicantPending) {
     if (!isMongoId(notification.externalUserId)) {
-      Logger.error(
-        `User id "${notification.externalUserId}" isn't valid`,
+      this.logger.error(
         'Reviewed.SumsubNotificationIntegrationService',
+        `User id "${notification.externalUserId}" isn't valid`,
       );
       return null;
     }
@@ -80,9 +103,9 @@ export class SumsubNotificationIntegrationService {
       notification.externalUserId,
     );
     if (!user) {
-      Logger.error(
-        'User not found',
+      this.logger.error(
         'Pending.SumsubNotificationIntegrationService',
+        'User not found',
       );
       return null;
     }
@@ -94,15 +117,18 @@ export class SumsubNotificationIntegrationService {
       verifyIdentityResponse: user.verifyIdentityResponse,
       verifyIdentityStatus: notification.reviewStatus,
     });
-    Logger.log('User Updated', 'Pending.SumsubNotificationIntegrationService');
+    this.logger.info(
+      'Pending.SumsubNotificationIntegrationService',
+      'User Updated',
+    );
 
     return user;
   }
   async updateUserByOnHold(notification: SumsubApplicantOnHold) {
     if (!isMongoId(notification.externalUserId)) {
-      Logger.error(
-        `User id "${notification.externalUserId}" isn't valid`,
+      this.logger.error(
         'Reviewed.SumsubNotificationIntegrationService',
+        `User id "${notification.externalUserId}" isn't valid`,
       );
       return null;
     }
@@ -111,9 +137,9 @@ export class SumsubNotificationIntegrationService {
       notification.externalUserId,
     );
     if (!user) {
-      Logger.error(
-        'User not found',
+      this.logger.error(
         'OnHold.SumsubNotificationIntegrationService',
+        'User not found',
       );
       return null;
     }
@@ -126,7 +152,10 @@ export class SumsubNotificationIntegrationService {
       verifyIdentityStatus: notification.reviewStatus,
       verifyIdentityLevelName: notification.levelName,
     });
-    Logger.log('User Updated', 'OnHold.SumsubNotificationIntegrationService');
+    this.logger.info(
+      'OnHold.SumsubNotificationIntegrationService',
+      'User Updated',
+    );
 
     return user;
   }

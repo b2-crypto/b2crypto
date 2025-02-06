@@ -1,8 +1,17 @@
-import { Injectable, Logger } from '@nestjs/common';
-const { Client } = require('pg');
+import { Traceable } from '@amplication/opentelemetry-nestjs';
+import { Injectable } from '@nestjs/common';
+import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
+// const { Client } = require('pg');
+import { Client } from 'pg';
 
+@Traceable()
 @Injectable()
 export class PomeloV1DBClient {
+  constructor(
+    @InjectPinoLogger(PomeloV1DBClient.name)
+    protected readonly logger: PinoLogger,
+  ) {}
+
   private connectionProps = {
     user: process.env.V1_DB_USER,
     password: process.env.V1_DB_PWD,
@@ -20,7 +29,7 @@ export class PomeloV1DBClient {
         await client
           .connect()
           .then(async () => {
-            Logger.log(
+            this.logger.info(
               'Successfuly connected to V1 DB database',
               PomeloV1DBClient.name,
             );
@@ -28,38 +37,38 @@ export class PomeloV1DBClient {
               if (err) {
                 reject(err);
               } else {
-                Logger.debug(
-                  result.rows,
+                this.logger.info(
                   'PomeloV1DBClient.getBalanaceByCard:result.rows',
+                  result.rows,
                 );
                 resolve(result.rows);
               }
               client
                 .end()
                 .then(() => {
-                  Logger.log(
+                  this.logger.info(
                     'Connection to V1 DB successfuly closed',
                     PomeloV1DBClient.name,
                   );
                 })
                 .catch((err: any) => {
-                  Logger.error(
-                    `Error closing connection ${err}`,
+                  this.logger.error(
                     PomeloV1DBClient.name,
+                    `Error closing connection ${err}`,
                   );
                 });
             });
           })
           .catch((err: any) => {
-            Logger.error(
-              `Error connecting to V1 DB database ${err}`,
+            this.logger.error(
               PomeloV1DBClient.name,
+              `Error connecting to V1 DB database ${err}`,
             );
           });
       });
       return resultset[0]?.balance;
     } catch (error) {
-      Logger.error(error, PomeloV1DBClient.name);
+      this.logger.error(PomeloV1DBClient.name, error);
     }
   }
 }

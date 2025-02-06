@@ -1,3 +1,4 @@
 [tools]
-node = "20"
+node = "lts"
+pnpm = "9"
 pulumi = "latest"

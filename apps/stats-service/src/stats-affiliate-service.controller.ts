@@ -1,11 +1,12 @@
+import { Traceable } from '@amplication/opentelemetry-nestjs';
 import { AllowAnon } from '@auth/auth/decorators/allow-anon.decorator';
 import { CommonService } from '@common/common';
+import { NoCache } from '@common/common/decorators/no-cache.decorator';
 import { QuerySearchAnyDto } from '@common/common/models/query_search-any.dto';
 import { LeadDocument } from '@lead/lead/entities/mongoose/lead.schema';
 import {
   Controller,
   Get,
-  Logger,
   NotImplementedException,
   Param,
 } from '@nestjs/common';
@@ -20,13 +21,16 @@ import {
 import { StatsDateCreateDto } from '@stats/stats/dto/stats.date.create.dto';
 import { StatsDateAffiliateDocument } from '@stats/stats/entities/mongoose/stats.date.affiliate.schema';
 import { TransferDocument } from '@transfer/transfer/entities/mongoose/transfer.schema';
+import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import EventsNamesStatsEnum from './enum/events.names.stats.enum';
 import { StatsAffiliateServiceService } from './stats-affiliate-service.service';
-import { NoCache } from '@common/common/decorators/no-cache.decorator';
 
+@Traceable()
 @Controller('stats')
 export class StatsAffiliateServiceController {
   constructor(
+    @InjectPinoLogger(StatsAffiliateServiceController.name)
+    protected readonly logger: PinoLogger,
     private readonly statsAffiliateServiceService: StatsAffiliateServiceService,
   ) {}
 
@@ -64,9 +68,9 @@ export class StatsAffiliateServiceController {
     @Ctx() ctx: RmqContext,
   ): Promise<Array<StatsDateAffiliateDocument>> {
     CommonService.ack(ctx);
-    Logger.debug(
-      JSON.stringify(checkAllDto),
+    this.logger.info(
       'Stats Affiliate service controller',
+      JSON.stringify(checkAllDto),
     );
     /* const rta =
       await this.statsAffiliateServiceService.checkAllStatsDateAffiliate(

@@ -5,7 +5,6 @@ import {
   Delete,
   Get,
   Inject,
-  Logger,
   NotFoundException,
   NotImplementedException,
   Param,
@@ -31,6 +30,7 @@ import { Response } from 'express';
 
 import TypesAccountEnum from '@account/account/enum/types.account.enum';
 import WalletTypesAccountEnum from '@account/account/enum/wallet.types.account.enum';
+import { Traceable } from '@amplication/opentelemetry-nestjs';
 import { AllowAnon } from '@auth/auth/decorators/allow-anon.decorator';
 import { ApiKeyCheck } from '@auth/auth/decorators/api-key-check.decorator';
 import { ApiKeyAffiliateAuthGuard } from '@auth/auth/guards/api.key.affiliate.guard';
@@ -75,6 +75,7 @@ import EventsNamesStatsEnum from 'apps/stats-service/src/enum/events.names.stats
 import EventsNamesStatusEnum from 'apps/status-service/src/enum/events.names.status.enum';
 import { isMongoId } from 'class-validator';
 import { SwaggerSteakeyConfigEnum } from 'libs/config/enum/swagger.stakey.config.enum';
+import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import { ApproveOrRejectDepositDto } from '../../../libs/transfer/src/dto/approve.or.reject.deposit.dto';
 import { BoldTransferRequestDto } from './dto/bold.transfer.request.dto';
 import { TransferAffiliateResponseDto } from './dto/transfer.affiliate.response.dto';
@@ -84,9 +85,12 @@ import EventsNamesTransferEnum from './enum/events.names.transfer.enum';
 import { TransferServiceService } from './transfer-service.service';
 
 @ApiTags('TRANSFERS')
+@Traceable()
 @Controller('transfers')
 export class TransferServiceController implements GenericServiceController {
   constructor(
+    @InjectPinoLogger(TransferServiceController.name)
+    protected readonly logger: PinoLogger,
     @Inject(AffiliateServiceService)
     private readonly affliateService: AffiliateServiceService,
     private readonly transferService: TransferServiceService,
@@ -117,9 +121,9 @@ export class TransferServiceController implements GenericServiceController {
       tx.statusPayment === BoldStatusEnum.NO_TRANSACTION_FOUND ||
       tx.statusPayment === BoldStatusEnum.REJECTED
     ) {
-      Logger.debug(
-        JSON.stringify(transferBold),
+      this.logger.info(
         'Transaction has finish before',
+        JSON.stringify(transferBold),
       );
       throw new BadRequestException('transfer has finish before');
     }
@@ -210,9 +214,9 @@ export class TransferServiceController implements GenericServiceController {
         throw new NotFoundException();
       }
       const tx = txs.list[0];
-      Logger.debug(
-        `${tx.account.type}-${tx.account.accountType}`,
+      this.logger.info(
         `Check types account - ${tx.numericId} - Transfer: ${tx._id}`,
+        `${tx.account.type}-${tx.account.accountType}`,
       );
       return this.transferService
         .updateTransfer({
@@ -395,7 +399,7 @@ export class TransferServiceController implements GenericServiceController {
   @Post('bold/status')
   // @CheckPoliciesAbility(new PolicyHandlerTransferRead())
   async boldStatus(@Body() data: any) {
-    Logger.debug(data);
+    this.logger.info('BoldStatus', data);
   }
 
   @Post('deposit')
@@ -548,15 +552,15 @@ export class TransferServiceController implements GenericServiceController {
             ...query,
           })
           .then(async (transfers) => {
-            Logger.log(
-              `page ${transfers.currentPage}/${transfers.lastPage}`,
+            this.logger.info(
               'Check by accounts',
+              `page ${transfers.currentPage}/${transfers.lastPage}`,
             );
             const list = [];
             for (const transfer of transfers.list) {
               if (!transfer.account) {
                 const tx = await this.transferService.getOne(transfer._id);
-                Logger.log(
+                this.logger.info(
                   `${transfer.name}-${transfer.description}`,
                   `${transfer.numericId} - Transfer: ${transfer._id}`,
                 );
@@ -928,9 +932,9 @@ export class TransferServiceController implements GenericServiceController {
         webhookTransferDto.integration,
       );
       if (!crm) {
-        Logger.error(
-          `CRM ${webhookTransferDto.integration} was not found`,
+        this.logger.error(
           'WebhookTransfer CRM',
+          `CRM ${webhookTransferDto.integration} was not found`,
         );
         return;
       }
@@ -940,9 +944,9 @@ export class TransferServiceController implements GenericServiceController {
         webhookTransferDto.status,
       );
       if (!status) {
-        Logger.error(
-          `Status ${webhookTransferDto.status} was not found`,
+        this.logger.error(
           'WebhookTransfer Status',
+          `Status ${webhookTransferDto.status} was not found`,
         );
         return;
       }
@@ -956,9 +960,9 @@ export class TransferServiceController implements GenericServiceController {
       );
 
       if (!account) {
-        Logger.error(
-          `Account by card ${cardId} was not found`,
+        this.logger.error(
           'WebhookTransfer Account',
+          `Account by card ${cardId} was not found`,
         );
         return;
       }
@@ -975,9 +979,9 @@ export class TransferServiceController implements GenericServiceController {
         },
       );
       if (!category) {
-        Logger.error(
-          `Category by slug ${movement} was not found`,
+        this.logger.error(
           'WebhookTransfer Category',
+          `Category by slug ${movement} was not found`,
         );
         return;
       }
@@ -1006,9 +1010,9 @@ export class TransferServiceController implements GenericServiceController {
         webhookTransferDto.descriptionStatusPayment;
       transferDto.confirmedAt = new Date();
 
-      Logger.debug(JSON.stringify(transferDto), 'Transfer DTO');
+      this.logger.info('Transfer DTO', JSON.stringify(transferDto));
       const tx = await this.transferService.newTransfer(transferDto);
-      Logger.debug(tx, 'Transfer created');
+      this.logger.info('Transfer created', tx);
       const promises = [];
       const transferDtoBrand = {
         ...transferDto,
@@ -1048,28 +1052,28 @@ export class TransferServiceController implements GenericServiceController {
             transferDtoBrand.operationType = OperationTransactionType.payment;
             transferDtoBrand.typeTransaction = paymentCard._id.toString();
             transferDtoBrand.page = webhookTransferDto.page;
-            Logger.debug(
-              JSON.stringify(transferDtoBrand),
+            this.logger.info(
               'Transfer DTO Brand',
+              JSON.stringify(transferDtoBrand),
             );
             promises.push(this.transferService.newTransfer(transferDtoBrand));
           } else {
-            Logger.error(
-              `Category by slug payment-card was not found`,
+            this.logger.error(
               'WebhookTransfer Category payment',
+              `Category by slug payment-card was not found`,
             );
           }
         } else {
-          Logger.error(
-            `Account by brand ${account.brand} was not found`,
+          this.logger.error(
             'WebhookTransfer Account Brand',
+            `Account by brand ${account.brand} was not found`,
           );
         }
       }
 
       await Promise.all(promises);
     } catch (error) {
-      Logger.error(error, 'WebhookTransfer');
+      this.logger.error('WebhookTransfer', error);
     }
   }
 
@@ -1118,9 +1122,9 @@ export class TransferServiceController implements GenericServiceController {
       );
       page = transfersToCheck.nextPage;
       nextPage = transfersToCheck.nextPage;
-      Logger.log(
-        `Saved page of PSP ACCOUNT ${pspAccountId} lead's. ${transfersToCheck.currentPage} / ${transfersToCheck.lastPage} pages`,
+      this.logger.info(
         TransferServiceController.name,
+        `Saved page of PSP ACCOUNT ${pspAccountId} lead's. ${transfersToCheck.currentPage} / ${transfersToCheck.lastPage} pages`,
       );
     }
     const listStatsPspAccount = await this.builder.getPromiseStatsEventClient(

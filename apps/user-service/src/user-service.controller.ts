@@ -5,7 +5,6 @@ import {
   Delete,
   Get,
   Inject,
-  Logger,
   NotFoundException,
   Param,
   ParseArrayPipe,
@@ -22,6 +21,7 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 
+import { Traceable } from '@amplication/opentelemetry-nestjs';
 import { AllowAnon } from '@auth/auth/decorators/allow-anon.decorator';
 import { ApiKeyCheck } from '@auth/auth/decorators/api-key-check.decorator';
 import { ApiKeyAuthGuard } from '@auth/auth/guards/api.key.guard';
@@ -51,13 +51,17 @@ import EventsNamesMessageEnum from 'apps/message-service/src/enum/events.names.m
 import { isBoolean } from 'class-validator';
 import { SwaggerSteakeyConfigEnum } from 'libs/config/enum/swagger.stakey.config.enum';
 import { ObjectId } from 'mongodb';
+import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import EventsNamesUserEnum from './enum/events.names.user.enum';
 import { UserServiceService } from './user-service.service';
 
 @ApiTags('USER')
+@Traceable()
 @Controller('users')
 export class UserServiceController implements GenericServiceController {
   constructor(
+    @InjectPinoLogger(UserServiceController.name)
+    protected readonly logger: PinoLogger,
     private readonly userService: UserServiceService,
     @Inject(BuildersService)
     readonly builder: BuildersService,
@@ -143,9 +147,9 @@ export class UserServiceController implements GenericServiceController {
     do {
       const users = await this.findAll({ page });
       if (users?.list?.length > 0) {
-        Logger.log(
-          `Users: ${users?.list?.length} & Page: ${page}`,
+        this.logger.info(
           `MassiveEmail.${UserServiceController.name}`,
+          `Users: ${users?.list?.length} & Page: ${page}`,
         );
         page++;
         totalPages = users?.lastPage ?? 0;
@@ -158,9 +162,9 @@ export class UserServiceController implements GenericServiceController {
               confirmPassword: pwd,
             };
             await this.changePassword(user?.id, changePassword);
-            Logger.log(
-              `${user?.email}`,
+            this.logger.info(
               `MassiveEmail.${UserServiceController.name}`,
+              `${user?.email}`,
             );
             const emailData = {
               destinyText: user.email,
@@ -253,9 +257,7 @@ export class UserServiceController implements GenericServiceController {
     CommonService.ack(ctx);
     const users = await this.userService.getAll({
       where: {
-        email: {
-          $regex: new RegExp(email, 'ig'),
-        },
+        slugEmail: CommonService.getSlug(email),
       },
     });
 
@@ -479,7 +481,7 @@ export class UserServiceController implements GenericServiceController {
               level: user.level,
             } as unknown as UserUpdateDto)
             .then((usr) => {
-              Logger.log(
+              this.logger.info(
                 `Apply level ${user.level?.name} to user ${user.email}`,
                 `page ${query.page}/${users.lastPage}`,
               );

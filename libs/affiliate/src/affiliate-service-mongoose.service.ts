@@ -1,30 +1,33 @@
+import { AffiliateCreateDto } from '@affiliate/affiliate/domain/dto/affiliate.create.dto';
+import { AffiliateUpdateDto } from '@affiliate/affiliate/domain/dto/affiliate.update.dto';
 import {
   Affiliate,
   AffiliateDocument,
 } from '@affiliate/affiliate/infrastructure/mongoose/affiliate.schema';
+import { Traceable } from '@amplication/opentelemetry-nestjs';
 import { BrandDocument } from '@brand/brand/entities/mongoose/brand.schema';
-import { IpAddressDocument } from '../../ip-address/src/entities/mongoose/ip-address.schema';
-import { AffiliateCreateDto } from '@affiliate/affiliate/domain/dto/affiliate.create.dto';
-import { AffiliateUpdateDto } from '@affiliate/affiliate/domain/dto/affiliate.update.dto';
-import { BrandServiceMongooseService } from 'libs/brand/src';
-import { PersonDocument } from '@person/person/entities/mongoose/person.schema';
-import { BasicServiceModel } from '@common/common/models/basic-service.model';
-import { UserDocument } from '../../user/src/entities/mongoose/user.schema';
 import dbIntegrationEnum from '@builder/builders/enums/db-integration.enum';
+import { CommonService } from '@common/common';
+import { ResponsePaginator } from '@common/common/interfaces/response-pagination.interface';
+import { BasicServiceModel } from '@common/common/models/basic-service.model';
+import { CrmServiceMongooseService } from '@crm/crm';
+import { CrmDocument } from '@crm/crm/entities/mongoose/crm.schema';
 import { IpAddressServiceMongooseService } from '@ip-address/ip-address';
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { PersonServiceMongooseService } from '@person/person';
-import { UserServiceMongooseService } from '@user/user';
-import { Model } from 'mongoose';
-import { CrmServiceMongooseService } from '@crm/crm';
-import { CrmDocument } from '@crm/crm/entities/mongoose/crm.schema';
-import { CommonService } from '@common/common';
+import { PersonCreateDto } from '@person/person/dto/person.create.dto';
+import { PersonDocument } from '@person/person/entities/mongoose/person.schema';
+import { TrafficServiceMongooseService } from '@traffic/traffic';
 import { TrafficCreateDto } from '@traffic/traffic/dto/traffic.create.dto';
 import { TrafficDocument } from '@traffic/traffic/entities/mongoose/traffic.schema';
-import { TrafficServiceMongooseService } from '@traffic/traffic';
-import { ResponsePaginator } from '@common/common/interfaces/response-pagination.interface';
-import { PersonCreateDto } from '@person/person/dto/person.create.dto';
+import { UserServiceMongooseService } from '@user/user';
+import { BrandServiceMongooseService } from 'libs/brand/src';
+import { Model } from 'mongoose';
+import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
+import { IpAddressDocument } from '../../ip-address/src/entities/mongoose/ip-address.schema';
+import { UserDocument } from '../../user/src/entities/mongoose/user.schema';
 
+@Traceable()
 @Injectable()
 export class AffiliateServiceMongooseService extends BasicServiceModel<
   AffiliateDocument,
@@ -33,6 +36,8 @@ export class AffiliateServiceMongooseService extends BasicServiceModel<
   AffiliateUpdateDto
 > {
   constructor(
+    @InjectPinoLogger(AffiliateServiceMongooseService.name)
+    protected readonly logger: PinoLogger,
     @Inject('AFFILIATE_MODEL_MONGOOSE')
     affiliateModel: Model<AffiliateDocument>,
     @Inject(UserServiceMongooseService)
@@ -48,7 +53,7 @@ export class AffiliateServiceMongooseService extends BasicServiceModel<
     @Inject(TrafficServiceMongooseService)
     private trafficService: TrafficServiceMongooseService,
   ) {
-    super(affiliateModel);
+    super(logger, affiliateModel);
   }
 
   async findAll(query) {

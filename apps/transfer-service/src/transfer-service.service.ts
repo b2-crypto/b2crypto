@@ -2,6 +2,7 @@ import { AccountUpdateDto } from '@account/account/dto/account.update.dto';
 import { AccountInterface } from '@account/account/entities/account.interface';
 import { AccountDocument } from '@account/account/entities/mongoose/account.schema';
 import { AffiliateDocument } from '@affiliate/affiliate/infrastructure/mongoose/affiliate.schema';
+import { Traceable } from '@amplication/opentelemetry-nestjs';
 import { BuildersService } from '@builder/builders';
 import { CategoryInterface } from '@category/category/entities/category.interface';
 import { CommonService } from '@common/common';
@@ -28,7 +29,6 @@ import {
   BadRequestException,
   Inject,
   Injectable,
-  Logger,
   NotFoundException,
   NotImplementedException,
 } from '@nestjs/common';
@@ -72,10 +72,12 @@ import { isArray, isMongoId } from 'class-validator';
 import * as fs from 'fs';
 import { BrandInterface } from 'libs/brand/src/entities/brand.interface';
 import { ObjectId } from 'mongodb';
+import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import { ApproveOrRejectDepositDto } from '../../../libs/transfer/src/dto/approve.or.reject.deposit.dto';
 import { TransferLeadStatsDto } from './dto/transfer.lead.stat.dto';
 import EventsNamesTransferEnum from './enum/events.names.transfer.enum';
 
+@Traceable()
 @Injectable()
 export class TransferServiceService
   implements BasicMicroserviceService<TransferDocument>
@@ -83,6 +85,8 @@ export class TransferServiceService
   private eventClient: ClientProxy;
 
   constructor(
+    @InjectPinoLogger(TransferServiceService.name)
+    protected readonly logger: PinoLogger,
     @Inject(StatusServiceService)
     private statusService: StatusServiceService,
     @Inject(PspAccountServiceService)
@@ -204,7 +208,7 @@ export class TransferServiceService
             searchText: item.searchText,
           },
         );
-        Logger.debug(
+        this.logger.info(
           `${item.numericId} - ${item.leadEmail}`,
           `Updated searchText page ${elems.currentPage} / ${elems.lastPage}`,
         );
@@ -296,7 +300,7 @@ export class TransferServiceService
       ) {
         try {
           const url = transfer.account.url ?? 'https://api.b2binpay.com';
-          Logger.log(url, 'URL B2BinPay');
+          this.logger.info('URL B2BinPay', url);
           const integration =
             await this.integrationService.getCryptoIntegration(
               account,
@@ -328,7 +332,7 @@ export class TransferServiceService
             },
           });
           if (!deposit.data) {
-            Logger.error(deposit, 'Error B2BinPay Deposit');
+            this.logger.error('Error B2BinPay Deposit', deposit);
             throw new BadRequestException(deposit['errors']);
           }
           transferSaved.responseAccount = {
@@ -337,7 +341,7 @@ export class TransferServiceService
           await this.updateTransfer(transferSaved);
         } catch (err) {
           await this.lib.remove(transferSaved._id);
-          Logger.error(err, 'Error Transfer creation');
+          this.logger.error('Error Transfer creation', err);
           throw new BadRequestException(err);
         }
       }
@@ -598,7 +602,7 @@ export class TransferServiceService
         }
       }
       if (transferSaved.confirmedAt) {
-        Logger.debug(
+        this.logger.info(
           'Saving on CRM',
           `Num ${transferSaved.numericId} - ${
             transferSaved.isApprove ? 'Approved' : transferSaved.statusPayment
@@ -1464,7 +1468,10 @@ export class TransferServiceService
 
   async checkStatsPspAccount(transfersLeadStat: Array<TransferLeadStatsDto>) {
     const statDate = new StatsDateCreateDto();
-    Logger.debug('checkStatsPspAccount', `${TransferServiceService.name}:902`);
+    this.logger.info(
+      'checkStatsPspAccount',
+      `${TransferServiceService.name}:902`,
+    );
   }
 
   async sendLast6hHistoryCardPurchases(shortData = true) {
@@ -1551,7 +1558,7 @@ export class TransferServiceService
       ],
       name,
     );
-    Logger.debug(name, `${params.name} sended`);
+    this.logger.info(name, `${params.name} sended`);
   }
 
   private printShortDate(date?: Date): string {
@@ -1587,7 +1594,7 @@ export class TransferServiceService
       },
     ];
     const attachments = await Promise.all(promisesAttachments);
-    Logger.log('History sended', TransferServiceService.name);
+    this.logger.info('History sended', TransferServiceService.name);
     destiny.forEach((destiny) => {
       this.sendEmail({
         destinyText: destiny.email,
@@ -1634,12 +1641,12 @@ export class TransferServiceService
     const objBase = this.getCustomObj(headers);
     // File created
     this.addDataToFile(objBase, filename, true, true);
-    Logger.log('File created', TransferServiceService.name);
+    this.logger.info('File created', TransferServiceService.name);
     const minSecWait = 2000;
     return new Promise((res) => {
       // Wait file creation
       setTimeout(async () => {
-        Logger.log(`Rows ${list.length}`, TransferServiceService.name);
+        this.logger.info(`Rows ${list.length}`, TransferServiceService.name);
         let time = 0;
         list.forEach((item) => {
           const customItem = this.getCustomObj(headers, item);
@@ -1651,7 +1658,7 @@ export class TransferServiceService
             idx,
           );
         });
-        Logger.debug(time / 1000, 'Total seg');
+        this.logger.info('Total seg', time / 1000);
         setTimeout(async () => {
           // Wait file sending
           this.responseFileContent({
@@ -1683,7 +1690,7 @@ export class TransferServiceService
             encodeBase64: content,
           });
         }
-        Logger.debug(`File "${filename}" sent`, listName);
+        this.logger.info(`File "${filename}" sent`, listName);
         res({
           // encoded string as an attachment
           filename: filename,
@@ -1694,7 +1701,7 @@ export class TransferServiceService
           fs.unlinkSync(fileUri);
         }
       } else {
-        Logger.debug(`File "${filename}" not found`, listName);
+        this.logger.info(`File "${filename}" not found`, listName);
         this.responseFileContent({ filename, fileUri, listName, res });
       }
     }, 20000);
@@ -1717,7 +1724,6 @@ export class TransferServiceService
   }
 
   private addDataToFile(item, filename, isFirst, onlyHeaders = false) {
-    //Logger.debug(JSON.stringify(item), filename);
     this.builder.emitFileEventClient<File>(EventsNamesFileEnum.addDataToFile, {
       isFirst,
       onlyHeaders,

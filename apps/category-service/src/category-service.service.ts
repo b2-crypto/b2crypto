@@ -1,27 +1,23 @@
+import { Traceable } from '@amplication/opentelemetry-nestjs';
 import { BuildersService } from '@builder/builders';
 import { CategoryServiceMongooseService } from '@category/category';
 import { CategoryCreateDto } from '@category/category/dto/category.create.dto';
 import { CategoryUpdateDto } from '@category/category/dto/category.update.dto';
+import ActionsEnum from '@common/common/enums/ActionEnum';
 import DocIdTypeEnum from '@common/common/enums/DocIdTypeEnum';
+import ResourcesEnum from '@common/common/enums/ResourceEnum';
 import TagEnum from '@common/common/enums/TagEnum';
 import { ResponsePaginator } from '@common/common/interfaces/response-pagination.interface';
 import { QuerySearchAnyDto } from '@common/common/models/query_search-any.dto';
-import {
-  BadRequestException,
-  Inject,
-  Injectable,
-  Logger,
-} from '@nestjs/common';
+import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { PspAccountInterface } from '@psp-account/psp-account/entities/psp-account.interface';
-import EventsNamesPspEnum from 'apps/psp-service/src/enum/events.names.psp.enum';
+import { OperationTransactionType } from '@transfer/transfer/enum/operation.transaction.type.enum';
+import EventsNamesPermissionEnum from 'apps/permission-service/src/enum/events.names.permission.enum';
+import EventsNamesPspAccountEnum from 'apps/psp-service/src/enum/events.names.psp.acount.enum';
 import { CategoryResponseDto } from './dto/category.response.dto';
 import { PspAccountResponseDto } from './dto/psp.account.response.dto';
-import EventsNamesPspAccountEnum from 'apps/psp-service/src/enum/events.names.psp.acount.enum';
-import ResourcesEnum from '@common/common/enums/ResourceEnum';
-import ActionsEnum from '@common/common/enums/ActionEnum';
-import EventsNamesPermissionEnum from 'apps/permission-service/src/enum/events.names.permission.enum';
-import { OperationTransactionType } from '@transfer/transfer/enum/operation.transaction.type.enum';
 
+@Traceable()
 @Injectable()
 export class CategoryServiceService {
   constructor(

@@ -1,12 +1,15 @@
+import { Traceable } from '@amplication/opentelemetry-nestjs';
 import dbIntegrationEnum from '@builder/builders/enums/db-integration.enum';
 import { BasicServiceModel } from '@common/common/models/basic-service.model';
-import { Inject, Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { PermissionDocument } from '@permission/permission/entities/mongoose/permission.schema';
 import { RoleCreateDto } from '@role/role/dto/role.create.dto';
 import { RoleUpdateDto } from '@role/role/dto/role.update.dto';
 import { RoleDocument } from '@role/role/entities/mongoose/role.schema';
 import { Model } from 'mongoose';
+import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 
+@Traceable()
 @Injectable()
 export class RoleServiceMongooseService extends BasicServiceModel<
   RoleDocument,
@@ -15,11 +18,13 @@ export class RoleServiceMongooseService extends BasicServiceModel<
   RoleUpdateDto
 > {
   constructor(
+    @InjectPinoLogger(RoleServiceMongooseService.name)
+    protected readonly logger: PinoLogger,
     @Inject('ROLE_MODEL_MONGOOSE') roleModel: Model<RoleDocument>,
     @Inject('PERMISSION_MODEL_MONGOOSE')
     private readonly permissionModel: Model<PermissionDocument>,
   ) {
-    super(roleModel);
+    super(logger, roleModel);
   }
 
   async createMany(createAnyDto: RoleCreateDto[]): Promise<RoleDocument[]> {
@@ -38,7 +43,7 @@ export class RoleServiceMongooseService extends BasicServiceModel<
         }
         return this.model.create(createAnyDto);
       } catch (err) {
-        Logger.error(err);
+        this.logger.error('CreateMany', err);
       }
     }
     return this.model.save(createAnyDto);

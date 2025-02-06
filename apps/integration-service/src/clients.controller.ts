@@ -1,5 +1,6 @@
 import StatusAccountEnum from '@account/account/enum/status.account.enum';
 import TypesAccountEnum from '@account/account/enum/types.account.enum';
+import { Traceable } from '@amplication/opentelemetry-nestjs';
 import { AllowAnon } from '@auth/auth/decorators/allow-anon.decorator';
 import { ApiKeyCheck } from '@auth/auth/decorators/api-key-check.decorator';
 import { ApiKeyAuthGuard } from '@auth/auth/guards/api.key.guard';
@@ -14,7 +15,6 @@ import {
   Get,
   HttpStatus,
   Inject,
-  Logger,
   NotFoundException,
   ParseFilePipeBuilder,
   Post,
@@ -37,14 +37,18 @@ import EventsNamesPspAccountEnum from 'apps/psp-service/src/enum/events.names.ps
 import EventsNamesTransferEnum from 'apps/transfer-service/src/enum/events.names.transfer.enum';
 import EventsNamesUserEnum from 'apps/user-service/src/enum/events.names.user.enum';
 import { readFileSync } from 'fs';
+import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import * as pug from 'pug';
 import { ClientTransferCreateDto } from './dto/client.transfer.create.dto';
 import { ClientsTaskNamesEnum } from './enums/clients.task.names.enum';
 
+@Traceable()
 @Controller('clients')
 export class ClientsIntegrationController {
   private pathTemplate = './apps/integration-service/src/templates';
   constructor(
+    @InjectPinoLogger(ClientsIntegrationController.name)
+    protected readonly logger: PinoLogger,
     private readonly builder: BuildersService,
     @Inject(SchedulerRegistry)
     private schedulerRegistry: SchedulerRegistry,
@@ -103,7 +107,7 @@ export class ClientsIntegrationController {
       }
       const taskName = this.getTaskOffName(clientId);
       CommonService.removeTimeout(this.schedulerRegistry, taskName);
-      Logger.log(
+      this.logger.info(
         `Programming to ${maintenanceOnDto.dateEnd}`,
         'maintenance off',
       );
@@ -112,7 +116,7 @@ export class ClientsIntegrationController {
         taskName,
         maintenanceOnDto.dateEnd.getTime() - now.getTime(),
         async () => {
-          Logger.log('maintenance off', `Client ${clientId}`);
+          this.logger.info('maintenance off', `Client ${clientId}`);
           this.cancelMaintenance(clientId);
         },
       );
@@ -121,7 +125,7 @@ export class ClientsIntegrationController {
     if (!inMaintenance) {
       const taskName = this.getTaskOnName(clientId);
       CommonService.removeTimeout(this.schedulerRegistry, taskName);
-      Logger.log(
+      this.logger.info(
         `Programming to ${maintenanceOnDto.dateStart}`,
         'maintenance on',
       );
@@ -130,7 +134,7 @@ export class ClientsIntegrationController {
         taskName,
         maintenanceOnDto.dateStart.getTime() - now.getTime(),
         async () => {
-          Logger.log('maintenance on', `Client ${clientId}`);
+          this.logger.info('maintenance on', `Client ${clientId}`);
           this.initMaintenance(clientId, true);
         },
       );
@@ -180,7 +184,7 @@ export class ClientsIntegrationController {
         .status(200)
         .send(html);
     } catch (error) {
-      Logger.error(error, `ClientsController-signIn`);
+      this.logger.error(`ClientsController-signIn`, error);
       return res.status(500).send({ error: true, message: error.message });
     }
   }
@@ -236,7 +240,7 @@ export class ClientsIntegrationController {
       };
       html = pug.renderFile(localPathTemplate, localVarsTemplate);
     } catch (error) {
-      Logger.error(error, `ClientsController-signIn`);
+      this.logger.error(`ClientsController-signIn`, error);
     }
     return res
       .setHeader('Content-Type', 'text/html; charset=utf-8')
@@ -336,7 +340,7 @@ export class ClientsIntegrationController {
       };
       html = pug.renderFile(localPathTemplate, localVarsTemplate);
     } catch (error) {
-      Logger.error(error, `ClientsController-signIn`);
+      this.logger.error(`ClientsController-signIn`, error);
     }
     return res
       .setHeader('Content-Type', 'text/html; charset=utf-8')

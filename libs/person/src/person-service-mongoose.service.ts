@@ -1,10 +1,13 @@
+import { Traceable } from '@amplication/opentelemetry-nestjs';
 import { BasicServiceModel } from '@common/common/models/basic-service.model';
-import { PersonDocument } from './entities/mongoose/person.schema';
-import { PersonCreateDto } from './dto/person.create.dto';
-import { PersonUpdateDto } from './dto/person.update.dto';
 import { Inject, Injectable } from '@nestjs/common';
 import { Model } from 'mongoose';
+import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
+import { PersonCreateDto } from './dto/person.create.dto';
+import { PersonUpdateDto } from './dto/person.update.dto';
+import { PersonDocument } from './entities/mongoose/person.schema';
 
+@Traceable()
 @Injectable()
 export class PersonServiceMongooseService extends BasicServiceModel<
   PersonDocument,
@@ -13,8 +16,10 @@ export class PersonServiceMongooseService extends BasicServiceModel<
   PersonUpdateDto
 > {
   constructor(
+    @InjectPinoLogger(PersonServiceMongooseService.name)
+    protected readonly logger: PinoLogger,
     @Inject('PERSON_MODEL_MONGOOSE') personModel: Model<PersonDocument>,
   ) {
-    super(personModel);
+    super(logger, personModel);
   }
 }

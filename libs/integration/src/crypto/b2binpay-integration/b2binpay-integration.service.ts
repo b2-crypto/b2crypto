@@ -1,6 +1,7 @@
 import { AccountDocument } from '@account/account/entities/mongoose/account.schema';
 import { Cache } from '@nestjs/cache-manager';
 import { ConfigService } from '@nestjs/config';
+import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import { DepositDto } from '../generic/dto/deposit.dto';
 import { WalletDto } from '../generic/dto/wallet.dto';
 import { IntegrationCryptoService } from '../generic/integration.crypto.service';
@@ -11,11 +12,13 @@ export class B2BinPayIntegrationService extends IntegrationCryptoService<
   WalletDto
 > {
   constructor(
+    @InjectPinoLogger(B2BinPayIntegrationService.name)
+    protected readonly logger: PinoLogger,
     public account: AccountDocument,
     protected configService: ConfigService,
     protected cacheManager: Cache,
   ) {
-    super(account, configService, cacheManager);
+    super(logger, account, configService, cacheManager);
     this.setRouteMap({
       // Auth
       auth: '/token',

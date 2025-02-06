@@ -1,19 +1,25 @@
+import { Traceable } from '@amplication/opentelemetry-nestjs';
 import {
   Controller,
-  Logger,
   NotImplementedException,
   Param,
   Post,
 } from '@nestjs/common';
+import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import { PomeloMigrationService } from './services/pomelo.migration.service';
 
+@Traceable()
 @Controller('pomelo-migration')
 export class PomeloMigrationController {
-  constructor(private readonly migrationService: PomeloMigrationService) {}
+  constructor(
+    @InjectPinoLogger(PomeloMigrationController.name)
+    protected readonly logger: PinoLogger,
+    private readonly migrationService: PomeloMigrationService,
+  ) {}
   @Post('ignate')
   async ignatePomeloIntegration() {
     return new NotImplementedException('Method not implemented.');
-    Logger.log('Starting ...', 'PomeloMigrationController');
+    this.logger.info('Starting ...', 'PomeloMigrationController');
     //await this.migrationService.startPomeloMigration();
     return {
       statusCode: 200,
@@ -23,7 +29,7 @@ export class PomeloMigrationController {
 
   @Post('ignate-by-user/:userId')
   async ignatePomeloIntegrationByUser(@Param('userId') userId: string) {
-    Logger.log(
+    this.logger.info(
       `Starting migration by user: ${userId}`,
       'PomeloMigrationController',
     );
@@ -36,7 +42,10 @@ export class PomeloMigrationController {
 
   @Post('set-cards-owner')
   async setCardsOwner() {
-    Logger.log(`Starting to set cards owner`, 'PomeloMigrationController');
+    this.logger.info(
+      `Starting to set cards owner`,
+      'PomeloMigrationController',
+    );
     await this.migrationService.setAllCardsOwner();
     return {
       statusCode: 200,

@@ -3,6 +3,7 @@ import { Account } from '@account/account/entities/mongoose/account.schema';
 import CardTypesAccountEnum from '@account/account/enum/card.types.account.enum';
 import StatusAccountEnum from '@account/account/enum/status.account.enum';
 import TypesAccountEnum from '@account/account/enum/types.account.enum';
+import { Traceable } from '@amplication/opentelemetry-nestjs';
 import { BuildersService } from '@builder/builders';
 import { CategoryInterface } from '@category/category/entities/category.interface';
 import { CommonService } from '@common/common';
@@ -14,7 +15,6 @@ import {
   BadRequestException,
   Inject,
   Injectable,
-  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
@@ -37,12 +37,16 @@ import EventsNamesPspAccountEnum from 'apps/psp-service/src/enum/events.names.ps
 import EventsNamesTransferEnum from 'apps/transfer-service/src/enum/events.names.transfer.enum';
 import { isMongoId } from 'class-validator';
 import { ObjectId } from 'mongodb';
+import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import EventsNamesUserEnum from './enum/events.names.user.enum';
 
+@Traceable()
 @Injectable()
 export class UserServiceService {
   private eventClient: ClientProxy;
   constructor(
+    @InjectPinoLogger(UserServiceService.name)
+    protected readonly logger: PinoLogger,
     @Inject(UserServiceMongooseService)
     private lib: UserServiceMongooseService,
     @Inject(BuildersService)
@@ -58,7 +62,7 @@ export class UserServiceService {
         throw new NotFoundException('User not found');
       }
       if (!usr.slugEmail) {
-        Logger.debug(usr.email, 'slug email');
+        this.logger.info('slug email', usr.email);
         return this.updateUser({
           id: usr._id,
           slugEmail: CommonService.getSlug(usr.email),
@@ -71,7 +75,7 @@ export class UserServiceService {
       do {
         for (const usr of users.list) {
           if (!usr.slugEmail) {
-            Logger.debug(usr.email, 'slug email');
+            this.logger.info('slug email', usr.email);
             promises.push(this.updateSlugEmail(usr._id.toString()));
           }
         }
@@ -108,7 +112,7 @@ export class UserServiceService {
           showToOwner: true,
         },
       });
-      Logger.log(userId, 'Balance update');
+      this.logger.info('Balance update', userId);
       for (const account of accounts.list) {
         userBalance.ALL.quantity++;
         userBalance.ALL.amount += account.amount;
@@ -132,7 +136,7 @@ export class UserServiceService {
           // Swap if currency is different
         }
       }
-      Logger.log('Balance updated', `balance ${usr.email}`);
+      this.logger.info('Balance updated', `balance ${usr.email}`);
       return this.updateUser({
         id: usr._id,
         balance: userBalance,
@@ -321,13 +325,16 @@ export class UserServiceService {
       );
       const rta = user;
       if (user.level !== userLevelUpDto.level) {
-        Logger.log('Update level all cards to selected level', 'UPDATE LEVEL');
+        this.logger.info(
+          'Update level all cards to selected level',
+          'UPDATE LEVEL',
+        );
         // rta = await this.updateLevelUser(
         //   userLevelUpDto.level.toString(),
         //   userLevelUpDto.user.toString(),
         // );
       }
-      Logger.debug('Create One Card', 'Level up');
+      this.logger.info('Create One Card', 'Level up');
       this.builder.emitAccountEventClient(
         EventsNamesAccountEnum.createOneCard,
         {
@@ -378,14 +385,14 @@ export class UserServiceService {
               EventsNamesPersonEnum.updateOne,
               updateDto,
             )
-            .then((rta) => Logger.log(rta, 'Verified person'))
-            .catch((err) => Logger.error(err, 'Error verified person')),
+            .then((rta) => this.logger.info('Verified person', rta))
+            .catch((err) => this.logger.error('Error verified person', err)),
         );
       }
       user.verifyIdentity = true;
       promises.push(
         user.save().then((rta) => {
-          Logger.log(rta, 'Verified user');
+          this.logger.info('Verified user', rta);
           return {
             id: user._id.toString(),
             verifyIdentity: true,

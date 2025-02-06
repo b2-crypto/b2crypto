@@ -1,13 +1,15 @@
-import { StatusServiceMongooseService } from '@status/status/status-service-mongoose.service';
+import { Traceable } from '@amplication/opentelemetry-nestjs';
+import { CommonService } from '@common/common';
+import ResourcesEnum from '@common/common/enums/ResourceEnum';
 import { QuerySearchAnyDto } from '@common/common/models/query_search-any.dto';
+import { Inject, Injectable } from '@nestjs/common';
 import { StatusCreateDto } from '@status/status/dto/status.create.dto';
 import { StatusUpdateDto } from '@status/status/dto/status.update.dto';
-import { Inject, Injectable } from '@nestjs/common';
-import { CommonService } from '@common/common';
+import { StatusServiceMongooseService } from '@status/status/status-service-mongoose.service';
 import axios from 'axios';
-import ResourcesEnum from '@common/common/enums/ResourceEnum';
 import { isArray } from 'class-validator';
 
+@Traceable()
 @Injectable()
 export class StatusServiceService {
   constructor(

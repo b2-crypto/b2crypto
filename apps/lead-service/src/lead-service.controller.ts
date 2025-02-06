@@ -5,7 +5,6 @@ import {
   Delete,
   Get,
   Inject,
-  Logger,
   NotFoundException,
   NotImplementedException,
   Param,
@@ -21,6 +20,7 @@ import {
 import { ApiHeader, ApiResponse, ApiTags } from '@nestjs/swagger';
 
 import { CreateLeadAffiliateDto } from '@affiliate/affiliate/domain/dto/create-lead-affiliate.dto';
+import { Traceable } from '@amplication/opentelemetry-nestjs';
 import { AllowAnon } from '@auth/auth/decorators/allow-anon.decorator';
 import { ApiKeyCheck } from '@auth/auth/decorators/api-key-check.decorator';
 import { BuildersService } from '@builder/builders';
@@ -45,7 +45,12 @@ import {
   RmqContext,
 } from '@nestjs/microservices';
 import { AuthGuard } from '@nestjs/passport';
+import ResponseB2Crypto from '@response-b2crypto/response-b2crypto/models/ResponseB2Crypto';
 import { TransferEntity } from '@transfer/transfer/entities/transfer.entity';
+import EventsNamesAffiliateEnum from 'apps/affiliate-service/src/enum/events.names.affiliate.enum';
+import EventsNamesCrmEnum from 'apps/crm-service/src/enum/events.names.crm.enum';
+import EventsNamesTransferEnum from 'apps/transfer-service/src/enum/events.names.transfer.enum';
+import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import { ApiKeyAffiliateAuthGuard } from '../../../libs/auth/src/guards/api.key.affiliate.guard';
 import { AutologinLeadDto } from './dto/autologin.lead.dto';
 import { CftdToFtdDto } from './dto/cftd_to_ftd.dto';
@@ -55,15 +60,14 @@ import { LoginLeadDto } from './dto/login.lead.dto';
 import { MoveLeadDto } from './dto/move_lead.dto';
 import EventsNamesLeadEnum from './enum/events.names.lead.enum';
 import { LeadServiceService } from './lead-service.service';
-import EventsNamesAffiliateEnum from 'apps/affiliate-service/src/enum/events.names.affiliate.enum';
-import EventsNamesTransferEnum from 'apps/transfer-service/src/enum/events.names.transfer.enum';
-import EventsNamesCrmEnum from 'apps/crm-service/src/enum/events.names.crm.enum';
-import ResponseB2Crypto from '@response-b2crypto/response-b2crypto/models/ResponseB2Crypto';
 
 @ApiTags('LEAD')
+@Traceable()
 @Controller('lead')
 export class LeadServiceController implements GenericServiceController {
   constructor(
+    @InjectPinoLogger(LeadServiceController.name)
+    protected readonly logger: PinoLogger,
     private readonly leadService: LeadServiceService,
     @Inject(BuildersService)
     private readonly builder: BuildersService,
@@ -471,7 +475,7 @@ export class LeadServiceController implements GenericServiceController {
           return transfer.isApprove;
         })[0];
         if (firstTransferPayed) {
-          Logger.log(`Updated ${lead.email} partial FTD`);
+          this.logger.info(`Updated ${lead.email} partial FTD`);
           this.builder.emitLeadEventClient(EventsNamesLeadEnum.updateOne, {
             id: lead._id,
             partialFtdAmount: firstTransferPayed.amount,
@@ -483,7 +487,7 @@ export class LeadServiceController implements GenericServiceController {
       if (leads.nextPage != 1) {
         totalPages = page;
       }
-      Logger.log(`Updated ${page} page of ${leads.lastPage}`);
+      this.logger.info(`Updated ${page} page of ${leads.lastPage}`);
       page = leads.nextPage;
     } while (page != 1);
     return {
@@ -506,9 +510,9 @@ export class LeadServiceController implements GenericServiceController {
         where: query ?? {},
         page: pageLeads,
       });
-      Logger.debug(
-        `Page ${pageLeads} / ${leads.lastPage}`,
+      this.logger.info(
         'Check stats affiliate lead email',
+        `Page ${pageLeads} / ${leads.lastPage}`,
       );
       pageLeads = leads.nextPage;
       for (const lead of leads.list) {
@@ -909,7 +913,7 @@ export class LeadServiceController implements GenericServiceController {
       CommonService.ack(ctx);
       return leadRta;
     } catch (err) {
-      Logger.error(err, 'CREATING LEAD');
+      this.logger.error('CREATING LEAD', err);
       CommonService.ack(ctx);
       return err;
     }
@@ -982,10 +986,13 @@ export class LeadServiceController implements GenericServiceController {
       },
     });
     for (const lead of leadsWithoutTpId.list) {
-      Logger.log(`Checked ${lead.email}`, LeadServiceController.name);
+      this.logger.info(LeadServiceController.name, `Checked ${lead.email}`);
     }
     CommonService.ack(ctx);
-    Logger.log(leadsWithoutTpId.totalElements, LeadServiceController.name);
+    this.logger.info(
+      LeadServiceController.name,
+      leadsWithoutTpId.totalElements,
+    );
   }
 
   @AllowAnon()

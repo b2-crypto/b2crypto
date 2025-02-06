@@ -37,27 +37,21 @@ import { TransferInterface } from '@transfer/transfer/entities/transfer.interfac
 import EventsNamesTrafficEnum from 'apps/traffic-service/src/enum/events.names.traffic.enum';
 
 import { AffiliateDocument } from '@affiliate/affiliate/infrastructure/mongoose/affiliate.schema';
-import { PolicyHandlerAffiliateCreate } from '@auth/auth/policy/affiliate/policity.handler.affiliate.create';
-import { PolicyHandlerAffiliateDelete } from '@auth/auth/policy/affiliate/policity.handler.affiliate.delete';
-import { PolicyHandlerAffiliateMove } from '@auth/auth/policy/affiliate/policity.handler.affiliate.move';
-import { PolicyHandlerAffiliateRead } from '@auth/auth/policy/affiliate/policity.handler.affiliate.read';
-import { PolicyHandlerAffiliateSearch } from '@auth/auth/policy/affiliate/policity.handler.affiliate.search';
-import { PolicyHandlerAffiliateUpdate } from '@auth/auth/policy/affiliate/policity.handler.affiliate.update';
-import { CheckPoliciesAbility } from '@auth/auth/policy/policy.handler.ability';
+import { Traceable } from '@amplication/opentelemetry-nestjs';
+import { NoCache } from '@common/common/decorators/no-cache.decorator';
+import TagEnum from '@common/common/enums/TagEnum';
 import GenericServiceController from '@common/common/interfaces/controller.generic.interface';
 import { UpdateAnyDto } from '@common/common/models/update-any.dto';
-import { PolicyHandlerAffiliateAll } from '../../../libs/auth/src/policy/affiliate/policity.handler.affiliate.all';
+import ResponseB2Crypto from '@response-b2crypto/response-b2crypto/models/ResponseB2Crypto';
+import EventsNamesCategoryEnum from 'apps/category-service/src/enum/events.names.category.enum';
+import EventsNamesGroupEnum from 'apps/group-service/src/enum/events.names.group.enum';
+import EventsNamesStatusEnum from 'apps/status-service/src/enum/events.names.status.enum';
 import { AffiliateServiceService } from './affiliate-service.service';
 import { MoveTrafficAffiliateDto } from './dto/move.traffic.affiliate.dto';
 import EventsNamesAffiliateEnum from './enum/events.names.affiliate.enum';
-import EventsNamesGroupEnum from 'apps/group-service/src/enum/events.names.group.enum';
-import EventsNamesStatusEnum from 'apps/status-service/src/enum/events.names.status.enum';
-import EventsNamesCategoryEnum from 'apps/category-service/src/enum/events.names.category.enum';
-import TagEnum from '@common/common/enums/TagEnum';
-import ResponseB2Crypto from '@response-b2crypto/response-b2crypto/models/ResponseB2Crypto';
-import { NoCache } from '@common/common/decorators/no-cache.decorator';
 
 @ApiTags('AFFILIATE')
+@Traceable()
 @Controller('affiliate')
 export class AffiliateServiceController implements GenericServiceController {
   private eventClient: ClientProxy;

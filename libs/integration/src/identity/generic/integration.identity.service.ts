@@ -2,9 +2,9 @@ import { CommonService } from '@common/common';
 import { EnvironmentEnum } from '@common/common/enums/environment.enum';
 import { BasicDataIntegration } from '@integration/integration/domain/basic.data.integration.interface';
 import { HttpService } from '@nestjs/axios';
-import { Logger } from '@nestjs/common';
 import axios, { AxiosInstance } from 'axios';
 import * as crypto from 'crypto';
+import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import { SumsubEnum } from './domain/sumsub.enum';
 import {
   SumsubIssuedTokenDto,
@@ -22,6 +22,8 @@ export class IntegrationIdentityService
   private routesMap: IdentityRoutesInterface;
 
   constructor(
+    @InjectPinoLogger(IntegrationIdentityService.name)
+    protected readonly logger: PinoLogger,
     private dataIntegration: BasicDataIntegration,
     private httpService: HttpService,
   ) {}
@@ -105,7 +107,7 @@ export class IntegrationIdentityService
           return response;
         })
         .catch((error) => {
-          Logger.error(error, 'IssueSumsubToken:94');
+          this.logger.error('IssueSumsubToken:94', error);
           return error;
         });
       /* const axiosInstance = this.createAxiosInstance();
@@ -113,18 +115,16 @@ export class IntegrationIdentityService
         metadata.ts;
       axiosInstance.defaults.headers[SumsubEnum.SUMSUB_HEADER_SIGNATURE] =
         signature;
-      Logger.log('IssueSumsubToken', 'ISSUING SUMSUB TOKEN');
       return axiosInstance
         .post(metadata.url, null)
         .then((response) => {
           return response.data;
         })
         .catch((error) => {
-          Logger.error(error.response, 'IssueSumsubToken:84');
           return error;
         }); */
     } catch (error) {
-      Logger.error('IssueSumsubToken', error);
+      this.logger.error('IssueSumsubToken', error);
       throw error;
     }
   }
@@ -147,13 +147,13 @@ export class IntegrationIdentityService
       const signature = this.createSignature(metadata);
       headers[SumsubEnum.SUMSUB_HEADER_TIMESTAMP] = metadata.ts;
       headers[SumsubEnum.SUMSUB_HEADER_SIGNATURE] = signature;
-      Logger.log(headers, 'fetchConfig - generateUrlApplicant');
+      this.logger.info('fetchConfig - generateUrlApplicant', headers);
       return this.fetch(metadata.method, metadata.url, null, headers)
         .then((response) => {
           return response;
         })
         .catch((error) => {
-          Logger.error(error, 'IssueSumsubToken:94');
+          this.logger.error('IssueSumsubToken:94', error);
           return error;
         });
       /* const axiosInstance = this.createAxiosInstance();
@@ -162,18 +162,16 @@ export class IntegrationIdentityService
         metadata.ts;
       axiosInstance.defaults.headers[SumsubEnum.SUMSUB_HEADER_SIGNATURE] =
         signature;
-      Logger.log('IssueSumsubToken', 'ISSUING SUMSUB TOKEN');
       return axiosInstance
         .post(metadata.url, null)
         .then((response) => {
           return response.data;
         })
         .catch((error) => {
-          Logger.error('IssueSumsubToken:84', error);
           return error;
         }); */
     } catch (error) {
-      Logger.error('IssueSumsubToken', error);
+      this.logger.error('IssueSumsubToken', error);
       throw error;
     }
   }

@@ -1,3 +1,4 @@
+import { Traceable } from '@amplication/opentelemetry-nestjs';
 import { PomeloSignatureGuard } from '@auth/auth/guards/pomelo.signature.guard';
 import { PomeloSignatureInterceptor } from '@common/common/interceptors/pomelo.signature.interceptor';
 import {
@@ -11,17 +12,21 @@ import {
   Controller,
   Headers,
   HttpCode,
-  Logger,
+  HttpStatus,
   Post,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
+import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import { PomeloIntegrationProcessService } from './services/pomelo.integration.process.service';
 import { PomeloIntegrationSFTPService } from './services/pomelo.integration.sftp.service';
 
+@Traceable()
 @Controller()
 export class PomeloIntegrationServiceController {
   constructor(
+    @InjectPinoLogger(PomeloIntegrationServiceController.name)
+    protected readonly logger: PinoLogger,
     private readonly integrationServiceService: PomeloIntegrationProcessService,
     private readonly sftpService: PomeloIntegrationSFTPService,
   ) {}
@@ -29,59 +34,75 @@ export class PomeloIntegrationServiceController {
   @Post(PomeloEnum.POMELO_NOTIFICATION_PATH)
   @UseGuards(PomeloSignatureGuard)
   @UseInterceptors(PomeloSignatureInterceptor)
-  @HttpCode(204)
+  @HttpCode(HttpStatus.NO_CONTENT)
   async processNotification(
     @Body() notification: NotificationDto,
     @Headers() headers: any,
   ): Promise<any> {
-    Logger.log(
-      `Idempotency: ${notification.idempotency_key}`,
+    this.logger.info(
       'NotificationHandler - processNotification',
+      `Idempotency: ${notification.idempotency_key}`,
     );
-    return await this.integrationServiceService.processNotification(
+    const result = await this.integrationServiceService.processNotification(
       notification,
       headers,
     );
+
+    this.logger.info('NotificationHandler', result);
+
+    return { ...result, statusCode: HttpStatus.NO_CONTENT };
   }
 
   @Post(PomeloEnum.POMELO_ADJUSTMENT_PATH)
   @UseGuards(PomeloSignatureGuard)
   @UseInterceptors(PomeloSignatureInterceptor)
-  @HttpCode(204)
+  @HttpCode(HttpStatus.NO_CONTENT)
   async processAdjustment(
     @Body() adjustment: Adjustment,
     @Headers(PomeloEnum.POMELO_IDEMPOTENCY_HEADER) idempotency: string,
     @Headers() headers: any,
   ): Promise<any> {
-    Logger.log(`Idempotency: ${idempotency}`, 'AdjustmentHandler');
+    this.logger.info(`Idempotency: ${idempotency}`, 'AdjustmentHandler');
     adjustment.idempotency = idempotency;
-    Logger.log(adjustment, 'AdjustmentHandler');
-    return await this.integrationServiceService.processAdjustment(
+    this.logger.info('AdjustmentHandler', adjustment);
+    const result = await this.integrationServiceService.processAdjustment(
       adjustment,
       headers,
     );
+
+    this.logger.info('AdjustmentHandler', result);
+
+    return { ...result, statusCode: HttpStatus.NO_CONTENT };
   }
 
   @Post(PomeloEnum.POMELO_AUTHORIZATION_PATH)
-  @UseGuards(PomeloSignatureGuard)
-  @UseInterceptors(PomeloSignatureInterceptor)
-  @HttpCode(200)
+  // @UseGuards(PomeloSignatureGuard)
+  // @UseInterceptors(PomeloSignatureInterceptor)
+  @HttpCode(HttpStatus.OK)
   async processAuthorization(
     @Body() authorization: Authorization,
     @Headers(PomeloEnum.POMELO_IDEMPOTENCY_HEADER) idempotency: string,
     @Headers() headers: any,
   ): Promise<any> {
-    Logger.log(`Idempotency: ${idempotency}`, 'AuthorizationHandler');
+    this.logger.info(`Idempotency: ${idempotency}`, 'AuthorizationHandler');
     authorization.idempotency = idempotency;
-    Logger.log(authorization, 'AuthorizationHandler');
-    return await this.integrationServiceService.processAuthorization(
+    this.logger.info('AuthorizationHandler', authorization);
+
+    const result = await this.integrationServiceService.processAuthorization(
       authorization,
       headers,
     );
+
+    this.logger.info('AuthorizationHandler', result);
+
+    return { ...result, statusCode: HttpStatus.OK };
   }
 
   @Post('/sftp/download')
+  @HttpCode(HttpStatus.OK)
   downloadSFTPReports() {
     this.sftpService.getSFTPPomeloReportsByClient('b2crypto', 'col');
+
+    return { statusCode: HttpStatus.OK };
   }
 }

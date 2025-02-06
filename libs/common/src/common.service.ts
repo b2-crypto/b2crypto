@@ -1,33 +1,26 @@
+import { Traceable } from '@amplication/opentelemetry-nestjs';
+import CountryCodeEnum from '@common/common/enums/country.code.b2crypto.enum';
+import { PomeloEnum } from '@integration/integration/enum/pomelo.enum';
 import {
   BadRequestException,
   ExecutionContext,
   Injectable,
-  Logger,
 } from '@nestjs/common';
+import { RmqContext } from '@nestjs/microservices';
+import { SchedulerRegistry } from '@nestjs/schedule';
+import * as bcrypt from 'bcrypt';
 import {
   isBoolean,
   isDateString,
   isEmail,
   isPhoneNumber,
 } from 'class-validator';
-import CountryCodeEnum from '@common/common/enums/country.code.b2crypto.enum';
-import { CountryCode } from 'libphonenumber-js';
-import * as bcrypt from 'bcrypt';
-import { ConfigService } from '@nestjs/config';
-import {
-  ClientOptions,
-  ClientProxyFactory,
-  RedisOptions,
-  RmqContext,
-  RmqOptions,
-  Transport,
-} from '@nestjs/microservices';
-import { SchedulerRegistry } from '@nestjs/schedule';
-import { QuerySearchAnyDto } from './models/query_search-any.dto';
-import { FetchData } from './models/fetch-data.model';
 import * as http from 'http';
-import { PomeloEnum } from '@integration/integration/enum/pomelo.enum';
+import { CountryCode } from 'libphonenumber-js';
+import { FetchData } from './models/fetch-data.model';
+import { QuerySearchAnyDto } from './models/query_search-any.dto';
 
+@Traceable()
 @Injectable()
 export class CommonService {
   static getOTP() {
@@ -59,10 +52,6 @@ export class CommonService {
           id: item._id,
           searchText: item.searchText,
         });
-        Logger.debug(
-          `${item.numericId} - ${item.leadEmail}`,
-          `Updated searchText page ${elems.currentPage} / ${elems.lastPage}`,
-        );
         return item;
       });
       query.page = elems.nextPage;
@@ -91,29 +80,11 @@ export class CommonService {
     try {
       const rta = await func();
       const end = new Date();
-      if (!onlyTimeLapse) {
-        Logger.log(`${functionName} start: ${start.toISOString()}`);
-        Logger.log(
-          `${functionName} end: ${end.toISOString()}`,
-          'Time to function',
-        );
-      }
-      Logger.log(
-        `${functionName} Timed lapsed (ms): ${end.getTime() - start.getTime()}`,
-        'Time to function',
-      );
+
       return rta;
     } catch (error) {
       const end = new Date();
-      Logger.log(`${functionName} start: ${start.toISOString()}`);
-      Logger.log(
-        `${functionName} end: ${end.toISOString()}`,
-        'Time to function',
-      );
-      Logger.log(
-        `${functionName} Timed lapsed (ms): ${end.getTime() - start.getTime()}`,
-        'Time to function',
-      );
+
       throw error;
     }
   }
@@ -239,10 +210,7 @@ export class CommonService {
       const task = schedulerRegistry.getTimeout(name);
       clearTimeout(task);
       schedulerRegistry.deleteTimeout(name);
-      Logger.log('cleared', `Task "${name}" schedulerRegistry`);
-    } catch (err) {
-      Logger.error(err, `Task "${name}" schedulerRegistry`);
-    }
+    } catch (err) {}
   }
 
   static ack(ctx: RmqContext) {
@@ -293,7 +261,6 @@ export class CommonService {
         attrVal[smaller] = range[smaller];
       }
     }
-    //Logger.log(attrVal, 'End date checkDateAttr');
     return attrVal;
   }
 
@@ -393,7 +360,6 @@ export class CommonService {
     return query;
   }
   static checkWhitelistedIps(context: ExecutionContext): boolean {
-    Logger.debug('Check whitelisted ips', 'checkWhitelistedIps');
     if (
       process.env.POMELO_WHITELISTED_IPS_CHECK ===
       PomeloEnum.POMELO_WHITELISTED_IPS_CHECK_OFF.toString()
@@ -405,7 +371,6 @@ export class CommonService {
       request?.headers[PomeloEnum.POMELO_WHITELISTED_HEADER_FORWARDED] ||
       request?.headers[PomeloEnum.POMELO_WHITELISTED_HEADER_REAL] ||
       '';
-    Logger.log(`IpCaller: ${caller}`, 'SignatureGuard');
     const whitelisted = process.env.POMELO_WHITELISTED_IPS;
     return (
       whitelisted?.replace(/\s/g, '')?.split(',')?.includes(caller) || false

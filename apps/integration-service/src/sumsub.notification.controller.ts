@@ -1,3 +1,4 @@
+import { Traceable } from '@amplication/opentelemetry-nestjs';
 import { ApiKeyCheck } from '@auth/auth/decorators/api-key-check.decorator';
 import { ApiKeyAuthGuard } from '@auth/auth/guards/api.key.guard';
 import { SumsubSignatureGuard } from '@auth/auth/guards/sumsub.signature.guard';
@@ -8,67 +9,71 @@ import {
   Body,
   Controller,
   HttpCode,
-  Logger,
+  HttpStatus,
   Post,
   Req,
   UseGuards,
 } from '@nestjs/common';
+import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import { SumsubApplicantReviewed } from './../../../libs/integration/src/identity/generic/domain/process/sumsub.applicant.reviewed.dto';
 import { SumsubNotificationIntegrationService } from './services/sumsub.notification.integration.service';
 
+@Traceable()
 @Controller('sumsub')
 @UseGuards(ApiKeyAuthGuard, SumsubSignatureGuard)
 //@UseInterceptors(SumsubSignatureInterceptor)
 export class SumsubNotificationIntegrationController {
   constructor(
+    @InjectPinoLogger(SumsubNotificationIntegrationController.name)
+    protected readonly logger: PinoLogger,
     private readonly sumsubService: SumsubNotificationIntegrationService,
   ) {}
 
   @Post(SumsubConfigEnum.SUMSUB_NOTIFICATION_REVIEWED_PATH)
-  @ApiKeyCheck()
-  @HttpCode(200)
+  // @ApiKeyCheck()
+  @HttpCode(HttpStatus.OK)
   async handleNotificationReviewed(
     @Req() req,
     @Body() notification: SumsubApplicantReviewed,
   ) {
     await this.sumsubService.validateClient(req.clientApi);
-    Logger.log(notification, 'Notification Reviewed body');
-    Logger.log(req.headers, 'Notification Reviewed headers');
+    this.logger.info('Notification Reviewed body', notification);
+    this.logger.info('Notification Reviewed headers', req.headers);
     await this.sumsubService.updateUserByReviewed(notification);
     return {
-      statusCode: 200,
+      statusCode: HttpStatus.OK,
       description: 'received reviewed',
     };
   }
 
   @Post(SumsubConfigEnum.SUMSUB_NOTIFICATION_PENDING_PATH)
   @ApiKeyCheck()
-  @HttpCode(200)
+  @HttpCode(HttpStatus.OK)
   async handleNotificationPending(
     @Req() req: Request,
     @Body() notification: SumsubApplicantPending,
   ): Promise<any> {
-    Logger.log(notification, 'Notification Reviewed body');
-    Logger.log(req.headers, 'Notification Reviewed headers');
+    this.logger.info('Notification Reviewed body', notification);
+    this.logger.info('Notification Reviewed headers', req.headers);
     await this.sumsubService.updateUserByPending(notification);
     return {
-      statusCode: 200,
+      statusCode: HttpStatus.OK,
       description: 'received pending',
     };
   }
 
   @Post(SumsubConfigEnum.SUMSUB_NOTIFICATION_ON_HOLD_PATH)
   @ApiKeyCheck()
-  @HttpCode(200)
+  @HttpCode(HttpStatus.OK)
   async handleNotificationOnHold(
     @Req() req: Request,
     @Body() notification: SumsubApplicantOnHold,
   ): Promise<any> {
-    Logger.log(notification, 'Notification Reviewed body');
-    Logger.log(req.headers, 'Notification Reviewed headers');
+    this.logger.info('Notification Reviewed body', notification);
+    this.logger.info('Notification Reviewed headers', req.headers);
     await this.sumsubService.updateUserByOnHold(notification);
     return {
-      statusCode: 200,
+      statusCode: HttpStatus.OK,
       description: 'received on hold',
     };
   }

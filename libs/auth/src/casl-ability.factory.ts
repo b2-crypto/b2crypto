@@ -1,3 +1,4 @@
+import { Traceable } from '@amplication/opentelemetry-nestjs';
 import {
   AbilityClass,
   ExtractSubjectType,
@@ -22,6 +23,7 @@ export type AppRules = SubjectRawRule<
 export type AppAbility = MongoAbility<[ActionsEnum, ResourcesEnum]>;
 export const AppAbility = PureAbility as AbilityClass<AppAbility>;
 
+@Traceable()
 @Injectable()
 export class CaslAbilityFactory {
   constructor(

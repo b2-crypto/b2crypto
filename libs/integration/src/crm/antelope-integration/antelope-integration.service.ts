@@ -1,7 +1,12 @@
-import { Injectable } from '@nestjs/common';
+import { Traceable } from '@amplication/opentelemetry-nestjs';
+import { CrmDocument } from '@crm/crm/entities/mongoose/crm.schema';
 import { AntelopeRegisterLeadDto } from '@integration/integration/crm/antelope-integration/dto/antelope-register-lead.dto';
+import { Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import { GetDepositDto } from '../generic/dto/get-deposit.dto';
 import { GetSalesStatusesDto } from '../generic/dto/get-sales-statuses.dto';
+import { GetStatsDto } from '../generic/dto/get-stats.dto';
 import { GetUserDto } from '../generic/dto/get-user.dto';
 import { GetUsersDto } from '../generic/dto/get-users.dto';
 import { RegenerateUserAutoLoginUrlDto } from '../generic/dto/regenerate-user-auto-login-url.dto';
@@ -9,15 +14,13 @@ import { RegisterUserDto } from '../generic/dto/register-user.dto';
 import { SyncUserNoteDto } from '../generic/dto/sync-user-note-dto.dto';
 import { SyncUserTransactionDto } from '../generic/dto/sync-user-transaction.dto';
 import { TrackVisitDto } from '../generic/dto/track-visit.dto';
-import { IntegrationCrmService } from '../generic/integration.crm.service';
-import { AntelopeRegisterResultDto } from './result/antelope.register.result.dto';
-import { GetStatsDto } from '../generic/dto/get-stats.dto';
 import { UserResponseDto } from '../generic/dto/user.response.dto';
-import { AntelopeApiUserResultDto } from './result/antelope.api.user.result.dto';
+import { IntegrationCrmService } from '../generic/integration.crm.service';
 import { GetLeadDataFromCRMInterface } from '../generic/interface/get.lead.data.from.crm.interface';
-import { CrmDocument } from '@crm/crm/entities/mongoose/crm.schema';
-import { ConfigService } from '@nestjs/config';
+import { AntelopeApiUserResultDto } from './result/antelope.api.user.result.dto';
+import { AntelopeRegisterResultDto } from './result/antelope.register.result.dto';
 
+@Traceable()
 @Injectable()
 export class AntelopeIntegrationService
   extends IntegrationCrmService<
@@ -38,8 +41,13 @@ export class AntelopeIntegrationService
   >
   implements GetLeadDataFromCRMInterface
 {
-  constructor(_crm: CrmDocument, protected configService: ConfigService) {
-    super(_crm, configService);
+  constructor(
+    @InjectPinoLogger(AntelopeIntegrationService.name)
+    protected readonly logger: PinoLogger,
+    _crm: CrmDocument,
+    protected configService: ConfigService,
+  ) {
+    super(logger, _crm, configService);
     //username, password, token, apiKey
     super.setRouteMap({
       generateApiKey: '/login',

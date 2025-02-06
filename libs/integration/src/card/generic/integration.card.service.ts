@@ -1,18 +1,15 @@
+import { ConfigCardActivateDto } from '@account/account/dto/config.card.activate.dto';
 import { AccountDocument } from '@account/account/entities/mongoose/account.schema';
 import { CommonService } from '@common/common';
 import { EnvironmentEnum } from '@common/common/enums/environment.enum';
-import {
-  BadRequestException,
-  Logger,
-  NotImplementedException,
-} from '@nestjs/common';
+import { BadRequestException, NotImplementedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import axios, {
   AxiosInstance,
   AxiosResponse,
   CreateAxiosDefaults,
 } from 'axios';
-import { randomUUID } from 'crypto';
+import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import { CardDto, CardSearchDto } from './dto/card.dto';
 import { ClientCardDto } from './dto/client.card.dto';
 import { ShippingDto } from './dto/shipping.dto';
@@ -21,7 +18,6 @@ import { UserResponseDto } from './dto/user.response.dto';
 import { IntegrationCardInterface } from './integration.card.interface';
 import { CardRoutesInterface } from './interface/card.routes.interface';
 import { ShippingResultInterface } from './interface/shipping-result.interface';
-import { ConfigCardActivateDto } from '@account/account/dto/config.card.activate.dto';
 
 export class IntegrationCardService<
   // DTO
@@ -49,6 +45,8 @@ export class IntegrationCardService<
   protected tokenInformationCard: string;
 
   constructor(
+    @InjectPinoLogger(IntegrationCardService.name)
+    protected readonly logger: PinoLogger,
     protected configService: ConfigService,
     public account?: AccountDocument,
   ) {
@@ -113,23 +111,23 @@ export class IntegrationCardService<
           );
           this.token = token.data.access_token; */
         } catch (err) {
-          Logger.error(err, IntegrationCardService.name);
-          Logger.error(
+          this.logger.error(IntegrationCardService.name, err);
+          this.logger.error(
+            IntegrationCardService.name,
             'integration.card.service.ts:151 ->',
-            IntegrationCardService.name,
           );
-          Logger.error(
+          this.logger.error(
+            IntegrationCardService.name,
             `urlBase -> ${this.client.url}`,
-            IntegrationCardService.name,
           );
-          Logger.error(
+          this.logger.error(
+            IntegrationCardService.name,
             `token -> ${JSON.stringify({
               client_id: this.client.id,
               client_secret: this.client.secret,
               audience: this.client.audience,
               grant_type: this.client.grantType,
             })}`,
-            IntegrationCardService.name,
           );
           return null;
         }

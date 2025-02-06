@@ -5,7 +5,6 @@ import { FetchData } from '@common/common/models/fetch-data.model';
 import { Cache } from '@nestjs/cache-manager';
 import {
   BadRequestException,
-  Logger,
   NotFoundException,
   NotImplementedException,
 } from '@nestjs/common';
@@ -15,6 +14,7 @@ import axios, {
   AxiosResponse,
   CreateAxiosDefaults,
 } from 'axios';
+import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import { DepositDto } from './dto/deposit.dto';
 import { WalletDto } from './dto/wallet.dto';
 import { IntegrationCryptoInterface } from './integration.crypto.interface';
@@ -36,6 +36,8 @@ export class IntegrationCryptoService<
   protected tokenCrm: string;
 
   constructor(
+    @InjectPinoLogger(IntegrationCryptoService.name)
+    protected readonly logger: PinoLogger,
     public cryptoAccount: AccountDocument,
     protected configService: ConfigService,
     protected cacheManager: Cache,
@@ -89,9 +91,9 @@ export class IntegrationCryptoService<
             const token = await this.fetch('POST', this.routesMap.auth, req);
 
             if (!token.data) {
-              Logger.error(
-                token,
+              this.logger.error(
                 `Token crypto not found: ${token.errors[0].detail}`,
+                token,
               );
               throw new NotFoundException(
                 `Token crypto not found: ${token.errors[0].detail}`,
@@ -108,12 +110,12 @@ export class IntegrationCryptoService<
             const expireIn = token.data?.expiresIn || token.data?.ExpiresIn;
           }
         } catch (err) {
-          Logger.error(err, `${IntegrationCryptoService.name}:err`);
-          Logger.error(
-            this.urlBase,
+          this.logger.error(`${IntegrationCryptoService.name}:err`, err);
+          this.logger.error(
             `${IntegrationCryptoService.name}:urlBase`,
+            this.urlBase,
           );
-          Logger.error(req, `${IntegrationCryptoService.name}:token`);
+          this.logger.error(`${IntegrationCryptoService.name}:token`, req);
           throw new BadRequestException(err);
         }
         // Todo[hender] Save token and check if already expire

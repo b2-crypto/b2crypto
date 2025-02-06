@@ -5,6 +5,7 @@ import { AccountDocument } from '@account/account/entities/mongoose/account.sche
 import StatusAccountEnum from '@account/account/enum/status.account.enum';
 import TypesAccountEnum from '@account/account/enum/types.account.enum';
 import WalletTypesAccountEnum from '@account/account/enum/wallet.types.account.enum';
+import { Traceable } from '@amplication/opentelemetry-nestjs';
 import { BuildersService } from '@builder/builders';
 import { CommonService } from '@common/common';
 import CountryCodeEnum from '@common/common/enums/country.code.b2crypto.enum';
@@ -14,14 +15,8 @@ import { StatusCashierEnum } from '@common/common/enums/StatusCashierEnum';
 import TagEnum from '@common/common/enums/TagEnum';
 import { IntegrationService } from '@integration/integration';
 import IntegrationCryptoEnum from '@integration/integration/crypto/enums/IntegrationCryptoEnum';
-import { v4 as uuid } from 'uuid';
-import {
-  BadRequestException,
-  CACHE_MANAGER,
-  Inject,
-  Injectable,
-  Logger
-} from '@nestjs/common';
+import { IntegrationCryptoService } from '@integration/integration/crypto/generic/integration.crypto.service';
+import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { TransferCreateDto } from '@transfer/transfer/dto/transfer.create.dto';
 import { OperationTransactionType } from '@transfer/transfer/enum/operation.transaction.type.enum';
@@ -34,17 +29,24 @@ import EventsNamesStatusEnum from 'apps/status-service/src/enum/events.names.sta
 import { TransferCreateButtonDto } from 'apps/transfer-service/src/dto/transfer.create.button.dto';
 import EventsNamesTransferEnum from 'apps/transfer-service/src/enum/events.names.transfer.enum';
 import { UserServiceService } from 'apps/user-service/src/user-service.service';
-import { Cache } from 'cache-manager';
-import { isMongoId } from 'class-validator';
-import { AccountServiceService } from './account-service.service';
-import EventsNamesAccountEnum from './enum/events.names.account.enum';
-import { WithdrawalError } from './utils/errors';
 import { AxiosResponse } from 'axios';
-import { WITHDRAWAL_CONFIG } from './withdrawal.config';
+import { isMongoId } from 'class-validator';
+import { randomUUID } from 'crypto';
+import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
+import { AccountServiceService } from './account-service.service';
+import {
+  AttributesDepositDto,
+  DataCreateDepositDto,
+  DataWalletDepositDto,
+  DepositDto,
+  RelationshipsDepositDto,
+  WalletDepositDto,
+} from './dtos/deposit.dto';
 import { WithdrawalExecuteDto } from './dtos/WithdrawalExecuteDto';
 import { WithdrawalPreorderDto } from './dtos/WithdrawalPreorderDto';
-import { IntegrationCryptoService } from '@integration/integration/crypto/generic/integration.crypto.service';
-import { DepositDto, DataCreateDepositDto, AttributesDepositDto, RelationshipsDepositDto, WalletDepositDto, DataWalletDepositDto } from './dtos/deposit.dto';
+import EventsNamesAccountEnum from './enum/events.names.account.enum';
+import { WithdrawalError } from './utils/errors';
+import { WITHDRAWAL_CONFIG } from './withdrawal.config';
 
 interface WalletResponse {
   data: {
@@ -64,12 +66,15 @@ interface TransactionResponse {
     status: string;
   };
 }
+
+@Traceable()
 @Injectable()
 export class WalletServiceService {
   private cryptoType: any = null;
-  private readonly logger = new Logger(WalletServiceService.name)
+
   constructor(
-    @Inject(CACHE_MANAGER) private cacheManager: Cache,
+    @InjectPinoLogger(WalletServiceService.name)
+    protected readonly logger: PinoLogger,
     @Inject(UserServiceService)
     private readonly userService: UserServiceService,
     @Inject(AccountServiceService)
@@ -470,9 +475,9 @@ export class WalletServiceService {
           from.amount = from.amount - createDto.amount;
           return from;
         } catch (error) {
-          Logger.error(
-            error.message,
+          this.logger.error(
             'Error creating transaction on Fireblocks',
+            error.message,
           );
           throw new BadRequestException('Sorry, something went wrong');
         }
@@ -1386,8 +1391,10 @@ export class WalletServiceService {
   // [Wallet Withdrawal]
   private async getAccountFromRequest(): Promise<AccountDocument> {
     try {
-      const account = await this.accountService.findOneById('account-id-from-context');
-      
+      const account = await this.accountService.findOneById(
+        'account-id-from-context',
+      );
+
       if (!account) {
         throw new WithdrawalError('Account not found', 'ACCOUNT_NOT_FOUND');
       }
@@ -1398,7 +1405,7 @@ export class WalletServiceService {
       throw new WithdrawalError(
         'Error retrieving account information',
         'ACCOUNT_RETRIEVAL_ERROR',
-        { originalError: error.message }
+        { originalError: error.message },
       );
     }
   }
@@ -1409,7 +1416,7 @@ export class WalletServiceService {
         throw new WithdrawalError(
           'Invalid account type - must be a wallet',
           'INVALID_ACCOUNT_TYPE',
-          { currentType: account.type }
+          { currentType: account.type },
         );
       }
 
@@ -1417,16 +1424,14 @@ export class WalletServiceService {
         throw new WithdrawalError(
           'Invalid wallet type - must be a vault',
           'INVALID_WALLET_TYPE',
-          { currentType: account.accountType }
+          { currentType: account.accountType },
         );
       }
 
       if (account.statusText === StatusAccountEnum.LOCK) {
-        throw new WithdrawalError(
-          'Account is locked',
-          'ACCOUNT_LOCKED',
-          { status: account.statusText }
-        );
+        throw new WithdrawalError('Account is locked', 'ACCOUNT_LOCKED', {
+          status: account.statusText,
+        });
       }
 
       return true;
@@ -1446,7 +1451,7 @@ export class WalletServiceService {
       const cryptoIntegration = await this.integration.getCryptoIntegration(
         null,
         IntegrationCryptoEnum.FIREBLOCKS,
-        fireblocksCrm._id
+        fireblocksCrm._id,
       );
 
       return cryptoIntegration;
@@ -1455,24 +1460,28 @@ export class WalletServiceService {
       throw new WithdrawalError(
         'Error connecting to Fireblocks',
         'FIREBLOCKS_INTEGRATION_ERROR',
-        { originalError: error.message }
+        { originalError: error.message },
       );
     }
   }
 
-  private async validateGasWallet(fireblocksIntegration: IntegrationCryptoService) {
+  private async validateGasWallet(
+    fireblocksIntegration: IntegrationCryptoService,
+  ) {
     try {
-      const gasWallet = await fireblocksIntegration.getWallet(WITHDRAWAL_CONFIG.gasWallet.address) as unknown as AxiosResponse<WalletResponse>;
+      const gasWallet = (await fireblocksIntegration.getWallet(
+        WITHDRAWAL_CONFIG.gasWallet.address,
+      )) as unknown as AxiosResponse<WalletResponse>;
       const gasWalletBalance = Number(gasWallet?.data?.data?.amount || 0);
 
       if (gasWalletBalance < WITHDRAWAL_CONFIG.gasWallet.minBalance) {
         throw new WithdrawalError(
           'Insufficient gas wallet balance',
           'INSUFFICIENT_GAS_BALANCE',
-          { 
+          {
             currentBalance: gasWalletBalance,
-            requiredBalance: WITHDRAWAL_CONFIG.gasWallet.minBalance 
-          }
+            requiredBalance: WITHDRAWAL_CONFIG.gasWallet.minBalance,
+          },
         );
       }
 
@@ -1483,18 +1492,22 @@ export class WalletServiceService {
     }
   }
 
-  private calculateFees(networkId?: string): { networkFee: number; totalFee: number } {
+  private calculateFees(networkId?: string): {
+    networkFee: number;
+    totalFee: number;
+  } {
     try {
-      const networkFee = WITHDRAWAL_CONFIG.fees.networks[networkId?.toLowerCase()] || 0;
+      const networkFee =
+        WITHDRAWAL_CONFIG.fees.networks[networkId?.toLowerCase()] || 0;
       const totalFee = WITHDRAWAL_CONFIG.fees.base + networkFee;
-      
+
       return { networkFee, totalFee };
     } catch (error) {
       this.logger.error('Error calculating fees', error);
       throw new WithdrawalError(
         'Error calculating withdrawal fees',
         'FEE_CALCULATION_ERROR',
-        { originalError: error.message }
+        { originalError: error.message },
       );
     }
   }
@@ -1504,22 +1517,24 @@ export class WalletServiceService {
     accountId: string,
     assetId: string,
     amount: number,
-    totalFee: number
+    totalFee: number,
   ) {
     try {
-      const wallet = await fireblocksIntegration.getWallet(accountId) as unknown as AxiosResponse<WalletResponse>;
+      const wallet = (await fireblocksIntegration.getWallet(
+        accountId,
+      )) as unknown as AxiosResponse<WalletResponse>;
       const availableBalance = Number(wallet?.data?.data?.amount || 0);
 
       if (amount + totalFee > availableBalance) {
         throw new WithdrawalError(
           'Insufficient funds including fees',
           'INSUFFICIENT_FUNDS',
-          { 
+          {
             required: amount + totalFee,
             available: availableBalance,
             amount,
-            fee: totalFee
-          }
+            fee: totalFee,
+          },
         );
       }
 
@@ -1534,38 +1549,38 @@ export class WalletServiceService {
     try {
       const account = await this.getAccountFromRequest();
       await this.validateAccountStatus(account);
-      
+
       const fireblocksIntegration = await this.getFireblocksIntegration();
       await this.validateGasWallet(fireblocksIntegration);
-      
+
       const { totalFee } = this.calculateFees(dto.networkId);
       await this.validateBalance(
         fireblocksIntegration,
         account.accountId,
         dto.assetId,
         dto.amount,
-        totalFee
+        totalFee,
       );
 
-      const addressValidation = await fireblocksIntegration.http.get(
-        `/addresses/validate/${dto.destinationAddress}/${dto.assetId}`
-      ) as AxiosResponse<AddressValidationResponse>;
-      
+      const addressValidation = (await fireblocksIntegration.http.get(
+        `/addresses/validate/${dto.destinationAddress}/${dto.assetId}`,
+      )) as AxiosResponse<AddressValidationResponse>;
+
       const isValidAddress = addressValidation?.data?.data?.isValid || false;
 
       if (!isValidAddress) {
         throw new WithdrawalError(
           'Invalid destination address',
           'INVALID_ADDRESS',
-          { 
+          {
             address: dto.destinationAddress,
             asset: dto.assetId,
-            network: dto.networkId 
-          }
+            network: dto.networkId,
+          },
         );
       }
 
-      const preorderId = uuid();
+      const preorderId = randomUUID();
       const preorder = {
         id: preorderId,
         accountId: account.accountId,
@@ -1577,14 +1592,16 @@ export class WalletServiceService {
         totalAmount: dto.amount + totalFee,
         status: 'pending',
         createdAt: new Date(),
-        expiresAt: new Date(Date.now() + WITHDRAWAL_CONFIG.timing.maxConfirmationTime * 1000)
+        expiresAt: new Date(
+          Date.now() + WITHDRAWAL_CONFIG.timing.maxConfirmationTime * 1000,
+        ),
       };
 
       return {
         preorderId,
         expiresAt: preorder.expiresAt,
         fee: totalFee,
-        totalAmount: preorder.totalAmount
+        totalAmount: preorder.totalAmount,
       };
     } catch (error) {
       this.logger.error('Error in validatePreorder', error);
@@ -1594,7 +1611,7 @@ export class WalletServiceService {
       throw new WithdrawalError(
         'Error processing withdrawal preorder',
         'PREORDER_ERROR',
-        { originalError: error.message }
+        { originalError: error.message },
       );
     }
   }
@@ -1609,11 +1626,11 @@ export class WalletServiceService {
       const preorder = {
         createdAt: new Date(Date.now() - 60000),
         fee: 0,
-        totalAmount: dto.amount
+        totalAmount: dto.amount,
       };
 
       const elapsedTime = Date.now() - preorder.createdAt.getTime();
-      
+
       if (elapsedTime < WITHDRAWAL_CONFIG.timing.minConfirmationTime * 1000) {
         throw new WithdrawalError(
           'Withdrawal cannot be executed yet',
@@ -1621,47 +1638,48 @@ export class WalletServiceService {
           {
             currentTime: elapsedTime / 1000,
             requiredTime: WITHDRAWAL_CONFIG.timing.minConfirmationTime,
-            remainingTime: WITHDRAWAL_CONFIG.timing.minConfirmationTime - Math.floor(elapsedTime / 1000)
-          }
+            remainingTime:
+              WITHDRAWAL_CONFIG.timing.minConfirmationTime -
+              Math.floor(elapsedTime / 1000),
+          },
         );
       }
 
       if (elapsedTime > WITHDRAWAL_CONFIG.timing.maxConfirmationTime * 1000) {
-        throw new WithdrawalError(
-          'Preorder expired',
-          'PREORDER_EXPIRED',
-          {
-            expirationTime: WITHDRAWAL_CONFIG.timing.maxConfirmationTime,
-            elapsedTime: elapsedTime / 1000
-          }
-        );
+        throw new WithdrawalError('Preorder expired', 'PREORDER_EXPIRED', {
+          expirationTime: WITHDRAWAL_CONFIG.timing.maxConfirmationTime,
+          elapsedTime: elapsedTime / 1000,
+        });
       }
 
       const depositDto = new DepositDto();
       depositDto.data = new DataCreateDepositDto();
       depositDto.data.type = 'deposit';
-      
+
       depositDto.data.attributes = new AttributesDepositDto();
       depositDto.data.attributes.label = `Withdrawal ${dto.preorderId}`;
       depositDto.data.attributes.tracking_id = dto.preorderId;
-      depositDto.data.attributes.target_amount_requested = dto.amount.toString();
+      depositDto.data.attributes.target_amount_requested =
+        dto.amount.toString();
       depositDto.data.attributes.confirmations_needed = 1;
-      depositDto.data.attributes.callback_url = ''; 
-      
+      depositDto.data.attributes.callback_url = '';
+
       depositDto.data.relationships = new RelationshipsDepositDto();
       depositDto.data.relationships.wallet = new WalletDepositDto();
       depositDto.data.relationships.wallet.data = new DataWalletDepositDto();
       depositDto.data.relationships.wallet.data.type = 'wallet';
       depositDto.data.relationships.wallet.data.id = account.accountId;
 
-      const response = await fireblocksIntegration.createDeposit(depositDto) as unknown as AxiosResponse<TransactionResponse>;
+      const response = (await fireblocksIntegration.createDeposit(
+        depositDto,
+      )) as unknown as AxiosResponse<TransactionResponse>;
 
       return {
         transactionId: response?.data?.data?.id,
         status: response?.data?.data?.status,
         amount: dto.amount,
         fee: preorder.fee,
-        totalAmount: preorder.totalAmount
+        totalAmount: preorder.totalAmount,
       };
     } catch (error) {
       this.logger.error('Error in executeWithdrawal', error);
@@ -1671,7 +1689,7 @@ export class WalletServiceService {
       throw new WithdrawalError(
         'Error executing withdrawal',
         'EXECUTION_ERROR',
-        { originalError: error.message }
+        { originalError: error.message },
       );
     }
   }

@@ -1,16 +1,21 @@
+import { Traceable } from '@amplication/opentelemetry-nestjs';
 import { BuildersService } from '@builder/builders';
 import {
   ExecutionContext,
   Inject,
   Injectable,
-  Logger,
   UnauthorizedException,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import EventsNamesUserEnum from 'apps/user-service/src/enum/events.names.user.enum';
+import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
+
+@Traceable()
 @Injectable()
 export class ApiKeyAuthGuard extends AuthGuard('api-key') {
   constructor(
+    @InjectPinoLogger(ApiKeyAuthGuard.name)
+    protected readonly logger: PinoLogger,
     @Inject(BuildersService)
     private readonly builder: BuildersService,
   ) {
@@ -36,7 +41,7 @@ export class ApiKeyAuthGuard extends AuthGuard('api-key') {
       delete request.headers['checkApiKey'];
       return true;
     } catch (err) {
-      Logger.error(err, 'ApiKeyAuthGuard.canActive');
+      this.logger.error('ApiKeyAuthGuard.canActive', err);
       return false;
     }
   }

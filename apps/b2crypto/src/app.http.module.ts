@@ -1,17 +1,25 @@
-import { Module, OnModuleInit } from '@nestjs/common';
-import { APP_GUARD } from '@nestjs/core';
 import { JwtAuthGuard } from '@auth/auth/guards/jwt-auth.guard';
-import { SeedService } from 'apps/seed-service/seed.service';
-import { configApp } from './config.app.const';
-import { SeedModule } from 'apps/seed-service/seed.module';
-import { JobModule } from 'apps/job-service/job.module';
 import { PoliciesGuard } from '@auth/auth/guards/policy.ability.guard';
+import { CorrelationIdMiddleware } from '@common/common/middlewares';
+import {
+  MiddlewareConsumer,
+  Module,
+  NestModule,
+  OnModuleInit,
+} from '@nestjs/common';
+import { APP_GUARD } from '@nestjs/core';
+import { JobModule } from 'apps/job-service/job.module';
+import { SeedModule } from 'apps/seed-service/seed.module';
+import { SeedService } from 'apps/seed-service/seed.service';
+import { LoggerModule } from 'nestjs-pino';
+import { configApp } from './config.app.const';
+import { loggerConfig } from './logger.config';
 
 const configHttp = {
   ...configApp,
 };
 
-configHttp.imports.push(JobModule);
+configHttp.imports.push(JobModule, LoggerModule.forRoot(loggerConfig));
 
 configHttp.providers.push({
   provide: APP_GUARD,
@@ -26,10 +34,14 @@ configHttp.providers.push({
 configHttp.imports.push(SeedModule);
 
 @Module(configHttp)
-export class AppHttpModule implements OnModuleInit {
+export class AppHttpModule implements OnModuleInit, NestModule {
   constructor(private seedService: SeedService) {}
 
   async onModuleInit(): Promise<void> {
     await this.seedService.saveInitialData();
+  }
+
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(CorrelationIdMiddleware).forRoutes('*');
   }
 }

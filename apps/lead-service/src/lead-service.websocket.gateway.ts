@@ -1,7 +1,10 @@
-import { Lead } from '@lead/lead/entities/mongoose/lead.schema';
+import { BuildersService } from '@builder/builders';
+import { CommonService } from '@common/common';
 import { ResponseDownloadWebsocketInterface } from '@common/common/interfaces/response.download.websocket.interface';
 import { BasicWebsocketGateway } from '@common/common/models/basic.websocket.gateway';
 import { QuerySearchAnyDto } from '@common/common/models/query_search-any.dto';
+import { FileUpdateDto } from '@file/file/dto/file.update.dto';
+import { Lead } from '@lead/lead/entities/mongoose/lead.schema';
 import {
   MessageBody,
   SubscribeMessage,
@@ -9,15 +12,11 @@ import {
   WebSocketServer,
   WsResponse,
 } from '@nestjs/websockets';
+import EventsNamesFileEnum from 'apps/file-service/src/enum/events.names.file.enum';
 import { Observable, Subscriber, map } from 'rxjs';
 import { Server } from 'socket.io';
-import { LeadServiceService } from './lead-service.service';
 import EventsNamesLeadEnum from './enum/events.names.lead.enum';
-import { CommonService } from '@common/common';
-import EventsNamesFileEnum from 'apps/file-service/src/enum/events.names.file.enum';
-import { BuildersService } from '@builder/builders';
-import { FileUpdateDto } from '@file/file/dto/file.update.dto';
-import { Logger } from '@nestjs/common';
+import { LeadServiceService } from './lead-service.service';
 
 @WebSocketGateway(parseInt(EventsNamesLeadEnum.websocketPort), {
   namespace: EventsNamesLeadEnum.clientName,
@@ -135,7 +134,6 @@ export class LeadServiceWebsocketGateway extends BasicWebsocketGateway<Lead> {
       },
     ).pipe(
       map((item) => {
-        //Logger.debug(item);
         file.then(() => {
           this.onRead(strQuery, filename, downloadEvt, item);
         });

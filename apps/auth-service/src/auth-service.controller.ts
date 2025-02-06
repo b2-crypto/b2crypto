@@ -1,3 +1,4 @@
+import { Traceable } from '@amplication/opentelemetry-nestjs';
 import { AuthService } from '@auth/auth';
 import { AllowAnon } from '@auth/auth/decorators/allow-anon.decorator';
 import { ApiKeyCheck } from '@auth/auth/decorators/api-key-check.decorator';
@@ -24,7 +25,6 @@ import {
   Get,
   HttpStatus,
   Inject,
-  Logger,
   NotFoundException,
   Param,
   Post,
@@ -63,14 +63,18 @@ import EventsNamesMessageEnum from 'apps/message-service/src/enum/events.names.m
 import EventsNamesPersonEnum from 'apps/person-service/src/enum/events.names.person.enum';
 import { isBoolean } from 'class-validator';
 import { SwaggerSteakeyConfigEnum } from 'libs/config/enum/swagger.stakey.config.enum';
+import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import { BadRequestError } from 'passport-headerapikey';
 import EventsNamesUserEnum from '../../user-service/src/enum/events.names.user.enum';
 
 @ApiTags('AUTHENTICATION')
+@Traceable()
 @Controller('auth')
 export class AuthServiceController {
   private eventClient: ClientProxy;
   constructor(
+    @InjectPinoLogger(AuthServiceController.name)
+    protected readonly logger: PinoLogger,
     @Inject(CACHE_MANAGER)
     private cacheManager: Cache,
     @Inject(BuildersService)
@@ -211,7 +215,7 @@ export class AuthServiceController {
       }
       return client;
     } catch (err) {
-      Logger.error(err, 'Error getting client from public key');
+      this.logger.error('Error getting client from public key', err);
       throw new UnauthorizedException();
     }
   }
@@ -239,7 +243,7 @@ export class AuthServiceController {
       });
       return code;
     } catch (err) {
-      Logger.error(err, 'Bad request Identity code');
+      this.logger.error('Bad request Identity code', err);
       throw new BadGatewayException();
     }
   }
@@ -257,7 +261,7 @@ export class AuthServiceController {
       }
       return rta;
     } catch (err) {
-      Logger.error(err, 'Bad request Identity token');
+      this.logger.error('Bad request Identity token', err);
       throw new BadGatewayException();
     }
   }
@@ -292,7 +296,7 @@ export class AuthServiceController {
         if (restorePasswordDto.password !== restorePasswordDto.password2) {
           throw new BadRequestException('Bad password');
         }
-        const otpSended = await this.getOtpGenerated(restorePasswordDto.email);
+        const otpSended = await this.getOtpGenerated(user.email);
         // Validate OTP
         if (!otpSended) {
           throw new BadRequestException('Expired OTP');
@@ -339,7 +343,7 @@ export class AuthServiceController {
         message: 'OTP generated',
       };
     } catch (error) {
-      Logger.error({ error }, 'Error restoring password');
+      this.logger.error('Error restoring password', error);
       throw error;
     }
   }
@@ -439,7 +443,7 @@ export class AuthServiceController {
         emailData,
       );
     } catch (error) {
-      Logger.error('Error sending user registration email', error.stack);
+      this.logger.error('Error sending user registration email', error);
     }
 
     return createdUser;
@@ -684,15 +688,16 @@ export class AuthServiceController {
   private async generateOtp(user: UserDocument, msOTP?: number) {
     const otpTTL =
       msOTP ??
-      this.configService.get<number>('OTP_VALIDATION_TIME_SECONDS', 90) * 1000;
+      this.configService.get<number>('OTP_VALIDATION_TIME_SECONDS', 120) * 1000;
+    const email = user.email.toLowerCase();
 
     const otpSended =
-      (await this.getOtpGenerated(user.email)) ?? CommonService.getOTP();
+      (await this.getOtpGenerated(email)) ?? CommonService.getOTP();
 
-    await this.cacheManager.set(user.email, otpSended, otpTTL);
+    await this.cacheManager.set(email, otpSended, otpTTL);
 
     const data = {
-      destinyText: user.email,
+      destinyText: email,
       destiny: user?._id
         ? {
             resourceId: user?._id,
@@ -700,13 +705,13 @@ export class AuthServiceController {
           }
         : null,
       vars: {
-        name: user.name ?? user.email,
+        name: user.name ?? email,
         lastname: '',
         otp: otpSended,
       },
     };
 
-    Logger.log(data, 'OTP Sended');
+    this.logger.info('OTP Sended', data);
     this.builder.emitMessageEventClient(
       EventsNamesMessageEnum.sendEmailOtpNotification,
       data,
@@ -715,11 +720,15 @@ export class AuthServiceController {
   }
 
   private async getOtpGenerated(email: string) {
-    return this.cacheManager.get<number>(email);
+    const _email = email.toLocaleLowerCase();
+    this.logger.info('getOtpGenerated', _email);
+    return this.cacheManager.get<number>(_email);
   }
 
   private async deleteOtpGenerated(email: string) {
-    return this.cacheManager.del(email);
+    const _email = email.toLocaleLowerCase();
+    this.logger.info('deleteOtpGenerated', _email);
+    return this.cacheManager.del(_email);
   }
 }
 

@@ -1,3 +1,4 @@
+import { Traceable } from '@amplication/opentelemetry-nestjs';
 import { PomeloSignatureGuard } from '@auth/auth/guards/pomelo.signature.guard';
 import { PomeloSignatureInterceptor } from '@common/common/interceptors/pomelo.signature.interceptor';
 import {
@@ -9,18 +10,21 @@ import {
   Body,
   Controller,
   HttpCode,
-  Logger,
   Post,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
+import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import { PomeloIntegrationShippingService } from './services/pomelo.integration.shipping.service';
 
+@Traceable()
 @Controller()
 @UseGuards(PomeloSignatureGuard)
 @UseInterceptors(PomeloSignatureInterceptor)
 export class PomeloShippingController {
   constructor(
+    @InjectPinoLogger(PomeloShippingController.name)
+    protected readonly logger: PinoLogger,
     private readonly shippingService: PomeloIntegrationShippingService,
   ) {}
 
@@ -29,7 +33,7 @@ export class PomeloShippingController {
   async handleShippingNotification(
     @Body() notification: ShippingNotifications,
   ): Promise<any> {
-    Logger.log(
+    this.logger.info(
       `Idempotency: ${notification.idempotency_key}`,
       'NotificationHandler - handleShippingNotification',
     );
@@ -39,7 +43,7 @@ export class PomeloShippingController {
   @Post(PomeloEnum.POMELO_SHIPPING_CARD_EVENTS)
   @HttpCode(204)
   async handleCardEvents(@Body() event: CardEvents): Promise<any> {
-    Logger.log(`Idempotency: ${event.idempotency_key}`, 'EventHandler');
+    this.logger.info(`Idempotency: ${event.idempotency_key}`, 'EventHandler');
     return await this.shippingService.handleCardEvents(event);
   }
 }
