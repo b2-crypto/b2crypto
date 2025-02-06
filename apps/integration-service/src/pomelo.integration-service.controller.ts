@@ -40,15 +40,15 @@ export class PomeloIntegrationServiceController {
     @Headers() headers: any,
   ): Promise<any> {
     this.logger.info(
-      'NotificationHandler - processNotification',
-      `Idempotency: ${notification.idempotency_key}`,
+      `[processNotification] Idempotency: ${notification.idempotency_key}`,
     );
+
     const result = await this.integrationServiceService.processNotification(
       notification,
       headers,
     );
 
-    this.logger.info('NotificationHandler', result);
+    this.logger.info(`[processNotification] ${JSON.stringify(result)}`);
 
     return { ...result, statusCode: HttpStatus.NO_CONTENT };
   }
@@ -70,7 +70,7 @@ export class PomeloIntegrationServiceController {
       headers,
     );
 
-    this.logger.info('AdjustmentHandler', result);
+    this.logger.info(`[processAdjustment] ${JSON.stringify(result)}`);
 
     return { ...result, statusCode: HttpStatus.NO_CONTENT };
   }
@@ -93,7 +93,7 @@ export class PomeloIntegrationServiceController {
       headers,
     );
 
-    this.logger.info('AuthorizationHandler', result);
+    this.logger.info(`[processAuthorization] ${JSON.stringify(result)}`);
 
     return { ...result, statusCode: HttpStatus.OK };
   }
