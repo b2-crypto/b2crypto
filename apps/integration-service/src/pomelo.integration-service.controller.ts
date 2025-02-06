@@ -84,15 +84,19 @@ export class PomeloIntegrationServiceController {
     @Headers(PomeloEnum.POMELO_IDEMPOTENCY_HEADER) idempotency: string,
     @Headers() headers: any,
   ): Promise<any> {
-    this.logger.info(`Idempotency: ${idempotency}`, 'AuthorizationHandler');
+    this.logger.info(`Idempotency: ${idempotency}`);
     authorization.idempotency = idempotency;
-    this.logger.info('AuthorizationHandler', authorization);
+    this.logger.info(`Authorization: ${authorization}`);
     const result = await this.integrationServiceService.processAuthorization(
       authorization,
       headers,
     );
 
-    this.logger.info('AuthorizationHandler', result);
+    this.logger.info(
+      `PomeloIntegrationServiceController.processAuthorization: ${JSON.stringify(
+        result,
+      )}`,
+    );
 
     return { ...result, statusCode: HttpStatus.OK };
   }

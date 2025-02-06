@@ -37,8 +37,16 @@ export class SumsubNotificationIntegrationController {
     @Body() notification: SumsubApplicantReviewed,
   ) {
     await this.sumsubService.validateClient(req.clientApi);
-    this.logger.info('Notification Reviewed body', notification);
-    this.logger.info('Notification Reviewed headers', req.headers);
+    this.logger.info(
+      `[handleNotificationReviewed] Notification Reviewed body ${JSON.stringify(
+        notification,
+      )}`,
+    );
+    this.logger.info(
+      `[handleNotificationReviewed] Notification Reviewed headers ${JSON.stringify(
+        req.headers,
+      )}`,
+    );
     await this.sumsubService.updateUserByReviewed(notification);
     return {
       statusCode: HttpStatus.OK,
@@ -53,8 +61,16 @@ export class SumsubNotificationIntegrationController {
     @Req() req: Request,
     @Body() notification: SumsubApplicantPending,
   ): Promise<any> {
-    this.logger.info('Notification Reviewed body', notification);
-    this.logger.info('Notification Reviewed headers', req.headers);
+    this.logger.info(
+      `[handleNotificationPending] Notification Reviewed body ${JSON.stringify(
+        notification,
+      )}`,
+    );
+    this.logger.info(
+      `[handleNotificationPending] Notification Reviewed headers ${JSON.stringify(
+        req.headers,
+      )}`,
+    );
     await this.sumsubService.updateUserByPending(notification);
     return {
       statusCode: HttpStatus.OK,
@@ -69,8 +85,16 @@ export class SumsubNotificationIntegrationController {
     @Req() req: Request,
     @Body() notification: SumsubApplicantOnHold,
   ): Promise<any> {
-    this.logger.info('Notification Reviewed body', notification);
-    this.logger.info('Notification Reviewed headers', req.headers);
+    this.logger.info(
+      `[handleNotificationOnHold] Notification Reviewed body ${JSON.stringify(
+        notification,
+      )}`,
+    );
+    this.logger.info(
+      `[handleNotificationOnHold] Notification Reviewed headers ${JSON.stringify(
+        req.headers,
+      )}`,
+    );
     await this.sumsubService.updateUserByOnHold(notification);
     return {
       statusCode: HttpStatus.OK,
