@@ -39,14 +39,15 @@ import {
   Query,
   Req,
   UnauthorizedException,
-  UseGuards
+  UseGuards,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Ctx, EventPattern, Payload, RmqContext } from '@nestjs/microservices';
 import {
   ApiBearerAuth,
-  ApiExcludeEndpoint, ApiSecurity,
-  ApiTags
+  ApiExcludeEndpoint,
+  ApiSecurity,
+  ApiTags,
 } from '@nestjs/swagger';
 import { TransferCreateDto } from '@transfer/transfer/dto/transfer.create.dto';
 import { OperationTransactionType } from '@transfer/transfer/enum/operation.transaction.type.enum';
@@ -66,15 +67,13 @@ import { mongo } from 'mongoose';
 import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import { AccountServiceController } from './account-service.controller';
 import { AccountServiceService } from './account-service.service';
-import EventsNamesAccountEnum from './enum/events.names.account.enum';
-import { WalletServiceService } from './wallet-service.service';
-import { WithdrawalResponse } from './interfaces/withdrawalResponse';
-import { WithdrawalExecuteDto } from './dtos/WithdrawalExecuteDto';
-import { PreorderResponse } from './interfaces/preorderResponse';
-import { WithdrawalPreorderDto } from './dtos/WithdrawalPreorderDto';
 import { QrDepositDto } from './dtos/qr-deposit.dto';
+import { WithdrawalExecuteDto } from './dtos/WithdrawalExecuteDto';
+import { WithdrawalPreorderDto } from './dtos/WithdrawalPreorderDto';
+import EventsNamesAccountEnum from './enum/events.names.account.enum';
+import { PreorderResponse } from './interfaces/preorderResponse';
 import { QrDepositResponse } from './interfaces/qr-deposit-response.interface';
-
+import { WithdrawalResponse } from './interfaces/withdrawalResponse';
 
 @ApiTags(SwaggerSteakeyConfigEnum.TAG_WALLET)
 @Traceable()
@@ -86,8 +85,6 @@ export class WalletServiceController extends AccountServiceController {
     @InjectPinoLogger(WalletServiceController.name)
     protected readonly logger: PinoLogger,
     private readonly walletService: AccountServiceService,
-    @Inject(WalletServiceService)
-    private readonly walletServiceService: WalletServiceService,
     @Inject(UserServiceService)
     private readonly userService: UserServiceService,
     @Inject(BuildersService)
@@ -1684,63 +1681,68 @@ export class WalletServiceController extends AccountServiceController {
     return this.createOne(createDto);
   }
 
+  @Post('deposit/qr')
+  @ApiTags(SwaggerSteakeyConfigEnum.TAG_WALLET)
+  @ApiSecurity('b2crypto-key')
+  @ApiBearerAuth('bearerToken')
+  @UseGuards(ApiKeyAuthGuard, JwtAuthGuard)
+  async generateDepositQr(
+    @Body() dto: QrDepositDto,
+    @Req() req?: any,
+  ): Promise<QrDepositResponse> {
+    const userId = CommonService.getUserId(req);
 
-@Post('deposit/qr')
-@ApiTags(SwaggerSteakeyConfigEnum.TAG_WALLET)
-@ApiSecurity('b2crypto-key')
-@ApiBearerAuth('bearerToken')
-@UseGuards(ApiKeyAuthGuard, JwtAuthGuard)
-async generateDepositQr(@Body() dto: QrDepositDto, @Req() req?: any): Promise<QrDepositResponse> {
-  const userId = CommonService.getUserId(req);
-  
-  const wallet = await this.walletService.findOneById(dto.walletId);
-  if (!wallet || wallet.owner.toString() !== userId) {
-    throw new BadRequestException('Invalid wallet or insufficient permissions');
+    const wallet = await this.walletService.findOneById(dto.walletId);
+    if (!wallet || wallet.owner.toString() !== userId) {
+      throw new BadRequestException(
+        'Invalid wallet or insufficient permissions',
+      );
+    }
+
+    return this.walletService.generateDepositQr(dto);
   }
 
-  return this.walletService.generateDepositQr(dto);
-}
+  @Post('external-withdrawal-preorder')
+  @ApiTags(SwaggerSteakeyConfigEnum.TAG_WALLET)
+  @ApiSecurity('b2crypto-key')
+  @ApiBearerAuth('bearerToken')
+  @UseGuards(ApiKeyAuthGuard, JwtAuthGuard)
+  async createWithdrawalPreorder(
+    @Body() dto: WithdrawalPreorderDto,
+    @Req() req?: any,
+  ): Promise<PreorderResponse> {
+    const userId = CommonService.getUserId(req);
 
-@Post('external-withdrawal-preorder')
-@ApiTags(SwaggerSteakeyConfigEnum.TAG_WALLET)
-@ApiSecurity('b2crypto-key')
-@ApiBearerAuth('bearerToken')
-@UseGuards(ApiKeyAuthGuard, JwtAuthGuard)
-async createWithdrawalPreorder(
-  @Body() dto: WithdrawalPreorderDto,
-  @Req() req?: any
-): Promise<PreorderResponse> {
-  const userId = CommonService.getUserId(req);
-  
-  const wallet = await this.walletService.findOneById(dto.walletId);
-  if (!wallet || wallet.owner.toString() !== userId) {
-    throw new BadRequestException('Invalid wallet or insufficient permissions');
-  }
-  if (!dto.destinationAddress || dto.destinationAddress.length < 10) {
-    throw new BadRequestException('Invalid destination address');
-  }
+    const wallet = await this.walletService.findOneById(dto.walletId);
+    if (!wallet || wallet.owner.toString() !== userId) {
+      throw new BadRequestException(
+        'Invalid wallet or insufficient permissions',
+      );
+    }
+    if (!dto.destinationAddress || dto.destinationAddress.length < 10) {
+      throw new BadRequestException('Invalid destination address');
+    }
 
-  if (!dto.amount || dto.amount <= 0) {
-    throw new BadRequestException('Invalid amount');
-  }
+    if (!dto.amount || dto.amount <= 0) {
+      throw new BadRequestException('Invalid amount');
+    }
 
-  return this.walletService.validateWithdrawalPreorder(dto);
-}
-
-@Post('external-withdrawal-confirm')
-@ApiTags(SwaggerSteakeyConfigEnum.TAG_WALLET)
-@ApiSecurity('b2crypto-key')
-@ApiBearerAuth('bearerToken')
-@UseGuards(ApiKeyAuthGuard, JwtAuthGuard)
-async executeWithdrawal(
-  @Body() dto: WithdrawalExecuteDto,
-  @Req() req?: any
-): Promise<WithdrawalResponse> {
-  
-  if (!dto.preorderId) {
-    throw new BadRequestException('Invalid preorder ID');
+    return this.walletService.validateWithdrawalPreorder(dto);
   }
 
-  return this.walletService.executeWithdrawalOrder(dto);
-}
+  @Post('external-withdrawal-confirm')
+  @ApiTags(SwaggerSteakeyConfigEnum.TAG_WALLET)
+  @ApiSecurity('b2crypto-key')
+  @ApiBearerAuth('bearerToken')
+  @UseGuards(ApiKeyAuthGuard, JwtAuthGuard)
+  async executeWithdrawal(
+    @Body() dto: WithdrawalExecuteDto,
+    @Req() req?: any,
+  ): Promise<WithdrawalResponse> {
+    if (!dto.preorderId) {
+      throw new BadRequestException('Invalid preorder ID');
+    }
+
+    return this.walletService.executeWithdrawalOrder(dto);
+  }
 }
