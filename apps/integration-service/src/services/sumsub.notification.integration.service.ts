@@ -40,8 +40,7 @@ export class SumsubNotificationIntegrationService {
   async updateUserByReviewed(notification: SumsubApplicantReviewed) {
     if (!isMongoId(notification.externalUserId)) {
       this.logger.error(
-        'Reviewed.SumsubNotificationIntegrationService',
-        `User id "${notification.externalUserId}" isn't valid`,
+        `[SumsubNotificationIntegrationService.updateUserByReviewed] Not valid id ${notification.externalUserId}`,
       );
       return null;
     }
@@ -53,8 +52,7 @@ export class SumsubNotificationIntegrationService {
 
     if (!user) {
       this.logger.error(
-        'Reviewed.SumsubNotificationIntegrationService',
-        'User not found',
+        `[SumsubNotificationIntegrationService.updateUserByReviewed] User not found with id ${notification.externalUserId}`,
       );
       return null;
     }
@@ -75,17 +73,15 @@ export class SumsubNotificationIntegrationService {
       verifyIdentity: user.verifyIdentity,
     });
     this.logger.info(
-      'User Updated',
-      'Reviewed.SumsubNotificationIntegrationService',
+      `[SumsubNotificationIntegrationService.updateUserByReviewed] User updated with id ${notification.externalUserId}`,
     );
 
-    this.builder.emitPersonEventClient(EventsNamesPersonEnum.updateOne, {
+    this.builder.emitPersonEventClient(EventsNamesPersonEnum.updatePartialOne, {
       id: user.personalData,
       verifiedIdentity: true,
     });
     this.logger.info(
-      'Profile Updated',
-      'Reviewed.SumsubNotificationIntegrationService',
+      `[SumsubNotificationIntegrationService.updateUserByReviewed] Profile updated with id ${user.personalData}`,
     );
 
     return user;

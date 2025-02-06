@@ -111,7 +111,7 @@ export class PomeloIntegrationProcessService {
     const amount = txn.amount.local.total;
     const conversion = `to: ${to} | from: ${from} | amount: ${amount}`;
 
-    this.logger.info('getAmount', conversion);
+    this.logger.info(`getAmount: ${conversion}`);
 
     const usd =
       parseInt(amount) > 0

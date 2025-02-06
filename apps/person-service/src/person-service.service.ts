@@ -33,6 +33,10 @@ export class PersonServiceService {
     return this.lib.update(person.id.toString(), person);
   }
 
+  async updatePartialOnePerson(person: PersonUpdateDto) {
+    return this.lib.updatePartialOne(person.id.toString(), person);
+  }
+
   async updateManyPersons(persons: PersonUpdateDto[]) {
     return this.lib.updateMany(
       persons.map((person) => person.id.toString()),

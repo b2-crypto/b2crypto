@@ -9,6 +9,7 @@ enum EventsNamesPersonEnum {
   migrateOne = 'PERSON.MIGRATE.ONE',
   updateMany = 'PERSON.UPDATE.MANY',
   updateOne = 'PERSON.UPDATE.ONE',
+  updatePartialOne = 'PERSON.UPDATE.PARTIAL.ONE',
   findAll = 'PERSON.FIND.ALL',
   findOneById = 'PERSON.FIND.ONE.BY.ID',
   deleteMany = 'PERSON.DELETE.MANY',
