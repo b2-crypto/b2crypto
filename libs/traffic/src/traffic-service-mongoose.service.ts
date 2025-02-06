@@ -5,6 +5,7 @@ import { TrafficCreateDto } from '@traffic/traffic/dto/traffic.create.dto';
 import { TrafficUpdateDto } from '@traffic/traffic/dto/traffic.update.dto';
 import { TrafficDocument } from '@traffic/traffic/entities/mongoose/traffic.schema';
 import { Model } from 'mongoose';
+import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 
 @Traceable()
 @Injectable()
@@ -15,9 +16,11 @@ export class TrafficServiceMongooseService extends BasicServiceModel<
   TrafficUpdateDto
 > {
   constructor(
+    @InjectPinoLogger(TrafficServiceMongooseService.name)
+    protected readonly logger: PinoLogger,
     @Inject('TRAFFIC_MODEL_MONGOOSE')
     trafficModel: Model<TrafficDocument>,
   ) {
-    super(trafficModel);
+    super(logger, trafficModel);
   }
 }

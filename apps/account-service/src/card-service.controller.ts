@@ -158,7 +158,11 @@ export class CardServiceController extends AccountServiceController {
           }
         } catch (err) {
           if (err.response?.data) {
-            this.logger.error('Error HTTP request', err.response?.data);
+            this.logger.error(
+              `[updateOnePin] Error HTTP request ${JSON.stringify(
+                err.response?.data,
+              )}`,
+            );
             if (err.response?.data?.error?.details) {
               throw new BadRequestException(
                 err.response?.data?.error?.details
@@ -167,7 +171,9 @@ export class CardServiceController extends AccountServiceController {
               );
             }
           } else {
-            this.logger.error('Error in card profile or update card', err);
+            this.logger.error(
+              `[updateOnePin] Error in card profile or update card ${err}`,
+            );
           }
           throw new BadRequestException('Card not updated');
         }
@@ -217,7 +223,7 @@ export class CardServiceController extends AccountServiceController {
       });
       return amount;
     } catch (err) {
-      this.logger.error('CardController', err);
+      this.logger.error(`[swapToCurrencyUser] CardController ${err}`);
       return account.amountCustodial || account.amount;
     }
   }
@@ -471,8 +477,7 @@ export class CardServiceController extends AccountServiceController {
         );
       }
       this.logger.error(
-        `Account Card not created ${account.owner}`,
-        JSON.stringify(err),
+        `[createOne] Account Card not created ${account.owner} ${err}`,
       );
       if (err.response) {
         err.response.details = err.response.details ?? [];
@@ -1295,10 +1300,7 @@ export class CardServiceController extends AccountServiceController {
         : process.env.ENVIRONMENT === 'PROD'
         ? this.getAfgProd(cardAfg)
         : null;
-    this.logger.debug(
-      `AFG: ${JSON.stringify(afg)}`,
-      'CardServiceController.buildAFG',
-    );
+    this.logger.debug(`[buildAFG] ${JSON.stringify(afg)}`);
     // TODO[hender-20/08/2024] check the level user (individual/corporate)
     if (afgId) {
       afg = {
@@ -1415,7 +1417,7 @@ export class CardServiceController extends AccountServiceController {
     const rtaGetShipping = await cardIntegration.getShippingPhysicalCard(
       card.responseShipping.id,
     );
-    this.logger.debug('Shipping', rtaGetShipping);
+    this.logger.debug(`[getShippingPhysicalCard] Shipping ${rtaGetShipping}`);
     return card.responseShipping;
   }
 
@@ -1529,11 +1531,7 @@ export class CardServiceController extends AccountServiceController {
       throw new BadRequestException('Card is not valid');
     }
     if (to.type != TypesAccountEnum.CARD) {
-      this.logger.error(
-        'Type not same',
-        CardServiceController.name,
-        'Card.rechargeOne.card',
-      );
+      this.logger.error('[rechargeOne] Type not same');
       throw new BadRequestException('Card not found');
     }
     const valueToPay = to.type === TypesAccountEnum.CARD ? 0 : 5;
@@ -1582,7 +1580,7 @@ export class CardServiceController extends AccountServiceController {
       );
     if (valueToPay > 0) {
       // Pay transfer between cards
-      this.logger.debug('Pay transfer between cards', 'Make');
+      this.logger.debug('[rechargeOne] Pay transfer between cards', 'Make');
     }
     this.cardBuilder.emitTransferEventClient(
       EventsNamesTransferEnum.createOne,

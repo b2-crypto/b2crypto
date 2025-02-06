@@ -23,6 +23,7 @@ import { TrafficDocument } from '@traffic/traffic/entities/mongoose/traffic.sche
 import { UserServiceMongooseService } from '@user/user';
 import { BrandServiceMongooseService } from 'libs/brand/src';
 import { Model } from 'mongoose';
+import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import { IpAddressDocument } from '../../ip-address/src/entities/mongoose/ip-address.schema';
 import { UserDocument } from '../../user/src/entities/mongoose/user.schema';
 
@@ -35,6 +36,8 @@ export class AffiliateServiceMongooseService extends BasicServiceModel<
   AffiliateUpdateDto
 > {
   constructor(
+    @InjectPinoLogger(AffiliateServiceMongooseService.name)
+    protected readonly logger: PinoLogger,
     @Inject('AFFILIATE_MODEL_MONGOOSE')
     affiliateModel: Model<AffiliateDocument>,
     @Inject(UserServiceMongooseService)
@@ -50,7 +53,7 @@ export class AffiliateServiceMongooseService extends BasicServiceModel<
     @Inject(TrafficServiceMongooseService)
     private trafficService: TrafficServiceMongooseService,
   ) {
-    super(affiliateModel);
+    super(logger, affiliateModel);
   }
 
   async findAll(query) {

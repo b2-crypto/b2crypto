@@ -5,6 +5,7 @@ import { PspCreateDto } from '@psp/psp/dto/psp.create.dto';
 import { PspUpdateDto } from '@psp/psp/dto/psp.update.dto';
 import { PspDocument } from '@psp/psp/entities/mongoose/psp.schema';
 import { Model } from 'mongoose';
+import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 
 @Traceable()
 @Injectable()
@@ -14,7 +15,11 @@ export class PspServiceMongooseService extends BasicServiceModel<
   PspCreateDto,
   PspUpdateDto
 > {
-  constructor(@Inject('PSP_MODEL_MONGOOSE') pspModel: Model<PspDocument>) {
-    super(pspModel);
+  constructor(
+    @InjectPinoLogger(PspServiceMongooseService.name)
+    protected readonly logger: PinoLogger,
+    @Inject('PSP_MODEL_MONGOOSE') pspModel: Model<PspDocument>,
+  ) {
+    super(logger, pspModel);
   }
 }

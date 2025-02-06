@@ -7,6 +7,7 @@ import { StatsDateDocuments } from 'apps/stats-service/src/enum/stats.date.type'
 import { isArray, isMongoId } from 'class-validator';
 import { ObjectId } from 'mongodb';
 import { ClientSession, Connection, Model } from 'mongoose';
+import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import { StatsDateAllCreateDto } from './dto/stats.date.all.create.dto';
 import { StatsDateAllUpdateDto } from './dto/stats.date.all.update.dto';
 import { StatsDateDocument } from './entities/mongoose/stats.date.schema';
@@ -20,12 +21,14 @@ export class StatsDateServiceMongooseService extends BasicServiceModel<
   StatsDateAllUpdateDto
 > {
   constructor(
+    @InjectPinoLogger(StatsDateServiceMongooseService.name)
+    protected readonly logger: PinoLogger,
     @Inject('STATS_DATE_MODEL_MONGOOSE')
     private statsDateModel: Model<StatsDateDocuments>,
     @Inject('MONGOOSE_CONNECTION')
     private readonly connection: Connection,
   ) {
-    super(statsDateModel);
+    super(logger, statsDateModel);
   }
 
   async startSession(): Promise<ClientSession> {
