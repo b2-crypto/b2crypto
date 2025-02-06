@@ -38,26 +38,24 @@ import EventsNamesStatusEnum from 'apps/status-service/src/enum/events.names.sta
 import EventsNamesTransferEnum from 'apps/transfer-service/src/enum/events.names.transfer.enum';
 import * as fs from 'fs';
 import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
-import { WithdrawalPreorderDto } from './dtos/WithdrawalPreorderDto';
-import { WithdrawalExecuteDto } from './dtos/WithdrawalExecuteDto';
-import { WithdrawalResponse } from './interfaces/withdrawalResponse';
-import { QrDepositDto } from './dtos/qr-deposit.dto';
-import { QrDepositResponse } from './interfaces/qr-deposit-response.interface';
-import { PreorderData, PreorderResponse } from './interfaces/preorderResponse';
-import { NetworkEnum } from './enum/network.enum';
 import { DepositDto } from './dtos/deposit.dto';
+import { QrDepositDto } from './dtos/qr-deposit.dto';
+import { WithdrawalExecuteDto } from './dtos/WithdrawalExecuteDto';
+import { WithdrawalPreorderDto } from './dtos/WithdrawalPreorderDto';
+import { NetworkEnum } from './enum/network.enum';
+import { PreorderData, PreorderResponse } from './interfaces/preorderResponse';
+import { QrDepositResponse } from './interfaces/qr-deposit-response.interface';
+import { WithdrawalResponse } from './interfaces/withdrawalResponse';
 import { WithdrawalError } from './utils/errors';
 import { WITHDRAWAL_CONFIG } from './withdrawal.config';
-
 
 @Traceable()
 @Injectable()
 export class AccountServiceService
   implements BasicMicroserviceService<AccountDocument>
 {
-
   private readonly preorders = new Map<string, PreorderData>();
-    async cleanWallet(query: QuerySearchAnyDto) {
+  async cleanWallet(query: QuerySearchAnyDto) {
     throw new NotImplementedException();
 
     //this.logger.debug('Start', `Clean wallet`);
@@ -89,7 +87,6 @@ export class AccountServiceService
     while (query.page < lastPage) {
       ++query.page;
       this.logger.info(
-
         `Start page ${query.page}`,
         `Clean wallet with transfers`,
       );
@@ -102,14 +99,11 @@ export class AccountServiceService
         ),
       );
 
-
       this.logger.info(`End page ${query.page}`, `Clean wallet with transfers`);
-
     }
     return Promise.all(promises);
   }
   async cleanWalletsWithTx(query: QuerySearchAnyDto, msg?: string) {
-
     this.logger.info(`Start page ${query.page}`, `Clean wallet with tx`);
 
     const promises = [];
@@ -367,7 +361,6 @@ export class AccountServiceService
         },
       };
 
-
       this.logger.info('Account Request Confirmation Email Prepared', data);
 
       this.builder.emitMessageEventClient(
@@ -465,7 +458,6 @@ export class AccountServiceService
   getBalanceReport(query: QuerySearchAnyDto) {
     // TODO[hender - 2024/09/26] Receive 3 events but trigger only 1 from job
 
-
     this.logger.info('Start balance report', AccountServiceService.name);
     Promise.all([
       this.getBalanceByAccountTypeCard(query),
@@ -475,7 +467,6 @@ export class AccountServiceService
       this.getBalanceByAccountByCard(query),
       //this.getBalanceByAccountByWallet(query),
     ]).then(async (results) => {
-
       this.logger.info('Report filter finish', AccountServiceService.name);
       const [
         cardTotalAccumulated,
@@ -653,7 +644,6 @@ export class AccountServiceService
           fs.unlinkSync(fileUri);
         }
       } else {
-
         this.logger.info(`File "${filename}" not found`, listName);
 
         this.responseFileContent({ filename, fileUri, listName, res });
@@ -728,13 +718,16 @@ export class AccountServiceService
   //   return cryptoList;
   // }
 
-  async validateWithdrawalPreorder(dto: WithdrawalPreorderDto): Promise<PreorderResponse> {
+  async validateWithdrawalPreorder(
+    dto: WithdrawalPreorderDto,
+  ): Promise<PreorderResponse> {
     const sourceWallet = await this.lib.findOne(dto.walletId);
     if (!sourceWallet) {
       throw new WithdrawalError('INVALID_WALLET', 'Wallet not found');
     }
 
-    const networkFee = dto.amount * WITHDRAWAL_CONFIG.fees.networks[dto.network];
+    const networkFee =
+      dto.amount * WITHDRAWAL_CONFIG.fees.networks[dto.network];
     const baseFee = WITHDRAWAL_CONFIG.fees.base;
     const totalAmount = dto.amount + networkFee + baseFee;
 
@@ -749,7 +742,7 @@ export class AccountServiceService
       networkFee,
       baseFee,
       fees: { networkFee, baseFee },
-      createdAt: new Date()
+      createdAt: new Date(),
     };
 
     this.preorders.set(preorderId, preorder);
@@ -759,11 +752,15 @@ export class AccountServiceService
       totalAmount,
       fees: { networkFee, baseFee },
       netAmount: dto.amount,
-      expiresAt: new Date(Date.now() + WITHDRAWAL_CONFIG.timing.maxConfirmationTime * 1000)
+      expiresAt: new Date(
+        Date.now() + WITHDRAWAL_CONFIG.timing.maxConfirmationTime * 1000,
+      ),
     };
   }
 
-  async executeWithdrawalOrder(dto: WithdrawalExecuteDto): Promise<WithdrawalResponse> {
+  async executeWithdrawalOrder(
+    dto: WithdrawalExecuteDto,
+  ): Promise<WithdrawalResponse> {
     const preorder = this.preorders.get(dto.preorderId);
     if (!preorder) {
       throw new WithdrawalError('INVALID_PREORDER', 'Preorder not found');
@@ -791,7 +788,7 @@ export class AccountServiceService
         amount: preorder.amount.toString(),
         address: preorder.destinationAddress,
         description: 'Withdrawal',
-        external: true
+        external: true,
       } as unknown as DepositDto;
 
       const txResponse = await cryptoType.createDeposit(depositDto);
@@ -799,28 +796,36 @@ export class AccountServiceService
 
       const updateDto = new AccountUpdateDto();
       updateDto.id = preorder.walletId;
-      updateDto.amountCustodial = sourceWallet.amountCustodial - preorder.totalAmount;
+      updateDto.amountCustodial =
+        sourceWallet.amountCustodial - preorder.totalAmount;
 
       await this.lib.update(preorder.walletId, updateDto);
 
       this.preorders.delete(dto.preorderId);
 
       return {
-        transactionId: transaction?.transactionId || transaction?.id || String(Date.now()),
+        transactionId:
+          transaction?.transactionId || transaction?.id || String(Date.now()),
         status: 'PENDING',
         amount: preorder.amount,
         fees: {
           networkFee: preorder.fees.networkFee,
           baseFee: preorder.fees.baseFee,
-          totalFee: preorder.fees.networkFee + preorder.fees.baseFee
+          totalFee: preorder.fees.networkFee + preorder.fees.baseFee,
         },
-        timestamp: new Date()
+        timestamp: new Date(),
       };
     } catch (error) {
-      Logger.error(`Withdrawal execution failed' ${error} ${AccountServiceService.name}`);
-      throw new WithdrawalError('EXECUTION_FAILED', 'Failed to execute withdrawal', {
-        details: error.message
-      });
+      this.logger.error(
+        `Withdrawal execution failed' ${error} ${AccountServiceService.name}`,
+      );
+      throw new WithdrawalError(
+        'EXECUTION_FAILED',
+        'Failed to execute withdrawal',
+        {
+          details: error.message,
+        },
+      );
     }
   }
   async generateDepositQr(dto: QrDepositDto): Promise<QrDepositResponse> {
@@ -847,7 +852,6 @@ export class AccountServiceService
         amount: dto.amount.toString(),
       } as unknown as DepositDto);
 
-
       const [addressData] = depositAddress.data;
       const address = addressData.address;
 
@@ -864,12 +868,13 @@ export class AccountServiceService
         network: dto.network,
         amount: dto.amount,
         scanUrl,
-        timestamp: new Date()
+        timestamp: new Date(),
       };
     } catch (error) {
-      Logger.error(`QR deposit generation failed' ${error} ${AccountServiceService.name}`);
+      this.logger.error(
+        `QR deposit generation failed' ${error} ${AccountServiceService.name}`,
+      );
       throw new BadRequestException('Failed to generate deposit QR');
     }
   }
-
 }
