@@ -76,8 +76,8 @@ export class PomeloIntegrationServiceController {
   }
 
   @Post(PomeloEnum.POMELO_AUTHORIZATION_PATH)
-  @UseGuards(PomeloSignatureGuard)
-  @UseInterceptors(PomeloSignatureInterceptor)
+  // @UseGuards(PomeloSignatureGuard)
+  // @UseInterceptors(PomeloSignatureInterceptor)
   @HttpCode(HttpStatus.OK)
   async processAuthorization(
     @Body() authorization: Authorization,
@@ -87,6 +87,7 @@ export class PomeloIntegrationServiceController {
     this.logger.info(`Idempotency: ${idempotency}`, 'AuthorizationHandler');
     authorization.idempotency = idempotency;
     this.logger.info('AuthorizationHandler', authorization);
+
     const result = await this.integrationServiceService.processAuthorization(
       authorization,
       headers,
@@ -98,7 +99,10 @@ export class PomeloIntegrationServiceController {
   }
 
   @Post('/sftp/download')
+  @HttpCode(HttpStatus.OK)
   downloadSFTPReports() {
     this.sftpService.getSFTPPomeloReportsByClient('b2crypto', 'col');
+
+    return { statusCode: HttpStatus.OK };
   }
 }

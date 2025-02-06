@@ -30,7 +30,7 @@ export class SumsubNotificationIntegrationController {
   ) {}
 
   @Post(SumsubConfigEnum.SUMSUB_NOTIFICATION_REVIEWED_PATH)
-  @ApiKeyCheck()
+  // @ApiKeyCheck()
   @HttpCode(HttpStatus.OK)
   async handleNotificationReviewed(
     @Req() req,
