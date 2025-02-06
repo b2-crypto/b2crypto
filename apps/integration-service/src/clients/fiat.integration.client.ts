@@ -62,21 +62,9 @@ export class FiatIntegrationClient {
         throw new InternalServerErrorException(error);
       });
 
-    // const data = await lastValueFrom(this.httpService.get(url))
-    //   .then((res) => {
-    //     this.logger.info(
-    //       'FiatIntegrationClient.getCurrencyConversion',
-    //       JSON.stringify(res.data),
-    //     );
-    //     return res.data;
-    //   })
-    //   .catch((error) => {
-    //     this.logger.error(
-    //       `FiatIntegrationClient.getCurrencyConversion: from=${from}, to=${to}, amount=${amount}`,
-    //     );
-    //     this.logger.error(error);
-    //     throw new InternalServerErrorException(error);
-    //   });
+    this.logger.info(
+      `FiatIntegrationClient.getCurrencyConversion: ${JSON.stringify(data)}`,
+    );
 
     return data.result;
   }
