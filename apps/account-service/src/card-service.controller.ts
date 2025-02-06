@@ -1668,10 +1668,7 @@ export class CardServiceController extends AccountServiceController {
     if (!user.personalData.location?.address) {
       throw new BadRequestException('Location address not found');
     }
-    this.logger.debug(
-      JSON.stringify(user),
-      'loggger user - getValidateUserFromReq',
-    );
+    this.logger.debug(`[getValidUserFromReq] User ${JSON.stringify(user)}`);
     return user;
   }
 
@@ -1690,10 +1687,14 @@ export class CardServiceController extends AccountServiceController {
         user.userCard = await this.getUserCard(cardIntegration, user);
       }
     } catch (err) {
-      this.logger.error('Error in card profile creation', err);
+      this.logger.error(
+        `[physicalActiveCard] Error in card profile creation ${err}`,
+      );
       throw new BadRequestException('Card profile not found');
     }
-    this.logger.debug(configActivate.pin, 'pin active card');
+    this.logger.debug(
+      `[physicalActiveCard] pin active card ${configActivate.pin}`,
+    );
     if (!configActivate.pin && configActivate.pin?.length !== 4) {
       configActivate.pin = CommonService.getNumberDigits(
         CommonService.randomIntNumber(9999),
@@ -1713,32 +1714,38 @@ export class CardServiceController extends AccountServiceController {
       user.userCard,
       configActivate,
     );
-    this.logger.debug(JSON.stringify(rta), 'rta actived card');
+    this.logger.debug(
+      `[physicalActiveCard] rta actived card ${JSON.stringify(rta)}`,
+    );
     if (rta) {
       if (!!rta['error']) {
         const details: Array<string> = (rta['error']['details'] || []).map(
           (err) => err.detail,
         );
-        this.logger.error('activate card', details);
+        this.logger.error(
+          `[physicalActiveCard] activate card ${JSON.stringify(details)}`,
+        );
         throw new BadRequestException(details.join(','));
       }
       const cardId = (rta.data && rta.data['id']) || rta['id'];
-      this.logger.debug(cardId, `cardId actived`);
+      this.logger.debug(`[physicalActiveCard] cardId actived ${cardId}`);
       let crd = null;
       let card = null;
       let cards = null;
       try {
         cards = await cardIntegration.getCard(cardId);
-        this.logger.debug(cards, `Result pomelo active`);
+        this.logger.debug(
+          `[physicalActiveCard] Result pomelo active ${JSON.stringify(cards)}`,
+        );
         crd = cards.data;
-        this.logger.debug(cardId, `Search card active`);
+        this.logger.debug(`[physicalActiveCard] Search card active ${cardId}`);
         card = await this.cardService.findAll({
           where: {
             'cardConfig.id': crd.id,
           },
         });
       } catch (err) {
-        this.logger.error('Error get card pomelo', err);
+        this.logger.error(`[physicalActiveCard] Error get card pomelo ${err}`);
         throw new BadRequestException('Get Card error');
       }
       if (!card.totalElements) {
@@ -1747,7 +1754,9 @@ export class CardServiceController extends AccountServiceController {
         const n_card = await this.cardService.createOne(
           cardDto as AccountCreateDto,
         );
-        this.logger.debug(n_card.id, `Card created for ${user.email}`);
+        this.logger.debug(
+          `[physicalActiveCard] Card created ${n_card.id} for ${user.email}`,
+        );
         let afgName = 'grupo-1';
         if (configActivate.promoCode == 'pm2413') {
           afgName = 'grupo-3';
@@ -1761,8 +1770,9 @@ export class CardServiceController extends AccountServiceController {
             affinity_group_id: afg.valueGroup,
           });
           this.logger.debug(
-            `Updated AFG Card-${n_card?.id.toString()}`,
-            rta.data,
+            `[physicalActiveCard] Updated AFG Card-${
+              n_card?.id
+            } ${JSON.stringify(rta.data)}`,
           );
           this.cardBuilder.emitAccountEventClient(
             EventsNamesAccountEnum.updateOne,
@@ -1773,8 +1783,9 @@ export class CardServiceController extends AccountServiceController {
           );
         } catch (error) {
           this.logger.error(
-            `Update AFG Card-${n_card?.id.toString()}-${user.email}`,
-            error.message || error,
+            `[physicalActiveCard] Update AFG Card-${n_card?.id}-${user.email} ${
+              error.message || error
+            }`,
           );
           //throw new BadRequestException('Bad update card');
         }
@@ -1949,7 +1960,9 @@ export class CardServiceController extends AccountServiceController {
       const group = await this.buildAFG(null, cardAfg);
       const afg = group.list[0];
       if (!afg) {
-        this.logger.debug(JSON.stringify(cardAfg), 'AFG not found group');
+        this.logger.debug(
+          `[levelUpCards] AFG not found group ${JSON.stringify(cardAfg)}`,
+        );
         throw new NotFoundException('AFG not found');
       }
       const cardIntegration = await this.integration.getCardIntegration(
@@ -1965,8 +1978,9 @@ export class CardServiceController extends AccountServiceController {
             affinity_group_id: afg.valueGroup,
           });
           this.logger.debug(
-            `Updated AFG Card-${card._id.toString()}`,
-            rta.data,
+            `[levelUpCards] Updated AFG Card-${card._id} ${JSON.stringify(
+              rta.data,
+            )}`,
           );
           this.cardBuilder.emitAccountEventClient(
             EventsNamesAccountEnum.updateOne,
@@ -1977,8 +1991,7 @@ export class CardServiceController extends AccountServiceController {
           );
         } catch (error) {
           this.logger.error(
-            `LevelUpCard-${card._id.toString()}`,
-            error.message || error,
+            `[levelUpCards] LevelUpCard-${card._id} ${error.message || error}`,
           );
           throw new BadRequestException('Bad update card');
         }
@@ -2044,7 +2057,9 @@ export class CardServiceController extends AccountServiceController {
     CommonService.ack(ctx);
     try {
       let txnAmount = 0;
-      this.logger.debug(`Looking for card: ${data.id}`, 'proccessPomeloTx');
+      this.logger.debug(
+        `[processPomeloTransaction] Looking for card: ${data.id}`,
+      );
       const cardList = await this.cardService.findAll({
         where: {
           statusText: StatusAccountEnum.UNLOCK,
@@ -2056,8 +2071,7 @@ export class CardServiceController extends AccountServiceController {
         return CardsEnum.CARD_PROCESS_CARD_NOT_FOUND;
       }
       this.logger.debug(
-        `Card balance: ${card.amount} | Movement amount: ${data.amount}`,
-        `CardService.ProcessPomeloTransaction.Authorize: ${data.authorize}`,
+        `[processPomeloTransaction] Card balance: ${card.amount} | Movement amount: ${data.amount}`,
       );
       if (data.authorize) {
         const allowedBalance =
