@@ -38,10 +38,14 @@ export class SumsubNotificationIntegrationController {
   ) {
     await this.sumsubService.validateClient(req.clientApi);
     this.logger.info(
-      `Notification Reviewed body ${JSON.stringify(notification)}`,
+      `[handleNotificationReviewed] Notification Reviewed body ${JSON.stringify(
+        notification,
+      )}`,
     );
     this.logger.info(
-      `Notification Reviewed headers ${JSON.stringify(req.headers)}`,
+      `[handleNotificationReviewed] Notification Reviewed headers ${JSON.stringify(
+        req.headers,
+      )}`,
     );
     await this.sumsubService.updateUserByReviewed(notification);
     return {
@@ -58,10 +62,14 @@ export class SumsubNotificationIntegrationController {
     @Body() notification: SumsubApplicantPending,
   ): Promise<any> {
     this.logger.info(
-      `Notification Reviewed body ${JSON.stringify(notification)}`,
+      `[handleNotificationPending] Notification Reviewed body ${JSON.stringify(
+        notification,
+      )}`,
     );
     this.logger.info(
-      `Notification Reviewed headers ${JSON.stringify(req.headers)}`,
+      `[handleNotificationPending] Notification Reviewed headers ${JSON.stringify(
+        req.headers,
+      )}`,
     );
     await this.sumsubService.updateUserByPending(notification);
     return {
@@ -78,10 +86,14 @@ export class SumsubNotificationIntegrationController {
     @Body() notification: SumsubApplicantOnHold,
   ): Promise<any> {
     this.logger.info(
-      `Notification Reviewed body ${JSON.stringify(notification)}`,
+      `[handleNotificationOnHold] Notification Reviewed body ${JSON.stringify(
+        notification,
+      )}`,
     );
     this.logger.info(
-      `Notification Reviewed headers ${JSON.stringify(req.headers)}`,
+      `[handleNotificationOnHold] Notification Reviewed headers ${JSON.stringify(
+        req.headers,
+      )}`,
     );
     await this.sumsubService.updateUserByOnHold(notification);
     return {
