@@ -320,7 +320,7 @@ export class BasicServiceModel<
         updateAnyDto['searchText'] = this.getSearchText(updateAnyDto);
       }*/
       //rta = await this.model.findOneAndUpdate({ _id: id }, updateAnyDto);
-      rta = await this.model.updateOne({ _id: id }, { $set: updateAnyDto });
+      rta = await this.model.updateOne({ _id: id }, updateAnyDto);
     } else {
       rta = await this.model.update(id, updateAnyDto);
     }
