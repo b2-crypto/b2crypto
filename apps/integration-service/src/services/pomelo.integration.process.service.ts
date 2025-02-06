@@ -279,7 +279,7 @@ export class PomeloIntegrationProcessService {
     }
   }
 
-  private async getAmount(txn: any): Promise<any> {
+  private async getAmount(txn: any) {
     const to = process.env.DEFAULT_CURRENCY_CONVERSION_COIN;
     const from = txn.amount.local.currency;
     const amount = txn.amount.local.total;

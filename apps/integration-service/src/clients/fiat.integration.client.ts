@@ -1,8 +1,25 @@
 import { Traceable } from '@amplication/opentelemetry-nestjs';
-import { HttpService } from '@nestjs/axios';
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
-import { lastValueFrom } from 'rxjs';
+
+export interface IExchangeRate {
+  success: boolean;
+  query: IQuery;
+  info: IInfo;
+  date: string;
+  result: number;
+}
+
+export interface IQuery {
+  from: string;
+  to: string;
+  amount: number;
+}
+
+export interface IInfo {
+  timestamp: number;
+  rate: number;
+}
 
 @Traceable()
 @Injectable()
@@ -10,7 +27,6 @@ export class FiatIntegrationClient {
   constructor(
     @InjectPinoLogger(FiatIntegrationClient.name)
     protected readonly logger: PinoLogger,
-    private httpService: HttpService,
   ) {}
 
   async getCurrencyConversionCustodial(
@@ -25,7 +41,7 @@ export class FiatIntegrationClient {
     to: string,
     from: string,
     amount: number,
-  ): Promise<any> {
+  ): Promise<number> {
     const apiURL = process.env.CURRENCY_CONVERSION_API_URL;
     const apiKey = process.env.CURRENCY_CONVERSION_API_KEY;
     const toParsed = to === 'USDT' ? 'USD' : to;
@@ -34,14 +50,10 @@ export class FiatIntegrationClient {
 
     this.logger.info(url, 'FiatIntegrationClient.getCurrencyConversion');
 
-    const data = await await lastValueFrom(this.httpService.get(url))
-      .then((res) => {
-        this.logger.info(
-          'FiatIntegrationClient.getCurrencyConversion',
-          JSON.stringify(res.data),
-        );
-        return res.data;
-      })
+    const data = await fetch(url, {
+      method: 'GET',
+    })
+      .then<IExchangeRate>((res) => res.json())
       .catch((error) => {
         this.logger.error(
           `FiatIntegrationClient.getCurrencyConversion: from=${from}, to=${to}, amount=${amount}`,
@@ -49,6 +61,22 @@ export class FiatIntegrationClient {
         this.logger.error(error);
         throw new InternalServerErrorException(error);
       });
+
+    // const data = await lastValueFrom(this.httpService.get(url))
+    //   .then((res) => {
+    //     this.logger.info(
+    //       'FiatIntegrationClient.getCurrencyConversion',
+    //       JSON.stringify(res.data),
+    //     );
+    //     return res.data;
+    //   })
+    //   .catch((error) => {
+    //     this.logger.error(
+    //       `FiatIntegrationClient.getCurrencyConversion: from=${from}, to=${to}, amount=${amount}`,
+    //     );
+    //     this.logger.error(error);
+    //     throw new InternalServerErrorException(error);
+    //   });
 
     return data.result;
   }

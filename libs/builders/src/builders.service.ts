@@ -480,6 +480,13 @@ export class BuildersService {
     this.emitEventClient<TResponse>(this.getUserEventClient(), eventName, data);
   }
 
+  emitPersonEventClient<TResponse = any>(
+    eventName: EventsNamesPersonEnum,
+    data: any,
+  ): void {
+    this.emitEventClient<TResponse>(this.getUserEventClient(), eventName, data);
+  }
+
   emitEventClient<TResponse = any>(
     eventClient: ClientProxy,
     eventName: string,
