@@ -5,6 +5,7 @@ import { AccountDocument } from '@account/account/entities/mongoose/account.sche
 import StatusAccountEnum from '@account/account/enum/status.account.enum';
 import TypesAccountEnum from '@account/account/enum/types.account.enum';
 import WalletTypesAccountEnum from '@account/account/enum/wallet.types.account.enum';
+import { Traceable } from '@amplication/opentelemetry-nestjs';
 import { BrandEntity } from '@brand/brand/entities/brand.entity';
 import { BuildersService } from '@builder/builders';
 import { CommonService } from '@common/common';
@@ -37,14 +38,28 @@ import EventsNamesMessageEnum from 'apps/message-service/src/enum/events.names.m
 import EventsNamesStatusEnum from 'apps/status-service/src/enum/events.names.status.enum';
 import EventsNamesTransferEnum from 'apps/transfer-service/src/enum/events.names.transfer.enum';
 import * as fs from 'fs';
+import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
+import { WithdrawalPreorderDto } from './dtos/WithdrawalPreorderDto';
+import { WithdrawalExecuteDto } from './dtos/WithdrawalExecuteDto';
+import { WithdrawalResponse } from './interfaces/withdrawalResponse';
+import { QrDepositDto } from './dtos/qr-deposit.dto';
+import { QrDepositResponse } from './interfaces/qr-deposit-response.interface';
+import { PreorderData, PreorderResponse } from './interfaces/preorderResponse';
+import { NetworkEnum } from './enum/network.enum';
+import { DepositDto } from './dtos/deposit.dto';
+import { WithdrawalError } from './utils/errors';
+import { WITHDRAWAL_CONFIG } from './withdrawal.config';
 
+@Traceable()
 @Injectable()
 export class AccountServiceService
   implements BasicMicroserviceService<AccountDocument>
 {
-  async cleanWallet(query: QuerySearchAnyDto) {
+
+  private readonly preorders = new Map<string, PreorderData>();
+    async cleanWallet(query: QuerySearchAnyDto) {
     throw new NotImplementedException();
-    // Logger.log('Start', `Clean wallet`);
+    //this.logger.debug('Start', `Clean wallet`);
     // query = query || new QuerySearchAnyDto();
     // query.where = query.where || {};
     // query.where.type = TypesAccountEnum.WALLET;
@@ -55,7 +70,7 @@ export class AccountServiceService
     // await this.cleanWalletsWithTransfers(query, 'LOCK');
     // query.where.statusText = StatusAccountEnum.UNLOCK;
     // await this.cleanWalletsWithTransfers(query, 'UNLOCK');
-    // Logger.log('End', `Clean wallet`);
+    //this.logger.debug('End', `Clean wallet`);
     // return {
     //   statusCode: 200,
     //   message: 'ok',
@@ -69,7 +84,10 @@ export class AccountServiceService
     const promises = [];
     while (query.page < lastPage) {
       ++query.page;
-      Logger.debug(`Start page ${query.page}`, `Clean wallet with transfers`);
+      this.logger.debug(
+        `Start page ${query.page}`,
+        `Clean wallet with transfers`,
+      );
       promises.push(
         this.cleanWalletsWithTx(
           {
@@ -78,12 +96,15 @@ export class AccountServiceService
           msg,
         ),
       );
-      Logger.debug(`End page ${query.page}`, `Clean wallet with transfers`);
+      this.logger.debug(
+        `End page ${query.page}`,
+        `Clean wallet with transfers`,
+      );
     }
     return Promise.all(promises);
   }
   async cleanWalletsWithTx(query: QuerySearchAnyDto, msg?: string) {
-    Logger.debug(`Start page ${query.page}`, `Clean wallet with tx`);
+    this.logger.debug(`Start page ${query.page}`, `Clean wallet with tx`);
     const promises = [];
     const walletsClean = await this.lib.findAll(query);
     const queryTx = {
@@ -100,7 +121,7 @@ export class AccountServiceService
       );
     if (transfersAccounts.totalElements) {
       const accountWithTx = transfersAccounts.list.map((t) => t.account);
-      Logger.log(
+      this.logger.debug(
         `${accountWithTx.length}/${walletsClean.list.length}`,
         `Filter wallets with transfers page ${query.page}`,
       );
@@ -120,7 +141,7 @@ export class AccountServiceService
         (w) => !accountWithTx.includes(w._id.toString()),
       );
     } else {
-      Logger.log(
+      this.logger.debug(
         'Not found transfers',
         `Filter wallets with transfers page ${query.page}`,
       );
@@ -130,17 +151,19 @@ export class AccountServiceService
         this.lib.removeMany(walletsClean.list.map((w) => w._id.toString())),
       );
     }
-    Logger.warn(
+    this.logger.warn(
       `Removed ${walletsClean.list.length} wallets`,
       `Filter wallets with transfers page ${query.page}`,
     );
-    Logger.log(
+    this.logger.debug(
       `${walletsClean.list.length}/${walletsClean.totalElements}`,
       `Total ${msg} wallets to clean ${walletsClean.currentPage}/${walletsClean.lastPage}`,
     );
     return Promise.all(promises);
   }
   constructor(
+    @InjectPinoLogger(AccountServiceService.name)
+    protected readonly logger: PinoLogger,
     private configService: ConfigService,
     @Inject(BuildersService)
     private readonly builder: BuildersService,
@@ -336,15 +359,15 @@ export class AccountServiceService
         },
       };
 
-      Logger.log(data, 'Account Request Confirmation Email Prepared');
+      this.logger.debug('Account Request Confirmation Email Prepared', data);
       this.builder.emitMessageEventClient(
         EventsNamesMessageEnum.sendCardRequestConfirmationEmail,
         data,
       );
     } else {
-      Logger.warn(
-        JSON.stringify(account),
+      this.logger.warn(
         'Account created without email. Skipping confirmation email.',
+        JSON.stringify(account),
       );
     }
 
@@ -431,7 +454,7 @@ export class AccountServiceService
   }
   getBalanceReport(query: QuerySearchAnyDto) {
     // TODO[hender - 2024/09/26] Receive 3 events but trigger only 1 from job
-    Logger.log('Start balance report', AccountServiceService.name);
+    this.logger.debug('Start balance report', AccountServiceService.name);
     Promise.all([
       this.getBalanceByAccountTypeCard(query),
       //this.getBalanceByAccountTypeWallet(query),
@@ -440,7 +463,7 @@ export class AccountServiceService
       this.getBalanceByAccountByCard(query),
       //this.getBalanceByAccountByWallet(query),
     ]).then(async (results) => {
-      Logger.log('Report filter finish', AccountServiceService.name);
+      this.logger.debug('Report filter finish', AccountServiceService.name);
       const [
         cardTotalAccumulated,
         //walletTotalAccumulated,
@@ -478,7 +501,7 @@ export class AccountServiceService
         query.where?.type ?? 'all types'
       } - ${this.printShortDate(date)} UTC`;
       this.sendEmailToList(promises, name);
-      Logger.debug(name, 'Balance Report sended');
+      this.logger.debug('Balance Report sended', name);
     });
   }
 
@@ -515,7 +538,7 @@ export class AccountServiceService
       },
     ];
     const attachments = await Promise.all(promisesAttachments);
-    Logger.log('Report finish', AccountServiceService.name);
+    this.logger.debug('Report finish', AccountServiceService.name);
     destiny.forEach((destiny) => {
       this.sendEmail({
         destinyText: destiny.email,
@@ -562,7 +585,7 @@ export class AccountServiceService
     const objBase = this.getCustomObj(headers);
     // File created
     this.addDataToFile(objBase, filename, true, true);
-    Logger.log('File created', AccountServiceService.name);
+    this.logger.debug('File created', AccountServiceService.name);
     return new Promise((res) => {
       // Wait file creation
       setTimeout(async () => {
@@ -601,7 +624,7 @@ export class AccountServiceService
             encodeBase64: content,
           });
         }
-        Logger.debug(`File "${filename}" sent`, listName);
+        this.logger.debug(`File "${filename}" sent`, listName);
         res({
           // encoded string as an attachment
           filename: filename,
@@ -612,7 +635,7 @@ export class AccountServiceService
           fs.unlinkSync(fileUri);
         }
       } else {
-        Logger.debug(`File "${filename}" not found`, listName);
+        this.logger.debug(`File "${filename}" not found`, listName);
         this.responseFileContent({ filename, fileUri, listName, res });
       }
     }, 20000);
@@ -684,4 +707,149 @@ export class AccountServiceService
   //   }
   //   return cryptoList;
   // }
+
+  async validateWithdrawalPreorder(dto: WithdrawalPreorderDto): Promise<PreorderResponse> {
+    const sourceWallet = await this.lib.findOne(dto.walletId);
+    if (!sourceWallet) {
+      throw new WithdrawalError('INVALID_WALLET', 'Wallet not found');
+    }
+
+    const networkFee = dto.amount * WITHDRAWAL_CONFIG.fees.networks[dto.network];
+    const baseFee = WITHDRAWAL_CONFIG.fees.base;
+    const totalAmount = dto.amount + networkFee + baseFee;
+
+    if (sourceWallet.amountCustodial < totalAmount) {
+      throw new WithdrawalError('INSUFFICIENT_FUNDS', 'Insufficient balance');
+    }
+
+    const preorderId = `WD_${Date.now()}`;
+    const preorder: PreorderData = {
+      ...dto,
+      totalAmount,
+      networkFee,
+      baseFee,
+      fees: { networkFee, baseFee },
+      createdAt: new Date()
+    };
+
+    this.preorders.set(preorderId, preorder);
+
+    return {
+      preorderId,
+      totalAmount,
+      fees: { networkFee, baseFee },
+      netAmount: dto.amount,
+      expiresAt: new Date(Date.now() + WITHDRAWAL_CONFIG.timing.maxConfirmationTime * 1000)
+    };
+  }
+
+  async executeWithdrawalOrder(dto: WithdrawalExecuteDto): Promise<WithdrawalResponse> {
+    const preorder = this.preorders.get(dto.preorderId);
+    if (!preorder) {
+      throw new WithdrawalError('INVALID_PREORDER', 'Preorder not found');
+    }
+
+    try {
+      const sourceWallet = await this.lib.findOne(preorder.walletId);
+      if (!sourceWallet) {
+        throw new WithdrawalError('INVALID_WALLET', 'Source wallet not found');
+      }
+
+      const fireblocksCrm = await this.builder.getPromiseCrmEventClient(
+        EventsNamesCrmEnum.findOneByName,
+        IntegrationCryptoEnum.FIREBLOCKS,
+      );
+
+      const cryptoType = await this.integration.getCryptoIntegration(
+        null,
+        IntegrationCryptoEnum.FIREBLOCKS,
+        '',
+      );
+
+      const depositDto = {
+        vaultAccountId: sourceWallet.accountId,
+        amount: preorder.amount.toString(),
+        address: preorder.destinationAddress,
+        description: 'Withdrawal',
+        external: true
+      } as unknown as DepositDto;
+
+      const txResponse = await cryptoType.createDeposit(depositDto);
+      const [transaction] = txResponse.data;
+
+      const updateDto = new AccountUpdateDto();
+      updateDto.id = preorder.walletId;
+      updateDto.amountCustodial = sourceWallet.amountCustodial - preorder.totalAmount;
+
+      await this.lib.update(preorder.walletId, updateDto);
+
+      this.preorders.delete(dto.preorderId);
+
+      return {
+        transactionId: transaction?.transactionId || transaction?.id || String(Date.now()),
+        status: 'PENDING',
+        amount: preorder.amount,
+        fees: {
+          networkFee: preorder.fees.networkFee,
+          baseFee: preorder.fees.baseFee,
+          totalFee: preorder.fees.networkFee + preorder.fees.baseFee
+        },
+        timestamp: new Date()
+      };
+    } catch (error) {
+      Logger.error(`Withdrawal execution failed' ${error} ${AccountServiceService.name}`);
+      throw new WithdrawalError('EXECUTION_FAILED', 'Failed to execute withdrawal', {
+        details: error.message
+      });
+    }
+  }
+  async generateDepositQr(dto: QrDepositDto): Promise<QrDepositResponse> {
+    try {
+      const wallet = await this.lib.findOne(dto.walletId);
+      if (!wallet) {
+        throw new BadRequestException('Wallet not found');
+      }
+
+      const fireblocksCrm = await this.builder.getPromiseCrmEventClient(
+        EventsNamesCrmEnum.findOneByName,
+        IntegrationCryptoEnum.FIREBLOCKS,
+      );
+
+      const cryptoType = await this.integration.getCryptoIntegration(
+        null,
+        IntegrationCryptoEnum.FIREBLOCKS,
+        '',
+      );
+
+      const depositAddress = await cryptoType.createDeposit({
+        vaultAccountId: wallet.accountId,
+        network: dto.network,
+        amount: dto.amount.toString(),
+      } as unknown as DepositDto);
+
+
+      const [addressData] = depositAddress.data;
+      const address = addressData.address;
+
+      let scanUrl = '';
+      if (dto.network === NetworkEnum.TRON) {
+        scanUrl = `https://tronscan.org/#/address/${address}`;
+      } else if (dto.network === NetworkEnum.ARBITRUM) {
+        scanUrl = `https://arbiscan.io/address/${address}`;
+      }
+
+      return {
+        address,
+        qrCode: address,
+        network: dto.network,
+        amount: dto.amount,
+        scanUrl,
+        timestamp: new Date()
+      };
+    } catch (error) {
+      Logger.error(`QR deposit generation failed' ${error} ${AccountServiceService.name}`);
+      throw new BadRequestException('Failed to generate deposit QR');
+    }
+  }
+
 }
