@@ -9,7 +9,7 @@ import {
   Body,
   Controller,
   HttpCode,
-  NotFoundException,
+  HttpStatus,
   Post,
   Req,
   UseGuards,
@@ -31,58 +31,49 @@ export class SumsubNotificationIntegrationController {
 
   @Post(SumsubConfigEnum.SUMSUB_NOTIFICATION_REVIEWED_PATH)
   @ApiKeyCheck()
-  @HttpCode(200)
+  @HttpCode(HttpStatus.OK)
   async handleNotificationReviewed(
     @Req() req,
     @Body() notification: SumsubApplicantReviewed,
   ) {
     await this.sumsubService.validateClient(req.clientApi);
-    this.logger.debug('Notification Reviewed body', notification);
-    this.logger.debug('Notification Reviewed headers', req.headers);
-    const user = await this.sumsubService.updateUserByReviewed(notification);
-
-    if (!user) throw new NotFoundException('User not found');
-
+    this.logger.info('Notification Reviewed body', notification);
+    this.logger.info('Notification Reviewed headers', req.headers);
+    await this.sumsubService.updateUserByReviewed(notification);
     return {
-      statusCode: 200,
+      statusCode: HttpStatus.OK,
       description: 'received reviewed',
     };
   }
 
   @Post(SumsubConfigEnum.SUMSUB_NOTIFICATION_PENDING_PATH)
   @ApiKeyCheck()
-  @HttpCode(200)
+  @HttpCode(HttpStatus.OK)
   async handleNotificationPending(
     @Req() req: Request,
     @Body() notification: SumsubApplicantPending,
   ): Promise<any> {
-    this.logger.debug('Notification Reviewed body', notification);
-    this.logger.debug('Notification Reviewed headers', req.headers);
-    const user = await this.sumsubService.updateUserByPending(notification);
-
-    if (!user) throw new NotFoundException('User not found');
-
+    this.logger.info('Notification Reviewed body', notification);
+    this.logger.info('Notification Reviewed headers', req.headers);
+    await this.sumsubService.updateUserByPending(notification);
     return {
-      statusCode: 200,
+      statusCode: HttpStatus.OK,
       description: 'received pending',
     };
   }
 
   @Post(SumsubConfigEnum.SUMSUB_NOTIFICATION_ON_HOLD_PATH)
   @ApiKeyCheck()
-  @HttpCode(200)
+  @HttpCode(HttpStatus.OK)
   async handleNotificationOnHold(
     @Req() req: Request,
     @Body() notification: SumsubApplicantOnHold,
   ): Promise<any> {
-    this.logger.debug('Notification Reviewed body', notification);
-    this.logger.debug('Notification Reviewed headers', req.headers);
-    const user = await this.sumsubService.updateUserByOnHold(notification);
-
-    if (!user) throw new NotFoundException('User not found');
-
+    this.logger.info('Notification Reviewed body', notification);
+    this.logger.info('Notification Reviewed headers', req.headers);
+    await this.sumsubService.updateUserByOnHold(notification);
     return {
-      statusCode: 200,
+      statusCode: HttpStatus.OK,
       description: 'received on hold',
     };
   }

@@ -80,7 +80,7 @@ export class BasicServiceModel<
 
         return this.model.create(createDto, session);
       } catch (err) {
-        Logger.error(err, 'CreateMany');
+        Logger.error('CreateMany', err);
         throw new BadRequestException(err);
       }
     }
@@ -275,7 +275,7 @@ export class BasicServiceModel<
         | undefined;
 
       if (!mongoId) {
-        Logger.error(id, 'Id is not mongoDb id in BasicServiceModel.findOne');
+        Logger.error('Id is not mongoDb id in BasicServiceModel.findOne', id);
         // throw new BadRequestException('Id is not valid');
       }
 
@@ -285,10 +285,10 @@ export class BasicServiceModel<
     } catch (err) {
       console.log(err);
       Logger.error(
-        `${id}`,
         `${BasicServiceModel.name}-findOne.id-${this.model.name}`,
+        `${id}`,
       );
-      Logger.error(err, `${BasicServiceModel.name}-findOne-${this.model.name}`);
+      Logger.error(`${BasicServiceModel.name}-findOne-${this.model.name}`, err);
       return null;
     }
   }
@@ -365,7 +365,7 @@ export class BasicServiceModel<
       await this.model.deleteMany(query);
       return true;
     } catch (err) {
-      Logger.error(err, `${BasicServiceModel.name}-removeAllData`);
+      Logger.error(`${BasicServiceModel.name}-removeAllData`, err);
       throw new BadRequestException(
         `Can't remove all data of query ${JSON.stringify(query)}`,
       );
