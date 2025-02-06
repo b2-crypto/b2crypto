@@ -48,35 +48,17 @@ export class FiatIntegrationClient {
     const fromParsed = from === 'USDT' ? 'USD' : from;
     const url = `${apiURL}?access_key=${apiKey}&from=${fromParsed}&to=${toParsed}&amount=${amount}`;
 
-    this.logger.info(url, 'FiatIntegrationClient.getCurrencyConversion');
-
     const data = await fetch(url, {
       method: 'GET',
     })
       .then<IExchangeRate>((res) => res.json())
       .catch((error) => {
-        this.logger.error(
-          `FiatIntegrationClient.getCurrencyConversion: from=${from}, to=${to}, amount=${amount}`,
-        );
-        this.logger.error(error);
+        this.logger.error(`[getCurrencyConversion] ${error}`);
+
         throw new InternalServerErrorException(error);
       });
 
-    // const data = await lastValueFrom(this.httpService.get(url))
-    //   .then((res) => {
-    //     this.logger.info(
-    //       'FiatIntegrationClient.getCurrencyConversion',
-    //       JSON.stringify(res.data),
-    //     );
-    //     return res.data;
-    //   })
-    //   .catch((error) => {
-    //     this.logger.error(
-    //       `FiatIntegrationClient.getCurrencyConversion: from=${from}, to=${to}, amount=${amount}`,
-    //     );
-    //     this.logger.error(error);
-    //     throw new InternalServerErrorException(error);
-    //   });
+    this.logger.info(`[getCurrencyConversion] ${JSON.stringify(data)}`);
 
     return data.result;
   }

@@ -320,7 +320,29 @@ export class BasicServiceModel<
         updateAnyDto['searchText'] = this.getSearchText(updateAnyDto);
       }*/
       //rta = await this.model.findOneAndUpdate({ _id: id }, updateAnyDto);
-      rta = await this.model.updateOne({ _id: id }, { $set: updateAnyDto });
+      rta = await this.model.updateOne({ _id: id }, updateAnyDto);
+    } else {
+      rta = await this.model.update(id, updateAnyDto);
+    }
+    if (rta.hasOwnProperty('affected') || rta.matchedCount) {
+      return this.findOne(id);
+    }
+    return rta;
+  }
+
+  async updatePartialOne(
+    id: string,
+    updateAnyDto: TBasicUpdateDTO,
+  ): Promise<TBasicEntity> {
+    id = id || updateAnyDto['id'] || updateAnyDto['_id'];
+    delete updateAnyDto['id'];
+    delete updateAnyDto['_id'];
+    if (!id) {
+      throw new BadRequestException('Id is not finded');
+    }
+    let rta;
+    if (this.nameOrm === dbIntegrationEnum.MONGOOSE) {
+      rta = await this.model.update({ _id: id }, { $set: updateAnyDto });
     } else {
       rta = await this.model.update(id, updateAnyDto);
     }

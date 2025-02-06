@@ -298,6 +298,17 @@ export class PersonServiceController implements GenericServiceController {
   }
 
   @AllowAnon()
+  @MessagePattern(EventsNamesPersonEnum.updatePartialOne)
+  updatePartialOneEvent(
+    @Payload() updateDto: PersonUpdateDto,
+    @Ctx() ctx: RmqContext,
+  ) {
+    const person = this.personService.updatePartialOnePerson(updateDto);
+    CommonService.ack(ctx);
+    return person;
+  }
+
+  @AllowAnon()
   @MessagePattern(EventsNamesPersonEnum.updateMany)
   updateManyEvent(
     @Payload() updatesDto: PersonUpdateDto[],
