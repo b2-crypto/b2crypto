@@ -2062,7 +2062,6 @@ export class CardServiceController extends AccountServiceController {
       );
       const cardList = await this.cardService.findAll({
         where: {
-          statusText: StatusAccountEnum.UNLOCK,
           'cardConfig.id': data.id,
         },
       });
@@ -2070,6 +2069,11 @@ export class CardServiceController extends AccountServiceController {
       if (!card) {
         return CardsEnum.CARD_PROCESS_CARD_NOT_FOUND;
       }
+
+      if (card.statusText === StatusAccountEnum.LOCK) {
+        return CardsEnum.CARD_PROCESS_CARD_LOCKED;
+      }
+
       this.logger.debug(
         `[processPomeloTransaction] Card balance: ${card.amount} | Movement amount: ${data.amount}`,
       );
