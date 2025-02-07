@@ -152,7 +152,9 @@ export class PspServiceService {
   }
 
   async checkStatsTransfer(configCheckStats: ConfigCheckStatsDto) {
-    this.logger.debug('CHECK STATS PSPs TRANSFER', PspServiceService.name);
+    this.logger.debug(
+      `[checkStatsTransfer] ${JSON.stringify(configCheckStats)}`,
+    );
   }
 
   async checkCashierPsps() {

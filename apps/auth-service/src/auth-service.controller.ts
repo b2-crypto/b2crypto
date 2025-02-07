@@ -215,7 +215,11 @@ export class AuthServiceController {
       }
       return client;
     } catch (err) {
-      this.logger.error('Error getting client from public key', err);
+      this.logger.error(
+        `[getClientFromPublicKey] Error getting client from public key: ${
+          err.message || err
+        }`,
+      );
       throw new UnauthorizedException();
     }
   }
@@ -243,7 +247,9 @@ export class AuthServiceController {
       });
       return code;
     } catch (err) {
-      this.logger.error('Bad request Identity code', err);
+      this.logger.error(
+        `[getIdentityCode] Bad request Identity code: ${err.message || err}`,
+      );
       throw new BadGatewayException();
     }
   }
@@ -261,7 +267,9 @@ export class AuthServiceController {
       }
       return rta;
     } catch (err) {
-      this.logger.error('Bad request Identity token', err);
+      this.logger.error(
+        `[getIdentityToken] Bad request Identity token: ${err.message || err}`,
+      );
       throw new BadGatewayException();
     }
   }
@@ -343,7 +351,9 @@ export class AuthServiceController {
         message: 'OTP generated',
       };
     } catch (error) {
-      this.logger.error('Error restoring password', error);
+      this.logger.error(
+        `[restorePassword] Error restoring password: ${error.message || error}`,
+      );
       throw error;
     }
   }
@@ -443,7 +453,11 @@ export class AuthServiceController {
         emailData,
       );
     } catch (error) {
-      this.logger.error('Error sending user registration email', error.stack);
+      this.logger.error(
+        `[registryUser] Error sending user registration email: ${
+          error.message || error
+        }`,
+      );
     }
 
     return createdUser;
@@ -711,7 +725,7 @@ export class AuthServiceController {
       },
     };
 
-    this.logger.debug('OTP Sended', data);
+    this.logger.debug(`[generateOtp] OTP Sended: ${JSON.stringify(data)}`);
     this.builder.emitMessageEventClient(
       EventsNamesMessageEnum.sendEmailOtpNotification,
       data,
@@ -721,13 +735,13 @@ export class AuthServiceController {
 
   private async getOtpGenerated(email: string) {
     const _email = email.toLocaleLowerCase();
-    this.logger.debug('getOtpGenerated', _email);
+    this.logger.debug(`[getOtpGenerated] email: ${_email}`);
     return this.cacheManager.get<number>(_email);
   }
 
   private async deleteOtpGenerated(email: string) {
     const _email = email.toLocaleLowerCase();
-    this.logger.debug('deleteOtpGenerated', _email);
+    this.logger.debug(`[deleteOtpGenerated] email: ${_email}`);
     return this.cacheManager.del(_email);
   }
 }

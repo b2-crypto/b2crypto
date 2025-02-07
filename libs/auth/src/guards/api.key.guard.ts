@@ -41,7 +41,7 @@ export class ApiKeyAuthGuard extends AuthGuard('api-key') {
       delete request.headers['checkApiKey'];
       return true;
     } catch (err) {
-      this.logger.error('ApiKeyAuthGuard.canActive', err);
+      this.logger.error(`[canActivate] ${err.message || err}`);
       return false;
     }
   }

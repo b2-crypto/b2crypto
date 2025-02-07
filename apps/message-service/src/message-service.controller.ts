@@ -188,8 +188,7 @@ export class MessageServiceController implements GenericServiceController {
       this.messageService.sendEmailDisclaimer(lead);
     } catch (err) {
       this.logger.error(
-        `${MessageServiceController.name}-sendEmailDisclaimer`,
-        err,
+        `[eventSendEmailDisclaimer] error: ${err.message || err}`,
       );
     }
   }
@@ -205,8 +204,7 @@ export class MessageServiceController implements GenericServiceController {
       await this.messageService.sendEmailOtpNotification(message);
     } catch (err) {
       this.logger.error(
-        `${MessageServiceController.name}-sendEmailOtpNotification`,
-        err,
+        `[eventSendEmailOtpNotification] error: ${err.message || err}`,
       );
     }
   }
@@ -221,7 +219,7 @@ export class MessageServiceController implements GenericServiceController {
     try {
       await this.messageService.sendEmailBalanceReport(message);
     } catch (err) {
-      this.logger.error(MessageServiceController.name, err);
+      this.logger.error(`[eventSendEmailReport] error: ${err.message || err}`);
     }
   }
 
@@ -236,8 +234,7 @@ export class MessageServiceController implements GenericServiceController {
       await this.messageService.sendCardRequestConfirmationEmail(message);
     } catch (err) {
       this.logger.error(
-        `${MessageServiceController.name}-sendCardRequestConfirmationEmail`,
-        err,
+        `[eventSendCardRequestConfirmationEmail] error: ${err.message || err}`,
       );
     }
   }
@@ -253,8 +250,7 @@ export class MessageServiceController implements GenericServiceController {
       await this.messageService.sendProfileRegistrationCreation(message);
     } catch (err) {
       this.logger.error(
-        `${MessageServiceController.name}-sendProfileRegistrationCreation`,
-        err,
+        `[eventSendProfileRegistrationCreation] error: ${err.message || err}`,
       );
     }
   }
@@ -270,8 +266,7 @@ export class MessageServiceController implements GenericServiceController {
       await this.messageService.sendVirtualPhysicalCards(message);
     } catch (err) {
       this.logger.error(
-        `${MessageServiceController.name}-sendVirtualPhysicalCards`,
-        err,
+        `[eventSendVirtualPhysicalCards] error: ${err.message || err}`,
       );
     }
   }
@@ -286,10 +281,7 @@ export class MessageServiceController implements GenericServiceController {
     try {
       await this.messageService.sendAdjustments(message);
     } catch (err) {
-      this.logger.error(
-        `${MessageServiceController.name}-sendAdjustments`,
-        err,
-      );
+      this.logger.error(`[eventSendAdjustments] error: ${err.message || err}`);
     }
   }
 
@@ -304,8 +296,7 @@ export class MessageServiceController implements GenericServiceController {
       await this.messageService.sendCryptoWalletsManagement(message);
     } catch (err) {
       this.logger.error(
-        `${MessageServiceController.name}-sendCryptoWalletsManagement`,
-        err,
+        `[eventSendCryptoWalletsManagement] error: ${err.message || err}`,
       );
     }
   }
@@ -321,8 +312,7 @@ export class MessageServiceController implements GenericServiceController {
       await this.messageService.sendSecurityNotifications(message);
     } catch (err) {
       this.logger.error(
-        `${MessageServiceController.name}-sendSecurityNotifications`,
-        err,
+        `[eventSendSecurityNotifications] error: ${err.message || err}`,
       );
     }
   }
@@ -338,8 +328,7 @@ export class MessageServiceController implements GenericServiceController {
       await this.messageService.sendPasswordRestoredEmail(message);
     } catch (err) {
       this.logger.error(
-        `${MessageServiceController.name}-sendPasswordRestoredEmail`,
-        err,
+        `[eventSendPasswordRestoredEmail] error: ${err.message || err}`,
       );
     }
   }
@@ -353,10 +342,7 @@ export class MessageServiceController implements GenericServiceController {
     try {
       await this.messageService.sendPurchases(message);
     } catch (err) {
-      this.logger.error(
-        `${MessageServiceController.name}-sendPurchasesEmail`,
-        err,
-      );
+      this.logger.error(`[eventSendPurchases] error: ${err.message || err}`);
     }
   }
   @AllowAnon()
@@ -369,10 +355,7 @@ export class MessageServiceController implements GenericServiceController {
     try {
       await this.messageService.sendPreRegisterEmail(message);
     } catch (err) {
-      this.logger.error(
-        `${MessageServiceController.name}-sendPreRegisterEmail`,
-        err,
-      );
+      this.logger.error(`[eventSendPreRegister] error: ${err.message || err}`);
     }
   }
 }

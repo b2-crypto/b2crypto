@@ -30,8 +30,7 @@ export class PomeloV1DBClient {
           .connect()
           .then(async () => {
             this.logger.debug(
-              'Successfuly connected to V1 DB database',
-              PomeloV1DBClient.name,
+              `[getBalanaceByCard] Successfuly connected to V1 DB database`,
             );
             client.query(this.statement, [cardId], (err: any, result: any) => {
               if (err) {
@@ -47,28 +46,29 @@ export class PomeloV1DBClient {
                 .end()
                 .then(() => {
                   this.logger.debug(
-                    'Connection to V1 DB successfuly closed',
-                    PomeloV1DBClient.name,
+                    `[getBalanaceByCard] Connection to V1 DB successfuly closed`,
                   );
                 })
                 .catch((err: any) => {
                   this.logger.error(
-                    PomeloV1DBClient.name,
-                    `Error closing connection ${err}`,
+                    `[getBalanaceByCard] Error closing connection ${
+                      err.message || err
+                    }`,
                   );
                 });
             });
           })
           .catch((err: any) => {
             this.logger.error(
-              PomeloV1DBClient.name,
-              `Error connecting to V1 DB database ${err}`,
+              `[getBalanaceByCard] Error connecting to V1 DB database ${
+                err.message || err
+              }`,
             );
           });
       });
       return resultset[0]?.balance;
     } catch (error) {
-      this.logger.error(PomeloV1DBClient.name, error);
+      this.logger.error(`[getBalanaceByCard] ${error.message || error}`);
     }
   }
 }
