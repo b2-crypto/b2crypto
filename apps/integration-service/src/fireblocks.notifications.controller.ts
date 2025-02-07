@@ -79,6 +79,8 @@ export class FireBlocksNotificationsController {
   @Post('webhook')
   // @CheckPoliciesAbility(new PolicyHandlerTransferRead())
   async webhook(@Req() req: any, @Body() data: any) {
+    this.logger.debug(`[webhook] data: ${JSON.stringify(data)}`);
+    this.logger.debug(`[webhook] headers: ${JSON.stringify(req.headers)}`);
     //const isVerified = this.verifySign(req);
     //this.logger.debug(isVerified, 'getTransferDto.isVerified');
     //if (isVerified) {
