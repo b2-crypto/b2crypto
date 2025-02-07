@@ -2094,7 +2094,7 @@ export class CardServiceController extends AccountServiceController {
       });
       return CardsEnum.CARD_PROCESS_OK;
     } catch (error) {
-      this.logger.error(CardServiceController.name, error);
+      this.logger.error(`[processPomeloTransaction] ${error}`);
       return CardsEnum.CARD_PROCESS_FAILURE;
     }
   }
@@ -2103,20 +2103,20 @@ export class CardServiceController extends AccountServiceController {
   async findByCardId(@Ctx() ctx: RmqContext, @Payload() data: any) {
     CommonService.ack(ctx);
     try {
-      this.logger.debug(`Looking for card: ${data.id}`, 'findByCardId');
+      this.logger.debug(`[findByCardId] Looking for card: ${data.id}`);
       const cardList = await this.getCardById(data.id);
       if (!cardList || !cardList.list[0]) {
         throw new NotFoundException(`Card ${data.id} was not found`);
       }
       return cardList.list[0];
     } catch (error) {
-      this.logger.error('Error-cfindByCardId', error);
+      this.logger.error(`[findByCardId] Error-cfindByCardId ${error}`);
     }
   }
 
   private async getCardById(cardId: string) {
     try {
-      this.logger.debug(`Looking for card: ${cardId}`, 'getByCardId');
+      this.logger.debug(`[getCardById] Looking for card: ${cardId}`);
       const cardList = await this.cardService.findAll({
         where: {
           'cardConfig.id': cardId,
@@ -2124,7 +2124,7 @@ export class CardServiceController extends AccountServiceController {
       });
       return cardList;
     } catch (error) {
-      this.logger.error('Error-getCardId', error);
+      this.logger.error(`[getCardById] Error-getCardId ${error}`);
     }
   }
 
@@ -2135,7 +2135,7 @@ export class CardServiceController extends AccountServiceController {
   ) {
     CommonService.ack(ctx);
     try {
-      this.logger.debug(`Start`, CardServiceController.name);
+      this.logger.debug(`[checkCardsCreatedInPomelo] Start`);
       const paginator: ResponsePaginator<User> = new ResponsePaginator<User>();
       paginator.currentPage = 1;
       paginator.firstPage = 1;
@@ -2155,8 +2155,7 @@ export class CardServiceController extends AccountServiceController {
             },
           );
         this.logger.debug(
-          `page ${paginator.currentPage} de ${usersPaginator.lastPage}`,
-          `Check cards users ${usersPaginator.totalElements}`,
+          `[checkCardsCreatedInPomelo] Check cards users ${usersPaginator.totalElements}`,
         );
         for (const usr of usersPaginator.list) {
           //this.logger.debug(usr?.userCard?.id, `User ${usr.email}`);
@@ -2182,7 +2181,9 @@ export class CardServiceController extends AccountServiceController {
                 const n_card = await this.cardService.createOne(
                   cardDto as AccountCreateDto,
                 );
-                this.logger.debug(n_card.id, `Card created for ${usr.email}`);
+                this.logger.debug(
+                  `[checkCardsCreatedInPomelo] Card created ${n_card.id} for ${usr.email}`,
+                );
               } else if (
                 card.totalElements === 1 &&
                 card.list[0].statusText === StatusAccountEnum.ORDERED &&
@@ -2191,8 +2192,7 @@ export class CardServiceController extends AccountServiceController {
                 card.list[0].statusText = StatusAccountEnum.UNLOCK;
                 card.list[0].save();
                 this.logger.debug(
-                  card.list[0]?.id,
-                  `Card updated for ${usr.email}`,
+                  `[checkCardsCreatedInPomelo] Card updated ${card.list[0]?.id} for ${usr.email}`,
                 );
               }
             }
@@ -2202,7 +2202,7 @@ export class CardServiceController extends AccountServiceController {
         paginator.nextPage = usersPaginator.nextPage;
       } while (paginator.nextPage !== paginator.firstPage);
     } catch (error) {
-      this.logger.error(CardServiceController.name, error);
+      this.logger.error(`[checkCardsCreatedInPomelo] ${error}`);
     }
   }
   private buildCardDto(
@@ -2272,7 +2272,7 @@ export class CardServiceController extends AccountServiceController {
   async setBalanceByCard(@Ctx() ctx: RmqContext, @Payload() data: any) {
     CommonService.ack(ctx);
     try {
-      this.logger.debug(`Looking for card: ${data.id}`, 'setBalanceByCard');
+      this.logger.debug(`[setBalanceByCard] Looking for card: ${data.id}`);
       const cardList = await this.cardService.findAll({
         where: {
           'cardConfig.id': data.id,
@@ -2290,7 +2290,7 @@ export class CardServiceController extends AccountServiceController {
         },
       });
     } catch (error) {
-      this.logger.error(CardServiceController.name, error);
+      this.logger.error(`[setBalanceByCard] ${error}`);
     }
   }
 
