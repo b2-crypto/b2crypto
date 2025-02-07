@@ -83,7 +83,7 @@ export class FireBlocksNotificationsController {
     //this.logger.debug(isVerified, 'getTransferDto.isVerified');
     //if (isVerified) {
     const rta = data.data;
-    this.logger.debug(`[webhook] rta: ${JSON.stringify(rta, null, 2)}`);
+    this.logger.debug(`[webhook] rta: ${JSON.stringify(rta)}`);
     if (
       rta.id &&
       rta.status &&
@@ -103,6 +103,9 @@ export class FireBlocksNotificationsController {
         },
       );
       const tx = txList.list[0];
+
+      this.logger.debug(`[webhook] tx: ${JSON.stringify(tx)}`);
+
       if (!tx) {
         const dto = await this.getTransferDto(data);
         if (dto) {

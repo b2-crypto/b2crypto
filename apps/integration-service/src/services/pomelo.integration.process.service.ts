@@ -100,7 +100,7 @@ export class PomeloIntegrationProcessService {
       }
     } catch (error) {
       this.logger.info(
-        `[createTransferRecord] Error creatin transfer: ${
+        `[createTransferRecord] Error creating transfer: ${
           error.message || error
         }`,
       );

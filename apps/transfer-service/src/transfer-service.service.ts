@@ -209,8 +209,7 @@ export class TransferServiceService
           },
         );
         this.logger.debug(
-          `${item.numericId} - ${item.leadEmail}`,
-          `Updated searchText page ${elems.currentPage} / ${elems.lastPage}`,
+          `[checkSearchText] Updated searchText page ${elems.currentPage} / ${elems.lastPage} | Lead: ${item.numericId} - ${item.leadEmail}`,
         );
         return item;
       });
@@ -300,7 +299,7 @@ export class TransferServiceService
       ) {
         try {
           const url = transfer.account.url ?? 'https://api.b2binpay.com';
-          this.logger.debug(url, 'URL B2BinPay');
+          this.logger.debug(`[newTransfer] URL B2BinPay: ${url}`);
           const integration =
             await this.integrationService.getCryptoIntegration(
               account,
@@ -332,7 +331,11 @@ export class TransferServiceService
             },
           });
           if (!deposit.data) {
-            this.logger.error('Error B2BinPay Deposit', deposit);
+            this.logger.error(
+              `[newTransfer] Error B2BinPay Deposit: ${JSON.stringify(
+                deposit,
+              )}`,
+            );
             throw new BadRequestException(deposit['errors']);
           }
           transferSaved.responseAccount = {
@@ -341,7 +344,9 @@ export class TransferServiceService
           await this.updateTransfer(transferSaved);
         } catch (err) {
           await this.lib.remove(transferSaved._id);
-          this.logger.error('Error Transfer creation', err);
+          this.logger.error(
+            `[newTransfer] Error Transfer creation: ${err.message || err}`,
+          );
           throw new BadRequestException(err);
         }
       }
@@ -603,8 +608,7 @@ export class TransferServiceService
       }
       if (transferSaved.confirmedAt) {
         this.logger.debug(
-          'Saving on CRM',
-          `Num ${transferSaved.numericId} - ${
+          `[newTransfer] Saving on CRM | Lead: ${transferSaved.numericId} - ${
             transferSaved.isApprove ? 'Approved' : transferSaved.statusPayment
           }`,
         );
@@ -1468,10 +1472,7 @@ export class TransferServiceService
 
   async checkStatsPspAccount(transfersLeadStat: Array<TransferLeadStatsDto>) {
     const statDate = new StatsDateCreateDto();
-    this.logger.debug(
-      'checkStatsPspAccount',
-      `${TransferServiceService.name}:902`,
-    );
+    this.logger.debug(`[checkStatsPspAccount] checkStatsPspAccount`);
   }
 
   async sendLast6hHistoryCardPurchases(shortData = true) {
@@ -1558,7 +1559,7 @@ export class TransferServiceService
       ],
       name,
     );
-    this.logger.debug(name, `${params.name} sended`);
+    this.logger.debug(`[sendLast6hHistory] ${name} sended`);
   }
 
   private printShortDate(date?: Date): string {
@@ -1594,7 +1595,7 @@ export class TransferServiceService
       },
     ];
     const attachments = await Promise.all(promisesAttachments);
-    this.logger.debug('History sended', TransferServiceService.name);
+    this.logger.debug(`[sendLast6hHistory] History sended`);
     destiny.forEach((destiny) => {
       this.sendEmail({
         destinyText: destiny.email,
@@ -1641,12 +1642,12 @@ export class TransferServiceService
     const objBase = this.getCustomObj(headers);
     // File created
     this.addDataToFile(objBase, filename, true, true);
-    this.logger.debug('File created', TransferServiceService.name);
+    this.logger.debug(`[getContentFileDataList] File created`);
     const minSecWait = 2000;
     return new Promise((res) => {
       // Wait file creation
       setTimeout(async () => {
-        this.logger.debug(`Rows ${list.length}`, TransferServiceService.name);
+        this.logger.debug(`[getContentFileDataList] Rows ${list.length}`);
         let time = 0;
         list.forEach((item) => {
           const customItem = this.getCustomObj(headers, item);
@@ -1658,7 +1659,7 @@ export class TransferServiceService
             idx,
           );
         });
-        this.logger.debug('Total seg', time / 1000);
+        this.logger.debug(`[getContentFileDataList] Total seg ${time / 1000}`);
         setTimeout(async () => {
           // Wait file sending
           this.responseFileContent({
@@ -1690,7 +1691,7 @@ export class TransferServiceService
             encodeBase64: content,
           });
         }
-        this.logger.debug(`File "${filename}" sent`, listName);
+        this.logger.debug(`[getContentFileDataList] File "${filename}" sent`);
         res({
           // encoded string as an attachment
           filename: filename,
@@ -1701,7 +1702,9 @@ export class TransferServiceService
           fs.unlinkSync(fileUri);
         }
       } else {
-        this.logger.debug(`File "${filename}" not found`, listName);
+        this.logger.debug(
+          `[getContentFileDataList] File "${filename}" not found`,
+        );
         this.responseFileContent({ filename, fileUri, listName, res });
       }
     }, 20000);
@@ -1724,7 +1727,6 @@ export class TransferServiceService
   }
 
   private addDataToFile(item, filename, isFirst, onlyHeaders = false) {
-    //this.logger.debug(JSON.stringify(item), filename);
     this.builder.emitFileEventClient<File>(EventsNamesFileEnum.addDataToFile, {
       isFirst,
       onlyHeaders,

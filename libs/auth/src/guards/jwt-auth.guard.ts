@@ -23,7 +23,7 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
   }
 
   canActivate(context: ExecutionContext) {
-    this.logger.debug('Checking JWT', 'JwtAuthGuard');
+    this.logger.debug(`[canActivate] ${context.getHandler().name}`);
     const isPublic = this.reflector.getAllAndOverride<boolean>(IS_ANON, [
       context.getHandler(),
       context.getClass(),

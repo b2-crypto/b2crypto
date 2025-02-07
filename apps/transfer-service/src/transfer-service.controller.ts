@@ -122,8 +122,9 @@ export class TransferServiceController implements GenericServiceController {
       tx.statusPayment === BoldStatusEnum.REJECTED
     ) {
       this.logger.debug(
-        JSON.stringify(transferBold),
-        'Transaction has finish before',
+        `[processBoldTransaction] Transaction has finish before: ${JSON.stringify(
+          transferBold,
+        )}`,
       );
       throw new BadRequestException('transfer has finish before');
     }
@@ -215,8 +216,7 @@ export class TransferServiceController implements GenericServiceController {
       }
       const tx = txs.list[0];
       this.logger.debug(
-        `${tx.account.type}-${tx.account.accountType}`,
-        `Check types account - ${tx.numericId} - Transfer: ${tx._id}`,
+        `[processBoldTransaction] accountType: ${tx.account.type}-${tx.account.accountType} | Transfer Numeric Id: ${tx.numericId} | Transfer Id: ${tx._id}`,
       );
       return this.transferService
         .updateTransfer({
@@ -399,7 +399,7 @@ export class TransferServiceController implements GenericServiceController {
   @Post('bold/status')
   // @CheckPoliciesAbility(new PolicyHandlerTransferRead())
   async boldStatus(@Body() data: any) {
-    this.logger.debug(data);
+    this.logger.debug(`[boldStatus] ${JSON.stringify(data)}`);
   }
 
   @Post('deposit')
@@ -553,16 +553,14 @@ export class TransferServiceController implements GenericServiceController {
           })
           .then(async (transfers) => {
             this.logger.debug(
-              `page ${transfers.currentPage}/${transfers.lastPage}`,
-              'Check by accounts',
+              `[checkByAccounts] page ${transfers.currentPage}/${transfers.lastPage}`,
             );
             const list = [];
             for (const transfer of transfers.list) {
               if (!transfer.account) {
                 const tx = await this.transferService.getOne(transfer._id);
                 this.logger.debug(
-                  `${transfer.name}-${transfer.description}`,
-                  `${transfer.numericId} - Transfer: ${transfer._id}`,
+                  `[checkByAccounts] ${transfer.name}-${transfer.description} | ${transfer.numericId} - Transfer: ${transfer._id}`,
                 );
                 list.push(`ObjectId("${tx.account}")`);
               }
@@ -933,8 +931,7 @@ export class TransferServiceController implements GenericServiceController {
       );
       if (!crm) {
         this.logger.error(
-          `CRM ${webhookTransferDto.integration} was not found`,
-          'WebhookTransfer CRM',
+          `[createOneWebhook] CRM ${webhookTransferDto.integration} was not found`,
         );
         return;
       }
@@ -945,8 +942,7 @@ export class TransferServiceController implements GenericServiceController {
       );
       if (!status) {
         this.logger.error(
-          `Status ${webhookTransferDto.status} was not found`,
-          'WebhookTransfer Status',
+          `[createOneWebhook] Status ${webhookTransferDto.status} was not found`,
         );
         return;
       }
@@ -961,8 +957,7 @@ export class TransferServiceController implements GenericServiceController {
 
       if (!account) {
         this.logger.error(
-          `Account by card ${cardId} was not found`,
-          'WebhookTransfer Account',
+          `[createOneWebhook] Account by card ${cardId} was not found`,
         );
         return;
       }
@@ -980,8 +975,7 @@ export class TransferServiceController implements GenericServiceController {
       );
       if (!category) {
         this.logger.error(
-          `Category by slug ${movement} was not found`,
-          'WebhookTransfer Category',
+          `[createOneWebhook] Category by slug ${movement} was not found`,
         );
         return;
       }
@@ -1007,9 +1001,13 @@ export class TransferServiceController implements GenericServiceController {
         webhookTransferDto.descriptionStatusPayment;
       transferDto.confirmedAt = new Date();
 
-      this.logger.debug(JSON.stringify(transferDto), 'Transfer DTO');
+      this.logger.debug(
+        `[createOneWebhook] Transfer DTO: ${JSON.stringify(transferDto)}`,
+      );
       const tx = await this.transferService.newTransfer(transferDto);
-      this.logger.debug('Transfer created', tx);
+      this.logger.debug(
+        `[createOneWebhook] Transfer created: ${JSON.stringify(tx)}`,
+      );
       const promises = [];
       const transferDtoBrand = {
         ...transferDto,
@@ -1050,27 +1048,26 @@ export class TransferServiceController implements GenericServiceController {
             transferDtoBrand.typeTransaction = paymentCard._id.toString();
             transferDtoBrand.page = webhookTransferDto.page;
             this.logger.debug(
-              JSON.stringify(transferDtoBrand),
-              'Transfer DTO Brand',
+              `[createOneWebhook] Transfer DTO Brand: ${JSON.stringify(
+                transferDtoBrand,
+              )}`,
             );
             promises.push(this.transferService.newTransfer(transferDtoBrand));
           } else {
             this.logger.error(
-              `Category by slug payment-card was not found`,
-              'WebhookTransfer Category payment',
+              `[createOneWebhook] Category by slug payment-card was not found`,
             );
           }
         } else {
           this.logger.error(
-            `Account by brand ${account.brand} was not found`,
-            'WebhookTransfer Account Brand',
+            `[createOneWebhook] Account by brand ${account.brand} was not found`,
           );
         }
       }
 
       await Promise.all(promises);
     } catch (error) {
-      this.logger.error('WebhookTransfer', error);
+      this.logger.error(`[createOneWebhook] ${error.message || error}`);
     }
   }
 
@@ -1120,8 +1117,7 @@ export class TransferServiceController implements GenericServiceController {
       page = transfersToCheck.nextPage;
       nextPage = transfersToCheck.nextPage;
       this.logger.debug(
-        `Saved page of PSP ACCOUNT ${pspAccountId} lead's. ${transfersToCheck.currentPage} / ${transfersToCheck.lastPage} pages`,
-        TransferServiceController.name,
+        `[checkByLeads] Saved page of PSP ACCOUNT ${pspAccountId} lead's. ${transfersToCheck.currentPage} / ${transfersToCheck.lastPage} pages`,
       );
     }
     const listStatsPspAccount = await this.builder.getPromiseStatsEventClient(

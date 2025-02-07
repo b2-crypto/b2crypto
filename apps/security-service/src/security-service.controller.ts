@@ -323,7 +323,11 @@ export class SecurityServiceController {
         emailData,
       );
     } catch (error) {
-      this.logger.error('Error sending user registration email', error.stack);
+      this.logger.error(
+        `[registryUser] Error sending user registration email: ${
+          error.message || error
+        }`,
+      );
     }
 
     return createdUser;
@@ -472,7 +476,7 @@ export class SecurityServiceController {
         resourceName: ResourcesEnum.USER,
       };
     }
-    this.logger.debug('OTP Sended', data);
+    this.logger.debug(`[generateOtp] OTP Sended: ${JSON.stringify(data)}`);
     this.builder.emitMessageEventClient(
       EventsNamesMessageEnum.sendEmailOtpNotification,
       data,
@@ -515,7 +519,11 @@ export class SecurityServiceController {
       }
       return client;
     } catch (err) {
-      this.logger.error('Error getting client from public key', err);
+      this.logger.error(
+        `[getClientFromPublicKey] Error getting client from public key: ${
+          err.message || err
+        }`,
+      );
       throw new UnauthorizedException();
     }
   }
@@ -543,7 +551,9 @@ export class SecurityServiceController {
       });
       return code;
     } catch (err) {
-      this.logger.error('Bad request Identity code', err);
+      this.logger.error(
+        `[getIdentityCode] Bad request Identity code: ${err.message || err}`,
+      );
       throw new BadGatewayException();
     }
   }
@@ -561,7 +571,9 @@ export class SecurityServiceController {
       }
       return rta;
     } catch (err) {
-      this.logger.error('Bad request Identity token', err);
+      this.logger.error(
+        `[getIdentityToken] Bad request Identity token: ${err.message || err}`,
+      );
       throw new BadGatewayException();
     }
   }

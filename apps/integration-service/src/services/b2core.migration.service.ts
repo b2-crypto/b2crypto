@@ -29,16 +29,14 @@ export class B2CoreMigrationService {
       for (let i = 0; i < results.length; i++) {
         const data = results[i];
         this.logger.debug(
-          JSON.stringify(data['Email']),
-          B2CoreMigrationService.name,
+          `[startB2CoreMigration] data: ${JSON.stringify(data)}`,
         );
         if (data['Client status'] === 'Active') {
           const email = data['Email'];
           const user = await this.getUserByEmail(data);
           const walletAccount = this.buildAccount(data, user);
           this.logger.debug(
-            `Creating wallet: ${walletAccount.name}-${walletAccount.accountId}`,
-            `${walletAccount.owner} - ${email}`,
+            `[startB2CoreMigration] Creating wallet: ${walletAccount.name}-${walletAccount.accountId}`,
           );
           const account = await this.migrateWalletAccount(walletAccount);
           if (account) {
@@ -47,7 +45,7 @@ export class B2CoreMigrationService {
         }
       }
     } catch (error) {
-      this.logger.error(B2CoreMigrationService.name, error);
+      this.logger.error(`[startB2CoreMigration] ${error.message || error}`);
     }
     return migrated;
   }
@@ -58,16 +56,14 @@ export class B2CoreMigrationService {
       for (let i = 0; i < results.length; i++) {
         const data = results[i];
         this.logger.debug(
-          JSON.stringify(data['Email']),
-          B2CoreMigrationService.name,
+          `[migrateB2CoreVerification] data: ${JSON.stringify(data)}`,
         );
         if (data['Client status'] === 'Active') {
           const email = data['Email'];
           const user = await this.migrateUser(data);
           const walletAccount = this.buildAccount(data, user);
           this.logger.debug(
-            `Creating wallet: ${walletAccount.name}-${walletAccount.accountId}`,
-            `${walletAccount.owner} - ${email}`,
+            `[migrateB2CoreVerification] Creating wallet: ${walletAccount.name}-${walletAccount.accountId}`,
           );
           const account = await this.migrateWalletAccount(walletAccount);
           if (account) {
@@ -76,7 +72,9 @@ export class B2CoreMigrationService {
         }
       }
     } catch (error) {
-      this.logger.error(B2CoreMigrationService.name, error);
+      this.logger.error(
+        `[migrateB2CoreVerification] ${error.message || error}`,
+      );
     }
     return migrated;
   }
@@ -91,11 +89,11 @@ export class B2CoreMigrationService {
             results.push(data);
           })
           .on('end', () => {
-            this.logger.debug(B2CoreMigrationService.name, results);
+            this.logger.debug(`[getFileRows] results: ${results.length} rows`);
             res(results);
           });
       } catch (error) {
-        this.logger.error(B2CoreMigrationService.name, error);
+        this.logger.error(`[getFileRows] error: ${error.message || error}`);
         rej(error);
       }
     });
@@ -159,12 +157,15 @@ export class B2CoreMigrationService {
         );
       }
       this.logger.debug(
-        `User ${email} ${user ? 'was found' : 'was NOT found'}`,
-        B2CoreMigrationService.name,
+        `[B2CoreMigrationService] User ${email} ${
+          user ? 'was found' : 'was NOT found'
+        }`,
       );
       return user;
     } catch (error) {
-      this.logger.error(B2CoreMigrationService.name, error);
+      this.logger.error(
+        `[B2CoreMigrationService] error: ${error.message || error}`,
+      );
     }
   }
 
@@ -177,7 +178,7 @@ export class B2CoreMigrationService {
       );
       return user;
     } catch (error) {
-      this.logger.error(B2CoreMigrationService.name, error);
+      this.logger.error(`[migrateUser] error: ${error.message || error}`);
     }
   }
 
@@ -215,8 +216,9 @@ export class B2CoreMigrationService {
   private async migrateWalletAccount(walletAccount: any) {
     try {
       this.logger.debug(
-        `Creating wallet: ${JSON.stringify(walletAccount)}`,
-        B2CoreMigrationService.name,
+        `[migrateWalletAccount] Creating wallet: ${JSON.stringify(
+          walletAccount,
+        )}`,
       );
       const account = await this.builder.getPromiseAccountEventClient(
         EventsNamesAccountEnum.migrateOneWallet,
@@ -224,7 +226,9 @@ export class B2CoreMigrationService {
       );
       return account;
     } catch (error) {
-      this.logger.error(B2CoreMigrationService.name, error);
+      this.logger.error(
+        `[migrateWalletAccount] error: ${error.message || error}`,
+      );
     }
   }
 
