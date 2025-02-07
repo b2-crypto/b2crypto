@@ -3,6 +3,7 @@ import { CategoryDocument } from '@category/category/entities/mongoose/category.
 import { BasicServiceModel } from '@common/common/models/basic-service.model';
 import { Inject, Injectable } from '@nestjs/common';
 import { Model } from 'mongoose';
+import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import { CategoryCreateDto } from './dto/category.create.dto';
 import { CategoryUpdateDto } from './dto/category.update.dto';
 
@@ -15,9 +16,11 @@ export class CategoryServiceMongooseService extends BasicServiceModel<
   CategoryUpdateDto
 > {
   constructor(
+    @InjectPinoLogger(CategoryServiceMongooseService.name)
+    protected readonly logger: PinoLogger,
     @Inject('CATEGORY_MODEL_MONGOOSE')
     categoryModel: Model<CategoryDocument>,
   ) {
-    super(categoryModel);
+    super(logger, categoryModel);
   }
 }

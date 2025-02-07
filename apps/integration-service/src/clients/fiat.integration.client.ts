@@ -53,16 +53,12 @@ export class FiatIntegrationClient {
     })
       .then<IExchangeRate>((res) => res.json())
       .catch((error) => {
-        this.logger.error(
-          `FiatIntegrationClient.getCurrencyConversion: ${error}`,
-        );
+        this.logger.error(`[getCurrencyConversion] ${error.message || error}`);
 
         throw new InternalServerErrorException(error);
       });
 
-    this.logger.info(
-      `FiatIntegrationClient.getCurrencyConversion: ${JSON.stringify(data)}`,
-    );
+    this.logger.info(`[getCurrencyConversion] ${JSON.stringify(data)}`);
 
     return data.result;
   }

@@ -6,6 +6,7 @@ import { QuerySearchAnyDto } from '@common/common/models/query_search-any.dto';
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { ScopeDto } from '@permission/permission/dto/scope.dto';
 import { Model, ObjectId } from 'mongoose';
+import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import { PermissionCreateDto } from './dto/permission.create.dto';
 import { PermissionUpdateDto } from './dto/permission.update.dto';
 import { PermissionDocument } from './entities/mongoose/permission.schema';
@@ -20,12 +21,14 @@ export class PermissionServiceMongooseService extends BasicServiceModel<
   PermissionUpdateDto
 > {
   constructor(
+    @InjectPinoLogger(PermissionServiceMongooseService.name)
+    protected readonly logger: PinoLogger,
     @Inject('PERMISSION_MODEL_MONGOOSE')
     permissionModel: Model<PermissionDocument>,
     @Inject('SCOPE_MODEL_MONGOOSE')
     private readonly scopeModel: Model<ScopeDocument>,
   ) {
-    super(permissionModel);
+    super(logger, permissionModel);
   }
 
   async createMany(

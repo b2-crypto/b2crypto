@@ -75,8 +75,9 @@ export class PomeloIntegrationProcessService {
       const commision = 0.03;
       if (authorize && amount.amount * commision > 0) {
         this.logger.debug(
-          `${response?.message} - $${amount.amount * commision}`,
-          'Commision to B2Fintech',
+          `[createTransferRecord] Commision to B2Fintech: ${
+            response?.message
+          } - $${amount.amount * commision}`,
         );
         this.builder.emitTransferEventClient(
           EventsNamesTransferEnum.createOneWebhook,
@@ -99,8 +100,9 @@ export class PomeloIntegrationProcessService {
       }
     } catch (error) {
       this.logger.info(
-        PomeloIntegrationProcessService.name,
-        `Error creatin transfer: ${error}`,
+        `[createTransferRecord] Error creatin transfer: ${
+          error.message || error
+        }`,
       );
     }
   }
@@ -111,7 +113,7 @@ export class PomeloIntegrationProcessService {
     const amount = txn.amount.local.total;
     const conversion = `to: ${to} | from: ${from} | amount: ${amount}`;
 
-    this.logger.info(`getAmount: ${conversion}`);
+    this.logger.info(`[getAmount] ${conversion}`);
 
     const usd =
       parseInt(amount) > 0
@@ -132,7 +134,7 @@ export class PomeloIntegrationProcessService {
     usdAmount: number,
   ): Promise<any> {
     try {
-      this.logger.info('JSON.stringify(process)', 'ExecuteProcess start');
+      this.logger.info('[executeProcess] ExecuteProcess start');
       /* if (
         process?.installments &&
         parseInt(process?.installments?.quantity) > 1
@@ -149,7 +151,7 @@ export class PomeloIntegrationProcessService {
       const cardId = process?.card?.id || '';
       const movement = PomeloProcessEnum[process?.transaction?.type];
       if (usdAmount < 0) {
-        this.logger.info('Invalid Amount: ' + usdAmount, 'ExecuteProcess');
+        this.logger.info('[executeProcess] Invalid Amount: ' + usdAmount);
         return this.buildErrorResponse(
           CardsEnum.CARD_PROCESS_INVALID_AMOUNT,
           authorize,
@@ -166,7 +168,9 @@ export class PomeloIntegrationProcessService {
       );
       return this.buildProcessResponse(processResult, authorize);
     } catch (error) {
-      this.logger.error('PomeloProcess executeProcess', error);
+      this.logger.error(
+        `[executeProcess] PomeloProcess ${error.message || error}`,
+      );
       throw new InternalServerErrorException(error);
     }
   }
@@ -233,7 +237,9 @@ export class PomeloIntegrationProcessService {
     notification: NotificationDto,
     headers: any,
   ): Promise<any> {
-    this.logger.info('ProcessNotification', 'Message Received');
+    this.logger.info(
+      `[ProcessNotification] Message Received ${JSON.stringify(notification)}`,
+    );
     let cachedResult = await this.cache.getResponse(
       notification.idempotency_key,
     );
@@ -271,14 +277,19 @@ export class PomeloIntegrationProcessService {
 
       this.sendAdjustmentNotificationEmail(adjustment).catch((error) => {
         this.logger.error(
-          'Error sending adjustment notification email',
-          error.stack,
+          `[ProcessNotification] Error sending adjustment notification email ${
+            error.message || error
+          }`,
         );
       });
 
       return processed;
     } catch (error) {
-      this.logger.error('Error processing adjustment', error.stack);
+      this.logger.error(
+        `[ProcessNotification] Error processing adjustment ${
+          error.message || error
+        }`,
+      );
     }
   }
 
@@ -298,8 +309,9 @@ export class PomeloIntegrationProcessService {
       };
 
       this.logger.info(
-        'Purchases/Transaction Adjustments Email Prepared',
-        data,
+        `[sendAdjustmentNotificationEmail] Purchases/Transaction Adjustments Email Prepared ${JSON.stringify(
+          data,
+        )}`,
       );
       this.builder.emitMessageEventClient(
         EventsNamesMessageEnum.sendAdjustments,
@@ -307,7 +319,7 @@ export class PomeloIntegrationProcessService {
       );
     } else {
       this.logger.warn(
-        'Adjustment processed without valid user ID. Skipping notification email.',
+        `[sendAdjustmentNotificationEmail] Adjustment processed without valid user ID. Skipping notification email.`,
       );
     }
   }

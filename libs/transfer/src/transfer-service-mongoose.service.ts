@@ -14,6 +14,7 @@ import {
 import { isArray, isMongoId } from 'class-validator';
 import { ObjectId } from 'mongodb';
 import { Aggregate, Model } from 'mongoose';
+import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import { ApproveOrRejectDepositDto } from './dto/approve.or.reject.deposit.dto';
 import { OperationTransactionType } from './enum/operation.transaction.type.enum';
 
@@ -26,10 +27,12 @@ export class TransferServiceMongooseService extends BasicServiceModel<
   TransferUpdateDto
 > {
   constructor(
+    @InjectPinoLogger(TransferServiceMongooseService.name)
+    protected readonly logger: PinoLogger,
     @Inject('TRANSFER_MODEL_MONGOOSE')
     private transferModel: Model<TransferDocument>,
   ) {
-    super(transferModel);
+    super(logger, transferModel);
   }
 
   async update(id: string, updateTransferDto: TransferUpdateDto) {

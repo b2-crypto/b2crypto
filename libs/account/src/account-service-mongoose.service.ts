@@ -6,6 +6,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { isArray, isMongoId } from 'class-validator';
 import { ObjectId } from 'mongodb';
 import { Model } from 'mongoose';
+import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import { AccountCreateDto } from './dto/account.create.dto';
 import { AccountUpdateDto } from './dto/account.update.dto';
 import { Account, AccountDocument } from './entities/mongoose/account.schema';
@@ -19,10 +20,12 @@ export class AccountServiceMongooseService extends BasicServiceModel<
   AccountUpdateDto
 > {
   constructor(
+    @InjectPinoLogger(AccountServiceMongooseService.name)
+    protected readonly logger: PinoLogger,
     @Inject('ACCOUNT_MODEL_MONGOOSE')
     private accountModel: Model<AccountDocument>,
   ) {
-    super(accountModel);
+    super(logger, accountModel);
   }
 
   getSearchText(account: Account) {

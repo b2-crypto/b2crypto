@@ -70,8 +70,7 @@ export class FireBlocksNotificationsController {
   async resendFireblocksNotifications() {
     const rta = await (await this.getFireblocksType()).resendNotifications();
     this.logger.debug(
-      JSON.stringify(rta, null, 2),
-      'resendFireblocksNotifications',
+      `[resendFireblocksNotifications] ${JSON.stringify(rta, null, 2)}`,
     );
     return rta;
   }
@@ -84,7 +83,7 @@ export class FireBlocksNotificationsController {
     //this.logger.debug(isVerified, 'getTransferDto.isVerified');
     //if (isVerified) {
     const rta = data.data;
-    this.logger.debug(rta, '-start');
+    this.logger.debug(`[webhook] rta: ${JSON.stringify(rta, null, 2)}`);
     if (
       rta.id &&
       rta.status &&
@@ -134,7 +133,9 @@ export class FireBlocksNotificationsController {
           },
         );
       }
-      this.logger.debug(rta?.status, `${rta?.id} - ${rta.status}`);
+      this.logger.debug(
+        `[webhook] rta.status: ${rta?.status} | rta?.id - rta.status : ${rta?.id} - ${rta.status}`,
+      );
     }
     //}
     //return isVerified ? 'ok' : 'fail';
@@ -154,7 +155,7 @@ export class FireBlocksNotificationsController {
     verifier.end();
 
     const isVerified = verifier.verify(this.publicKey, signature, 'base64');
-    this.logger.debug('Verified:', isVerified);
+    this.logger.debug(`[verifySign] Verified: ${isVerified}`);
     return isVerified;
   }
 
@@ -194,7 +195,7 @@ export class FireBlocksNotificationsController {
     // const ownerId = brand.owner;
     const ownerId = ownerIdWallet.replace('-vault', '');
     if (!isMongoId(ownerId)) {
-      this.logger.debug(ownerId, `Invalid ownerId ${ownerIdWallet}`);
+      this.logger.debug(`[getTransferDto] Invalid ownerId ${ownerIdWallet}`);
       return null;
     }
     const crm = await this.getFireblocksCrm();
@@ -213,7 +214,11 @@ export class FireBlocksNotificationsController {
     );
     const wallet = walletList.list[0];
     if (!wallet) {
-      this.logger.error('Wallet not found with where', queryWhereWallet);
+      this.logger.error(
+        `[getTransferDto] Wallet not found with where ${JSON.stringify(
+          queryWhereWallet,
+        )}`,
+      );
       return null;
     }
     let isApproved = null;
