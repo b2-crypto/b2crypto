@@ -108,15 +108,16 @@ export class ClientsIntegrationController {
       const taskName = this.getTaskOffName(clientId);
       CommonService.removeTimeout(this.schedulerRegistry, taskName);
       this.logger.debug(
-        `Programming to ${maintenanceOnDto.dateEnd}`,
-        'maintenance off',
+        `[maintenanceOn] Programming to ${maintenanceOnDto.dateEnd}`,
       );
       CommonService.addTimeout(
         this.schedulerRegistry,
         taskName,
         maintenanceOnDto.dateEnd.getTime() - now.getTime(),
         async () => {
-          this.logger.debug('maintenance off', `Client ${clientId}`);
+          this.logger.debug(
+            `[maintenanceOn] maintenance off Client ${clientId}`,
+          );
           this.cancelMaintenance(clientId);
         },
       );
@@ -126,15 +127,14 @@ export class ClientsIntegrationController {
       const taskName = this.getTaskOnName(clientId);
       CommonService.removeTimeout(this.schedulerRegistry, taskName);
       this.logger.debug(
-        `Programming to ${maintenanceOnDto.dateStart}`,
-        'maintenance on',
+        `[maintenanceOn] Programming to ${maintenanceOnDto.dateStart}`,
       );
       CommonService.addTimeout(
         this.schedulerRegistry,
         taskName,
         maintenanceOnDto.dateStart.getTime() - now.getTime(),
         async () => {
-          this.logger.debug('maintenance on', `Client ${clientId}`);
+          this.logger.debug(`[maintenanceOn] maintenance onClient ${clientId}`);
           this.initMaintenance(clientId, true);
         },
       );
@@ -184,7 +184,7 @@ export class ClientsIntegrationController {
         .status(200)
         .send(html);
     } catch (error) {
-      this.logger.error(`ClientsController-signIn`, error);
+      this.logger.error(`[signIn] error: ${error.message || error}`);
       return res.status(500).send({ error: true, message: error.message });
     }
   }
@@ -240,7 +240,7 @@ export class ClientsIntegrationController {
       };
       html = pug.renderFile(localPathTemplate, localVarsTemplate);
     } catch (error) {
-      this.logger.error(`ClientsController-signIn`, error);
+      this.logger.error(`[signInCheck] error: ${error.message || error}`);
     }
     return res
       .setHeader('Content-Type', 'text/html; charset=utf-8')
@@ -340,7 +340,7 @@ export class ClientsIntegrationController {
       };
       html = pug.renderFile(localPathTemplate, localVarsTemplate);
     } catch (error) {
-      this.logger.error(`ClientsController-signIn`, error);
+      this.logger.error(`[manualTxRecharge] error: ${error.message || error}`);
     }
     return res
       .setHeader('Content-Type', 'text/html; charset=utf-8')

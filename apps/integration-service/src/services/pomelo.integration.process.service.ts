@@ -211,7 +211,7 @@ export class PomeloIntegrationProcessService {
       response = {
         status: CardsEnum.CARD_PROCESS_REJECTED,
         message: `Transaction rejected.`,
-        status_detail: CardsEnum.CARD_PROCESS_OTHER,
+        status_detail: CardsEnum.CARD_PROCESS_CARD_NOT_FOUND,
       };
     } else if (result === CardsEnum.CARD_PROCESS_INSUFFICIENT_FUNDS) {
       response = {
@@ -223,9 +223,16 @@ export class PomeloIntegrationProcessService {
       response = {
         status: CardsEnum.CARD_PROCESS_REJECTED,
         message: `Transaction rejected.`,
-        status_detail: CardsEnum.CARD_PROCESS_OTHER,
+        status_detail: CardsEnum.CARD_PROCESS_INVALID_INSTALLMENTS,
+      };
+    } else if (result === CardsEnum.CARD_PROCESS_CARD_LOCKED) {
+      response = {
+        status: CardsEnum.CARD_PROCESS_REJECTED,
+        message: `Transaction rejected.`,
+        status_detail: CardsEnum.CARD_PROCESS_CARD_LOCKED,
       };
     }
+
     if (!authorize) {
       // If it is processing an adjustment it must respond with a different status code.
       throw new InternalServerErrorException(result);
