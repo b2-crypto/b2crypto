@@ -292,7 +292,7 @@ export class CardServiceController extends AccountServiceController {
         throw new BadRequestException('Not found level 1');
       }
       // TODO Pasar la persona a nivel 1
-      // this.logger.debug(
+      // this.logger.info(
       //   `${cardAfg} - ${level.slug}`,
       //   `'AFG not found for CARD-${createDto.accountType}`,
       // );
@@ -1300,7 +1300,7 @@ export class CardServiceController extends AccountServiceController {
         : process.env.ENVIRONMENT === 'PROD'
         ? this.getAfgProd(cardAfg)
         : null;
-    this.logger.debug(`[buildAFG] ${JSON.stringify(afg)}`);
+    this.logger.info(`[buildAFG] ${JSON.stringify(afg)}`);
     // TODO[hender-20/08/2024] check the level user (individual/corporate)
     if (afgId) {
       afg = {
@@ -1417,7 +1417,7 @@ export class CardServiceController extends AccountServiceController {
     const rtaGetShipping = await cardIntegration.getShippingPhysicalCard(
       card.responseShipping.id,
     );
-    this.logger.debug(`[getShippingPhysicalCard] Shipping ${rtaGetShipping}`);
+    this.logger.info(`[getShippingPhysicalCard] Shipping ${rtaGetShipping}`);
     return card.responseShipping;
   }
 
@@ -1580,7 +1580,7 @@ export class CardServiceController extends AccountServiceController {
       );
     if (valueToPay > 0) {
       // Pay transfer between cards
-      this.logger.debug('[rechargeOne] Pay transfer between cards', 'Make');
+      this.logger.info('[rechargeOne] Pay transfer between cards', 'Make');
     }
     this.cardBuilder.emitTransferEventClient(
       EventsNamesTransferEnum.createOne,
@@ -1668,7 +1668,7 @@ export class CardServiceController extends AccountServiceController {
     if (!user.personalData.location?.address) {
       throw new BadRequestException('Location address not found');
     }
-    this.logger.debug(`[getValidUserFromReq] User ${JSON.stringify(user)}`);
+    this.logger.info(`[getValidUserFromReq] User ${JSON.stringify(user)}`);
     return user;
   }
 
@@ -1692,7 +1692,7 @@ export class CardServiceController extends AccountServiceController {
       );
       throw new BadRequestException('Card profile not found');
     }
-    this.logger.debug(
+    this.logger.info(
       `[physicalActiveCard] pin active card ${configActivate.pin}`,
     );
     if (!configActivate.pin && configActivate.pin?.length !== 4) {
@@ -1714,7 +1714,7 @@ export class CardServiceController extends AccountServiceController {
       user.userCard,
       configActivate,
     );
-    this.logger.debug(
+    this.logger.info(
       `[physicalActiveCard] rta actived card ${JSON.stringify(rta)}`,
     );
     if (rta) {
@@ -1728,17 +1728,17 @@ export class CardServiceController extends AccountServiceController {
         throw new BadRequestException(details.join(','));
       }
       const cardId = (rta.data && rta.data['id']) || rta['id'];
-      this.logger.debug(`[physicalActiveCard] cardId actived ${cardId}`);
+      this.logger.info(`[physicalActiveCard] cardId actived ${cardId}`);
       let crd = null;
       let card = null;
       let cards = null;
       try {
         cards = await cardIntegration.getCard(cardId);
-        this.logger.debug(
+        this.logger.info(
           `[physicalActiveCard] Result pomelo active ${JSON.stringify(cards)}`,
         );
         crd = cards.data;
-        this.logger.debug(`[physicalActiveCard] Search card active ${cardId}`);
+        this.logger.info(`[physicalActiveCard] Search card active ${cardId}`);
         card = await this.cardService.findAll({
           where: {
             'cardConfig.id': crd.id,
@@ -1754,7 +1754,7 @@ export class CardServiceController extends AccountServiceController {
         const n_card = await this.cardService.createOne(
           cardDto as AccountCreateDto,
         );
-        this.logger.debug(
+        this.logger.info(
           `[physicalActiveCard] Card created ${n_card.id} for ${user.email}`,
         );
         let afgName = 'grupo-1';
@@ -1769,7 +1769,7 @@ export class CardServiceController extends AccountServiceController {
             id: crd?.id,
             affinity_group_id: afg.valueGroup,
           });
-          this.logger.debug(
+          this.logger.info(
             `[physicalActiveCard] Updated AFG Card-${
               n_card?.id
             } ${JSON.stringify(rta.data)}`,
@@ -1960,7 +1960,7 @@ export class CardServiceController extends AccountServiceController {
       const group = await this.buildAFG(null, cardAfg);
       const afg = group.list[0];
       if (!afg) {
-        this.logger.debug(
+        this.logger.info(
           `[levelUpCards] AFG not found group ${JSON.stringify(cardAfg)}`,
         );
         throw new NotFoundException('AFG not found');
@@ -1977,7 +1977,7 @@ export class CardServiceController extends AccountServiceController {
             id: card.cardConfig.id,
             affinity_group_id: afg.valueGroup,
           });
-          this.logger.debug(
+          this.logger.info(
             `[levelUpCards] Updated AFG Card-${card._id} ${JSON.stringify(
               rta.data,
             )}`,
@@ -2057,7 +2057,7 @@ export class CardServiceController extends AccountServiceController {
     CommonService.ack(ctx);
     try {
       let txnAmount = 0;
-      this.logger.debug(
+      this.logger.info(
         `[processPomeloTransaction] Looking for card: ${data.id}`,
       );
       const cardList = await this.cardService.findAll({
@@ -2074,7 +2074,7 @@ export class CardServiceController extends AccountServiceController {
         return CardsEnum.CARD_PROCESS_CARD_LOCKED;
       }
 
-      this.logger.debug(
+      this.logger.info(
         `[processPomeloTransaction] Card balance: ${card.amount} | Movement amount: ${data.amount}`,
       );
       if (data.authorize) {
@@ -2107,7 +2107,7 @@ export class CardServiceController extends AccountServiceController {
   async findByCardId(@Ctx() ctx: RmqContext, @Payload() data: any) {
     CommonService.ack(ctx);
     try {
-      this.logger.debug(`[findByCardId] Looking for card: ${data.id}`);
+      this.logger.info(`[findByCardId] Looking for card: ${data.id}`);
       const cardList = await this.getCardById(data.id);
       if (!cardList || !cardList.list[0]) {
         throw new NotFoundException(`Card ${data.id} was not found`);
@@ -2120,7 +2120,7 @@ export class CardServiceController extends AccountServiceController {
 
   private async getCardById(cardId: string) {
     try {
-      this.logger.debug(`[getCardById] Looking for card: ${cardId}`);
+      this.logger.info(`[getCardById] Looking for card: ${cardId}`);
       const cardList = await this.cardService.findAll({
         where: {
           'cardConfig.id': cardId,
@@ -2139,7 +2139,7 @@ export class CardServiceController extends AccountServiceController {
   ) {
     CommonService.ack(ctx);
     try {
-      this.logger.debug(`[checkCardsCreatedInPomelo] Start`);
+      this.logger.info(`[checkCardsCreatedInPomelo] Start`);
       const paginator: ResponsePaginator<User> = new ResponsePaginator<User>();
       paginator.currentPage = 1;
       paginator.firstPage = 1;
@@ -2158,19 +2158,19 @@ export class CardServiceController extends AccountServiceController {
               page: paginator.currentPage,
             },
           );
-        this.logger.debug(
+        this.logger.info(
           `[checkCardsCreatedInPomelo] Check cards users ${usersPaginator.totalElements}`,
         );
         for (const usr of usersPaginator.list) {
-          //this.logger.debug(usr?.userCard?.id, `User ${usr.email}`);
+          //this.logger.info(usr?.userCard?.id, `User ${usr.email}`);
           if (usr.userCard) {
             const cards = await cardIntegration.getCardByQuery({
               user_id: usr.userCard.id,
               page_size: 1000,
             });
-            //this.logger.debug(cards, `Result pomelo`);
+            //this.logger.info(cards, `Result pomelo`);
             for (const crd of cards.data) {
-              //this.logger.debug(crd.id, `Search card`);
+              //this.logger.info(crd.id, `Search card`);
               const card = await this.cardService.findAll({
                 where: {
                   'cardConfig.id': crd.id,
@@ -2185,7 +2185,7 @@ export class CardServiceController extends AccountServiceController {
                 const n_card = await this.cardService.createOne(
                   cardDto as AccountCreateDto,
                 );
-                this.logger.debug(
+                this.logger.info(
                   `[checkCardsCreatedInPomelo] Card created ${n_card.id} for ${usr.email}`,
                 );
               } else if (
@@ -2195,7 +2195,7 @@ export class CardServiceController extends AccountServiceController {
               ) {
                 card.list[0].statusText = StatusAccountEnum.UNLOCK;
                 card.list[0].save();
-                this.logger.debug(
+                this.logger.info(
                   `[checkCardsCreatedInPomelo] Card updated ${card.list[0]?.id} for ${usr.email}`,
                 );
               }
@@ -2276,7 +2276,7 @@ export class CardServiceController extends AccountServiceController {
   async setBalanceByCard(@Ctx() ctx: RmqContext, @Payload() data: any) {
     CommonService.ack(ctx);
     try {
-      this.logger.debug(`[setBalanceByCard] Looking for card: ${data.id}`);
+      this.logger.info(`[setBalanceByCard] Looking for card: ${data.id}`);
       const cardList = await this.cardService.findAll({
         where: {
           'cardConfig.id': data.id,

@@ -28,21 +28,21 @@ export class PomeloSignatureGuard implements CanActivate {
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    this.logger.debug(`[canActivate] Checking signature`);
+    this.logger.info(`[canActivate] Checking signature`);
     this.headersToLowercase(context);
     const headers = this.utils.extractRequestHeaders(context);
     const path =
       this.reflector
         .get<string[]>(PATH_METADATA, context.getHandler())
         ?.toString() || '';
-    this.logger.debug(`[canActivate] Path: ${path}`);
-    this.logger.debug(`[canActivate] Headers: ${JSON.stringify(headers)}`);
-    this.logger.debug(
+    this.logger.info(`[canActivate] Path: ${path}`);
+    this.logger.info(`[canActivate] Headers: ${JSON.stringify(headers)}`);
+    this.logger.info(
       `[canActivate] Check whitelisted ips: ${JSON.stringify(
         CommonService.checkWhitelistedIps(context),
       )}`,
     );
-    this.logger.debug(
+    this.logger.info(
       `[canActivate] Check valid endpoint: ${JSON.stringify(
         this.checkValidEndpoint(path, headers),
       )}`,
@@ -51,7 +51,7 @@ export class PomeloSignatureGuard implements CanActivate {
       CommonService.checkWhitelistedIps(context) &&
       this.checkValidEndpoint(path, headers)
     ) {
-      this.logger.debug(`[canActivate] Valid endpoint`);
+      this.logger.info(`[canActivate] Valid endpoint`);
       if (
         path == PomeloEnum.POMELO_AUTHORIZATION_PATH.toString() &&
         !this.checkSignatureIsNotExpired(headers.timestamp)
@@ -63,7 +63,7 @@ export class PomeloSignatureGuard implements CanActivate {
         context.switchToHttp().getRequest().body,
       );
       if (!isValid) {
-        this.logger.debug(
+        this.logger.info(
           `[canActivate] Invalid signature: ${JSON.stringify(headers)}`,
         );
         this.utils.setResponseHeaders(context);
@@ -76,15 +76,15 @@ export class PomeloSignatureGuard implements CanActivate {
       }
       return isValid;
     }
-    this.logger.debug(
+    this.logger.info(
       `[canActivate] Invalid signature: ${JSON.stringify(headers)}`,
     );
     return false;
   }
 
   private checkValidEndpoint(path: string, headers: ProcessHeaderDto): boolean {
-    this.logger.debug(`[checkValidEndpoint] Path: ${path}`);
-    this.logger.debug(
+    this.logger.info(`[checkValidEndpoint] Path: ${path}`);
+    this.logger.info(
       `[checkValidEndpoint] Headers: ${JSON.stringify(headers)}`,
     );
     if (path !== PomeloEnum.POMELO_ADJUSTMENT_PATH)

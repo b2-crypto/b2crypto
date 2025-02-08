@@ -36,10 +36,8 @@ export class B2BinPayNotificationsController {
   @Post('status-deposit')
   // @CheckPoliciesAbility(new PolicyHandlerTransferRead())
   async statusDeposit(@Req() req: any, @Body() data: any) {
-    this.logger.debug(`[statusDeposit] body: ${JSON.stringify(data)}`);
-    this.logger.debug(
-      `[statusDeposit] headers: ${JSON.stringify(req.headers)}`,
-    );
+    this.logger.info(`[statusDeposit] body: ${JSON.stringify(data)}`);
+    this.logger.info(`[statusDeposit] headers: ${JSON.stringify(req.headers)}`);
     return {
       statusCode: 200,
       data: 'Tx updated deposit',
@@ -50,10 +48,10 @@ export class B2BinPayNotificationsController {
   @Post('status')
   // @CheckPoliciesAbility(new PolicyHandlerTransferRead())
   async status(@Req() req: any, @Body() data: any) {
-    this.logger.debug(`[status] body: ${JSON.stringify(data)}`);
+    this.logger.info(`[status] body: ${JSON.stringify(data)}`);
     const headers = req?.headers;
     const body = req?.body;
-    this.logger.debug(`[status] headers: ${JSON.stringify(headers)}`);
+    this.logger.info(`[status] headers: ${JSON.stringify(headers)}`);
 
     /* const attributes = data.data.attributes;
     const relationships = data.data.relationships;
@@ -175,7 +173,7 @@ export class B2BinPayNotificationsController {
     @Ctx() ctx: RmqContext,
   ) {
     CommonService.ack(ctx);
-    this.logger.debug(
+    this.logger.info(
       `[checkTransferInB2BinPay] typeIntegration: ${typeIntegration}`,
     );
     let accounts: ResponsePaginator<AccountDocument> = {
@@ -200,7 +198,7 @@ export class B2BinPayNotificationsController {
           },
         },
       );
-      this.logger.debug(
+      this.logger.info(
         `[checkTransferInB2BinPay] page: ${accounts.currentPage} | totalElements: ${accounts.list.length}`,
       );
       promises.push(this.checkAccounts(accounts));
@@ -300,7 +298,7 @@ export class B2BinPayNotificationsController {
           isApprove: true,
           approvedAt: attributes.updated_at,
         } as unknown as TransferCreateDto;
-        this.logger.debug(`[checkTransfer] ${dto.name}`);
+        this.logger.info(`[checkTransfer] ${dto.name}`);
         this.builder.emitTransferEventClient(
           EventsNamesTransferEnum.createOne,
           dto,

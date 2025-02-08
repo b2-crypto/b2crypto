@@ -31,7 +31,7 @@ export class B2CoreMigrationController {
   async migrationB2CoreVerification(@UploadedFile() file: Express.Multer.File) {
     //return new NotImplementedException('Method not implemented.');
 
-    this.logger.debug(`[migrationB2CoreVerification] File: ${file.path}`);
+    this.logger.info(`[migrationB2CoreVerification] File: ${file.path}`);
     return this.migrationService.migrateB2CoreVerification(file);
   }
 }

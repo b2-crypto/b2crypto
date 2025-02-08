@@ -241,13 +241,13 @@ export class AffiliateServiceService {
             affiliate._id,
           );
         }
-        this.logger.debug(
+        this.logger.info(
           `[checkStatsForOneAffiliate] Sended Page ${affiliates.currentPage}/${affiliates.lastPage}`,
         );
         nextPage = affiliates.nextPage;
       } while (nextPage != 1);
     } else {
-      this.logger.debug(`[checkStatsForOneAffiliate] ${affiliateId}`);
+      this.logger.info(`[checkStatsForOneAffiliate] ${affiliateId}`);
       // TODO[hender - 2024/02/21] Update stats affiliate
       this.builder.emitLeadEventClient(
         EventsNamesLeadEnum.checkLeadsForAffiliateStats,
@@ -260,7 +260,7 @@ export class AffiliateServiceService {
   }
 
   async checkStatsTransfer(transfer: TransferInterface) {
-    this.logger.debug(`[checkStatsTransfer] ${JSON.stringify(transfer)}`);
+    this.logger.info(`[checkStatsTransfer] ${JSON.stringify(transfer)}`);
     this.checkStats({
       affiliateId: transfer.affiliate,
       checkType: CheckStatsType.LEAD,

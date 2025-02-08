@@ -258,7 +258,7 @@ export class AccountServiceController implements GenericServiceController {
     @Ctx() ctx: RmqContext,
   ) {
     CommonService.ack(ctx);
-    this.logger.debug(`[getBalanceReport] ${JSON.stringify(query)}`);
+    this.logger.info(`[getBalanceReport] ${JSON.stringify(query)}`);
     this.accountService.getBalanceReport(query);
     return true;
   }

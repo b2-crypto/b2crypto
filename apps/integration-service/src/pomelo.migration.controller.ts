@@ -19,7 +19,7 @@ export class PomeloMigrationController {
   @Post('ignate')
   async ignatePomeloIntegration() {
     return new NotImplementedException('Method not implemented.');
-    this.logger.debug(`[ignatePomeloIntegration] Starting ...`);
+    this.logger.info(`[ignatePomeloIntegration] Starting ...`);
     //await this.migrationService.startPomeloMigration();
     return {
       statusCode: 200,
@@ -29,7 +29,7 @@ export class PomeloMigrationController {
 
   @Post('ignate-by-user/:userId')
   async ignatePomeloIntegrationByUser(@Param('userId') userId: string) {
-    this.logger.debug(
+    this.logger.info(
       `[ignatePomeloIntegrationByUser] Starting migration by user: ${userId}`,
     );
     await this.migrationService.startPomeloMigrationByUser(userId);
@@ -41,7 +41,7 @@ export class PomeloMigrationController {
 
   @Post('set-cards-owner')
   async setCardsOwner() {
-    this.logger.debug(`[setCardsOwner] Starting to set cards owner`);
+    this.logger.info(`[setCardsOwner] Starting to set cards owner`);
     await this.migrationService.setAllCardsOwner();
     return {
       statusCode: 200,

@@ -68,7 +68,7 @@ export class StatsAffiliateServiceController {
     @Ctx() ctx: RmqContext,
   ): Promise<Array<StatsDateAffiliateDocument>> {
     CommonService.ack(ctx);
-    this.logger.debug(
+    this.logger.info(
       `[checkAllStatsAffiliate] dto: ${JSON.stringify(checkAllDto)}`,
     );
     /* const rta =

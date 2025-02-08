@@ -122,13 +122,13 @@ export class StatsServiceService {
           lead.dateRetention,
           StatusLeadEnum.RET,
         );
-        this.logger.debug(
+        this.logger.info(
           `[checkAllLeadsForAffiliateStats] ${++_i} / ${
             leadsPage.totalElements
           }`,
         );
       }
-      this.logger.debug(
+      this.logger.info(
         `[checkAllLeadsForAffiliateStats] ${query.page} / ${leadsPage.lastPage}`,
       );
       query.page = leadsPage.nextPage;
@@ -569,7 +569,7 @@ export class StatsServiceService {
         r[a.lead?._id].push(a);
       } else {
         //r['null'].push(a);
-        this.logger.debug(
+        this.logger.info(
           `[checkAllStatsDatePspAccount] No lead: ${JSON.stringify(a)}`,
         );
       }

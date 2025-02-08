@@ -241,7 +241,7 @@ export class CrmServiceService {
           const msg = `CRM ${crmOrigin.name} reassigned error`;
           //if (leadRta.code === 400 && !leadRta.message.length) {
           if (leadRta.code === CodeResponseLeverateEnum.Success) {
-            this.logger.debug(
+            this.logger.info(
               `[createOneLeadOnCrm] Account reassigned to new owner: ${JSON.stringify(
                 leadRta,
               )}`,
@@ -394,7 +394,7 @@ export class CrmServiceService {
     await this.checkLeadDetails(crmType, lead);
     data.transfer.leadName = lead.name;
     data.transfer.leadTradingPlatformId = lead.crmTradingPlatformAccountId;
-    this.logger.debug(
+    this.logger.info(
       `[createOneTransferOnCrm] data.transfer: ${JSON.stringify(
         data.transfer,
       )}`,
@@ -567,7 +567,7 @@ export class CrmServiceService {
   }
 
   async checkStatsTransfer(configCheckStats: ConfigCheckStatsDto) {
-    this.logger.debug(
+    this.logger.info(
       `[checkStatsLead] configCheckStats: ${JSON.stringify(configCheckStats)}`,
     );
   }
@@ -683,7 +683,7 @@ export class CrmServiceService {
               }
             }
           }
-          this.logger.debug(
+          this.logger.info(
             `[checkCrmLeadStatus] ${
               crmType.crm.name
             } - ${affiliateId} start ${data.start.toUTCString()} - ${base}`,
@@ -698,7 +698,7 @@ export class CrmServiceService {
       }
 
       if (result.error.count) {
-        this.logger.debug(
+        this.logger.info(
           `[checkCrmLeadStatus] Lead tpIds with error: ${JSON.stringify(
             result.error,
           )}`,
@@ -757,7 +757,7 @@ export class CrmServiceService {
                 },
               );
             } else {
-              this.logger.debug(
+              this.logger.info(
                 `[checkCrmLeadStatus] Status ${leadCrm.leadStatus} not found for ${leadCrm.tpAccount}`,
               );
             }

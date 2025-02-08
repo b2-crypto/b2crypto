@@ -69,7 +69,7 @@ export class AccountServiceService
     const promises = [];
     while (query.page < lastPage) {
       ++query.page;
-      this.logger.debug(`[cleanWalletsWithTransfers] Start page ${query.page}`);
+      this.logger.info(`[cleanWalletsWithTransfers] Start page ${query.page}`);
       promises.push(
         this.cleanWalletsWithTx(
           {
@@ -78,12 +78,12 @@ export class AccountServiceService
           msg,
         ),
       );
-      this.logger.debug(`[cleanWalletsWithTransfers] End page ${query.page}`);
+      this.logger.info(`[cleanWalletsWithTransfers] End page ${query.page}`);
     }
     return Promise.all(promises);
   }
   async cleanWalletsWithTx(query: QuerySearchAnyDto, msg?: string) {
-    this.logger.debug(`[cleanWalletsWithTx] Start page ${query.page}`);
+    this.logger.info(`[cleanWalletsWithTx] Start page ${query.page}`);
     const promises = [];
     const walletsClean = await this.lib.findAll(query);
     const queryTx = {
@@ -100,7 +100,7 @@ export class AccountServiceService
       );
     if (transfersAccounts.totalElements) {
       const accountWithTx = transfersAccounts.list.map((t) => t.account);
-      this.logger.debug(
+      this.logger.info(
         `[cleanWalletsWithTx] Filter wallets with transfers page ${query.page}`,
       );
       promises.push(
@@ -119,7 +119,7 @@ export class AccountServiceService
         (w) => !accountWithTx.includes(w._id.toString()),
       );
     } else {
-      this.logger.debug('[cleanWalletsWithTx] Not found transfers');
+      this.logger.info('[cleanWalletsWithTx] Not found transfers');
     }
     if (walletsClean.list.length) {
       promises.push(
@@ -129,7 +129,7 @@ export class AccountServiceService
     this.logger.warn(
       `[cleanWalletsWithTx] Removed ${walletsClean.list.length} wallets`,
     );
-    this.logger.debug(
+    this.logger.info(
       `[cleanWalletsWithTx] Total ${msg} wallets to clean ${walletsClean.currentPage}/${walletsClean.lastPage}`,
     );
     return Promise.all(promises);
@@ -332,7 +332,7 @@ export class AccountServiceService
         },
       };
 
-      this.logger.debug(
+      this.logger.info(
         `[createOne] Account Request Confirmation Email Prepared ${JSON.stringify(
           data,
         )}`,
@@ -432,7 +432,7 @@ export class AccountServiceService
   }
   getBalanceReport(query: QuerySearchAnyDto) {
     // TODO[hender - 2024/09/26] Receive 3 events but trigger only 1 from job
-    this.logger.debug('[getBalanceReport] Start balance report');
+    this.logger.info('[getBalanceReport] Start balance report');
     Promise.all([
       this.getBalanceByAccountTypeCard(query),
       //this.getBalanceByAccountTypeWallet(query),
@@ -441,7 +441,7 @@ export class AccountServiceService
       this.getBalanceByAccountByCard(query),
       //this.getBalanceByAccountByWallet(query),
     ]).then(async (results) => {
-      this.logger.debug('[getBalanceReport] Report filter finish');
+      this.logger.info('[getBalanceReport] Report filter finish');
       const [
         cardTotalAccumulated,
         //walletTotalAccumulated,
@@ -479,7 +479,7 @@ export class AccountServiceService
         query.where?.type ?? 'all types'
       } - ${this.printShortDate(date)} UTC`;
       this.sendEmailToList(promises, name);
-      this.logger.debug('[getBalanceReport] Balance Report sended');
+      this.logger.info('[getBalanceReport] Balance Report sended');
     });
   }
 
@@ -516,7 +516,7 @@ export class AccountServiceService
       },
     ];
     const attachments = await Promise.all(promisesAttachments);
-    this.logger.debug('[sendEmailToList] Report finish');
+    this.logger.info('[sendEmailToList] Report finish');
     destiny.forEach((destiny) => {
       this.sendEmail({
         destinyText: destiny.email,
@@ -563,7 +563,7 @@ export class AccountServiceService
     const objBase = this.getCustomObj(headers);
     // File created
     this.addDataToFile(objBase, filename, true, true);
-    this.logger.debug('[getContentFileBalanceReport] File created');
+    this.logger.info('[getContentFileBalanceReport] File created');
     return new Promise((res) => {
       // Wait file creation
       setTimeout(async () => {
@@ -602,7 +602,7 @@ export class AccountServiceService
             encodeBase64: content,
           });
         }
-        this.logger.debug(
+        this.logger.info(
           `[responseFileContent] File "${filename}" sent ${listName}`,
         );
         res({
@@ -615,7 +615,7 @@ export class AccountServiceService
           fs.unlinkSync(fileUri);
         }
       } else {
-        this.logger.debug(
+        this.logger.info(
           `[responseFileContent] File "${filename}" not found ${listName}`,
         );
         this.responseFileContent({ filename, fileUri, listName, res });

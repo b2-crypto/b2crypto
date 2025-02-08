@@ -107,7 +107,7 @@ export class ClientsIntegrationController {
       }
       const taskName = this.getTaskOffName(clientId);
       CommonService.removeTimeout(this.schedulerRegistry, taskName);
-      this.logger.debug(
+      this.logger.info(
         `[maintenanceOn] Programming to ${maintenanceOnDto.dateEnd}`,
       );
       CommonService.addTimeout(
@@ -115,7 +115,7 @@ export class ClientsIntegrationController {
         taskName,
         maintenanceOnDto.dateEnd.getTime() - now.getTime(),
         async () => {
-          this.logger.debug(
+          this.logger.info(
             `[maintenanceOn] maintenance off Client ${clientId}`,
           );
           this.cancelMaintenance(clientId);
@@ -126,7 +126,7 @@ export class ClientsIntegrationController {
     if (!inMaintenance) {
       const taskName = this.getTaskOnName(clientId);
       CommonService.removeTimeout(this.schedulerRegistry, taskName);
-      this.logger.debug(
+      this.logger.info(
         `[maintenanceOn] Programming to ${maintenanceOnDto.dateStart}`,
       );
       CommonService.addTimeout(
@@ -134,7 +134,7 @@ export class ClientsIntegrationController {
         taskName,
         maintenanceOnDto.dateStart.getTime() - now.getTime(),
         async () => {
-          this.logger.debug(`[maintenanceOn] maintenance onClient ${clientId}`);
+          this.logger.info(`[maintenanceOn] maintenance onClient ${clientId}`);
           this.initMaintenance(clientId, true);
         },
       );

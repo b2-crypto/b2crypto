@@ -206,7 +206,7 @@ export class PspAccountServiceService {
   }
 
   async checkStatsForOnePspAccount(pspAccountId: string) {
-    this.logger.debug(
+    this.logger.info(
       `[checkStatsForOnePspAccount] pspAccountId: ${pspAccountId}`,
     );
     this.checkStats({
