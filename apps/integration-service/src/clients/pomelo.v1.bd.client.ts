@@ -29,14 +29,14 @@ export class PomeloV1DBClient {
         await client
           .connect()
           .then(async () => {
-            this.logger.debug(
+            this.logger.info(
               `[getBalanaceByCard] Successfuly connected to V1 DB database`,
             );
             client.query(this.statement, [cardId], (err: any, result: any) => {
               if (err) {
                 reject(err);
               } else {
-                this.logger.debug(
+                this.logger.info(
                   'PomeloV1DBClient.getBalanaceByCard:result.rows',
                   result.rows,
                 );
@@ -45,7 +45,7 @@ export class PomeloV1DBClient {
               client
                 .end()
                 .then(() => {
-                  this.logger.debug(
+                  this.logger.info(
                     `[getBalanaceByCard] Connection to V1 DB successfuly closed`,
                   );
                 })

@@ -147,7 +147,7 @@ export class UserServiceController implements GenericServiceController {
     do {
       const users = await this.findAll({ page });
       if (users?.list?.length > 0) {
-        this.logger.debug(
+        this.logger.info(
           `[generatePasswordEmail] Users: ${users?.list?.length} & Page: ${page}`,
         );
         page++;
@@ -161,7 +161,7 @@ export class UserServiceController implements GenericServiceController {
               confirmPassword: pwd,
             };
             await this.changePassword(user?.id, changePassword);
-            this.logger.debug(
+            this.logger.info(
               `[generatePasswordEmail] Apply level ${user.level?.name} to user ${user.email}`,
             );
             const emailData = {
@@ -479,7 +479,7 @@ export class UserServiceController implements GenericServiceController {
               level: user.level,
             } as unknown as UserUpdateDto)
             .then((usr) => {
-              this.logger.debug(
+              this.logger.info(
                 `[generatePasswordEmail] Apply level ${user.level?.name} to user ${user.email} | page ${query.page}/${users.lastPage}`,
               );
               return {

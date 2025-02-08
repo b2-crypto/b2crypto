@@ -144,7 +144,7 @@ export class BrandServiceService {
   }
 
   async checkStatsTransfer(configCheckStats: ConfigCheckStatsDto) {
-    this.logger.debug(
+    this.logger.info(
       `[checkStatsTransfer] ${JSON.stringify(configCheckStats)}`,
     );
   }

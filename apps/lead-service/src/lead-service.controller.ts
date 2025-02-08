@@ -475,7 +475,7 @@ export class LeadServiceController implements GenericServiceController {
           return transfer.isApprove;
         })[0];
         if (firstTransferPayed) {
-          this.logger.debug(
+          this.logger.info(
             `[forcePartialFtd] Updated ${lead.email} partial FTD`,
           );
           this.builder.emitLeadEventClient(EventsNamesLeadEnum.updateOne, {
@@ -489,7 +489,7 @@ export class LeadServiceController implements GenericServiceController {
       if (leads.nextPage != 1) {
         totalPages = page;
       }
-      this.logger.debug(
+      this.logger.info(
         `[forcePartialFtd] Updated ${page} page of ${leads.lastPage}`,
       );
       page = leads.nextPage;
@@ -514,7 +514,7 @@ export class LeadServiceController implements GenericServiceController {
         where: query ?? {},
         page: pageLeads,
       });
-      this.logger.debug(
+      this.logger.info(
         `[updateListTransfersLead] Page ${pageLeads} / ${leads.lastPage}`,
       );
       pageLeads = leads.nextPage;
@@ -989,10 +989,10 @@ export class LeadServiceController implements GenericServiceController {
       },
     });
     for (const lead of leadsWithoutTpId.list) {
-      this.logger.debug(`[checkLeadsCreatedInCrm] Checked ${lead.email}`);
+      this.logger.info(`[checkLeadsCreatedInCrm] Checked ${lead.email}`);
     }
     CommonService.ack(ctx);
-    this.logger.debug(
+    this.logger.info(
       `[checkLeadsCreatedInCrm] ${leadsWithoutTpId.totalElements} leads without TPID`,
     );
   }

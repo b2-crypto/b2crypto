@@ -476,7 +476,7 @@ export class SecurityServiceController {
         resourceName: ResourcesEnum.USER,
       };
     }
-    this.logger.debug(`[generateOtp] OTP Sended: ${JSON.stringify(data)}`);
+    this.logger.info(`[generateOtp] OTP Sended: ${JSON.stringify(data)}`);
     this.builder.emitMessageEventClient(
       EventsNamesMessageEnum.sendEmailOtpNotification,
       data,

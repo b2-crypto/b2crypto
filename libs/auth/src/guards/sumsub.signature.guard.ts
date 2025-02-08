@@ -24,14 +24,14 @@ export class SumsubSignatureGuard implements CanActivate {
   async canActivate(context: ExecutionContext): Promise<boolean> {
     this.headersToLowercase(context);
     const headers = this.utils.extractRequestHeaders(context);
-    this.logger.debug(`[canActivate] Headers: ${JSON.stringify(headers)}`);
+    this.logger.info(`[canActivate] Headers: ${JSON.stringify(headers)}`);
     const request = context.switchToHttp().getRequest();
     const isValid = await this.signatureUtil.checkSignature(
       headers,
       request.body,
     );
     if (!isValid) {
-      this.logger.debug(`[canActivate] isValid: ${isValid}`);
+      this.logger.info(`[canActivate] isValid: ${isValid}`);
       throw new HttpException(this.constants.RESPONSE_INVALID_SIGNATURE, 400);
     }
     return isValid;

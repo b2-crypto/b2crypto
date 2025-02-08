@@ -1371,7 +1371,7 @@ export class LeadServiceService
       }
       page = leadsToCheck.nextPage;
       nextPage = leadsToCheck.nextPage;
-      this.logger.debug(
+      this.logger.info(
         `[checkAllLeadsForAffiliateStats] Saved page ${leadsToCheck.currentPage} of AFFILIATE ${affiliateId} lead's. Next page ${nextPage}/${leadsToCheck.lastPage}`,
       );
     }
@@ -1409,7 +1409,7 @@ export class LeadServiceService
     affiliateList = [],
     daysBefore = 0,
   ) {
-    this.logger.debug(
+    this.logger.info(
       `[checkStatusFromLeadsListByStatus] Checking leads modified`,
     );
     const today = new Date();

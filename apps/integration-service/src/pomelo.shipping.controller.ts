@@ -33,7 +33,7 @@ export class PomeloShippingController {
   async handleShippingNotification(
     @Body() notification: ShippingNotifications,
   ): Promise<any> {
-    this.logger.debug(
+    this.logger.info(
       `[handleShippingNotification] notification: ${JSON.stringify(
         notification,
       )}`,
@@ -44,7 +44,7 @@ export class PomeloShippingController {
   @Post(PomeloEnum.POMELO_SHIPPING_CARD_EVENTS)
   @HttpCode(204)
   async handleCardEvents(@Body() event: CardEvents): Promise<any> {
-    this.logger.debug(`[handleCardEvents] event: ${JSON.stringify(event)}`);
+    this.logger.info(`[handleCardEvents] event: ${JSON.stringify(event)}`);
     return await this.shippingService.handleCardEvents(event);
   }
 }

@@ -84,7 +84,7 @@ export class SeedService {
       !countPermissions /*||
       !countTransfers*/
     ) {
-      this.logger.debug(`[saveInitialData] Clearing stats...`);
+      this.logger.info(`[saveInitialData] Clearing stats...`);
       // await this.clearStats();
       // await this.clearActivities();
       // await this.clearPersons();
@@ -108,95 +108,95 @@ export class SeedService {
   }
 
   async clearStats() {
-    this.logger.debug(`[clearStats] Clear stats...`);
+    this.logger.info(`[clearStats] Clear stats...`);
     return Promise.all([
       this.statsDatePspAccountsRepo.clear(),
       this.statsDateAffiliatesRepo.clear(),
     ]);
   }
   async clearActivities() {
-    this.logger.debug(`[clearActivities] Clear activities...`);
+    this.logger.info(`[clearActivities] Clear activities...`);
     return this.activityRepo.clear();
   }
   async clearStatus() {
-    this.logger.debug(`[clearStatus] Clear status...`);
+    this.logger.info(`[clearStatus] Clear status...`);
     return this.statusRepo.clear();
   }
   async clearCategories() {
-    this.logger.debug(`[clearCategories] Start seed categories...`);
+    this.logger.info(`[clearCategories] Start seed categories...`);
     return this.categoryRepo.clear();
   }
   async clearPermissions() {
     // Clear Permissions
-    this.logger.debug('Clear permissions...', SeedService.name);
+    this.logger.info('Clear permissions...', SeedService.name);
     return this.permissionRepo.clear();
   }
   async clearRoles() {
     // Clear Roles
-    this.logger.debug(`[clearRoles] Clear roles...`);
+    this.logger.info(`[clearRoles] Clear roles...`);
     return this.roleRepo.clear();
   }
   async clearBrands() {
     // Clear Brands
-    this.logger.debug(`[clearBrands] Clear brands...`);
+    this.logger.info(`[clearBrands] Clear brands...`);
     return this.brandRepo.clear();
   }
   async clearCrms() {
     // Clear Crms
-    this.logger.debug(`[clearCrms] Clear crms...`);
+    this.logger.info(`[clearCrms] Clear crms...`);
     return this.crmRepo.clear();
   }
   async clearPersons() {
     // Clear Persons
-    this.logger.debug(`[clearPersons] Clear persons...`);
+    this.logger.info(`[clearPersons] Clear persons...`);
     return this.personRepo.clear();
   }
   async clearUsers() {
     // Clear Users
-    this.logger.debug(`[clearUsers] Clear users...`);
+    this.logger.info(`[clearUsers] Clear users...`);
     return this.userRepo.clear();
   }
   async clearPsps() {
     // Clear Psps
-    this.logger.debug(`[clearPsps] Clear psps...`);
+    this.logger.info(`[clearPsps] Clear psps...`);
     return this.pspRepo.clear();
   }
   async clearPspAccounts() {
     // Clear Psps Account
-    this.logger.debug(`[clearPspAccounts] Clear psps account...`);
+    this.logger.info(`[clearPspAccounts] Clear psps account...`);
     return this.pspAccountRepo.clear();
   }
   async clearTraffic() {
     // Clear Traffic
-    this.logger.debug(`[clearTraffic] Clear traffic...`);
+    this.logger.info(`[clearTraffic] Clear traffic...`);
     return this.trafficRepo.clear();
   }
   async clearAffiliates() {
     // Clear Affiliates
-    this.logger.debug(`[clearAffiliates] Clear affiliate...`);
+    this.logger.info(`[clearAffiliates] Clear affiliate...`);
     return this.affiliateRepo.clear();
   }
   async clearLeads() {
     // Clear Leads
-    this.logger.debug(`[clearLeads] Clear lead...`);
+    this.logger.info(`[clearLeads] Clear lead...`);
     return this.leadRepo.clear();
   }
   async clearTransfers() {
     // Clear Transfers
-    this.logger.debug(`[clearTransfers] Clear transfers...`);
+    this.logger.info(`[clearTransfers] Clear transfers...`);
     return this.transferRepo.clear();
   }
 
   async seedStatus() {
     this.clearStatus();
     // Create Status
-    this.logger.debug(`[seedStatus] Saving status...`);
+    this.logger.info(`[seedStatus] Saving status...`);
     return creator.createInitialStatusDataList();
   }
 
   async seedCategory() {
     this.clearCategories();
-    this.logger.debug(`[seedCategory] Saving categories...`);
+    this.logger.info(`[seedCategory] Saving categories...`);
     return Promise.all([
       // Create Category/Categories
       await creator.createInitialCategoryDataList(),
@@ -222,62 +222,62 @@ export class SeedService {
   async seedPermissions() {
     this.clearPermissions();
     // Create Permissions
-    this.logger.debug(`[seedPermissions] Saving permissions...`);
+    this.logger.info(`[seedPermissions] Saving permissions...`);
     return creator.createInitialPermissionDataList();
   }
 
   async seedRoles() {
     this.clearRoles();
     // Create Roles
-    this.logger.debug(`[seedRoles] Saving roles...`);
+    this.logger.info(`[seedRoles] Saving roles...`);
     return creator.createInitialRoleDataList();
   }
 
   async seedBrands() {
     this.clearBrands();
     // Create Brands
-    this.logger.debug(`[seedBrands] Saving brands...`);
+    this.logger.info(`[seedBrands] Saving brands...`);
     return creator.createInitialBrandDataList();
   }
   async seedCrm() {
     await this.clearCrms();
     // Create Crms
-    this.logger.debug(`[seedCrm] Saving crms...`);
+    this.logger.info(`[seedCrm] Saving crms...`);
     return creator.createInitialCrmDataList();
   }
   async seedUsers() {
     await this.clearUsers();
     // Create Users
-    this.logger.debug(`[seedUsers] Saving superadmin...`);
+    this.logger.info(`[seedUsers] Saving superadmin...`);
     return creator.createInitialUserDataList();
   }
   async seedPsps() {
     await this.clearPsps();
     // Create Psps
-    this.logger.debug(`[]seedPsps] Saving psp...`);
+    this.logger.info(`[]seedPsps] Saving psp...`);
     return creator.createInitialPspDataList();
   }
   async seedPspAccounts() {
     await this.clearPspAccounts();
     // Create Psps
-    this.logger.debug(`[seedPspAccounts] Saving psp account...`);
+    this.logger.info(`[seedPspAccounts] Saving psp account...`);
     return creator.createInitialPspAccountDataList();
   }
   async seedAffiliates() {
     await Promise.all([this.clearTraffic(), this.clearAffiliates()]);
     // Create Affiliate
-    this.logger.debug(`[seedAffiliates] Saving affiliate...`);
+    this.logger.info(`[seedAffiliates] Saving affiliate...`);
     return creator.createInitialAffiliateDataList();
   }
   async seedLeads() {
     await this.clearLeads();
     // Create Lead
-    this.logger.debug(`[seedLeads] Save lead...`);
+    this.logger.info(`[seedLeads] Save lead...`);
     return creator.createInitialLeadDataList();
   }
   async seedTransfers() {
     await this.clearTransfers();
-    this.logger.debug(`[seedTransfers] Save transfers...`);
+    this.logger.info(`[seedTransfers] Save transfers...`);
     return creator.createInitialTransferDataList();
   }
 }

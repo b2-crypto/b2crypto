@@ -27,7 +27,7 @@ export class PomeloIntegrationSFTPService {
   };
 
   private async connect() {
-    this.logger.debug(`[connect] About to connect`);
+    this.logger.info(`[connect] About to connect`);
     try {
       await this.client.connect(this.sftpProps);
     } catch (error) {
@@ -43,7 +43,7 @@ export class PomeloIntegrationSFTPService {
   }
 
   private async storeFile(remoteFile: string, localFile: string) {
-    this.logger.debug(
+    this.logger.info(
       `[storeFile] Storing remote file ${remoteFile} to ${localFile}`,
     );
     try {
@@ -54,7 +54,7 @@ export class PomeloIntegrationSFTPService {
   }
 
   private async endConnection() {
-    this.logger.debug(`[endConnection] Closing SFTP connection`);
+    this.logger.info(`[endConnection] Closing SFTP connection`);
     try {
       await this.client.end();
     } catch (error) {
