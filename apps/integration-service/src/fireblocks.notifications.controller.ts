@@ -69,7 +69,7 @@ export class FireBlocksNotificationsController {
   @NoCache()
   async resendFireblocksNotifications() {
     const rta = await (await this.getFireblocksType()).resendNotifications();
-    this.logger.info(
+    this.logger.debug(
       `[resendFireblocksNotifications] ${JSON.stringify(rta, null, 2)}`,
     );
     return rta;
@@ -79,13 +79,13 @@ export class FireBlocksNotificationsController {
   @Post('webhook')
   // @CheckPoliciesAbility(new PolicyHandlerTransferRead())
   async webhook(@Req() req: any, @Body() data: any) {
-    this.logger.info(`[webhook] data: ${JSON.stringify(data)}`);
-    this.logger.info(`[webhook] headers: ${JSON.stringify(req.headers)}`);
+    this.logger.debug(`[webhook] data: ${JSON.stringify(data)}`);
+    this.logger.debug(`[webhook] headers: ${JSON.stringify(req.headers)}`);
     //const isVerified = this.verifySign(req);
-    //this.logger.info(isVerified, 'getTransferDto.isVerified');
+    //this.logger.debug(isVerified, 'getTransferDto.isVerified');
     //if (isVerified) {
     const rta = data.data;
-    this.logger.info(`[webhook] rta: ${JSON.stringify(rta)}`);
+    this.logger.debug(`[webhook] rta: ${JSON.stringify(rta)}`);
     if (
       rta.id &&
       rta.status &&
@@ -99,12 +99,14 @@ export class FireBlocksNotificationsController {
       const txList = await this.builder.getPromiseTransferEventClient(
         EventsNamesTransferEnum.findAll,
         {
-          idPayment: rta.id,
+          where: {
+            idPayment: rta.id,
+          },
         },
       );
       const tx = txList.list[0];
 
-      this.logger.info(`[webhook] tx: ${JSON.stringify(tx)}`);
+      this.logger.debug(`[webhook] tx: ${JSON.stringify(tx)}`);
 
       if (!tx) {
         const dto = await this.getTransferDto(data);
@@ -136,13 +138,13 @@ export class FireBlocksNotificationsController {
           },
         );
       }
-      this.logger.info(
+      this.logger.debug(
         `[webhook] rta.status: ${rta?.status} | rta?.id - rta.status : ${rta?.id} - ${rta.status}`,
       );
     }
     //}
     //return isVerified ? 'ok' : 'fail';
-    //this.logger.info(this.verifySign(req), 'getTransferDto.isVerified');
+    //this.logger.debug(this.verifySign(req), 'getTransferDto.isVerified');
     return {
       statusCode: 200,
       message: 'ok',
@@ -158,7 +160,7 @@ export class FireBlocksNotificationsController {
     verifier.end();
 
     const isVerified = verifier.verify(this.publicKey, signature, 'base64');
-    this.logger.info(`[verifySign] Verified: ${isVerified}`);
+    this.logger.debug(`[verifySign] Verified: ${isVerified}`);
     return isVerified;
   }
 
@@ -198,7 +200,7 @@ export class FireBlocksNotificationsController {
     // const ownerId = brand.owner;
     const ownerId = ownerIdWallet.replace('-vault', '');
     if (!isMongoId(ownerId)) {
-      this.logger.info(`[getTransferDto] Invalid ownerId ${ownerIdWallet}`);
+      this.logger.debug(`[getTransferDto] Invalid ownerId ${ownerIdWallet}`);
       return null;
     }
     const crm = await this.getFireblocksCrm();
