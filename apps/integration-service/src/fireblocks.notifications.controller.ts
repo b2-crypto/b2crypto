@@ -99,7 +99,9 @@ export class FireBlocksNotificationsController {
       const txList = await this.builder.getPromiseTransferEventClient(
         EventsNamesTransferEnum.findAll,
         {
-          idPayment: rta.id,
+          where: {
+            idPayment: rta.id,
+          },
         },
       );
       const tx = txList.list[0];
