@@ -137,7 +137,9 @@ export class UserServiceService {
         }
       }
       this.logger.info(
-        `[updateBalance] Balance updated ${usr.email} with ${userBalance}`,
+        `[updateBalance] Balance updated ${usr.email} with ${JSON.stringify(
+          userBalance,
+        )}`,
       );
       return this.updateUser({
         id: usr._id,
