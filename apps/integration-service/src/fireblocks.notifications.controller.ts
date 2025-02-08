@@ -189,6 +189,10 @@ export class FireBlocksNotificationsController {
     const data = fullData.data;
     const isDeposit = data.destination.type === 'VAULT_ACCOUNT';
     const isWithdrawal = data.destination.type === 'EXTERNAL_WALLET';
+    if (isWithdrawal) {
+      // TODO[hender-11-11-2024] Not save withdraw transfer
+      return null;
+    }
     const ownerIdWallet = isDeposit ? data.destination.name : data.source.name;
     // const brand = await this.builder.getPromiseBrandEventClient(
     //   EventsNamesBrandEnum.findOneByName,
@@ -211,6 +215,7 @@ export class FireBlocksNotificationsController {
       showToOwner: true,
       accountId: data.assetId,
     };
+
     const walletList = await this.builder.getPromiseAccountEventClient(
       EventsNamesAccountEnum.findAll,
       {
