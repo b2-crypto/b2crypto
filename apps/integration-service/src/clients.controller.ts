@@ -108,15 +108,16 @@ export class ClientsIntegrationController {
       const taskName = this.getTaskOffName(clientId);
       CommonService.removeTimeout(this.schedulerRegistry, taskName);
       this.logger.info(
-        `Programming to ${maintenanceOnDto.dateEnd}`,
-        'maintenance off',
+        `[maintenanceOn] Programming to ${maintenanceOnDto.dateEnd}`,
       );
       CommonService.addTimeout(
         this.schedulerRegistry,
         taskName,
         maintenanceOnDto.dateEnd.getTime() - now.getTime(),
         async () => {
-          this.logger.info('maintenance off', `Client ${clientId}`);
+          this.logger.info(
+            `[maintenanceOn] maintenance off Client ${clientId}`,
+          );
           this.cancelMaintenance(clientId);
         },
       );
@@ -126,15 +127,14 @@ export class ClientsIntegrationController {
       const taskName = this.getTaskOnName(clientId);
       CommonService.removeTimeout(this.schedulerRegistry, taskName);
       this.logger.info(
-        `Programming to ${maintenanceOnDto.dateStart}`,
-        'maintenance on',
+        `[maintenanceOn] Programming to ${maintenanceOnDto.dateStart}`,
       );
       CommonService.addTimeout(
         this.schedulerRegistry,
         taskName,
         maintenanceOnDto.dateStart.getTime() - now.getTime(),
         async () => {
-          this.logger.info('maintenance on', `Client ${clientId}`);
+          this.logger.info(`[maintenanceOn] maintenance onClient ${clientId}`);
           this.initMaintenance(clientId, true);
         },
       );
@@ -184,7 +184,7 @@ export class ClientsIntegrationController {
         .status(200)
         .send(html);
     } catch (error) {
-      this.logger.error(`ClientsController-signIn`, error);
+      this.logger.error(`[signIn] error: ${error.message || error}`);
       return res.status(500).send({ error: true, message: error.message });
     }
   }
@@ -240,7 +240,7 @@ export class ClientsIntegrationController {
       };
       html = pug.renderFile(localPathTemplate, localVarsTemplate);
     } catch (error) {
-      this.logger.error(`ClientsController-signIn`, error);
+      this.logger.error(`[signInCheck] error: ${error.message || error}`);
     }
     return res
       .setHeader('Content-Type', 'text/html; charset=utf-8')
@@ -315,8 +315,9 @@ export class ClientsIntegrationController {
         EventsNamesTransferEnum.createOne,
         transferDto,
       );
-      const base64EncodeFile = await this.encodeFileBase64(file.path);
-      if (transfer?._id) {
+      if (file?.path && transfer?._id) {
+        const base64EncodeFile = await this.encodeFileBase64(file.path);
+
         this.builder.emitFileEventClient(EventsNamesFileEnum.createOne, {
           name: file.filename,
           description: `File manual transaction ${transfer?._id}`,
@@ -328,8 +329,10 @@ export class ClientsIntegrationController {
           resourceId: transfer?._id,
           //category: ObjectId;
         });
-        message = 'Recarga exitosa';
       }
+
+      message = 'Recarga exitosa';
+
       localVarsTemplate = {
         success: !!transfer?._id,
         name: user.name,
@@ -340,7 +343,7 @@ export class ClientsIntegrationController {
       };
       html = pug.renderFile(localPathTemplate, localVarsTemplate);
     } catch (error) {
-      this.logger.error(`ClientsController-signIn`, error);
+      this.logger.error(`[manualTxRecharge] error: ${error.message || error}`);
     }
     return res
       .setHeader('Content-Type', 'text/html; charset=utf-8')

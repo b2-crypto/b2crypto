@@ -148,8 +148,7 @@ export class UserServiceController implements GenericServiceController {
       const users = await this.findAll({ page });
       if (users?.list?.length > 0) {
         this.logger.info(
-          `MassiveEmail.${UserServiceController.name}`,
-          `Users: ${users?.list?.length} & Page: ${page}`,
+          `[generatePasswordEmail] Users: ${users?.list?.length} & Page: ${page}`,
         );
         page++;
         totalPages = users?.lastPage ?? 0;
@@ -163,8 +162,7 @@ export class UserServiceController implements GenericServiceController {
             };
             await this.changePassword(user?.id, changePassword);
             this.logger.info(
-              `MassiveEmail.${UserServiceController.name}`,
-              `${user?.email}`,
+              `[generatePasswordEmail] Apply level ${user.level?.name} to user ${user.email}`,
             );
             const emailData = {
               destinyText: user.email,
@@ -482,8 +480,7 @@ export class UserServiceController implements GenericServiceController {
             } as unknown as UserUpdateDto)
             .then((usr) => {
               this.logger.info(
-                `Apply level ${user.level?.name} to user ${user.email}`,
-                `page ${query.page}/${users.lastPage}`,
+                `[generatePasswordEmail] Apply level ${user.level?.name} to user ${user.email} | page ${query.page}/${users.lastPage}`,
               );
               return {
                 user: usr._id,

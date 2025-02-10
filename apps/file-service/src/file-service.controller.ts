@@ -140,7 +140,7 @@ export class FileServiceController implements GenericServiceController {
     try {
       await this.fileService.addDataToFile(dto);
     } catch (err) {
-      this.logger.error(err.message, err);
+      this.logger.error(`[addDataToFile] ${err.message || err}`);
     }
     CommonService.ack(ctx);
   }

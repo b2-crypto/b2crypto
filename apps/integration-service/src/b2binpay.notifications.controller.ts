@@ -36,15 +36,8 @@ export class B2BinPayNotificationsController {
   @Post('status-deposit')
   // @CheckPoliciesAbility(new PolicyHandlerTransferRead())
   async statusDeposit(@Req() req: any, @Body() data: any) {
-    this.logger.info('B2BinPayNotificationsController.statusDeposit', data);
-    this.logger.info(
-      'B2BinPayNotificationsController.statusDeposit:request.headers',
-      req.headers,
-    );
-    this.logger.info(
-      'B2BinPayNotificationsController.statusDeposit:request.body',
-      req.body,
-    );
+    this.logger.info(`[statusDeposit] body: ${JSON.stringify(data)}`);
+    this.logger.info(`[statusDeposit] headers: ${JSON.stringify(req.headers)}`);
     return {
       statusCode: 200,
       data: 'Tx updated deposit',
@@ -55,18 +48,11 @@ export class B2BinPayNotificationsController {
   @Post('status')
   // @CheckPoliciesAbility(new PolicyHandlerTransferRead())
   async status(@Req() req: any, @Body() data: any) {
-    this.logger.info('B2BinPayNotificationsController.status', data);
+    this.logger.info(`[status] body: ${JSON.stringify(data)}`);
     const headers = req?.headers;
     const body = req?.body;
-    this.logger.info(
-      'B2BinPayNotificationsController.status:request.headers',
-      headers,
-    );
-    this.logger.info(
-      'B2BinPayNotificationsController.status:request.body',
-      body,
-    );
-    this.logger.info('B2BinPayNotificationsController.status:body', data);
+    this.logger.info(`[status] headers: ${JSON.stringify(headers)}`);
+
     /* const attributes = data.data.attributes;
     const relationships = data.data.relationships;
     const transferId = relationships.transfer?.data?.id;
@@ -187,7 +173,9 @@ export class B2BinPayNotificationsController {
     @Ctx() ctx: RmqContext,
   ) {
     CommonService.ack(ctx);
-    this.logger.info('checkTransferInB2BinPay', typeIntegration);
+    this.logger.info(
+      `[checkTransferInB2BinPay] typeIntegration: ${typeIntegration}`,
+    );
     let accounts: ResponsePaginator<AccountDocument> = {
       nextPage: 1,
       prevPage: 0,
@@ -211,8 +199,7 @@ export class B2BinPayNotificationsController {
         },
       );
       this.logger.info(
-        `checkTransferInB2BinPay.totalElements - page ${accounts.currentPage}`,
-        accounts.list.length,
+        `[checkTransferInB2BinPay] page: ${accounts.currentPage} | totalElements: ${accounts.list.length}`,
       );
       promises.push(this.checkAccounts(accounts));
     } while (accounts.nextPage !== accounts.firstPage);
@@ -246,10 +233,9 @@ export class B2BinPayNotificationsController {
           //     promises.push(this.checkTransfer(account, transfer));
           //   }
           // } else {
-          //   this.logger.error(listTransfers, `checkAccounts-${responseAccount.id}`);
           // }
         } catch (err) {
-          this.logger.error(`checkAccounts-${responseAccount.id}`, err);
+          this.logger.error(`[checkAccounts] error: ${err.message || err}`);
         }
       }
     }
@@ -312,7 +298,7 @@ export class B2BinPayNotificationsController {
           isApprove: true,
           approvedAt: attributes.updated_at,
         } as unknown as TransferCreateDto;
-        this.logger.info(`checkTransfer-save-${transfer.id}`, dto.name);
+        this.logger.info(`[checkTransfer] ${dto.name}`);
         this.builder.emitTransferEventClient(
           EventsNamesTransferEnum.createOne,
           dto,

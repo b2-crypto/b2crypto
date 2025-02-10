@@ -89,8 +89,7 @@ export class SumsubNotificationIntegrationService {
   async updateUserByPending(notification: SumsubApplicantPending) {
     if (!isMongoId(notification.externalUserId)) {
       this.logger.error(
-        'Reviewed.SumsubNotificationIntegrationService',
-        `User id "${notification.externalUserId}" isn't valid`,
+        `[updateUserByPending] User id "${notification.externalUserId}" isn't valid`,
       );
       return null;
     }
@@ -99,10 +98,7 @@ export class SumsubNotificationIntegrationService {
       notification.externalUserId,
     );
     if (!user) {
-      this.logger.error(
-        'Pending.SumsubNotificationIntegrationService',
-        'User not found',
-      );
+      this.logger.error(`[updateUserByPending] User not found`);
       return null;
     }
     user.verifyIdentityResponse =
@@ -113,18 +109,14 @@ export class SumsubNotificationIntegrationService {
       verifyIdentityResponse: user.verifyIdentityResponse,
       verifyIdentityStatus: notification.reviewStatus,
     });
-    this.logger.info(
-      'Pending.SumsubNotificationIntegrationService',
-      'User Updated',
-    );
+    this.logger.info(`[updateUserByPending] User Updated`);
 
     return user;
   }
   async updateUserByOnHold(notification: SumsubApplicantOnHold) {
     if (!isMongoId(notification.externalUserId)) {
       this.logger.error(
-        'Reviewed.SumsubNotificationIntegrationService',
-        `User id "${notification.externalUserId}" isn't valid`,
+        `[updateUserByOnHold] User id "${notification.externalUserId}" isn't valid`,
       );
       return null;
     }
@@ -133,10 +125,7 @@ export class SumsubNotificationIntegrationService {
       notification.externalUserId,
     );
     if (!user) {
-      this.logger.error(
-        'OnHold.SumsubNotificationIntegrationService',
-        'User not found',
-      );
+      this.logger.error(`[updateUserByOnHold] User not found`);
       return null;
     }
     user.verifyIdentityResponse =
@@ -148,10 +137,7 @@ export class SumsubNotificationIntegrationService {
       verifyIdentityStatus: notification.reviewStatus,
       verifyIdentityLevelName: notification.levelName,
     });
-    this.logger.info(
-      'OnHold.SumsubNotificationIntegrationService',
-      'User Updated',
-    );
+    this.logger.info(`[updateUserByOnHold] User Updated`);
 
     return user;
   }

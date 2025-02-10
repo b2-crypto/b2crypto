@@ -70,8 +70,7 @@ export class FireBlocksNotificationsController {
   async resendFireblocksNotifications() {
     const rta = await (await this.getFireblocksType()).resendNotifications();
     this.logger.info(
-      'resendFireblocksNotifications',
-      JSON.stringify(rta, null, 2),
+      `[resendFireblocksNotifications] ${JSON.stringify(rta, null, 2)}`,
     );
     return rta;
   }
@@ -80,11 +79,13 @@ export class FireBlocksNotificationsController {
   @Post('webhook')
   // @CheckPoliciesAbility(new PolicyHandlerTransferRead())
   async webhook(@Req() req: any, @Body() data: any) {
+    this.logger.info(`[webhook] data: ${JSON.stringify(data)}`);
+    this.logger.info(`[webhook] headers: ${JSON.stringify(req.headers)}`);
     //const isVerified = this.verifySign(req);
     //this.logger.info(isVerified, 'getTransferDto.isVerified');
     //if (isVerified) {
     const rta = data.data;
-    this.logger.info('-start', rta);
+    this.logger.info(`[webhook] rta: ${JSON.stringify(rta)}`);
     if (
       rta.id &&
       rta.status &&
@@ -104,6 +105,9 @@ export class FireBlocksNotificationsController {
         },
       );
       const tx = txList.list[0];
+
+      this.logger.info(`[webhook] tx: ${JSON.stringify(tx)}`);
+
       if (!tx) {
         const dto = await this.getTransferDto(data);
         if (dto) {
@@ -134,7 +138,9 @@ export class FireBlocksNotificationsController {
           },
         );
       }
-      this.logger.info(`${rta?.id} - ${rta.status}`, rta?.status);
+      this.logger.info(
+        `[webhook] rta.status: ${rta?.status} | rta?.id - rta.status : ${rta?.id} - ${rta.status}`,
+      );
     }
     //}
     //return isVerified ? 'ok' : 'fail';
@@ -154,7 +160,7 @@ export class FireBlocksNotificationsController {
     verifier.end();
 
     const isVerified = verifier.verify(this.publicKey, signature, 'base64');
-    this.logger.info('Verified:', isVerified);
+    this.logger.info(`[verifySign] Verified: ${isVerified}`);
     return isVerified;
   }
 
@@ -183,6 +189,10 @@ export class FireBlocksNotificationsController {
     const data = fullData.data;
     const isDeposit = data.destination.type === 'VAULT_ACCOUNT';
     const isWithdrawal = data.destination.type === 'EXTERNAL_WALLET';
+    if (isWithdrawal) {
+      // TODO[hender-11-11-2024] Not save withdraw transfer
+      return null;
+    }
     const ownerIdWallet = isDeposit ? data.destination.name : data.source.name;
     // const brand = await this.builder.getPromiseBrandEventClient(
     //   EventsNamesBrandEnum.findOneByName,
@@ -194,7 +204,7 @@ export class FireBlocksNotificationsController {
     // const ownerId = brand.owner;
     const ownerId = ownerIdWallet.replace('-vault', '');
     if (!isMongoId(ownerId)) {
-      this.logger.info(`Invalid ownerId ${ownerIdWallet}`, ownerId);
+      this.logger.info(`[getTransferDto] Invalid ownerId ${ownerIdWallet}`);
       return null;
     }
     const crm = await this.getFireblocksCrm();
@@ -205,6 +215,7 @@ export class FireBlocksNotificationsController {
       showToOwner: true,
       accountId: data.assetId,
     };
+
     const walletList = await this.builder.getPromiseAccountEventClient(
       EventsNamesAccountEnum.findAll,
       {
@@ -213,7 +224,11 @@ export class FireBlocksNotificationsController {
     );
     const wallet = walletList.list[0];
     if (!wallet) {
-      this.logger.error('Wallet not found with where', queryWhereWallet);
+      this.logger.error(
+        `[getTransferDto] Wallet not found with where ${JSON.stringify(
+          queryWhereWallet,
+        )}`,
+      );
       return null;
     }
     let isApproved = null;

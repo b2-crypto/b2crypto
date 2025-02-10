@@ -54,12 +54,16 @@ export class PomeloMigrationService {
           },
         );
         pages = cards.lastPage;
-        this.logger.info(`Cards found: ${cards.list.length}`, log);
+        this.logger.info(
+          `[setAllCardsOwner] Cards found: ${cards.list.length}`,
+        );
         for (let i = 0; i < cards.list.length; i++) {
           const card = cards.list[i];
           const pomeloUser = await this.getUser(card?.cardConfig?.user_id);
           if (pomeloUser && pomeloUser.data) {
-            this.logger.info(`Pomelo User: ${JSON.stringify(pomeloUser)}`, log);
+            this.logger.info(
+              `[setAllCardsOwner] Pomelo User: ${JSON.stringify(pomeloUser)}`,
+            );
             const user = await this.migrateUser(pomeloUser);
             if (user) {
               if (!user?.userCard?.id && pomeloUser?.data) {
@@ -74,8 +78,7 @@ export class PomeloMigrationService {
               const id = card?.cardConfig?.id;
               const ownedBy = user?._id || user?.id;
               this.logger.info(
-                `About to update card's owner. Card: ${id}. Owner: ${ownedBy}`,
-                log,
+                `[setAllCardsOwner] About to update card's owner. Card: ${id}. Owner: ${ownedBy}`,
               );
               await this.builder.getPromiseAccountEventClient(
                 EventsNamesAccountEnum.updateMigratedOwner,
@@ -86,20 +89,18 @@ export class PomeloMigrationService {
               );
             } else {
               this.logger.error(
-                `${PomeloMigrationService.name}-setAllCardsOwner`,
-                `Unable to migrate user ${pomeloUser?.data?.email}`,
+                `[setAllCardsOwner] Unable to migrate user ${pomeloUser?.data?.email}`,
               );
             }
           } else {
             this.logger.error(
-              `${PomeloMigrationService.name}-setAllCardsOwner`,
-              `Unable to find pomelo user ${card?.cardConfig?.user_id}`,
+              `[setAllCardsOwner] Unable to find pomelo user ${card?.cardConfig?.user_id}`,
             );
           }
         }
       } while (page <= pages);
     } catch (error) {
-      this.logger.error(log, error);
+      this.logger.error(`[setAllCardsOwner] ${error.message || error}`);
     }
   }
 
@@ -107,19 +108,18 @@ export class PomeloMigrationService {
     const pomeloUser = await this.getUser(userId);
     if (pomeloUser && pomeloUser.data) {
       const user = await this.migrateUser(pomeloUser);
-      this.logger.info('User migrated result', user);
+      this.logger.info(
+        `[startPomeloMigrationByUser] User migrated result ${JSON.stringify(
+          user,
+        )}`,
+      );
       if (user && user.slug) {
         // TODO Log Activity
         const person = await this.migratePerson(pomeloUser.data, user);
         if (person) {
           const pomeloCards = await this.getPomeloCard(pomeloUser.data.id);
           this.logger.info(
-            `${PomeloMigrationService.name}-startPomeloMigration-cards`,
-            `Total cards ${pomeloCards.data.length} by user ${person?.email[0]}`,
-          );
-          this.logger.info(
-            `${PomeloMigrationService.name}-startPomeloMigration-cards`,
-            `Total cards ${pomeloCards.data.length} by user ${pomeloUser.data.email}`,
+            `[startPomeloMigrationByUser] Total cards ${pomeloCards.data.length} by user ${person?.email[0]}`,
           );
           const hasCards = pomeloCards?.meta?.pagination?.total_pages ?? false;
           if (hasCards) {
@@ -148,10 +148,7 @@ export class PomeloMigrationService {
       do {
         const pomeloUsers = await this.getUsers(size, currentPage);
         this.logger.info(
-          PomeloMigrationService.name,
-          `Users: ${JSON.stringify(
-            pomeloUsers.data.length,
-          )} & totalPages ${totalPages} & currentPage ${currentPage}`,
+          `[startPomeloMigration] Users: ${pomeloUsers.data.length} & totalPages ${totalPages} & currentPage ${currentPage}`,
         );
         if (pomeloUsers && pomeloUsers.data) {
           currentPage++;
@@ -170,12 +167,7 @@ export class PomeloMigrationService {
               if (person) {
                 const pomeloCards = await this.getPomeloCard(pomeloUser.id);
                 this.logger.info(
-                  `${PomeloMigrationService.name}-startPomeloMigration-cards`,
-                  `Total cards ${pomeloCards.data.length} by user ${person?.email[0]}`,
-                );
-                this.logger.info(
-                  `${PomeloMigrationService.name}-startPomeloMigration-cards`,
-                  `Total cards ${pomeloCards.data.length} by user ${pomeloUser.email}`,
+                  `[startPomeloMigrationByUser] Total cards ${pomeloCards.data.length} by user ${person?.email[0]}`,
                 );
                 const hasCards =
                   pomeloCards?.meta?.pagination?.total_pages ?? false;
@@ -201,10 +193,7 @@ export class PomeloMigrationService {
         data: 'Finnished Pomelo Migration',
       };
     } catch (error) {
-      this.logger.error(
-        `${PomeloMigrationService.name}-startPomeloMigration`,
-        error,
-      );
+      this.logger.error(`[startPomeloMigration] ${error.message || error}`);
       // TODO Log error activity
       return null;
     }
@@ -235,29 +224,21 @@ export class PomeloMigrationService {
 
   private async getBalanceByCard(cardId: string): Promise<any> {
     try {
-      this.logger.info(
-        'Getting Balance',
-        `${PomeloMigrationService.name}-getBalanceByCard`,
-      );
+      this.logger.info(`[getBalanceByCard] Getting Balance ${cardId}`);
       const balance = await this.dbClient.getBalanaceByCard(cardId);
       if (!balance) {
         this.logger.error(
-          `${PomeloMigrationService.name}-getBalanceByCard`,
-          `Unable to find balance for card ${cardId}`,
+          `[getBalanceByCard] Unable to find balance for card ${cardId}`,
         );
         // TODO Log error activity
       } else {
         this.logger.info(
-          `The balance card ${cardId} is ${balance}`,
-          `${PomeloMigrationService.name}-getBalanceByCard`,
+          `[getBalanceByCard] The balance card ${cardId} is ${balance}`,
         );
       }
       return balance;
     } catch (error) {
-      this.logger.error(
-        `${PomeloMigrationService.name}-getBalanceByCard`,
-        error,
-      );
+      this.logger.error(`[getBalanceByCard] ${error.message || error}`);
       // TODO Log error activity
       return null;
     }
@@ -268,7 +249,7 @@ export class PomeloMigrationService {
       const cardSearchDto: CardSearchDto = { user_id: userId, page_size: 1000 };
       return await this.pomeloIntegration.getCardByQuery(cardSearchDto);
     } catch (error) {
-      this.logger.error(`${PomeloMigrationService.name}-getPomeloCard`, error);
+      this.logger.error(`[getPomeloCard] ${error.message || error}`);
       // TODO Log error activity
       return null;
     }
@@ -276,10 +257,7 @@ export class PomeloMigrationService {
 
   private async setBalanceByCard(cardId: string, amount: number): Promise<any> {
     try {
-      this.logger.info(
-        `${PomeloMigrationService.name}-setBalanceByCard`,
-        `Adding balance of ${amount} to card ${cardId}`,
-      );
+      this.logger.info(`Adding balance of ${amount} to card ${cardId}`);
       const account = await this.builder.getPromiseAccountEventClient(
         EventsNamesAccountEnum.setBalanceByCard,
         {
@@ -288,10 +266,7 @@ export class PomeloMigrationService {
         },
       );
     } catch (error) {
-      this.logger.error(
-        `${PomeloMigrationService.name}-setBalanceByCard`,
-        error,
-      );
+      this.logger.error(`[setBalanceByCard] ${error.message || error}`);
       // TODO Log error activity
       return null;
     }
@@ -305,24 +280,20 @@ export class PomeloMigrationService {
   ): Promise<any> {
     try {
       this.logger.info(
-        PomeloMigrationService.name,
-        `Migrating Card ${pomeloCard?.id} for user ${email}`,
+        `[migrateCard] Migrating Card ${pomeloCard?.id} for user ${email}`,
       );
       if (balance) {
         balance = parseFloat(balance);
       }
       const cardDto = this.buildCardDto(pomeloCard, person, email, balance);
-      this.logger.info(
-        `${PomeloMigrationService.name}-migrateCard.cardDto`,
-        cardDto,
-      );
+      this.logger.info(`[migrateCard] ${JSON.stringify(cardDto)}`);
       const account = await this.builder.getPromiseAccountEventClient(
         EventsNamesAccountEnum.mingrateOne,
         cardDto,
       );
       return account;
     } catch (error) {
-      this.logger.error(`${PomeloMigrationService.name}-migrateCard`, error);
+      this.logger.error(`[migrateCard] ${error.message || error}`);
       // TODO Log error activity
       return null;
     }
@@ -342,7 +313,7 @@ export class PomeloMigrationService {
     } else {
       statusText = StatusAccountEnum.CANCEL;
     }
-    this.logger.info(`${PomeloMigrationService.name}-buildCardDto`, person);
+    this.logger.info(`[buildCardDto] ${JSON.stringify(person)}`);
     return {
       name: person?.firstName,
       type: TypesAccountEnum.CARD,
@@ -394,8 +365,7 @@ export class PomeloMigrationService {
   private async migrateUser(pomeloUser: any): Promise<any> {
     try {
       this.logger.info(
-        `${PomeloMigrationService.name}-migrateUser`,
-        `Migrating User ${pomeloUser?.data?.email}`,
+        `[migrateUser] Migrating User ${pomeloUser?.data?.email}`,
       );
       const user = {
         name: pomeloUser?.data?.name ?? pomeloUser?.name,
@@ -410,7 +380,7 @@ export class PomeloMigrationService {
         user,
       );
     } catch (error) {
-      this.logger.error(`${PomeloMigrationService.name}-migrateUser`, error);
+      this.logger.error(`[migrateUser] ${error.message || error}`);
       // TODO Log error activity
       return null;
     }
@@ -423,8 +393,7 @@ export class PomeloMigrationService {
   ): Promise<any> {
     try {
       this.logger.info(
-        `${PomeloMigrationService.name}-migratePerson`,
-        `Migrating Person ${pomeloUser?.email} total so far: ${
+        `[migratePerson] Migrating Person ${pomeloUser?.email} total so far: ${
           persons ?? 'One'
         }`,
       );
@@ -461,7 +430,7 @@ export class PomeloMigrationService {
       );
       return person;
     } catch (error) {
-      this.logger.error(`${PomeloMigrationService.name}-migratePerson`, error);
+      this.logger.error(`[migratePerson] ${error.message || error}`);
       // TODO Log error activity
       return null;
     }

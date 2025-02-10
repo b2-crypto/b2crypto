@@ -301,7 +301,7 @@ export class MessageServiceService {
 
       return { success: true };
     } catch (error) {
-      this.logger.error('Error sending email:', error);
+      this.logger.error(`[sendEmail] error: ${error.message || error}`);
       return { success: false, error: error.message };
     }
   }
@@ -352,7 +352,7 @@ export class MessageServiceService {
       }
       return null;
     } catch (err) {
-      this.logger.error('Error sending email', err);
+      this.logger.error(`[sendEmailDisclaimer] error: ${err.message || err}`);
       return null;
     }
   }

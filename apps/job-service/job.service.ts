@@ -38,8 +38,7 @@ export class JobService {
   })
   async sendLast6hHistoryTransfer() {
     this.logger.info(
-      'Sended last 6h history transfer',
-      `${this.env} - ${JobService.name}`,
+      `[sendLast6hHistoryTransfer] Sended last 6h history transfer: ${this.env} - ${JobService.name}`,
     );
     if (this.env == EnvironmentEnum.prod) {
       this.builder.emitTransferEventClient(
@@ -58,8 +57,7 @@ export class JobService {
   })
   async sendBalanceCardReportsCron() {
     this.logger.info(
-      'Sended balance card report',
-      `${this.env} - ${JobService.name}`,
+      `[sendBalanceCardReportsCron] Sended balance card report: ${this.env} - ${JobService.name}`,
     );
     if (this.env == EnvironmentEnum.prod) {
       await this.builder.getPromiseAccountEventClient(
@@ -78,8 +76,7 @@ export class JobService {
   })
   checkBalanceUserCron() {
     this.logger.info(
-      'Checked balance users',
-      `${this.env} - ${JobService.name}`,
+      `[checkBalanceUserCron] Checked balance users: ${this.env} - ${JobService.name}`,
     );
     if (this.env == EnvironmentEnum.prod) {
       this.builder.emitUserEventClient(
@@ -94,8 +91,7 @@ export class JobService {
   })
   checkCardsInPomelo() {
     this.logger.info(
-      'Checking Cards in pomelo',
-      `${this.env} - ${JobService.name}`,
+      `[checkCardsInPomelo] Checking Cards in pomelo: ${this.env} - ${JobService.name}`,
     );
     if (this.env === EnvironmentEnum.prod) {
       this.builder.emitAccountEventClient(
@@ -109,7 +105,9 @@ export class JobService {
     timeZone: process.env.TZ,
   })
   sweepOmibus() {
-    this.logger.info('Job sweep omibus', `${this.env} - ${JobService.name}`);
+    this.logger.info(
+      `[sweepOmibus] Job sweep omibus: ${this.env} - ${JobService.name}`,
+    );
     if (this.env === EnvironmentEnum.prod) {
       // this.builder.emitAccountEventClient(
       //   EventsNamesAccountEnum.sweepOmnibus,
@@ -123,8 +121,7 @@ export class JobService {
   })
   checkB2BinPayTransfers() {
     this.logger.warn(
-      'Disabled Job checkB2BinPayTransfers',
-      `${this.env} - ${JobService.name}`,
+      `[checkB2BinPayTransfers] Disabled Job checkB2BinPayTransfers: ${this.env} - ${JobService.name}`,
     );
     // this.logger.info(
     //   'Checking B2BinPay transfers',

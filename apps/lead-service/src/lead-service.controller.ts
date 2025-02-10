@@ -475,7 +475,9 @@ export class LeadServiceController implements GenericServiceController {
           return transfer.isApprove;
         })[0];
         if (firstTransferPayed) {
-          this.logger.info(`Updated ${lead.email} partial FTD`);
+          this.logger.info(
+            `[forcePartialFtd] Updated ${lead.email} partial FTD`,
+          );
           this.builder.emitLeadEventClient(EventsNamesLeadEnum.updateOne, {
             id: lead._id,
             partialFtdAmount: firstTransferPayed.amount,
@@ -487,7 +489,9 @@ export class LeadServiceController implements GenericServiceController {
       if (leads.nextPage != 1) {
         totalPages = page;
       }
-      this.logger.info(`Updated ${page} page of ${leads.lastPage}`);
+      this.logger.info(
+        `[forcePartialFtd] Updated ${page} page of ${leads.lastPage}`,
+      );
       page = leads.nextPage;
     } while (page != 1);
     return {
@@ -511,8 +515,7 @@ export class LeadServiceController implements GenericServiceController {
         page: pageLeads,
       });
       this.logger.info(
-        'Check stats affiliate lead email',
-        `Page ${pageLeads} / ${leads.lastPage}`,
+        `[updateListTransfersLead] Page ${pageLeads} / ${leads.lastPage}`,
       );
       pageLeads = leads.nextPage;
       for (const lead of leads.list) {
@@ -913,7 +916,7 @@ export class LeadServiceController implements GenericServiceController {
       CommonService.ack(ctx);
       return leadRta;
     } catch (err) {
-      this.logger.error('CREATING LEAD', err);
+      this.logger.error(`[addLeadAffiliateEvent] error: ${err.message || err}`);
       CommonService.ack(ctx);
       return err;
     }
@@ -986,12 +989,11 @@ export class LeadServiceController implements GenericServiceController {
       },
     });
     for (const lead of leadsWithoutTpId.list) {
-      this.logger.info(LeadServiceController.name, `Checked ${lead.email}`);
+      this.logger.info(`[checkLeadsCreatedInCrm] Checked ${lead.email}`);
     }
     CommonService.ack(ctx);
     this.logger.info(
-      LeadServiceController.name,
-      leadsWithoutTpId.totalElements,
+      `[checkLeadsCreatedInCrm] ${leadsWithoutTpId.totalElements} leads without TPID`,
     );
   }
 

@@ -123,13 +123,13 @@ export class StatsServiceService {
           StatusLeadEnum.RET,
         );
         this.logger.info(
-          'Progress lead',
-          `${++_i} / ${leadsPage.totalElements}`,
+          `[checkAllLeadsForAffiliateStats] ${++_i} / ${
+            leadsPage.totalElements
+          }`,
         );
       }
       this.logger.info(
-        'Progress lead page',
-        `${query.page} / ${leadsPage.lastPage}`,
+        `[checkAllLeadsForAffiliateStats] ${query.page} / ${leadsPage.lastPage}`,
       );
       query.page = leadsPage.nextPage;
     } while (query.page != 1);
@@ -569,7 +569,9 @@ export class StatsServiceService {
         r[a.lead?._id].push(a);
       } else {
         //r['null'].push(a);
-        this.logger.info('No lead', a);
+        this.logger.info(
+          `[checkAllStatsDatePspAccount] No lead: ${JSON.stringify(a)}`,
+        );
       }
       return r;
     }, Object.create(null));
@@ -776,7 +778,6 @@ export class StatsServiceService {
         break;
     }
     const amount = transfer.amount * sign;
-
     if (!hasCountedLead) {
       documentStats.quantityLeads++;
       if (transfer.isApprove) {
@@ -1106,7 +1107,9 @@ export class StatsServiceService {
     try {
       return documentStats.save();
     } catch (error) {
-      this.logger.error('Error to create stats', error);
+      this.logger.error(
+        `[checkStatsDateLead] Error to create stats: ${error.message || error}`,
+      );
       return null;
     }
   }
@@ -1134,7 +1137,9 @@ export class StatsServiceService {
     try {
       return documentStats.save();
     } catch (error) {
-      this.logger.error('Error to create stats', error);
+      this.logger.error(
+        `[checkStatsDateLead] Error to create stats: ${error.message || error}`,
+      );
       return null;
     }
   }

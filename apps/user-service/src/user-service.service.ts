@@ -62,7 +62,7 @@ export class UserServiceService {
         throw new NotFoundException('User not found');
       }
       if (!usr.slugEmail) {
-        this.logger.info('slug email', usr.email);
+        this.logger.info(`[updateSlugEmail] Updating user ${usr.email}`);
         return this.updateUser({
           id: usr._id,
           slugEmail: CommonService.getSlug(usr.email),
@@ -75,7 +75,7 @@ export class UserServiceService {
       do {
         for (const usr of users.list) {
           if (!usr.slugEmail) {
-            this.logger.info('slug email', usr.email);
+            this.logger.info(`[updateSlugEmail] Updating user ${usr.email}`);
             promises.push(this.updateSlugEmail(usr._id.toString()));
           }
         }
@@ -112,7 +112,7 @@ export class UserServiceService {
           showToOwner: true,
         },
       });
-      this.logger.info('Balance update', userId);
+      this.logger.info(`[updateBalance] Balance update ${userId}`);
       for (const account of accounts.list) {
         userBalance.ALL.quantity++;
         userBalance.ALL.amount += account.amount;
@@ -136,7 +136,11 @@ export class UserServiceService {
           // Swap if currency is different
         }
       }
-      this.logger.info('Balance updated', `balance ${usr.email}`);
+      this.logger.info(
+        `[updateBalance] Balance updated ${usr.email} with ${JSON.stringify(
+          userBalance,
+        )}`,
+      );
       return this.updateUser({
         id: usr._id,
         balance: userBalance,
@@ -325,28 +329,29 @@ export class UserServiceService {
       );
       const rta = user;
       if (user.level !== userLevelUpDto.level) {
-        this.logger.info(
-          'Update level all cards to selected level',
-          'UPDATE LEVEL',
-        );
+        this.logger.info(`[levelUp] Update level all cards to selected level`);
         // rta = await this.updateLevelUser(
         //   userLevelUpDto.level.toString(),
         //   userLevelUpDto.user.toString(),
         // );
       }
-      this.logger.info('Create One Card', 'Level up');
+      const createOneCardPayload = {
+        force: true,
+        owner: user._id,
+        type: TypesAccountEnum.CARD,
+        statusText: StatusAccountEnum.ORDERED,
+        accountType: CardTypesAccountEnum.PHYSICAL,
+      };
+      this.logger.info(
+        `[levelUp] Create One Card: ${JSON.stringify(createOneCardPayload)}`,
+      );
       this.builder.emitAccountEventClient(
         EventsNamesAccountEnum.createOneCard,
-        {
-          force: true,
-          owner: user._id,
-          type: TypesAccountEnum.CARD,
-          statusText: StatusAccountEnum.ORDERED,
-          accountType: CardTypesAccountEnum.PHYSICAL,
-        },
+        createOneCardPayload,
       );
       return rta;
     } catch (error) {
+      this.logger.error(`[levelUp] ${error.message || error}`);
       throw new BadRequestException(error);
     }
   }
@@ -385,14 +390,26 @@ export class UserServiceService {
               EventsNamesPersonEnum.updateOne,
               updateDto,
             )
-            .then((rta) => this.logger.info('Verified person', rta))
-            .catch((err) => this.logger.error('Error verified person', err)),
+            .then((rta) =>
+              this.logger.info(
+                `[verifyUsersWithCard] Verified person ${JSON.stringify(rta)}`,
+              ),
+            )
+            .catch((err) =>
+              this.logger.error(
+                `[verifyUsersWithCard] Error verified person ${
+                  err.message || err
+                }`,
+              ),
+            ),
         );
       }
       user.verifyIdentity = true;
       promises.push(
         user.save().then((rta) => {
-          this.logger.info('Verified user', rta);
+          this.logger.info(
+            `[verifyUsersWithCard] Verified user ${JSON.stringify(rta)}`,
+          );
           return {
             id: user._id.toString(),
             verifyIdentity: true,

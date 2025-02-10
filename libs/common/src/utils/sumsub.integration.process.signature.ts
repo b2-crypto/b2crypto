@@ -24,17 +24,14 @@ export class SumsubSignatureUtils {
     if (!algo) {
       throw new NotImplementedException('Unsupported algorithm');
     }
-    this.logger.info(`Using ${algo} as algorithm`, 'Sumsub Check Signature');
+    this.logger.info(`[checkSignature] Sumsub Check Signature: ${algo}`);
 
     const calculatedDigest = crypto
       .createHmac(algo, this.apiKey)
       .update(JSON.stringify(body))
       .digest('hex');
-    this.logger.info(
-      `Calculated digest: ${calculatedDigest}`,
-      'Sumsub Check Signature',
-    );
-    this.logger.info(`Digest: ${headers.digest}`, 'Sumsub Check Signature');
+    this.logger.info(`[checkSignature] Calculated digest: ${calculatedDigest}`);
+    this.logger.info(`[checkSignature] Digest: ${headers.digest}`);
 
     //return calculatedDigest === headers.digest;
     return true;
