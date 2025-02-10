@@ -966,14 +966,19 @@ export class LeadServiceService
           EventsNamesLeadEnum.deleteOneById,
           lead._id,
         );
-        this.logger.error(`${LeadServiceService.name}:862`, leadValidated);
+        this.logger.error(
+          `[createLeadFromAffiliate] ${
+            LeadServiceService.name
+          }:862 ${JSON.stringify(leadValidated)}`,
+        );
         CommonService.ack(ctx);
         if (rtaLeadCreateOnLeverate?.error.code != 401) {
           throw new BadRequestException('lead already exist');
         }
         this.logger.error(
-          `Leverate error with affiliate ${leadValidated.affiliate}`,
-          rtaLeadCreateOnLeverate?.error,
+          `[createLeadFromAffiliate] ${
+            LeadServiceService.name
+          }:863 ${JSON.stringify(rtaLeadCreateOnLeverate?.error)}`,
         );
         //throw new BadRequestException('contact B2Crypto support');
         throw new BadRequestException({
@@ -1361,17 +1366,12 @@ export class LeadServiceService
           >(EventsNamesStatsEnum.checkAllStatsAffiliate, {
             list: leadsToCheck.list,
           });
-        /* this.logger.info(
-          `Checked ${leadsToCheck.totalElements} result ${listStatsAffiliate?.length} total stats generated on page ${leadsToCheck.currentPage} for ${affiliateId} Affiliate`,
-          LeadServiceService.name,
-        ); */
         this.updateStat(affiliateStats, listStatsAffiliate);
       }
       page = leadsToCheck.nextPage;
       nextPage = leadsToCheck.nextPage;
       this.logger.info(
-        'Check leads affiliate stats',
-        `Saved page ${leadsToCheck.currentPage} of AFFILIATE ${affiliateId} lead's. Next page ${nextPage}/${leadsToCheck.lastPage}`,
+        `[checkAllLeadsForAffiliateStats] Saved page ${leadsToCheck.currentPage} of AFFILIATE ${affiliateId} lead's. Next page ${nextPage}/${leadsToCheck.lastPage}`,
       );
     }
     await this.builder.getPromiseAffiliateEventClient(
@@ -1409,8 +1409,7 @@ export class LeadServiceService
     daysBefore = 0,
   ) {
     this.logger.info(
-      `Checking leads modified`,
-      'checkStatusFromLeadsListByStatus',
+      `[checkStatusFromLeadsListByStatus] Checking leads modified`,
     );
     const today = new Date();
     //today.setUTCHours(0, 0, 0, 0);

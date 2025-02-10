@@ -233,7 +233,7 @@ export class AccountServiceController implements GenericServiceController {
 
   @MessagePattern(EventsNamesAccountEnum.updateMany)
   updateManyEvent(
-    @Payload() updatesDto: AccountCreateDto[],
+    @Payload() updatesDto: AccountUpdateDto[],
     @Ctx() ctx: RmqContext,
   ) {
     CommonService.ack(ctx);
@@ -258,7 +258,7 @@ export class AccountServiceController implements GenericServiceController {
     @Ctx() ctx: RmqContext,
   ) {
     CommonService.ack(ctx);
-    this.logger.info('Get balance report', AccountServiceController.name);
+    this.logger.info(`[getBalanceReport] ${JSON.stringify(query)}`);
     this.accountService.getBalanceReport(query);
     return true;
   }

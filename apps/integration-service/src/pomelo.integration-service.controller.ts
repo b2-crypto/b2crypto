@@ -40,17 +40,18 @@ export class PomeloIntegrationServiceController {
     @Headers() headers: any,
   ): Promise<any> {
     this.logger.info(
-      `[processNotification] Idempotency: ${notification.idempotency_key}`,
+      `[processNotification] NotificationHandler - processNotification ${JSON.stringify(
+        notification,
+      )}`,
     );
-
     const result = await this.integrationServiceService.processNotification(
       notification,
       headers,
     );
 
-    this.logger.info(`[processNotification] ${JSON.stringify(result)}`);
+    this.logger.info(`[processNotification] result: ${JSON.stringify(result)}`);
 
-    return { ...result, statusCode: HttpStatus.NO_CONTENT };
+    return result;
   }
 
   @Post(PomeloEnum.POMELO_ADJUSTMENT_PATH)
@@ -62,17 +63,17 @@ export class PomeloIntegrationServiceController {
     @Headers(PomeloEnum.POMELO_IDEMPOTENCY_HEADER) idempotency: string,
     @Headers() headers: any,
   ): Promise<any> {
-    this.logger.info(`Idempotency: ${idempotency}`, 'AdjustmentHandler');
+    this.logger.info(`[processAdjustment] Idempotency: ${idempotency}`);
     adjustment.idempotency = idempotency;
-    this.logger.info('AdjustmentHandler', adjustment);
+    this.logger.info(`[processAdjustment] ${JSON.stringify(adjustment)}`);
     const result = await this.integrationServiceService.processAdjustment(
       adjustment,
       headers,
     );
 
-    this.logger.info(`[processAdjustment] ${JSON.stringify(result)}`);
+    this.logger.info(`[processAdjustment] result: ${JSON.stringify(result)}`);
 
-    return { ...result, statusCode: HttpStatus.NO_CONTENT };
+    return result;
   }
 
   @Post(PomeloEnum.POMELO_AUTHORIZATION_PATH)
@@ -84,18 +85,19 @@ export class PomeloIntegrationServiceController {
     @Headers(PomeloEnum.POMELO_IDEMPOTENCY_HEADER) idempotency: string,
     @Headers() headers: any,
   ): Promise<any> {
-    this.logger.info(`Idempotency: ${idempotency}`, 'AuthorizationHandler');
+    this.logger.info(`[processAuthorization] Idempotency: ${idempotency}`);
     authorization.idempotency = idempotency;
-    this.logger.info('AuthorizationHandler', authorization);
-
+    this.logger.info(`[processAuthorization] Authorization: ${authorization}`);
     const result = await this.integrationServiceService.processAuthorization(
       authorization,
       headers,
     );
 
-    this.logger.info(`[processAuthorization] ${JSON.stringify(result)}`);
+    this.logger.info(
+      `[processAuthorization] result: ${JSON.stringify(result)}`,
+    );
 
-    return { ...result, statusCode: HttpStatus.OK };
+    return result;
   }
 
   @Post('/sftp/download')

@@ -27,10 +27,10 @@ export class PomeloIntegrationShippingService {
         statusCode: 204,
         body: {},
       };
-      this.logger.info('Shipping-NotificationHandler', notification);
       this.logger.info(
-        'Shipping-NotificationHandler',
-        JSON.stringify(notification, null, 2),
+        `[handleShippingNotification] notification: ${JSON.stringify(
+          notification,
+        )}`,
       );
       await this.cache.setResponse(notification.idempotency_key, response);
       return response;
@@ -45,10 +45,7 @@ export class PomeloIntegrationShippingService {
         statusCode: 204,
         body: {},
       };
-      this.logger.info(
-        'CardEvents-NotificationHandler',
-        JSON.stringify(event, null, 2),
-      );
+      this.logger.info(`[handleCardEvents] event: ${JSON.stringify(event)}`);
       await this.cache.setResponse(event.idempotency_key, response);
       return response;
     }

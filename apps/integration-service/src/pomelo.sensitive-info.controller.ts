@@ -38,8 +38,7 @@ export class PomeloSensitiveInfoController {
   async issuePomeloPrivateInfoToken(@Request() req: Request): Promise<any> {
     const b2cryptoUser = req['user']?.id || '';
     this.logger.info(
-      `Looking for user: ${b2cryptoUser}`,
-      'PomeloSensitiveInfoController',
+      `[issuePomeloPrivateInfoToken] Looking for user: ${b2cryptoUser}`,
     );
     const user = await this.userService.getOne(b2cryptoUser);
     if (!user) {

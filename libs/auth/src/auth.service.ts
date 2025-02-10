@@ -204,7 +204,7 @@ export class AuthService {
         },
       });
     } catch (err) {
-      this.logger.error('auth.service:getAffiliates', err);
+      this.logger.error(`[getAffiliates] ${err.message || err}`);
       throw new BadRequestException();
     }
   }

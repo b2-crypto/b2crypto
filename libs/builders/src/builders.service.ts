@@ -318,7 +318,13 @@ export class BuildersService {
       this.getPspAccountEventClient(),
       eventName,
       data,
-    ).catch((err) => this.logger.error(`Event ${eventName}`, err));
+    ).catch((err) =>
+      this.logger.error(
+        `[getPromisePspAccountEventClient] Event ${eventName}: ${
+          err.message || err
+        }`,
+      ),
+    );
   }
   async getPromisePspEventClient<TResponse = any>(
     eventName: EventsNamesPspEnum,
