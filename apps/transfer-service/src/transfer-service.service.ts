@@ -545,11 +545,12 @@ export class TransferServiceService
 
       this.logger.info(
         `[newTransfer] transferSaved: ${JSON.stringify(
-          transferSaved.toJSON(),
+          transferSaved?.toJSON() ?? transferSaved,
         )}`,
       );
 
-      const amountTransaction = +transferSaved.amount * multiply;
+      const amountTransaction =
+        (transferSaved.amountCustodial ?? transferSaved.amount) * multiply;
       accountToUpdate.amount += amountTransaction;
 
       this.logger.info(
