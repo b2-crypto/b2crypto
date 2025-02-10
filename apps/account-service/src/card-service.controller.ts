@@ -2067,10 +2067,16 @@ export class CardServiceController extends AccountServiceController {
       });
       const card = cardList.list[0];
       if (!card) {
+        this.logger.info(
+          `[processPomeloTransaction] Card proccess: ${CardsEnum.CARD_PROCESS_CARD_NOT_FOUND}`,
+        );
         return CardsEnum.CARD_PROCESS_CARD_NOT_FOUND;
       }
 
       if (card.statusText === StatusAccountEnum.LOCK) {
+        this.logger.info(
+          `[processPomeloTransaction] Card proccess: ${CardsEnum.CARD_PROCESS_CARD_LOCKED}`,
+        );
         return CardsEnum.CARD_PROCESS_CARD_LOCKED;
       }
 
@@ -2081,6 +2087,9 @@ export class CardServiceController extends AccountServiceController {
         const allowedBalance =
           card.amount * (1.0 - this.BLOCK_BALANCE_PERCENTAGE);
         if (allowedBalance <= data.amount) {
+          this.logger.info(
+            `[processPomeloTransaction] Card proccess: ${CardsEnum.CARD_PROCESS_INSUFFICIENT_FUNDS}`,
+          );
           return CardsEnum.CARD_PROCESS_INSUFFICIENT_FUNDS;
         }
         txnAmount = data.amount * -1;
@@ -2096,9 +2105,17 @@ export class CardServiceController extends AccountServiceController {
           amount: txnAmount,
         },
       });
+
+      this.logger.info(
+        `[processPomeloTransaction] Card proccess: ${CardsEnum.CARD_PROCESS_OK}`,
+      );
+
       return CardsEnum.CARD_PROCESS_OK;
     } catch (error) {
       this.logger.error(`[processPomeloTransaction] ${error}`);
+      this.logger.info(
+        `[processPomeloTransaction] Card proccess: ${CardsEnum.CARD_PROCESS_FAILURE}`,
+      );
       return CardsEnum.CARD_PROCESS_FAILURE;
     }
   }
