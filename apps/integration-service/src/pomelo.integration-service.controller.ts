@@ -51,7 +51,7 @@ export class PomeloIntegrationServiceController {
 
     this.logger.info(`[processNotification] result: ${JSON.stringify(result)}`);
 
-    return { ...result, statusCode: HttpStatus.NO_CONTENT };
+    return result;
   }
 
   @Post(PomeloEnum.POMELO_ADJUSTMENT_PATH)
@@ -73,7 +73,7 @@ export class PomeloIntegrationServiceController {
 
     this.logger.info(`[processAdjustment] result: ${JSON.stringify(result)}`);
 
-    return { ...result, statusCode: HttpStatus.NO_CONTENT };
+    return result;
   }
 
   @Post(PomeloEnum.POMELO_AUTHORIZATION_PATH)
@@ -97,7 +97,7 @@ export class PomeloIntegrationServiceController {
       `[processAuthorization] result: ${JSON.stringify(result)}`,
     );
 
-    return { ...result, statusCode: HttpStatus.OK };
+    return result;
   }
 
   @Post('/sftp/download')
