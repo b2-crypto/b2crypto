@@ -877,11 +877,7 @@ export class WalletServiceController extends AccountServiceController {
               );
             }
             this.logger.info(
-              `[rechargeOne] rta from -> to ${JSON.stringify(
-                rta.data,
-                null,
-                2,
-              )}`,
+              `[rechargeOne] rta from -> to ${JSON.stringify(rta.data)}`,
             );
             promisesTx.push(
               this.walletService.customUpdateOne({
@@ -903,11 +899,7 @@ export class WalletServiceController extends AccountServiceController {
               );
             }
             this.logger.info(
-              `[rechargeOne] rta from -> to? ${JSON.stringify(
-                rta.data,
-                null,
-                2,
-              )}`,
+              `[rechargeOne] rta from -> to? ${JSON.stringify(rta.data)}`,
             );
           }
           promisesTx.push(
@@ -929,11 +921,7 @@ export class WalletServiceController extends AccountServiceController {
           );
           const rtaProm = await Promise.all(promisesTx);
           this.logger.info(
-            `[rechargeOne] Update amount custodial ${JSON.stringify(
-              rtaProm,
-              null,
-              2,
-            )}`,
+            `[rechargeOne] Update amount custodial ${JSON.stringify(rtaProm)}`,
           );
         } else {
           if (isProd) {
@@ -972,11 +960,7 @@ export class WalletServiceController extends AccountServiceController {
               vaultBrandWithdraw.accountId,
             );
             this.logger.info(
-              `[rechargeOne] rta from -> brand ${JSON.stringify(
-                rta.data,
-                null,
-                2,
-              )}`,
+              `[rechargeOne] rta from -> brand ${JSON.stringify(rta.data)}`,
             );
             const promisesTx = [];
             promisesTx.push(
@@ -1015,11 +999,7 @@ export class WalletServiceController extends AccountServiceController {
                 }),
               );
               this.logger.info(
-                `[rechargeOne] rta brand -> to ${JSON.stringify(
-                  rta.data,
-                  null,
-                  2,
-                )}`,
+                `[rechargeOne] rta brand -> to ${JSON.stringify(rta.data)}`,
               );
             } else {
               rta = await cryptoType.createTransaction(
@@ -1039,11 +1019,7 @@ export class WalletServiceController extends AccountServiceController {
                 }),
               );
               this.logger.info(
-                `[rechargeOne] rta brand -> to? ${JSON.stringify(
-                  rta.data,
-                  null,
-                  2,
-                )}`,
+                `[rechargeOne] rta brand -> to? ${JSON.stringify(rta.data)}`,
               );
             }
             promisesTx.push(
@@ -1059,8 +1035,6 @@ export class WalletServiceController extends AccountServiceController {
             this.logger.info(
               `[rechargeOne] Update amount custodial to? -> brand ${JSON.stringify(
                 rtaProm,
-                null,
-                2,
               )}`,
             );
           }
@@ -1075,11 +1049,7 @@ export class WalletServiceController extends AccountServiceController {
       }
       if (!rta && isProd) {
         this.logger.error(
-          `[rechargeOne] Error rta on Fireblocks ${JSON.stringify(
-            rta,
-            null,
-            2,
-          )}`,
+          `[rechargeOne] Error rta on Fireblocks ${JSON.stringify(rta)}`,
         );
         throw new BadRequestException('Sorry, something went wrong');
       }

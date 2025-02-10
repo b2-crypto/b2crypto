@@ -233,7 +233,7 @@ export class AccountServiceController implements GenericServiceController {
 
   @MessagePattern(EventsNamesAccountEnum.updateMany)
   updateManyEvent(
-    @Payload() updatesDto: AccountCreateDto[],
+    @Payload() updatesDto: AccountUpdateDto[],
     @Ctx() ctx: RmqContext,
   ) {
     CommonService.ack(ctx);
