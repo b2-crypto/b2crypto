@@ -113,19 +113,23 @@ export class PomeloIntegrationProcessService {
     const amount = txn.amount.local.total;
     const conversion = `to: ${to} | from: ${from} | amount: ${amount}`;
 
-    this.logger.info(`[getAmount] ${conversion}`);
+    this.logger.info(`[getAmount] conversion: ${conversion}`);
 
     const usd =
       parseInt(amount) > 0
         ? await this.currencyConversion.getCurrencyConversion(to, from, amount)
         : 0;
 
-    return {
+    const result = {
       to,
       from,
       amount,
       usd,
     };
+
+    this.logger.info(`[getAmount] result: ${JSON.stringify(result)}`);
+
+    return result;
   }
 
   private async executeProcess(
