@@ -543,7 +543,7 @@ export class TransferServiceService
         multiply = -1;
       }
 
-      const amountTransaction = transferSaved.amountCustodial * multiply;
+      const amountTransaction = transferSaved.amount * multiply;
       accountToUpdate.amount += amountTransaction;
 
       this.logger.info(
