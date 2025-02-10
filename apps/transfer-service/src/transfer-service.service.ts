@@ -242,6 +242,10 @@ export class TransferServiceService
   }
 
   async newTransfer(transfer: TransferCreateDto) {
+    this.logger.info(
+      `[newTransfer] TransferCreateDto: ${JSON.stringify(transfer)}`,
+    );
+
     const data = await this.queryDataAccount(transfer);
     if (data.account && data.pspAccount && data.typeTransaction) {
       this.checkCountryAccount(transfer, data);
@@ -538,8 +542,15 @@ export class TransferServiceService
       ) {
         multiply = -1;
       }
-      accountToUpdate.amount += transferSaved.amount * multiply;
+
+      const amountTransaction = transferSaved.amountCustodial * multiply;
+      accountToUpdate.amount += amountTransaction;
+
+      this.logger.info(
+        `[newTransfer] Operation: ${transferSaved.operationType} | AmountTransaction: ${amountTransaction} | AccountPrevBalance: ${transferSaved.accountPrevBalance} | AccountResultBalance: ${accountToUpdate.amount}`,
+      );
     }
+
     transferSaved.accountResultBalance = accountToUpdate.amount;
     const accountUpdated = await this.accountService.updateOne(accountToUpdate);
     this.builder.emitUserEventClient(
