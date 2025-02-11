@@ -122,12 +122,18 @@ export class FireBlocksNotificationsController {
 
       if (!tx) {
         const dto = await this.getTransferDto(data);
+
+        this.logger.info(`[webhook] getTransferDto: ${JSON.stringify(dto)}`);
+
         if (dto) {
           this.builder.emitTransferEventClient(
             EventsNamesTransferEnum.createOne,
             dto,
           );
+
+          this.logger.info(`[webhook] txCreate: ${JSON.stringify(dto)}`);
         }
+
         //} else if (rta?.status === 'COMPLETED' && !tx.isApprove) {
       } else if (!tx.isApprove) {
         const status = await this.builder.getPromiseStatusEventClient(
@@ -136,6 +142,7 @@ export class FireBlocksNotificationsController {
         );
         tx.statusPayment = rta.status;
         tx.status = status;
+
         // Find status list
         this.builder.emitTransferEventClient(
           EventsNamesTransferEnum.updateOne,
@@ -149,6 +156,8 @@ export class FireBlocksNotificationsController {
             approvedAt: new Date(),
           },
         );
+
+        this.logger.info(`[webhook] txUpdate: ${JSON.stringify(tx)}`);
       }
     }
 
