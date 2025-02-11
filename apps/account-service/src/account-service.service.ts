@@ -25,6 +25,7 @@ import {
   BadRequestException,
   Inject,
   Injectable,
+  Logger,
   NotImplementedException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
@@ -37,6 +38,16 @@ import EventsNamesMessageEnum from 'apps/message-service/src/enum/events.names.m
 import EventsNamesStatusEnum from 'apps/status-service/src/enum/events.names.status.enum';
 import EventsNamesTransferEnum from 'apps/transfer-service/src/enum/events.names.transfer.enum';
 import * as fs from 'fs';
+import { PreorderData, PreorderResponse } from './interfaces/preorderResponse';
+import { WITHDRAWAL_CONFIG } from './withdrawal.config';
+import { WithdrawalError } from './utils/errors';
+import { WithdrawalPreorderDto } from './dtos/WithdrawalPreorderDto';
+import { WithdrawalExecuteDto } from './dtos/WithdrawalExecuteDto';
+import { WithdrawalResponse } from './interfaces/withdrawalResponse';
+import { DepositDto } from '@integration/integration/crypto/generic/dto/deposit.dto';
+import { QrDepositDto } from './dtos/qr-deposit.dto';
+import { NetworkEnum } from './enum/network.enum';
+import { QrDepositResponse } from './interfaces/qr-deposit-response.interface';
 import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import { DepositDto } from './dtos/deposit.dto';
 import { QrDepositDto } from './dtos/qr-deposit.dto';
@@ -154,7 +165,7 @@ export class AccountServiceService
     @Inject(AccountServiceMongooseService)
     private lib: AccountServiceMongooseService,
     private readonly integration: IntegrationService,
-  ) {}
+  ) { }
   async download(
     query: QuerySearchAnyDto,
     context?: any,
@@ -482,13 +493,11 @@ export class AccountServiceService
           date,
         ),
       ];
-      const name = `${
-        process.env.ENVIRONMENT !== EnvironmentEnum.prod
-          ? process.env.ENVIRONMENT
-          : ''
-      } Balance Report ${
-        query.where?.type ?? 'all types'
-      } - ${this.printShortDate(date)} UTC`;
+      const name = `${process.env.ENVIRONMENT !== EnvironmentEnum.prod
+        ? process.env.ENVIRONMENT
+        : ''
+        } Balance Report ${query.where?.type ?? 'all types'
+        } - ${this.printShortDate(date)} UTC`;
       this.sendEmailToList(promises, name);
       this.logger.info('[getBalanceReport] Balance Report sended');
     });
@@ -704,6 +713,7 @@ export class AccountServiceService
   async validateWithdrawalPreorder(
     dto: WithdrawalPreorderDto,
   ): Promise<PreorderResponse> {
+
     const sourceWallet = await this.lib.findOne(dto.walletId);
     if (!sourceWallet) {
       throw new WithdrawalError('INVALID_WALLET', 'Wallet not found');
@@ -711,6 +721,7 @@ export class AccountServiceService
 
     const networkFee =
       dto.amount * WITHDRAWAL_CONFIG.fees.networks[dto.network];
+
     const baseFee = WITHDRAWAL_CONFIG.fees.base;
     const totalAmount = dto.amount + networkFee + baseFee;
 
@@ -775,6 +786,7 @@ export class AccountServiceService
         address: preorder.destinationAddress,
         description: 'Withdrawal',
         external: true,
+
       } as unknown as DepositDto;
 
       const txResponse = await cryptoType.createDeposit(depositDto);
@@ -785,6 +797,7 @@ export class AccountServiceService
       updateDto.amountCustodial =
         sourceWallet.amountCustodial - preorder.totalAmount;
 
+
       await this.lib.update(preorder.walletId, updateDto);
 
       this.preorders.delete(dto.preorderId);
@@ -792,6 +805,7 @@ export class AccountServiceService
       return {
         transactionId:
           transaction?.transactionId || transaction?.id || String(Date.now()),
+
         status: 'PENDING',
         amount: preorder.amount,
         fees: {
@@ -812,6 +826,7 @@ export class AccountServiceService
           details: error.message,
         },
       );
+
     }
   }
   async generateDepositQr(dto: QrDepositDto): Promise<QrDepositResponse> {
@@ -838,6 +853,7 @@ export class AccountServiceService
         amount: dto.amount.toString(),
       } as unknown as DepositDto);
 
+
       const [addressData] = depositAddress.data;
       const address = addressData.address;
 
@@ -860,6 +876,7 @@ export class AccountServiceService
       this.logger.error(
         `QR deposit generation failed' ${error} ${AccountServiceService.name}`,
       );
+]
       throw new BadRequestException('Failed to generate deposit QR');
     }
   }

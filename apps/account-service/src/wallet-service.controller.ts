@@ -40,6 +40,7 @@ import {
   Req,
   UnauthorizedException,
   UseGuards,
+
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Ctx, EventPattern, Payload, RmqContext } from '@nestjs/microservices';
@@ -48,6 +49,7 @@ import {
   ApiExcludeEndpoint,
   ApiSecurity,
   ApiTags,
+
 } from '@nestjs/swagger';
 import { TransferCreateDto } from '@transfer/transfer/dto/transfer.create.dto';
 import { OperationTransactionType } from '@transfer/transfer/enum/operation.transaction.type.enum';
@@ -74,6 +76,7 @@ import EventsNamesAccountEnum from './enum/events.names.account.enum';
 import { PreorderResponse } from './interfaces/preorderResponse';
 import { QrDepositResponse } from './interfaces/qr-deposit-response.interface';
 import { WithdrawalResponse } from './interfaces/withdrawalResponse';
+
 
 @ApiTags(SwaggerSteakeyConfigEnum.TAG_WALLET)
 @Traceable()
@@ -1187,9 +1190,8 @@ export class WalletServiceController extends AccountServiceController {
         EventsNamesTransferEnum.createOne,
         {
           name: `Withdrawal wallet ${from.name}`,
-          description: `Withdrawal from ${from.name} to ${
-            to?.name ?? createDto.to
-          }`,
+          description: `Withdrawal from ${from.name} to ${to?.name ?? createDto.to
+            }`,
           currency: from.currency,
           idPayment: rta?.data?.id,
           responsepayment: rta?.data,
@@ -1747,4 +1749,5 @@ export class WalletServiceController extends AccountServiceController {
 
     return this.walletService.executeWithdrawalOrder(dto);
   }
+
 }
