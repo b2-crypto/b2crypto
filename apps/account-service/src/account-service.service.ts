@@ -733,6 +733,9 @@ export class AccountServiceService
     return {
       preorderId,
       totalAmount,
+      originWalletId: dto.walletId,
+      destinationAddress: dto.destinationAddress,
+      network: dto.network,
       fees: { networkFee, baseFee },
       netAmount: dto.amount,
       expiresAt: new Date(

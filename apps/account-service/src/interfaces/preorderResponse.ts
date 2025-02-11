@@ -3,6 +3,9 @@ import { NetworkEnum } from "../enum/network.enum";
 export interface PreorderResponse {
   preorderId: string;
   totalAmount: number;
+  originWalletId: string;
+  destinationAddress: string;
+  network: NetworkEnum;
   fees: {
     networkFee: number;
     baseFee: number;

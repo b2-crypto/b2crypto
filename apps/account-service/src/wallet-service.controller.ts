@@ -1718,7 +1718,7 @@ export class WalletServiceController extends AccountServiceController {
     const wallet = await this.walletService.findOneById(dto.walletId);
     if (!wallet || wallet.owner.toString() !== userId) {
       throw new BadRequestException(
-        'Invalid wallet or insufficient permissions',
+        'Invalid wallet',
       );
     }
     if (!dto.destinationAddress || dto.destinationAddress.length < 10) {
