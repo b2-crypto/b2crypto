@@ -108,7 +108,7 @@ export class FireBlocksNotificationsController {
     );
 
     if (rta.id && isRtaTypeValid && isRtaCompleted && !rtaCached) {
-      this.cacheManager.set(rta.id, rta.status, 10 * 60 * 1000);
+      this.cacheManager.set(rta.id, rta.status, 30 * 60 * 1000);
       const txList = await this.builder.getPromiseTransferEventClient(
         EventsNamesTransferEnum.findAll,
         {
