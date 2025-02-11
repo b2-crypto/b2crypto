@@ -32,7 +32,7 @@ export const mqBrokerRabbitMQ = new aws.mq.Broker(
       general: true,
       audit: false,
     },
-    autoMinorVersionUpgrade: false,
+    autoMinorVersionUpgrade: true,
     deploymentMode: MQ_DEPLOYMENT_MODE,
     authenticationStrategy: 'SIMPLE',
     tags: TAGS,
