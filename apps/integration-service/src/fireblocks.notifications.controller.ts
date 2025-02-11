@@ -85,17 +85,30 @@ export class FireBlocksNotificationsController {
     //this.logger.info(isVerified, 'getTransferDto.isVerified');
     //if (isVerified) {
     const rta = data.data;
+
+    if (!rta) {
+      this.logger.info(`[webhook] rta: ${JSON.stringify(rta)}`);
+      throw new BadRequestException('Rta is not valid');
+    }
+
     this.logger.info(`[webhook] rta: ${JSON.stringify(rta)}`);
-    if (
-      rta.id &&
-      rta.status &&
-      (rta?.source?.type === 'UNKNOWN' ||
-        (rta?.source?.type === 'VAULT_ACCOUNT' &&
-          rta?.destination?.type === 'EXTERNAL_WALLET')) &&
-      (rta?.status === 'CONFIRMED' || rta?.status === 'COMPLETED') &&
-      !(await this.cacheManager.get<string>(rta.id))
-    ) {
-      this.cacheManager.set(rta.id, rta.status, 10 * 1000);
+
+    const rtaCached = await this.cacheManager.get<string>(rta?.id);
+    const isRtaCompleted =
+      rta?.status === 'CONFIRMED' || rta?.status === 'COMPLETED';
+    const isRtaTypeValid =
+      rta?.source?.type === 'UNKNOWN' ||
+      (rta?.source?.type === 'VAULT_ACCOUNT' &&
+        rta?.destination?.type === 'EXTERNAL_WALLET');
+
+    this.logger.info(
+      `[webhook] rtaCached: ${JSON.stringify(
+        rtaCached ?? {},
+      )} | isRtaTypeValid: ${isRtaTypeValid} | isRtaCompleted: ${isRtaCompleted}`,
+    );
+
+    if (rta.id && isRtaTypeValid && isRtaCompleted && !rtaCached) {
+      this.cacheManager.set(rta.id, rta.status, 10 * 60 * 1000);
       const txList = await this.builder.getPromiseTransferEventClient(
         EventsNamesTransferEnum.findAll,
         {
@@ -138,10 +151,12 @@ export class FireBlocksNotificationsController {
           },
         );
       }
-      this.logger.info(
-        `[webhook] rta.status: ${rta?.status} | rta?.id - rta.status : ${rta?.id} - ${rta.status}`,
-      );
     }
+
+    this.logger.info(
+      `[webhook] rta.status: ${rta?.status} | rta?.id - rta.status : ${rta?.id} - ${rta.status}`,
+    );
+
     //}
     //return isVerified ? 'ok' : 'fail';
     //this.logger.info(this.verifySign(req), 'getTransferDto.isVerified');
