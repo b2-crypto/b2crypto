@@ -14,7 +14,7 @@ export const mqBrokerRabbitMQ = new aws.mq.Broker(
   {
     brokerName: `${PROJECT_NAME}-rabbit-${STACK}`,
     engineType: 'RABBITMQ',
-    engineVersion: '3.12.13',
+    engineVersion: '3.13.7',
     hostInstanceType: RABBIT_MQ_INSTANCE_TYPE,
     publiclyAccessible: true,
     // securityGroups: [ec2SecurityGroup.id],

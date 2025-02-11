@@ -87,25 +87,24 @@ export class FireBlocksNotificationsController {
     const rta = data.data;
 
     if (!rta) {
-      this.logger.info(`[webhook] rta: ${JSON.stringify(rta)}`);
+      this.logger.error(`[webhook] rta: ${JSON.stringify(rta)}`);
       throw new BadRequestException('Rta is not valid');
     }
 
     this.logger.info(`[webhook] rta: ${JSON.stringify(rta)}`);
 
-    const rtaCached = await this.cacheManager.get<string>(rta?.id);
+    const rtaCached = await this.cacheManager.get<string>(rta?.id ?? '');
+    this.logger.info(`[webhook] rtaCached: ${JSON.stringify(rtaCached ?? {})}`);
+
     const isRtaCompleted =
       rta?.status === 'CONFIRMED' || rta?.status === 'COMPLETED';
+    this.logger.info(`[webhook] isRtaCompleted: ${isRtaCompleted}`);
+
     const isRtaTypeValid =
       rta?.source?.type === 'UNKNOWN' ||
       (rta?.source?.type === 'VAULT_ACCOUNT' &&
         rta?.destination?.type === 'EXTERNAL_WALLET');
-
-    this.logger.info(
-      `[webhook] rtaCached: ${JSON.stringify(
-        rtaCached ?? {},
-      )} | isRtaTypeValid: ${isRtaTypeValid} | isRtaCompleted: ${isRtaCompleted}`,
-    );
+    this.logger.info(`[webhook] isRtaTypeValid: ${isRtaTypeValid}`);
 
     if (rta.id && isRtaTypeValid && isRtaCompleted && !rtaCached) {
       this.cacheManager.set(rta.id, rta.status, 30 * 60 * 1000);
@@ -123,12 +122,18 @@ export class FireBlocksNotificationsController {
 
       if (!tx) {
         const dto = await this.getTransferDto(data);
+
+        this.logger.info(`[webhook] getTransferDto: ${JSON.stringify(dto)}`);
+
         if (dto) {
           this.builder.emitTransferEventClient(
             EventsNamesTransferEnum.createOne,
             dto,
           );
+
+          this.logger.info(`[webhook] txCreate: ${JSON.stringify(dto)}`);
         }
+
         //} else if (rta?.status === 'COMPLETED' && !tx.isApprove) {
       } else if (!tx.isApprove) {
         const status = await this.builder.getPromiseStatusEventClient(
@@ -137,6 +142,7 @@ export class FireBlocksNotificationsController {
         );
         tx.statusPayment = rta.status;
         tx.status = status;
+
         // Find status list
         this.builder.emitTransferEventClient(
           EventsNamesTransferEnum.updateOne,
@@ -150,6 +156,8 @@ export class FireBlocksNotificationsController {
             approvedAt: new Date(),
           },
         );
+
+        this.logger.info(`[webhook] txUpdate: ${JSON.stringify(tx)}`);
       }
     }
 
