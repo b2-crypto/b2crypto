@@ -24,9 +24,7 @@ import { AttachmentsEmailConfig } from '@message/message/dto/message.create.dto'
 import {
   BadRequestException,
   Inject,
-  Injectable,
-  Logger,
-  NotImplementedException,
+  Injectable, NotImplementedException
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Ctx, RmqContext } from '@nestjs/microservices';
@@ -39,32 +37,22 @@ import EventsNamesStatusEnum from 'apps/status-service/src/enum/events.names.sta
 import EventsNamesTransferEnum from 'apps/transfer-service/src/enum/events.names.transfer.enum';
 import * as fs from 'fs';
 import { PreorderData, PreorderResponse } from './interfaces/preorderResponse';
-import { WITHDRAWAL_CONFIG } from './withdrawal.config';
-import { WithdrawalError } from './utils/errors';
+import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import { WithdrawalPreorderDto } from './dtos/WithdrawalPreorderDto';
+import { WithdrawalError } from './utils/errors';
+import { WITHDRAWAL_CONFIG } from './withdrawal.config';
 import { WithdrawalExecuteDto } from './dtos/WithdrawalExecuteDto';
 import { WithdrawalResponse } from './interfaces/withdrawalResponse';
-import { DepositDto } from '@integration/integration/crypto/generic/dto/deposit.dto';
-import { QrDepositDto } from './dtos/qr-deposit.dto';
-import { NetworkEnum } from './enum/network.enum';
-import { QrDepositResponse } from './interfaces/qr-deposit-response.interface';
-import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import { DepositDto } from './dtos/deposit.dto';
 import { QrDepositDto } from './dtos/qr-deposit.dto';
-import { WithdrawalExecuteDto } from './dtos/WithdrawalExecuteDto';
-import { WithdrawalPreorderDto } from './dtos/WithdrawalPreorderDto';
 import { NetworkEnum } from './enum/network.enum';
-import { PreorderData, PreorderResponse } from './interfaces/preorderResponse';
 import { QrDepositResponse } from './interfaces/qr-deposit-response.interface';
-import { WithdrawalResponse } from './interfaces/withdrawalResponse';
-import { WithdrawalError } from './utils/errors';
-import { WITHDRAWAL_CONFIG } from './withdrawal.config';
+
 
 @Traceable()
 @Injectable()
 export class AccountServiceService
-  implements BasicMicroserviceService<AccountDocument>
-{
+  implements BasicMicroserviceService<AccountDocument> {
   private readonly preorders = new Map<string, PreorderData>();
   async cleanWallet(query: QuerySearchAnyDto) {
     throw new NotImplementedException();
@@ -876,7 +864,6 @@ export class AccountServiceService
       this.logger.error(
         `QR deposit generation failed' ${error} ${AccountServiceService.name}`,
       );
-]
       throw new BadRequestException('Failed to generate deposit QR');
     }
   }
