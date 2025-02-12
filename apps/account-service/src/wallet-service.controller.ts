@@ -1692,7 +1692,7 @@ export class WalletServiceController extends AccountServiceController {
   ): Promise<QrDepositResponse> {
     const userId = CommonService.getUserId(req);
 
-    const wallet = await this.walletService.findOneById(dto.walletId);
+    const wallet = await this.walletService.findOneById(dto.vaultAccountId);
     if (!wallet || wallet.owner.toString() !== userId) {
       throw new BadRequestException(
         'Invalid wallet or insufficient permissions',
