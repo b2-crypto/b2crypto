@@ -701,46 +701,55 @@ export class AccountServiceService
   async validateWithdrawalPreorder(
     dto: WithdrawalPreorderDto,
   ): Promise<PreorderResponse> {
+    try {
+      const sourceWallet = await this.lib.findOne(dto.walletId);
+      if (!sourceWallet) {
+        throw new WithdrawalError('INVALID_WALLET', 'Wallet not found');
+      }
 
-    const sourceWallet = await this.lib.findOne(dto.walletId);
-    if (!sourceWallet) {
-      throw new WithdrawalError('INVALID_WALLET', 'Wallet not found');
+      const networkFee =
+        dto.amount * WITHDRAWAL_CONFIG.fees.networks[dto.network];
+
+      const baseFee = WITHDRAWAL_CONFIG.fees.base;
+      const totalAmount = dto.amount + networkFee + baseFee;
+
+      if (sourceWallet.amountCustodial < totalAmount) {
+        throw new WithdrawalError('INSUFFICIENT_FUNDS', 'Insufficient balance');
+      }
+
+      const preorderId = `WD_${Date.now()}`;
+      const preorder: PreorderData = {
+        ...dto,
+        totalAmount,
+        networkFee,
+        baseFee,
+        fees: { networkFee, baseFee },
+        createdAt: new Date(),
+      };
+
+      this.preorders.set(preorderId, preorder);
+
+      return {
+        preorderId,
+        totalAmount,
+        originWalletId: dto.walletId,
+        destinationAddress: dto.destinationAddress,
+        network: dto.network,
+        fees: { networkFee, baseFee },
+        netAmount: dto.amount,
+        expiresAt: new Date(
+          Date.now() + WITHDRAWAL_CONFIG.timing.maxConfirmationTime * 1000,
+        ),
+      };
+    } catch (error) {
+      if (error instanceof WithdrawalError) {
+        throw error;
+      }
+
+      throw new Error(
+        'An error occurred while validating the withdrawal preorder'
+      );
     }
-
-    const networkFee =
-      dto.amount * WITHDRAWAL_CONFIG.fees.networks[dto.network];
-
-    const baseFee = WITHDRAWAL_CONFIG.fees.base;
-    const totalAmount = dto.amount + networkFee + baseFee;
-
-    if (sourceWallet.amountCustodial < totalAmount) {
-      throw new WithdrawalError('INSUFFICIENT_FUNDS', 'Insufficient balance');
-    }
-
-    const preorderId = `WD_${Date.now()}`;
-    const preorder: PreorderData = {
-      ...dto,
-      totalAmount,
-      networkFee,
-      baseFee,
-      fees: { networkFee, baseFee },
-      createdAt: new Date(),
-    };
-
-    this.preorders.set(preorderId, preorder);
-
-    return {
-      preorderId,
-      totalAmount,
-      originWalletId: dto.walletId,
-      destinationAddress: dto.destinationAddress,
-      network: dto.network,
-      fees: { networkFee, baseFee },
-      netAmount: dto.amount,
-      expiresAt: new Date(
-        Date.now() + WITHDRAWAL_CONFIG.timing.maxConfirmationTime * 1000,
-      ),
-    };
   }
 
   async executeWithdrawalOrder(
