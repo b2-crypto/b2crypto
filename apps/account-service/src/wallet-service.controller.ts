@@ -31,6 +31,7 @@ import {
   Delete,
   Get,
   Inject,
+  InternalServerErrorException,
   NotImplementedException,
   Param,
   Patch,
@@ -40,6 +41,7 @@ import {
   Req,
   UnauthorizedException,
   UseGuards,
+
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Ctx, EventPattern, Payload, RmqContext } from '@nestjs/microservices';
@@ -48,6 +50,7 @@ import {
   ApiExcludeEndpoint,
   ApiSecurity,
   ApiTags,
+
 } from '@nestjs/swagger';
 import { TransferCreateDto } from '@transfer/transfer/dto/transfer.create.dto';
 import { OperationTransactionType } from '@transfer/transfer/enum/operation.transaction.type.enum';
@@ -74,6 +77,7 @@ import EventsNamesAccountEnum from './enum/events.names.account.enum';
 import { PreorderResponse } from './interfaces/preorderResponse';
 import { QrDepositResponse } from './interfaces/qr-deposit-response.interface';
 import { WithdrawalResponse } from './interfaces/withdrawalResponse';
+
 
 @ApiTags(SwaggerSteakeyConfigEnum.TAG_WALLET)
 @Traceable()
@@ -1141,8 +1145,7 @@ export class WalletServiceController extends AccountServiceController {
         }
       } catch (error) {
         this.logger.error(
-          `[rechargeOne] Error creating transaction on Fireblocks ${
-            error.message || error
+          `[rechargeOne] Error creating transaction on Fireblocks ${error.message || error
           }`,
         );
         throw new BadRequestException('Sorry, something went wrong');
@@ -1187,9 +1190,8 @@ export class WalletServiceController extends AccountServiceController {
         EventsNamesTransferEnum.createOne,
         {
           name: `Withdrawal wallet ${from.name}`,
-          description: `Withdrawal from ${from.name} to ${
-            to?.name ?? createDto.to
-          }`,
+          description: `Withdrawal from ${from.name} to ${to?.name ?? createDto.to
+            }`,
           currency: from.currency,
           idPayment: rta?.data?.id,
           responsepayment: rta?.data,
@@ -1520,16 +1522,14 @@ export class WalletServiceController extends AccountServiceController {
             )
             .catch((err) => {
               this.logger.error(
-                `[sweepOmnibus] Catch sweep error deposit ${vaultFrom.name}_${
-                  from.name
+                `[sweepOmnibus] Catch sweep error deposit ${vaultFrom.name}_${from.name
                 } ${err.message || err}`,
               );
               return null;
             })
             .then((rta) => {
               this.logger.info(
-                `[sweepOmnibus] rta sweep deposit ${vaultFrom.name}_${
-                  from.name
+                `[sweepOmnibus] rta sweep deposit ${vaultFrom.name}_${from.name
                 } ${JSON.stringify(rta?.data, null, 2)}`,
               );
               return Promise.all([
@@ -1557,16 +1557,14 @@ export class WalletServiceController extends AccountServiceController {
             )
             .catch((err) => {
               this.logger.error(
-                `[sweepOmnibus] Catch sweep error withdrawal ${
-                  vaultFrom.name
+                `[sweepOmnibus] Catch sweep error withdrawal ${vaultFrom.name
                 }_${from.name} ${err.message || err}`,
               );
               return null;
             })
             .then((rta) => {
               this.logger.info(
-                `[sweepOmnibus] rta sweep withdrawal ${vaultFrom.name}_${
-                  from.name
+                `[sweepOmnibus] rta sweep withdrawal ${vaultFrom.name}_${from.name
                 } ${JSON.stringify(rta?.data, null, 2)}`,
               );
               return Promise.all([
@@ -1694,7 +1692,7 @@ export class WalletServiceController extends AccountServiceController {
   ): Promise<QrDepositResponse> {
     const userId = CommonService.getUserId(req);
 
-    const wallet = await this.walletService.findOneById(dto.walletId);
+    const wallet = await this.walletService.findOneById(dto.vaultAccountId);
     if (!wallet || wallet.owner.toString() !== userId) {
       throw new BadRequestException(
         'Invalid wallet or insufficient permissions',
@@ -1713,23 +1711,33 @@ export class WalletServiceController extends AccountServiceController {
     @Body() dto: WithdrawalPreorderDto,
     @Req() req?: any,
   ): Promise<PreorderResponse> {
-    const userId = CommonService.getUserId(req);
+    try {
+      const userId = CommonService.getUserId(req);
 
-    const wallet = await this.walletService.findOneById(dto.walletId);
-    if (!wallet || wallet.owner.toString() !== userId) {
-      throw new BadRequestException(
-        'Invalid wallet or insufficient permissions',
+      const wallet = await this.walletService.findOneById(dto.walletId);
+      if (!wallet || wallet.owner.toString() !== userId) {
+        throw new BadRequestException(
+          'Invalid wallet',
+        );
+      }
+      if (!dto.destinationAddress || dto.destinationAddress.length < 10) {
+        throw new BadRequestException('Invalid destination address');
+      }
+
+      if (!dto.amount || dto.amount <= 0) {
+        throw new BadRequestException('Invalid amount');
+      }
+
+      return this.walletService.validateWithdrawalPreorder(dto);
+    } catch (error) {
+      if (error instanceof BadRequestException) {
+        throw error;
+      }
+
+      throw new InternalServerErrorException(
+        'An error occurred while processing the withdrawal preorder'
       );
     }
-    if (!dto.destinationAddress || dto.destinationAddress.length < 10) {
-      throw new BadRequestException('Invalid destination address');
-    }
-
-    if (!dto.amount || dto.amount <= 0) {
-      throw new BadRequestException('Invalid amount');
-    }
-
-    return this.walletService.validateWithdrawalPreorder(dto);
   }
 
   @Post('external-withdrawal-confirm')
@@ -1747,4 +1755,5 @@ export class WalletServiceController extends AccountServiceController {
 
     return this.walletService.executeWithdrawalOrder(dto);
   }
+
 }

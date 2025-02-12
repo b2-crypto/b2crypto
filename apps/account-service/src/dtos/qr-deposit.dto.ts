@@ -1,7 +1,11 @@
 import { NetworkEnum } from "../enum/network.enum";
 
 export interface QrDepositDto {
-    walletId: string;
-    network: NetworkEnum;
-    amount: number;
-  }
+  vaultAccountId: string;
+  amount: string;
+  address?: string;
+  description?: string;
+  external?: boolean;
+  network?: NetworkEnum;
+}
+

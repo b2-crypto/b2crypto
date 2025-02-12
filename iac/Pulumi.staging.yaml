@@ -134,11 +134,9 @@ config:
     secure: AAABAOTX6JShrtfcKHsHD1ycgd2HY2QWmuwn69wal30=
   b2crypto-iac:AWS_SECRET_KEY:
     secure: AAABAEH+t/L+R18brCbesd3FDGPE5DTWat5s1pMs7L4=
-  b2crypto-iac:TASK_MEMORY_MONOLITH: "2048"
-  b2crypto-iac:TASK_CPU_MONOLITH: "1024"
-  b2crypto-iac:OTP_VALIDATION_TIME_SECONDS: "120"
   b2crypto-iac:TASK_MEMORY_MONOLITH: '2048'
   b2crypto-iac:TASK_CPU_MONOLITH: '1024'
+  b2crypto-iac:OTP_VALIDATION_TIME_SECONDS: '120'
   b2crypto-iac:APP_VERSION: 0.9.0
   b2crypto-iac:OTLP_HOST:
     secure: AAABAJeRDHN4vz+kZkySmwAMEr1M6j0oAifaVFmhalqQ9kUB+5L/zWJYBVaO6VmxCJJT+eZ2InuFHIkqg0w=

@@ -24,8 +24,7 @@ import { AttachmentsEmailConfig } from '@message/message/dto/message.create.dto'
 import {
   BadRequestException,
   Inject,
-  Injectable,
-  NotImplementedException,
+  Injectable, NotImplementedException
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Ctx, RmqContext } from '@nestjs/microservices';
@@ -37,24 +36,26 @@ import EventsNamesMessageEnum from 'apps/message-service/src/enum/events.names.m
 import EventsNamesStatusEnum from 'apps/status-service/src/enum/events.names.status.enum';
 import EventsNamesTransferEnum from 'apps/transfer-service/src/enum/events.names.transfer.enum';
 import * as fs from 'fs';
-import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
-import { DepositDto } from './dtos/deposit.dto';
-import { QrDepositDto } from './dtos/qr-deposit.dto';
-import { WithdrawalExecuteDto } from './dtos/WithdrawalExecuteDto';
-import { WithdrawalPreorderDto } from './dtos/WithdrawalPreorderDto';
-import { NetworkEnum } from './enum/network.enum';
 import { PreorderData, PreorderResponse } from './interfaces/preorderResponse';
-import { QrDepositResponse } from './interfaces/qr-deposit-response.interface';
-import { WithdrawalResponse } from './interfaces/withdrawalResponse';
+import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
+import { WithdrawalPreorderDto } from './dtos/WithdrawalPreorderDto';
 import { WithdrawalError } from './utils/errors';
 import { WITHDRAWAL_CONFIG } from './withdrawal.config';
+import { WithdrawalExecuteDto } from './dtos/WithdrawalExecuteDto';
+import { WithdrawalResponse } from './interfaces/withdrawalResponse';
+import { QrDepositDto } from './dtos/qr-deposit.dto';
+import { QrDepositResponse } from './interfaces/qr-deposit-response.interface';
+import { WithdrawalErrorCode } from './enum/withdrawalErrorCode';
+import { FireblocksIntegrationService } from '@integration/integration/crypto/fireblocks/fireblocks-integration.service';
+import { DataCreateDepositDto } from './dtos/deposit.dto';
+
 
 @Traceable()
 @Injectable()
 export class AccountServiceService
-  implements BasicMicroserviceService<AccountDocument>
-{
+  implements BasicMicroserviceService<AccountDocument> {
   private readonly preorders = new Map<string, PreorderData>();
+  private cryptoType: FireblocksIntegrationService | null = null;
   async cleanWallet(query: QuerySearchAnyDto) {
     throw new NotImplementedException();
     // query = query || new QuerySearchAnyDto();
@@ -154,7 +155,7 @@ export class AccountServiceService
     @Inject(AccountServiceMongooseService)
     private lib: AccountServiceMongooseService,
     private readonly integration: IntegrationService,
-  ) {}
+  ) { }
   async download(
     query: QuerySearchAnyDto,
     context?: any,
@@ -482,13 +483,11 @@ export class AccountServiceService
           date,
         ),
       ];
-      const name = `${
-        process.env.ENVIRONMENT !== EnvironmentEnum.prod
-          ? process.env.ENVIRONMENT
-          : ''
-      } Balance Report ${
-        query.where?.type ?? 'all types'
-      } - ${this.printShortDate(date)} UTC`;
+      const name = `${process.env.ENVIRONMENT !== EnvironmentEnum.prod
+        ? process.env.ENVIRONMENT
+        : ''
+        } Balance Report ${query.where?.type ?? 'all types'
+        } - ${this.printShortDate(date)} UTC`;
       this.sendEmailToList(promises, name);
       this.logger.info('[getBalanceReport] Balance Report sended');
     });
@@ -701,23 +700,151 @@ export class AccountServiceService
   //   return cryptoList;
   // }
 
+  private async getFireblocksType(): Promise<FireblocksIntegrationService> {
+    if (!this.cryptoType) {
+      this.cryptoType = await this.integration.getCryptoIntegration(
+        null,
+        IntegrationCryptoEnum.FIREBLOCKS,
+        '',
+      ) as FireblocksIntegrationService;
+    }
+    return this.cryptoType;
+  }
+
+  private getAssetIdFromNetwork(network: string): string {
+    const networkToAssetId: Record<string, string> = {
+      'TRON': 'USDT_TRX',
+      'ARBITRUM': 'USDT_ARB',
+    };
+
+    const assetId = networkToAssetId[network];
+    if (!assetId) {
+      throw new WithdrawalError(
+        WithdrawalErrorCode.UNSUPPORTED_NETWORK,
+        `Unsupported network: ${network}`,
+        { network }
+      );
+    }
+
+    return assetId;
+  }
+
   async validateWithdrawalPreorder(
-    dto: WithdrawalPreorderDto,
+    dto: WithdrawalPreorderDto
   ): Promise<PreorderResponse> {
-    const sourceWallet = await this.lib.findOne(dto.walletId);
+    try {
+      const sourceWallet = await this.validateSourceWallet(dto.walletId);
+
+      const { networkFee, baseFee, totalAmount } = this.calculateFees(dto.amount, dto.network);
+
+      this.validateSufficientFunds(sourceWallet.amountCustodial, totalAmount, networkFee, baseFee);
+
+      await this.validateFireblocksAddress(dto.destinationAddress, dto.network);
+
+      return this.createPreorder(dto, totalAmount, networkFee, baseFee);
+    } catch (error) {
+      this.handleWithdrawalError(error);
+      throw error;
+    }
+  }
+
+  private async validateSourceWallet(walletId: string) {
+    const sourceWallet = await this.lib.findOne(walletId);
     if (!sourceWallet) {
-      throw new WithdrawalError('INVALID_WALLET', 'Wallet not found');
+      throw new WithdrawalError(
+        WithdrawalErrorCode.INVALID_WALLET,
+        'Wallet not found',
+        { walletId }
+      );
     }
+    return sourceWallet;
+  }
 
-    const networkFee =
-      dto.amount * WITHDRAWAL_CONFIG.fees.networks[dto.network];
+  private calculateFees(amount: number, network: string): {
+    networkFee: number;
+    baseFee: number;
+    totalAmount: number;
+  } {
+    const networkFee = amount * WITHDRAWAL_CONFIG.fees.networks[network];
     const baseFee = WITHDRAWAL_CONFIG.fees.base;
-    const totalAmount = dto.amount + networkFee + baseFee;
+    const totalAmount = amount + networkFee + baseFee;
 
-    if (sourceWallet.amountCustodial < totalAmount) {
-      throw new WithdrawalError('INSUFFICIENT_FUNDS', 'Insufficient balance');
+    return { networkFee, baseFee, totalAmount };
+  }
+
+  private validateSufficientFunds(
+    available: number,
+    required: number,
+    networkFee: number,
+    baseFee: number
+  ): void {
+    if (available < required) {
+      throw new WithdrawalError(
+        WithdrawalErrorCode.INSUFFICIENT_FUNDS,
+        'Insufficient balance',
+        {
+          available,
+          required,
+          fees: { networkFee, baseFee }
+        }
+      );
     }
+  }
 
+  private async validateFireblocksAddress(address: string, network: string): Promise<void> {
+    try {
+      const cryptoType = await this.getFireblocksType();
+      const assetId = this.getAssetIdFromNetwork(network);
+
+      await cryptoType.validateAddress(assetId, address);
+
+    } catch (error) {
+      const fireblocksError = error as { response?: { data?: { message?: string; code?: string } }; message?: string };
+
+      if (fireblocksError.response?.data?.message || fireblocksError.message?.includes('Fireblocks')) {
+        throw new WithdrawalError(
+          WithdrawalErrorCode.FIREBLOCKS_ERROR,
+          'Failed to validate with Fireblocks',
+          {
+            originalMessage: fireblocksError.response?.data?.message || fireblocksError.message,
+            errorCode: fireblocksError.response?.data?.code,
+            network,
+            address
+          },
+          fireblocksError
+        );
+      }
+
+      if (error instanceof Error && error.message.includes('Invalid address')) {
+        throw new WithdrawalError(
+          WithdrawalErrorCode.INVALID_ADDRESS,
+          'Invalid destination address for this network',
+          {
+            network,
+            address
+          }
+        );
+      }
+
+      throw new WithdrawalError(
+        WithdrawalErrorCode.NETWORK_ERROR,
+        'Error validating address with Fireblocks',
+        {
+          network,
+          address,
+          originalMessage: error instanceof Error ? error.message : 'Unknown error'
+        },
+        error
+      );
+    }
+  }
+
+  private createPreorder(
+    dto: WithdrawalPreorderDto,
+    totalAmount: number,
+    networkFee: number,
+    baseFee: number
+  ): PreorderResponse {
     const preorderId = `WD_${Date.now()}`;
     const preorder: PreorderData = {
       ...dto,
@@ -725,7 +852,7 @@ export class AccountServiceService
       networkFee,
       baseFee,
       fees: { networkFee, baseFee },
-      createdAt: new Date(),
+      createdAt: new Date()
     };
 
     this.preorders.set(preorderId, preorder);
@@ -733,62 +860,82 @@ export class AccountServiceService
     return {
       preorderId,
       totalAmount,
+      originWalletId: dto.walletId,
+      destinationAddress: dto.destinationAddress,
+      network: dto.network,
       fees: { networkFee, baseFee },
       netAmount: dto.amount,
       expiresAt: new Date(
-        Date.now() + WITHDRAWAL_CONFIG.timing.maxConfirmationTime * 1000,
-      ),
+        Date.now() + WITHDRAWAL_CONFIG.timing.maxConfirmationTime * 1000
+      )
     };
   }
 
+  private handleWithdrawalError(error: unknown): void {
+    if (error instanceof WithdrawalError) {
+      this.logger.error(
+        `Withdrawal validation failed: ${error.message}`,
+        {
+          errorCode: error.code,
+          details: error.details,
+          originalError: error.originalError
+        }
+      );
+    } else {
+      this.logger.error(
+        `Unexpected error during withdrawal validation: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        {
+          stack: error instanceof Error ? error.stack : undefined
+        }
+      );
+
+      throw new WithdrawalError(
+        WithdrawalErrorCode.EXECUTION_FAILED,
+        'An unexpected error occurred while validating the withdrawal preorder',
+        { originalMessage: error instanceof Error ? error.message : 'Unknown error' }
+      );
+    }
+  }
+
   async executeWithdrawalOrder(
-    dto: WithdrawalExecuteDto,
+    dto: WithdrawalExecuteDto
   ): Promise<WithdrawalResponse> {
     const preorder = this.preorders.get(dto.preorderId);
     if (!preorder) {
-      throw new WithdrawalError('INVALID_PREORDER', 'Preorder not found');
+      throw new WithdrawalError(
+        WithdrawalErrorCode.INVALID_PREORDER,
+        'Preorder not found',
+        { preorderId: dto.preorderId }
+      );
     }
 
     try {
-      const sourceWallet = await this.lib.findOne(preorder.walletId);
-      if (!sourceWallet) {
-        throw new WithdrawalError('INVALID_WALLET', 'Source wallet not found');
+      const sourceWallet = await this.validateSourceWallet(preorder.walletId);
+      const cryptoType = await this.getFireblocksType();
+
+      const depositResponse = await cryptoType.createDeposit({
+        data: new DataCreateDepositDto
+      });
+
+      if (!depositResponse?.data?.[0]) {
+        throw new WithdrawalError(
+          WithdrawalErrorCode.EXECUTION_FAILED,
+          'Failed to create withdrawal transaction'
+        );
       }
 
-      const fireblocksCrm = await this.builder.getPromiseCrmEventClient(
-        EventsNamesCrmEnum.findOneByName,
-        IntegrationCryptoEnum.FIREBLOCKS,
+      const [transaction] = depositResponse.data;
+
+      await this.updateWalletBalance(
+        preorder.walletId,
+        sourceWallet.amountCustodial,
+        preorder.totalAmount
       );
-
-      const cryptoType = await this.integration.getCryptoIntegration(
-        null,
-        IntegrationCryptoEnum.FIREBLOCKS,
-        '',
-      );
-
-      const depositDto = {
-        vaultAccountId: sourceWallet.accountId,
-        amount: preorder.amount.toString(),
-        address: preorder.destinationAddress,
-        description: 'Withdrawal',
-        external: true,
-      } as unknown as DepositDto;
-
-      const txResponse = await cryptoType.createDeposit(depositDto);
-      const [transaction] = txResponse.data;
-
-      const updateDto = new AccountUpdateDto();
-      updateDto.id = preorder.walletId;
-      updateDto.amountCustodial =
-        sourceWallet.amountCustodial - preorder.totalAmount;
-
-      await this.lib.update(preorder.walletId, updateDto);
 
       this.preorders.delete(dto.preorderId);
 
       return {
-        transactionId:
-          transaction?.transactionId || transaction?.id || String(Date.now()),
+        transactionId: transaction.transactionId || transaction.id || String(Date.now()),
         status: 'PENDING',
         amount: preorder.amount,
         fees: {
@@ -800,64 +947,85 @@ export class AccountServiceService
       };
     } catch (error) {
       this.logger.error(
-        `Withdrawal execution failed' ${error} ${AccountServiceService.name}`,
+        'Withdrawal execution failed',
+        error instanceof Error ? error : { error }
       );
+
       throw new WithdrawalError(
-        'EXECUTION_FAILED',
+        WithdrawalErrorCode.EXECUTION_FAILED,
         'Failed to execute withdrawal',
         {
-          details: error.message,
-        },
+          details: error instanceof Error ? error.message : 'Unknown error'
+        }
       );
     }
   }
+
+  private async updateWalletBalance(
+    walletId: string,
+    currentBalance: number,
+    amountToSubtract: number
+  ): Promise<void> {
+    await this.lib.update(walletId, {
+      id: walletId,
+      amountCustodial: currentBalance - amountToSubtract
+    });
+  }
+
   async generateDepositQr(dto: QrDepositDto): Promise<QrDepositResponse> {
     try {
-      const wallet = await this.lib.findOne(dto.walletId);
-      if (!wallet) {
-        throw new BadRequestException('Wallet not found');
-      }
-
-      const fireblocksCrm = await this.builder.getPromiseCrmEventClient(
-        EventsNamesCrmEnum.findOneByName,
-        IntegrationCryptoEnum.FIREBLOCKS,
-      );
-
-      const cryptoType = await this.integration.getCryptoIntegration(
-        null,
-        IntegrationCryptoEnum.FIREBLOCKS,
-        '',
-      );
+      const wallet = await this.validateSourceWallet(dto.vaultAccountId);
+      const cryptoType = await this.getFireblocksType();
 
       const depositAddress = await cryptoType.createDeposit({
-        vaultAccountId: wallet.accountId,
-        network: dto.network,
-        amount: dto.amount.toString(),
-      } as unknown as DepositDto);
+        data: new DataCreateDepositDto
+      });
+
+      if (!depositAddress?.data?.[0]?.address) {
+        throw new WithdrawalError(
+          WithdrawalErrorCode.EXECUTION_FAILED,
+          'Failed to generate deposit address'
+        );
+      }
 
       const [addressData] = depositAddress.data;
       const address = addressData.address;
 
-      let scanUrl = '';
-      if (dto.network === NetworkEnum.TRON) {
-        scanUrl = `https://tronscan.org/#/address/${address}`;
-      } else if (dto.network === NetworkEnum.ARBITRUM) {
-        scanUrl = `https://arbiscan.io/address/${address}`;
-      }
+      const scanUrl = this.generateScanUrl(address, dto.network);
 
       return {
         address,
         qrCode: address,
         network: dto.network,
-        amount: dto.amount,
+        amount: Number(dto.amount),
         scanUrl,
         timestamp: new Date(),
       };
     } catch (error) {
       this.logger.error(
-        `QR deposit generation failed' ${error} ${AccountServiceService.name}`,
+        'QR deposit generation failed',
+        error instanceof Error ? error : { error }
       );
-      throw new BadRequestException('Failed to generate deposit QR');
+
+      throw new WithdrawalError(
+        WithdrawalErrorCode.EXECUTION_FAILED,
+        'Failed to generate deposit QR',
+        {
+          originalMessage: error instanceof Error ? error.message : 'Unknown error'
+        }
+      );
     }
   }
+
+  private generateScanUrl(address: string, network: string): string {
+    switch (network) {
+      case 'TRON':
+        return `https://tronscan.org/#/address/${address}`;
+      case 'ARBITRUM':
+        return `https://arbiscan.io/address/${address}`;
+      default:
+        return '';
+    }
+  }
+
 }

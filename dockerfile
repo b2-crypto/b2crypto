@@ -1,22 +1,29 @@
-FROM public.ecr.aws/docker/library/node:20.17.0-alpine3.20 AS build
+FROM public.ecr.aws/docker/library/node:20.17.0-alpine3.20 AS base
+WORKDIR /app
+RUN apk add --update --no-cache curl
+RUN apk add --update --no-cache python3 py3-pip
+RUN apk add --update --no-cache make gcc g++
+RUN npm install -g pnpm@^9.15.5
+RUN pnpm config set store-dir .pnpm-store
+
+FROM base AS build
 WORKDIR /app
 COPY . .
-RUN corepack enable pnpm
 RUN pnpm install
 RUN pnpm run build
 
-FROM public.ecr.aws/docker/library/node:20.17.0-alpine3.20 AS deploy
+FROM base AS final
 WORKDIR /app
 COPY --from=build /app/dist/apps/b2crypto ./dist/apps/b2crypto
 COPY --from=build /app/package*.json ./
 COPY --from=build /app/sftp ./sftp
 COPY --from=build /app/libs/message/src/templates ./libs/message/src/templates
-RUN corepack enable pnpm
 RUN pnpm install --production
-RUN apk add --update curl
 
-ENV ENVIRONMENT=""
+ENV ENVIRONMENT="dev"
 ENV APP_NAME=""
+ENV APP_VERSION=""
+ENV STACK=""
 ENV GOOGLE_2FA=false
 ENV PORT=3000
 
@@ -40,7 +47,7 @@ ENV CACHE_MAX_ITEMS=5
 ENV AUTH_MAX_SECONDS_TO_REFRESH=60
 ENV AUTH_SECRET=""
 ENV AUTH_EXPIRE_IN=8h
-ENV OTP_VALIDATION_TIME_SECONDS=90
+ENV OTP_VALIDATION_TIME_SECONDS=120
 ENV API_KEY_EMAIL_APP=""
 ENV URL_API_EMAIL_APP=""
 
@@ -84,8 +91,8 @@ ENV LOGO_URL=""
 ENV SOCIAL_MEDIA_ICONS=""
 ENV SOCIAL_MEDIA_LINKS=""
 
-ENV OPTL_API_URL=""
-ENV OPTL_SERVICE_NAME=""
+ENV OTLP_HOST=""
+ENV OTLP_API_KEY=""
 
 ENTRYPOINT [ "node", "./dist/apps/b2crypto/main.js" ]
 CMD [""]
