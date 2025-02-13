@@ -93,21 +93,51 @@ export class FireBlocksNotificationsController {
 
     this.logger.info(`[webhook] rta: ${JSON.stringify(rta)}`);
 
-    const rtaCached = await this.cacheManager.get<string>(rta?.id ?? '');
-    this.logger.info(`[webhook] rtaCached: ${JSON.stringify(rtaCached ?? {})}`);
+    const rtaStatusCached = await this.cacheManager.get<string>(rta?.id ?? '');
+    this.logger.info(`[webhook] rtaStatusCached: ${rtaStatusCached}`);
 
-    const isRtaCompleted =
+    const isRtaStatusCachedNotCompleted =
+      rtaStatusCached !== 'COMPLETED' && rtaStatusCached !== 'CONFIRMED';
+    this.logger.info(
+      `[webhook] isRtaStatusCachedNotCompleted: ${isRtaStatusCachedNotCompleted}`,
+    );
+
+    const isRtaStatusActualCompleted =
       rta?.status === 'CONFIRMED' || rta?.status === 'COMPLETED';
-    this.logger.info(`[webhook] isRtaCompleted: ${isRtaCompleted}`);
+    this.logger.info(
+      `[webhook] isRtaStatusActualCompleted: ${isRtaStatusActualCompleted}`,
+    );
 
-    const isRtaTypeValid =
-      rta?.source?.type === 'UNKNOWN' ||
-      (rta?.source?.type === 'VAULT_ACCOUNT' &&
-        rta?.destination?.type === 'EXTERNAL_WALLET');
-    this.logger.info(`[webhook] isRtaTypeValid: ${isRtaTypeValid}`);
+    const isRtaTypeValid = (rta) => {
+      if (rta?.source?.type === 'UNKNOWN') return true;
 
-    if (rta.id && isRtaTypeValid && isRtaCompleted && !rtaCached) {
+      if (
+        rta?.source?.type === 'VAULT_ACCOUNT' &&
+        rta?.destination?.type === 'EXTERNAL_WALLET'
+      )
+        return true;
+
+      if (
+        rta?.source?.type === 'VAULT_ACCOUNT' &&
+        rta?.destination?.type === 'VAULT_ACCOUNT' &&
+        rta?.destination?.name === 'Mix'
+      )
+        return true;
+
+      return false;
+    };
+
+    this.logger.info(`[webhook] isRtaTypeValid: ${isRtaTypeValid(rta)}`);
+
+    if (
+      rta.id &&
+      isRtaTypeValid(rta) &&
+      isRtaStatusActualCompleted &&
+      isRtaStatusCachedNotCompleted
+    ) {
       this.cacheManager.set(rta.id, rta.status, 30 * 60 * 1000);
+      this.logger.info(`[webhook] Rta Cached: ${rta.id}:${rta.status}`);
+
       const txList = await this.builder.getPromiseTransferEventClient(
         EventsNamesTransferEnum.findAll,
         {
