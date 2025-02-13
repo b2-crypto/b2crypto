@@ -710,7 +710,25 @@ export class AccountServiceService
   }
 
   private getAssetIdFromNetwork(network: NetworkEnum): string {
-    return network;
+    const networkToAssetId: Record<NetworkEnum, string> = {
+      [NetworkEnum.TRON]: 'USDT_TRX',
+      [NetworkEnum.ARBITRUM]: 'USDT_ARB'
+    };
+
+    const assetId = networkToAssetId[network];
+    if (!assetId) {
+      throw new WithdrawalError(
+        WithdrawalErrorCode.UNSUPPORTED_NETWORK,
+        `Network ${network} is not supported`,
+        {
+          network,
+          supportedNetworks: Object.keys(networkToAssetId),
+          providedNetworkEnum: network
+        }
+      );
+    }
+
+    return assetId;
   }
 
   private cleanupExpiredPreorders() {

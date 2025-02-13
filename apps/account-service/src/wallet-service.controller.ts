@@ -1766,7 +1766,7 @@ export class WalletServiceController extends AccountServiceController {
         );
       }
 
-      if (!Object.values(NetworkEnum).includes(dto.network)) {
+      if (!Object.keys(NetworkEnum).includes(dto.network)) {
         throw new WithdrawalError(
           WithdrawalErrorCode.UNSUPPORTED_NETWORK,
           'Unsupported network',
