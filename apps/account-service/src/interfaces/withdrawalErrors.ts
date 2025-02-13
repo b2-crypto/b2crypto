@@ -1,3 +1,5 @@
+import { NetworkEnum } from "../enum/network.enum";
+
 export interface WithdrawalErrorDetails {
     message?: string;
     code?: string;
@@ -28,8 +30,11 @@ export interface WithdrawalErrorDetails {
     deficit?: number;
     reason?: string;
     activePreorders?: number;
-}
 
+    supportedNetworks?: string[];
+
+    providedNetworkEnum?: NetworkEnum;
+}
 export interface FireblocksErrorResponse {
     response?: {
         data?: {

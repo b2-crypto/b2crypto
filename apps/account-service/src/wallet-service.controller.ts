@@ -1766,15 +1766,19 @@ export class WalletServiceController extends AccountServiceController {
         );
       }
 
-      if (!Object.values(NetworkEnum).includes(dto.network)) {
+      if (!Object.values(NetworkEnum).includes(dto.network as NetworkEnum)) {
         throw new WithdrawalError(
           WithdrawalErrorCode.UNSUPPORTED_NETWORK,
           'Unsupported network',
-          { network: dto.network }
+          {
+            network: dto.network,
+            supportedNetworks: Object.values(NetworkEnum)
+          }
         );
       }
 
       const result = await this.walletService.validateWithdrawalPreorder(dto);
+
       this.logger.info('Withdrawal preorder created', {
         userId,
         walletId: dto.walletId,
@@ -1782,21 +1786,28 @@ export class WalletServiceController extends AccountServiceController {
       });
 
       return result;
+
     } catch (error) {
       this.logger.error('Failed to create withdrawal preorder', {
         error: error instanceof Error ? error.message : error,
+        code: error instanceof WithdrawalError ? error.code : undefined,
+        details: error instanceof WithdrawalError ? error.details : undefined,
         dto
       });
 
       if (error instanceof WithdrawalError) {
-        throw error;
+        throw new BadRequestException({
+          code: error.code,
+          message: error.message,
+          details: error.details
+        });
       }
 
-      throw new WithdrawalError(
-        WithdrawalErrorCode.VALIDATION_FAILED,
-        'Failed to create withdrawal preorder',
-        { originalError: error instanceof Error ? error.message : 'Unknown error' }
-      );
+      throw new BadRequestException({
+        code: WithdrawalErrorCode.EXECUTION_FAILED,
+        message: 'Failed to create withdrawal preorder',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      });
     }
   }
 
