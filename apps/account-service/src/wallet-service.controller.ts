@@ -30,9 +30,7 @@ import {
   Controller,
   Delete,
   Get,
-  Inject,
-  InternalServerErrorException,
-  NotImplementedException,
+  Inject, NotImplementedException,
   Param,
   Patch,
   Post,
@@ -40,8 +38,7 @@ import {
   Query,
   Req,
   UnauthorizedException,
-  UseGuards,
-
+  UseGuards
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Ctx, EventPattern, Payload, RmqContext } from '@nestjs/microservices';
@@ -77,6 +74,9 @@ import EventsNamesAccountEnum from './enum/events.names.account.enum';
 import { PreorderResponse } from './interfaces/preorderResponse';
 import { QrDepositResponse } from './interfaces/qr-deposit-response.interface';
 import { WithdrawalResponse } from './interfaces/withdrawalResponse';
+import { NetworkEnum } from './enum/network.enum';
+import { WithdrawalErrorCode } from './enum/withdrawalErrorCode';
+import { WithdrawalError } from './utils/errors';
 
 
 @ApiTags(SwaggerSteakeyConfigEnum.TAG_WALLET)
@@ -1690,16 +1690,43 @@ export class WalletServiceController extends AccountServiceController {
     @Body() dto: QrDepositDto,
     @Req() req?: any,
   ): Promise<QrDepositResponse> {
-    const userId = CommonService.getUserId(req);
+    try {
+      const userId = CommonService.getUserId(req);
 
-    const wallet = await this.walletService.findOneById(dto.vaultAccountId);
-    if (!wallet || wallet.owner.toString() !== userId) {
-      throw new BadRequestException(
-        'Invalid wallet or insufficient permissions',
+      const wallet = await this.walletService.findOneById(dto.vaultAccountId);
+      if (!wallet || wallet.owner.toString() !== userId) {
+        throw new WithdrawalError(
+          WithdrawalErrorCode.INVALID_WALLET,
+          'Invalid wallet or insufficient permissions',
+          { walletId: dto.vaultAccountId, userId }
+        );
+      }
+
+      const result = await this.walletService.generateDepositQr(dto);
+
+      this.logger.info('Deposit QR generated', {
+        userId,
+        walletId: dto.vaultAccountId,
+        address: result.address
+      });
+
+      return result;
+    } catch (error) {
+      this.logger.error('Failed to generate deposit QR', {
+        error: error instanceof Error ? error.message : error,
+        dto
+      });
+
+      if (error instanceof WithdrawalError) {
+        throw error;
+      }
+
+      throw new WithdrawalError(
+        WithdrawalErrorCode.EXECUTION_FAILED,
+        'Failed to generate deposit QR',
+        { originalError: error instanceof Error ? error.message : 'Unknown error' }
       );
     }
-
-    return this.walletService.generateDepositQr(dto);
   }
 
   @Post('external-withdrawal-preorder')
@@ -1716,26 +1743,59 @@ export class WalletServiceController extends AccountServiceController {
 
       const wallet = await this.walletService.findOneById(dto.walletId);
       if (!wallet || wallet.owner.toString() !== userId) {
-        throw new BadRequestException(
-          'Invalid wallet',
+        throw new WithdrawalError(
+          WithdrawalErrorCode.INVALID_WALLET,
+          'Invalid wallet or insufficient permissions',
+          { walletId: dto.walletId, userId }
         );
       }
+
       if (!dto.destinationAddress || dto.destinationAddress.length < 10) {
-        throw new BadRequestException('Invalid destination address');
+        throw new WithdrawalError(
+          WithdrawalErrorCode.INVALID_ADDRESS,
+          'Invalid destination address',
+          { address: dto.destinationAddress }
+        );
       }
 
       if (!dto.amount || dto.amount <= 0) {
-        throw new BadRequestException('Invalid amount');
+        throw new WithdrawalError(
+          WithdrawalErrorCode.INVALID_AMOUNT,
+          'Invalid withdrawal amount',
+          { amount: dto.amount }
+        );
       }
 
-      return this.walletService.validateWithdrawalPreorder(dto);
+      if (!Object.values(NetworkEnum).includes(dto.network)) {
+        throw new WithdrawalError(
+          WithdrawalErrorCode.UNSUPPORTED_NETWORK,
+          'Unsupported network',
+          { network: dto.network }
+        );
+      }
+
+      const result = await this.walletService.validateWithdrawalPreorder(dto);
+      this.logger.info('Withdrawal preorder created', {
+        userId,
+        walletId: dto.walletId,
+        preorderId: result.preorderId
+      });
+
+      return result;
     } catch (error) {
-      if (error instanceof BadRequestException) {
+      this.logger.error('Failed to create withdrawal preorder', {
+        error: error instanceof Error ? error.message : error,
+        dto
+      });
+
+      if (error instanceof WithdrawalError) {
         throw error;
       }
 
-      throw new InternalServerErrorException(
-        'An error occurred while processing the withdrawal preorder'
+      throw new WithdrawalError(
+        WithdrawalErrorCode.VALIDATION_FAILED,
+        'Failed to create withdrawal preorder',
+        { originalError: error instanceof Error ? error.message : 'Unknown error' }
       );
     }
   }
@@ -1749,11 +1809,46 @@ export class WalletServiceController extends AccountServiceController {
     @Body() dto: WithdrawalExecuteDto,
     @Req() req?: any,
   ): Promise<WithdrawalResponse> {
-    if (!dto.preorderId) {
-      throw new BadRequestException('Invalid preorder ID');
-    }
+    try {
+      const userId = CommonService.getUserId(req);
 
-    return this.walletService.executeWithdrawalOrder(dto);
+      if (!dto.preorderId) {
+        throw new WithdrawalError(
+          WithdrawalErrorCode.INVALID_PREORDER,
+          'Invalid preorder ID',
+          { preorderId: dto.preorderId }
+        );
+      }
+
+      const result = await this.walletService.executeWithdrawalOrder(dto);
+
+      this.logger.info('Withdrawal executed successfully', {
+        userId,
+        preorderId: dto.preorderId,
+        transactionId: result.transactionId
+      });
+
+      return result;
+
+    } catch (error) {
+      if (error instanceof WithdrawalError) {
+        throw error;
+      }
+
+      this.logger.error('Withdrawal execution failed', {
+        error: error instanceof Error ? error.message : error,
+        dto
+      });
+
+      throw new WithdrawalError(
+        WithdrawalErrorCode.EXECUTION_FAILED,
+        'Failed to execute withdrawal',
+        {
+          preorderId: dto.preorderId,
+          message: error instanceof Error ? error.message : 'Unknown error'
+        }
+      );
+    }
   }
 
 }

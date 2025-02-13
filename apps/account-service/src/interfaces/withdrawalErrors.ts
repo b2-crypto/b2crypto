@@ -1,18 +1,33 @@
 export interface WithdrawalErrorDetails {
-    walletId?: string;
+    message?: string;
+    code?: string;
+    network?: string;
     address?: string;
+    walletId?: string;
+    amount?: number;
+
     available?: number;
     required?: number;
-    network?: string;
-    preorderId?: string;
-    details?: string;
-    vaultAccountId?: string;
     fees?: {
-        networkFee: number;
-        baseFee: number;
+        networkFee?: number;
+        baseFee?: number;
     };
+
+    details?: string;
     originalMessage?: string;
+    originalError?: string | Error | unknown;
+    stack?: string;
     errorCode?: string;
+
+    preorderId?: string;
+    response?: unknown;
+    userId?: string;
+    timestamp?: Date;
+
+    transactionId?: string;
+    deficit?: number;
+    reason?: string;
+    activePreorders?: number;
 }
 
 export interface FireblocksErrorResponse {
