@@ -12,4 +12,11 @@ export class WithdrawalError extends Error {
     super(message);
     this.name = 'WithdrawalError';
   }
+
+  getLogMessage(): string {
+    const detailsStr = this.details ? Object.entries(this.details)
+      .map(([key, value]) => `${key}=${value}`)
+      .join(', ') : '';
+    return `[withdrawal] ${this.message}: code=${this.code}${detailsStr ? ', ' + detailsStr : ''}`;
+  }
 }
