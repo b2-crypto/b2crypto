@@ -100,13 +100,28 @@ export class FireBlocksNotificationsController {
       rta?.status === 'CONFIRMED' || rta?.status === 'COMPLETED';
     this.logger.info(`[webhook] isRtaCompleted: ${isRtaCompleted}`);
 
-    const isRtaTypeValid =
-      rta?.source?.type === 'UNKNOWN' ||
-      (rta?.source?.type === 'VAULT_ACCOUNT' &&
-        rta?.destination?.type === 'EXTERNAL_WALLET');
-    this.logger.info(`[webhook] isRtaTypeValid: ${isRtaTypeValid}`);
+    const isRtaTypeValid = (rta) => {
+      if (rta?.source?.type === 'UNKNOWN') return true;
 
-    if (rta.id && isRtaTypeValid && isRtaCompleted && !rtaCached) {
+      if (
+        rta?.source?.type === 'VAULT_ACCOUNT' &&
+        rta?.destination?.type === 'EXTERNAL_WALLET'
+      )
+        return true;
+
+      if (
+        rta?.source?.type === 'VAULT_ACCOUNT' &&
+        rta?.destination?.type === 'VAULT_ACCOUNT' &&
+        rta?.destination?.name === 'Mix'
+      )
+        return true;
+
+      return false;
+    };
+
+    this.logger.info(`[webhook] isRtaTypeValid: ${isRtaTypeValid(rta)}`);
+
+    if (rta.id && isRtaTypeValid(rta) && isRtaCompleted && !rtaCached) {
       this.cacheManager.set(rta.id, rta.status, 30 * 60 * 1000);
       const txList = await this.builder.getPromiseTransferEventClient(
         EventsNamesTransferEnum.findAll,
