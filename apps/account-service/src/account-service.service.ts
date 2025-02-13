@@ -48,6 +48,7 @@ import { QrDepositResponse } from './interfaces/qr-deposit-response.interface';
 import { WithdrawalErrorCode } from './enum/withdrawalErrorCode';
 import { FireblocksIntegrationService } from '@integration/integration/crypto/fireblocks/fireblocks-integration.service';
 import { DataCreateDepositDto } from './dtos/deposit.dto';
+import { NetworkEnum } from './enum/network.enum';
 
 
 @Traceable()
@@ -56,6 +57,7 @@ export class AccountServiceService
   implements BasicMicroserviceService<AccountDocument> {
   private readonly preorders = new Map<string, PreorderData>();
   private cryptoType: FireblocksIntegrationService | null = null;
+
   async cleanWallet(query: QuerySearchAnyDto) {
     throw new NotImplementedException();
     // query = query || new QuerySearchAnyDto();
@@ -702,49 +704,36 @@ export class AccountServiceService
 
   private async getFireblocksType(): Promise<FireblocksIntegrationService> {
     if (!this.cryptoType) {
-      this.cryptoType = await this.integration.getCryptoIntegration(
-        null,
-        IntegrationCryptoEnum.FIREBLOCKS,
-        '',
-      ) as FireblocksIntegrationService;
+      this.cryptoType = await this.integration.getCryptoIntegration(null, IntegrationCryptoEnum.FIREBLOCKS, '') as FireblocksIntegrationService;
     }
     return this.cryptoType;
   }
 
-  private getAssetIdFromNetwork(network: string): string {
-    const networkToAssetId: Record<string, string> = {
-      'TRON': 'USDT_TRX',
-      'ARBITRUM': 'USDT_ARB',
-    };
-
-    const assetId = networkToAssetId[network];
-    if (!assetId) {
-      throw new WithdrawalError(
-        WithdrawalErrorCode.UNSUPPORTED_NETWORK,
-        `Unsupported network: ${network}`,
-        { network }
-      );
-    }
-
-    return assetId;
+  private getAssetIdFromNetwork(network: NetworkEnum): string {
+    return network;
   }
 
-  async validateWithdrawalPreorder(
-    dto: WithdrawalPreorderDto
-  ): Promise<PreorderResponse> {
-    try {
-      const sourceWallet = await this.validateSourceWallet(dto.walletId);
+  private cleanupExpiredPreorders() {
+    const now = Date.now();
+    const maxAge = WITHDRAWAL_CONFIG.timing.maxConfirmationTime * 1000;
+    for (const [preorderId, preorder] of this.preorders.entries()) {
+      if (preorder.createdAt.getTime() + maxAge < now) {
+        this.preorders.delete(preorderId);
+        this.logger.info({ msg: 'Cleaned up expired preorder', preorderId, createdAt: preorder.createdAt, expiryTime: maxAge });
+      }
+    }
+  }
 
-      const { networkFee, baseFee, totalAmount } = this.calculateFees(dto.amount, dto.network);
+  private calculateFees(amount: number, network: NetworkEnum): { networkFee: number; baseFee: number; totalAmount: number; } {
+    const networkFee = amount * WITHDRAWAL_CONFIG.fees.networks[network];
+    const baseFee = WITHDRAWAL_CONFIG.fees.base;
+    const totalAmount = amount + networkFee + baseFee;
+    return { networkFee, baseFee, totalAmount };
+  }
 
-      this.validateSufficientFunds(sourceWallet.amountCustodial, totalAmount, networkFee, baseFee);
-
-      await this.validateFireblocksAddress(dto.destinationAddress, dto.network);
-
-      return this.createPreorder(dto, totalAmount, networkFee, baseFee);
-    } catch (error) {
-      this.handleWithdrawalError(error);
-      throw error;
+  private validateSufficientFunds(available: number, required: number, networkFee: number, baseFee: number): void {
+    if (available < required) {
+      throw new WithdrawalError(WithdrawalErrorCode.INSUFFICIENT_FUNDS, 'Insufficient balance', { available, required, fees: { networkFee, baseFee } });
     }
   }
 
@@ -760,272 +749,101 @@ export class AccountServiceService
     return sourceWallet;
   }
 
-  private calculateFees(amount: number, network: string): {
-    networkFee: number;
-    baseFee: number;
-    totalAmount: number;
-  } {
-    const networkFee = amount * WITHDRAWAL_CONFIG.fees.networks[network];
-    const baseFee = WITHDRAWAL_CONFIG.fees.base;
-    const totalAmount = amount + networkFee + baseFee;
-
-    return { networkFee, baseFee, totalAmount };
-  }
-
-  private validateSufficientFunds(
-    available: number,
-    required: number,
-    networkFee: number,
-    baseFee: number
-  ): void {
-    if (available < required) {
-      throw new WithdrawalError(
-        WithdrawalErrorCode.INSUFFICIENT_FUNDS,
-        'Insufficient balance',
-        {
-          available,
-          required,
-          fees: { networkFee, baseFee }
-        }
-      );
+  private handleWithdrawalError(error: unknown): void {
+    if (error instanceof WithdrawalError) {
+      this.logger.error(`Withdrawal validation failed: ${error.message}`, { errorCode: error.code, details: error.details, originalError: error.originalError });
+    } else {
+      this.logger.error(`Unexpected error during withdrawal validation: ${error instanceof Error ? error.message : 'Unknown error'}`, { stack: error instanceof Error ? error.stack : undefined });
+      throw new WithdrawalError(WithdrawalErrorCode.EXECUTION_FAILED, 'An unexpected error occurred while validating the withdrawal preorder', { originalMessage: error instanceof Error ? error.message : 'Unknown error' });
     }
   }
 
-  private async validateFireblocksAddress(address: string, network: string): Promise<void> {
+  private async validateFireblocksAddress(address: string, network: NetworkEnum): Promise<void> {
     try {
       const cryptoType = await this.getFireblocksType();
       const assetId = this.getAssetIdFromNetwork(network);
-
       await cryptoType.validateAddress(assetId, address);
-
     } catch (error) {
       const fireblocksError = error as { response?: { data?: { message?: string; code?: string } }; message?: string };
-
       if (fireblocksError.response?.data?.message || fireblocksError.message?.includes('Fireblocks')) {
-        throw new WithdrawalError(
-          WithdrawalErrorCode.FIREBLOCKS_ERROR,
-          'Failed to validate with Fireblocks',
-          {
-            originalMessage: fireblocksError.response?.data?.message || fireblocksError.message,
-            errorCode: fireblocksError.response?.data?.code,
-            network,
-            address
-          },
-          fireblocksError
-        );
+        throw new WithdrawalError(WithdrawalErrorCode.FIREBLOCKS_ERROR, 'Failed to validate with Fireblocks', { originalMessage: fireblocksError.response?.data?.message || fireblocksError.message, errorCode: fireblocksError.response?.data?.code, network, address }, fireblocksError);
       }
-
       if (error instanceof Error && error.message.includes('Invalid address')) {
-        throw new WithdrawalError(
-          WithdrawalErrorCode.INVALID_ADDRESS,
-          'Invalid destination address for this network',
-          {
-            network,
-            address
-          }
-        );
+        throw new WithdrawalError(WithdrawalErrorCode.INVALID_ADDRESS, 'Invalid destination address for this network', { network, address });
       }
-
-      throw new WithdrawalError(
-        WithdrawalErrorCode.NETWORK_ERROR,
-        'Error validating address with Fireblocks',
-        {
-          network,
-          address,
-          originalMessage: error instanceof Error ? error.message : 'Unknown error'
-        },
-        error
-      );
+      throw new WithdrawalError(WithdrawalErrorCode.NETWORK_ERROR, 'Error validating address with Fireblocks', { network, address, originalMessage: error instanceof Error ? error.message : 'Unknown error' }, error);
     }
   }
 
-  private createPreorder(
-    dto: WithdrawalPreorderDto,
-    totalAmount: number,
-    networkFee: number,
-    baseFee: number
-  ): PreorderResponse {
+  private createPreorder(dto: WithdrawalPreorderDto, totalAmount: number, networkFee: number, baseFee: number): PreorderResponse {
     const preorderId = `WD_${Date.now()}`;
-    const preorder: PreorderData = {
-      ...dto,
-      totalAmount,
-      networkFee,
-      baseFee,
-      fees: { networkFee, baseFee },
-      createdAt: new Date()
-    };
-
+    const preorder: PreorderData = { ...dto, totalAmount, networkFee, baseFee, fees: { networkFee, baseFee }, createdAt: new Date() };
     this.preorders.set(preorderId, preorder);
-
-    return {
-      preorderId,
-      totalAmount,
-      originWalletId: dto.walletId,
-      destinationAddress: dto.destinationAddress,
-      network: dto.network,
-      fees: { networkFee, baseFee },
-      netAmount: dto.amount,
-      expiresAt: new Date(
-        Date.now() + WITHDRAWAL_CONFIG.timing.maxConfirmationTime * 1000
-      )
-    };
+    return { preorderId, totalAmount, originWalletId: dto.walletId, destinationAddress: dto.destinationAddress, network: dto.network, fees: { networkFee, baseFee }, netAmount: dto.amount, expiresAt: new Date(Date.now() + WITHDRAWAL_CONFIG.timing.maxConfirmationTime * 1000) };
   }
 
-  private handleWithdrawalError(error: unknown): void {
-    if (error instanceof WithdrawalError) {
-      this.logger.error(
-        `Withdrawal validation failed: ${error.message}`,
-        {
-          errorCode: error.code,
-          details: error.details,
-          originalError: error.originalError
-        }
-      );
-    } else {
-      this.logger.error(
-        `Unexpected error during withdrawal validation: ${error instanceof Error ? error.message : 'Unknown error'}`,
-        {
-          stack: error instanceof Error ? error.stack : undefined
-        }
-      );
+  private async updateWalletBalance(walletId: string, currentBalance: number, amountToSubtract: number): Promise<void> {
+    await this.lib.update(walletId, { id: walletId, amountCustodial: currentBalance - amountToSubtract });
+  }
 
-      throw new WithdrawalError(
-        WithdrawalErrorCode.EXECUTION_FAILED,
-        'An unexpected error occurred while validating the withdrawal preorder',
-        { originalMessage: error instanceof Error ? error.message : 'Unknown error' }
-      );
+  async validateWithdrawalPreorder(dto: WithdrawalPreorderDto): Promise<PreorderResponse> {
+    try {
+      const sourceWallet = await this.validateSourceWallet(dto.walletId);
+      const { networkFee, baseFee, totalAmount } = this.calculateFees(dto.amount, dto.network);
+      this.validateSufficientFunds(sourceWallet.amountCustodial, totalAmount, networkFee, baseFee);
+      await this.validateFireblocksAddress(dto.destinationAddress, dto.network);
+      return this.createPreorder(dto, totalAmount, networkFee, baseFee);
+    } catch (error) {
+      this.handleWithdrawalError(error);
+      throw error;
     }
   }
 
-  async executeWithdrawalOrder(
-    dto: WithdrawalExecuteDto
-  ): Promise<WithdrawalResponse> {
+  async executeWithdrawalOrder(dto: WithdrawalExecuteDto): Promise<WithdrawalResponse> {
     const preorder = this.preorders.get(dto.preorderId);
     if (!preorder) {
-      throw new WithdrawalError(
-        WithdrawalErrorCode.INVALID_PREORDER,
-        'Preorder not found',
-        { preorderId: dto.preorderId }
-      );
+      throw new WithdrawalError(WithdrawalErrorCode.INVALID_PREORDER, 'Preorder not found', { preorderId: dto.preorderId });
     }
-
     try {
       const sourceWallet = await this.validateSourceWallet(preorder.walletId);
       const cryptoType = await this.getFireblocksType();
-
-      const depositResponse = await cryptoType.createDeposit({
-        data: new DataCreateDepositDto
-      });
-
+      const depositResponse = await cryptoType.createDeposit({ data: new DataCreateDepositDto() });
       if (!depositResponse?.data?.[0]) {
-        throw new WithdrawalError(
-          WithdrawalErrorCode.EXECUTION_FAILED,
-          'Failed to create withdrawal transaction'
-        );
+        throw new WithdrawalError(WithdrawalErrorCode.EXECUTION_FAILED, 'Failed to create withdrawal transaction');
       }
-
       const [transaction] = depositResponse.data;
-
-      await this.updateWalletBalance(
-        preorder.walletId,
-        sourceWallet.amountCustodial,
-        preorder.totalAmount
-      );
-
+      await this.updateWalletBalance(preorder.walletId, sourceWallet.amountCustodial, preorder.totalAmount);
       this.preorders.delete(dto.preorderId);
-
-      return {
-        transactionId: transaction.transactionId || transaction.id || String(Date.now()),
-        status: 'PENDING',
-        amount: preorder.amount,
-        fees: {
-          networkFee: preorder.fees.networkFee,
-          baseFee: preorder.fees.baseFee,
-          totalFee: preorder.fees.networkFee + preorder.fees.baseFee,
-        },
-        timestamp: new Date(),
-      };
+      return { transactionId: transaction.transactionId || transaction.id || String(Date.now()), status: 'PENDING', amount: preorder.amount, fees: { networkFee: preorder.fees.networkFee, baseFee: preorder.fees.baseFee, totalFee: preorder.fees.networkFee + preorder.fees.baseFee }, timestamp: new Date() };
     } catch (error) {
-      this.logger.error(
-        'Withdrawal execution failed',
-        error instanceof Error ? error : { error }
-      );
-
-      throw new WithdrawalError(
-        WithdrawalErrorCode.EXECUTION_FAILED,
-        'Failed to execute withdrawal',
-        {
-          details: error instanceof Error ? error.message : 'Unknown error'
-        }
-      );
+      this.logger.error('Withdrawal execution failed', error instanceof Error ? error : { error });
+      throw new WithdrawalError(WithdrawalErrorCode.EXECUTION_FAILED, 'Failed to execute withdrawal', { details: error instanceof Error ? error.message : 'Unknown error' });
     }
   }
 
-  private async updateWalletBalance(
-    walletId: string,
-    currentBalance: number,
-    amountToSubtract: number
-  ): Promise<void> {
-    await this.lib.update(walletId, {
-      id: walletId,
-      amountCustodial: currentBalance - amountToSubtract
-    });
+  private generateScanUrl(address: string, network: string): string {
+    switch (network) {
+      case NetworkEnum.TRON: return `https://tronscan.org/#/address/${address}`;
+      case NetworkEnum.ARBITRUM: return `https://arbiscan.io/address/${address}`;
+      default: return '';
+    }
   }
 
   async generateDepositQr(dto: QrDepositDto): Promise<QrDepositResponse> {
     try {
       const wallet = await this.validateSourceWallet(dto.vaultAccountId);
       const cryptoType = await this.getFireblocksType();
-
-      const depositAddress = await cryptoType.createDeposit({
-        data: new DataCreateDepositDto
-      });
-
+      const depositAddress = await cryptoType.createDeposit({ data: new DataCreateDepositDto() });
       if (!depositAddress?.data?.[0]?.address) {
-        throw new WithdrawalError(
-          WithdrawalErrorCode.EXECUTION_FAILED,
-          'Failed to generate deposit address'
-        );
+        throw new WithdrawalError(WithdrawalErrorCode.EXECUTION_FAILED, 'Failed to generate deposit address');
       }
-
       const [addressData] = depositAddress.data;
       const address = addressData.address;
-
       const scanUrl = this.generateScanUrl(address, dto.network);
-
-      return {
-        address,
-        qrCode: address,
-        network: dto.network,
-        amount: Number(dto.amount),
-        scanUrl,
-        timestamp: new Date(),
-      };
+      return { address, qrCode: address, network: dto.network, amount: Number(dto.amount), scanUrl, timestamp: new Date() };
     } catch (error) {
-      this.logger.error(
-        'QR deposit generation failed',
-        error instanceof Error ? error : { error }
-      );
-
-      throw new WithdrawalError(
-        WithdrawalErrorCode.EXECUTION_FAILED,
-        'Failed to generate deposit QR',
-        {
-          originalMessage: error instanceof Error ? error.message : 'Unknown error'
-        }
-      );
+      this.logger.error('QR deposit generation failed', error instanceof Error ? error : { error });
+      throw new WithdrawalError(WithdrawalErrorCode.EXECUTION_FAILED, 'Failed to generate deposit QR', { originalMessage: error instanceof Error ? error.message : 'Unknown error' });
     }
   }
-
-  private generateScanUrl(address: string, network: string): string {
-    switch (network) {
-      case 'TRON':
-        return `https://tronscan.org/#/address/${address}`;
-      case 'ARBITRUM':
-        return `https://arbiscan.io/address/${address}`;
-      default:
-        return '';
-    }
-  }
-
 }
