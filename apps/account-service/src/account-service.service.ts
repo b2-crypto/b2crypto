@@ -815,14 +815,39 @@ export class AccountServiceService
       const assetId = this.getAssetIdFromNetwork(network);
       await cryptoType.validateAddress(assetId, address);
     } catch (error) {
-      const fireblocksError = error as { response?: { data?: { message?: string; code?: string } }; message?: string };
+      const fireblocksError = error as {
+        response?: {
+          data?: {
+            message?: string;
+            code?: string;
+            error?: string;
+            details?: unknown;
+          };
+        };
+        message?: string;
+        status?: number;
+      };
+
+      const errorMessage = fireblocksError.response?.data?.message ||
+        fireblocksError.response?.data?.error ||
+        fireblocksError.message ||
+        'Unknown Fireblocks error';
+
       this.logger.error(
-        `[withdrawal] Fireblocks validation failed: address=${address}, network=${network}, error=${fireblocksError.response?.data?.message || fireblocksError.message || 'Unknown error'}`
+        `[withdrawal] Fireblocks validation failed: address=${address}, network=${network}, error=${errorMessage}, status=${fireblocksError.status || 'unknown'}`
       );
+
       throw new WithdrawalError(
         WithdrawalErrorCode.FIREBLOCKS_ERROR,
-        'Failed to validate with Fireblocks',
-        { address, network }
+        errorMessage,
+        {
+          address,
+          network,
+          fireblocksCode: fireblocksError.response?.data?.code,
+          fireblocksDetails: fireblocksError.response?.data?.details,
+          status: fireblocksError.status
+        },
+        fireblocksError
       );
     }
   }
@@ -830,14 +855,7 @@ export class AccountServiceService
   async executeWithdrawalOrder(dto: WithdrawalExecuteDto): Promise<WithdrawalResponse> {
     const preorder = this.preorders.get(dto.preorderId);
     if (!preorder) {
-      this.logger.error(
-        `[withdrawal] Preorder not found: preorderId=${dto.preorderId}`
-      );
-      throw new WithdrawalError(
-        WithdrawalErrorCode.INVALID_PREORDER,
-        'Preorder not found',
-        { preorderId: dto.preorderId }
-      );
+      throw new WithdrawalError(WithdrawalErrorCode.INVALID_PREORDER, 'Preorder not found');
     }
 
     try {
@@ -846,9 +864,6 @@ export class AccountServiceService
       const depositResponse = await cryptoType.createDeposit({ data: new DataCreateDepositDto() });
 
       if (!depositResponse?.data?.[0]) {
-        this.logger.error(
-          `[withdrawal] Failed to create transaction: preorderId=${dto.preorderId}`
-        );
         throw new WithdrawalError(
           WithdrawalErrorCode.EXECUTION_FAILED,
           'Failed to create withdrawal transaction'
@@ -871,10 +886,39 @@ export class AccountServiceService
         timestamp: new Date()
       };
     } catch (error) {
+      const fireblocksError = error as {
+        response?: {
+          data?: {
+            message?: string;
+            code?: string;
+            error?: string;
+            details?: unknown;
+          };
+        };
+        message?: string;
+        status?: number;
+      };
+
+      const errorMessage = fireblocksError.response?.data?.message ||
+        fireblocksError.response?.data?.error ||
+        fireblocksError.message ||
+        'Unknown Fireblocks error';
+
       this.logger.error(
-        `[withdrawal] Order execution failed: preorderId=${dto.preorderId}, error=${error instanceof Error ? error.message : 'Unknown error'}`
+        `[withdrawal] Order execution failed: preorderId=${dto.preorderId}, error=${errorMessage}, status=${fireblocksError.status || 'unknown'}`
       );
-      throw error;
+
+      throw new WithdrawalError(
+        WithdrawalErrorCode.EXECUTION_FAILED,
+        errorMessage,
+        {
+          preorderId: dto.preorderId,
+          fireblocksCode: fireblocksError.response?.data?.code,
+          fireblocksDetails: fireblocksError.response?.data?.details,
+          status: fireblocksError.status
+        },
+        fireblocksError
+      );
     }
   }
 
@@ -914,7 +958,6 @@ export class AccountServiceService
         );
       }
 
-      // Validar y mapear la network antes de procesar
       const mappedNetwork = this.validateAndMapNetwork(dto.network);
       const modifiedDto = {
         ...dto,
