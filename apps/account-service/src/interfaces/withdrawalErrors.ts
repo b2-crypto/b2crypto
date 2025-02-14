@@ -32,9 +32,13 @@ export interface WithdrawalErrorDetails {
     activePreorders?: number;
 
     supportedNetworks?: string[];
-
     providedNetworkEnum?: NetworkEnum;
+
+    fireblocksCode?: string;
+    fireblocksDetails?: unknown;
+    status?: number;
 }
+
 export interface FireblocksErrorResponse {
     response?: {
         data?: {
