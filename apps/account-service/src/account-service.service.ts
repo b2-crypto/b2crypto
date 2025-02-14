@@ -878,6 +878,25 @@ export class AccountServiceService
     }
   }
 
+  private validateAndMapNetwork(network: string): NetworkEnum {
+    const networkUpper = network.toUpperCase();
+
+    const isValidNetworkKey = Object.keys(NetworkEnum).includes(networkUpper);
+
+    if (!isValidNetworkKey) {
+      this.logger.error(
+        `[withdrawal] Invalid network provided: network=${network}`
+      );
+      throw new WithdrawalError(
+        WithdrawalErrorCode.UNSUPPORTED_NETWORK,
+        'Invalid network provided',
+        { network, supportedNetworks: Object.keys(NetworkEnum) }
+      );
+    }
+
+    return NetworkEnum[networkUpper as keyof typeof NetworkEnum];
+  }
+
   async validateAndCreateWithdrawalPreorder(
     dto: WithdrawalPreorderDto,
     userId: string
@@ -895,9 +914,16 @@ export class AccountServiceService
         );
       }
 
-      const result = await this.validateWithdrawalPreorder(dto);
+      // Validar y mapear la network antes de procesar
+      const mappedNetwork = this.validateAndMapNetwork(dto.network);
+      const modifiedDto = {
+        ...dto,
+        network: mappedNetwork
+      };
+
+      const result = await this.validateWithdrawalPreorder(modifiedDto);
       this.logger.info(
-        `[withdrawal] Preorder created: preorderId=${result.preorderId}, userId=${userId}`
+        `[withdrawal] Preorder created: preorderId=${result.preorderId}, userId=${userId}, network=${mappedNetwork}`
       );
       return result;
 
