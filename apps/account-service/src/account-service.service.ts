@@ -49,6 +49,7 @@ import { WithdrawalErrorCode } from './enum/withdrawalErrorCode';
 import { FireblocksIntegrationService } from '@integration/integration/crypto/fireblocks/fireblocks-integration.service';
 import { DataCreateDepositDto } from './dtos/deposit.dto';
 import { NetworkEnum } from './enum/network.enum';
+import { UserServiceService } from 'apps/user-service/src/user-service.service';
 
 
 @Traceable()
@@ -57,7 +58,7 @@ export class AccountServiceService
   implements BasicMicroserviceService<AccountDocument> {
   private readonly preorders = new Map<string, PreorderData>();
   private cryptoType: FireblocksIntegrationService | null = null;
-
+  private readonly userService: UserServiceService
   async cleanWallet(query: QuerySearchAnyDto) {
     throw new NotImplementedException();
     // query = query || new QuerySearchAnyDto();
@@ -948,36 +949,78 @@ export class AccountServiceService
     try {
       const wallet = await this.findOneById(dto.walletId);
 
-      if (!wallet || wallet.owner.toString() !== userId) {
+      if (!wallet) {
         this.logger.error(
-          `[withdrawal] Invalid wallet permissions: walletId=${dto.walletId}, userId=${userId}`
+          `[withdrawal] Wallet not found: walletId=${dto.walletId}`
         );
         throw new WithdrawalError(
           WithdrawalErrorCode.INVALID_WALLET,
-          'Invalid wallet or insufficient permissions'
+          'Wallet not found'
+        );
+      }
+
+      if (wallet.owner.toString() !== userId) {
+        this.logger.error(
+          `[withdrawal] Invalid wallet permissions: walletId=${dto.walletId}, userId=${userId}, owner=${wallet.owner}`
+        );
+        throw new WithdrawalError(
+          WithdrawalErrorCode.INVALID_WALLET,
+          'Invalid wallet permissions'
+        );
+      }
+
+      const userResponse = await this.userService.getAll({
+        where: { _id: userId }
+      });
+
+      if (!userResponse?.list?.length) {
+        this.logger.error(
+          `[withdrawal] User not found: userId=${userId}`
+        );
+        throw new WithdrawalError(
+          WithdrawalErrorCode.INVALID_USER,
+          'User not found'
+        );
+      }
+
+      const user = userResponse.list[0];
+
+      if (!user.brand) {
+        this.logger.error(
+          `[webhook] Account by brand undefined was not found: userId=${userId}`
+        );
+        throw new WithdrawalError(
+          WithdrawalErrorCode.INVALID_USER,
+          'User has no brand associated'
         );
       }
 
       const mappedNetwork = this.validateAndMapNetwork(dto.network);
       const modifiedDto = {
         ...dto,
-        network: mappedNetwork
+        network: mappedNetwork,
+        brand: user.brand
       };
 
       const result = await this.validateWithdrawalPreorder(modifiedDto);
       this.logger.info(
-        `[withdrawal] Preorder created: preorderId=${result.preorderId}, userId=${userId}, network=${mappedNetwork}`
+        `[withdrawal] Preorder created: preorderId=${result.preorderId}, userId=${userId}, brand=${user.brand}, network=${mappedNetwork}`
       );
       return result;
 
     } catch (error) {
-      this.logger.error(
-        `[withdrawal] Create preorder failed: userId=${userId}, error=${error instanceof Error ? error.message : 'Unknown error'}`
-      );
+      if (error instanceof WithdrawalError) {
+        this.logger.error(
+          `[withdrawal] Create preorder failed: userId=${userId}, code=${error.code}, details=${JSON.stringify(error.details)}`
+        );
+      } else {
+        this.logger.error(
+          `[withdrawal] Create preorder failed: userId=${userId}, error=${error instanceof Error ? error.message : 'Unknown error'}`
+        );
+      }
       throw error;
     }
   }
-
   async generateDepositQr(dto: QrDepositDto): Promise<QrDepositResponse> {
     try {
       const wallet = await this.validateSourceWallet(dto.vaultAccountId);
