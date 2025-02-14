@@ -969,21 +969,7 @@ export class AccountServiceService
         );
       }
 
-      const userResponse = await this.userService.getAll({
-        where: { _id: userId }
-      });
-
-      if (!userResponse?.list?.length) {
-        this.logger.error(
-          `[withdrawal] User not found: userId=${userId}`
-        );
-        throw new WithdrawalError(
-          WithdrawalErrorCode.INVALID_USER,
-          'User not found'
-        );
-      }
-
-      const user = userResponse.list[0];
+      const user = await this.userService.getOne(userId);
 
       if (!user.brand) {
         this.logger.error(
