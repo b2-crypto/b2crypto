@@ -24,6 +24,8 @@ import { StatusServiceService } from 'apps/status-service/src/status-service.ser
 import { TransferServiceController } from './transfer-service.controller';
 import { TransferServiceService } from './transfer-service.service';
 import { TransferServiceWebsocketGateway } from './transfer-service.websocket.gateway';
+import { UserServiceService } from 'apps/user-service/src/user-service.service';
+import { UserModule } from '@user/user';
 
 @Module({
   imports: [
@@ -40,6 +42,7 @@ import { TransferServiceWebsocketGateway } from './transfer-service.websocket.ga
     AffiliateModule,
     PspModule,
     HttpModule,
+    UserModule
   ],
   controllers: [TransferServiceController],
   providers: [
@@ -53,6 +56,7 @@ import { TransferServiceWebsocketGateway } from './transfer-service.websocket.ga
     AffiliateServiceService,
     //PspAccountServiceService,
     PspServiceService,
+    UserServiceService
   ],
 })
-export class TransferServiceModule {}
+export class TransferServiceModule { }

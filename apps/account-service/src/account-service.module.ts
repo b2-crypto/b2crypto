@@ -28,6 +28,8 @@ import { AccountServiceController } from './account-service.controller';
 import { AccountServiceService } from './account-service.service';
 import { CardServiceController } from './card-service.controller';
 import { WalletServiceController } from './wallet-service.controller';
+import { UserServiceModule } from 'apps/user-service/src/user-service.module';
+import { TransferServiceModule } from 'apps/transfer-service/src/transfer-service.module';
 
 @Module({
   imports: [
@@ -48,6 +50,8 @@ import { WalletServiceController } from './wallet-service.controller';
     StatusModule,
     //
     HttpModule,
+    UserServiceModule,
+    TransferServiceModule
   ],
   controllers: [
     AccountServiceController,
@@ -77,4 +81,4 @@ import { WalletServiceController } from './wallet-service.controller';
     },
   ] as IProvider[],
 })
-export class AccountServiceModule {}
+export class AccountServiceModule { }

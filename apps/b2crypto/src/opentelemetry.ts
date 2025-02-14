@@ -10,9 +10,8 @@ import {
   ATTR_SERVICE_VERSION,
 } from '@opentelemetry/semantic-conventions';
 
-export const serviceName = `${process.env.APP_NAME || 'b2crypto'}.${
-  process.env.STACK || 'dev'
-}`;
+export const serviceName = `${process.env.APP_NAME || 'b2crypto'}.${process.env.STACK || 'dev'
+  }`;
 
 const resource = new Resource({
   [ATTR_SERVICE_NAME]: serviceName,
@@ -49,7 +48,7 @@ export const sdk = new NodeSDK({
   }) as any,
   spanProcessors: [
     new tracing.BatchSpanProcessor(tracesExporter),
-    new tracing.SimpleSpanProcessor(new tracing.ConsoleSpanExporter()),
+    /*     new tracing.SimpleSpanProcessor(new tracing.ConsoleSpanExporter()), */
   ],
   logRecordProcessors: [new logs.BatchLogRecordProcessor(logsExporter)],
   instrumentations: [getNodeAutoInstrumentations()],

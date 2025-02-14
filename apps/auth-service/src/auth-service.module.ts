@@ -4,7 +4,6 @@ import {
 } from '@affiliate/affiliate';
 import { DistributedCacheModule } from '@app/distributed-cache';
 import { AuthService } from '@auth/auth/auth.service';
-import { jwtConstants } from '@auth/auth/constants/auth.constant';
 import { BrandModule, BrandServiceMongooseService } from '@brand/brand';
 import { BuildersModule } from '@builder/builders';
 import { CrmModule, CrmServiceMongooseService } from '@crm/crm';
@@ -13,7 +12,7 @@ import {
   IpAddressServiceMongooseService,
 } from '@ip-address/ip-address';
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 import {
   PermissionModule,
@@ -26,10 +25,6 @@ import { UserModule, UserServiceMongooseService } from '@user/user';
 
 @Module({
   imports: [
-    JwtModule.register({
-      secret: process.env.JWT_SECRET,
-      signOptions: { expiresIn: '60m' },
-    }),
     ConfigModule,
     BuildersModule,
     DistributedCacheModule,
@@ -42,11 +37,15 @@ import { UserModule, UserServiceMongooseService } from '@user/user';
     BrandModule,
     TrafficModule,
     PersonModule,
-    JwtModule.register({
-      secret: jwtConstants.secret,
-      signOptions: {
-        expiresIn: jwtConstants.expiresIn,
-      },
+    JwtModule.registerAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => ({
+        secret: configService.getOrThrow('AUTH_SECRET'),
+        signOptions: {
+          expiresIn: configService.getOrThrow('AUTH_EXPIRE_IN'),
+        },
+      })
     }),
   ],
   providers: [
@@ -62,4 +61,4 @@ import { UserModule, UserServiceMongooseService } from '@user/user';
   ],
   exports: [AuthService],
 })
-export class AuthServiceModule {}
+export class AuthServiceModule { }

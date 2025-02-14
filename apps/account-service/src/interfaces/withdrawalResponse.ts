@@ -1,3 +1,4 @@
+
 export interface WithdrawalResponse {
   transactionId: string;
   status: 'PENDING' | 'COMPLETED' | 'FAILED';

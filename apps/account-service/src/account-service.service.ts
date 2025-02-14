@@ -24,8 +24,10 @@ import { AttachmentsEmailConfig } from '@message/message/dto/message.create.dto'
 import {
   BadRequestException,
   Inject,
-  Injectable, NotImplementedException
+  Injectable,
+  NotImplementedException
 } from '@nestjs/common';
+import { CACHE_MANAGER, Cache } from '@nestjs/cache-manager';
 import { ConfigService } from '@nestjs/config';
 import { Ctx, RmqContext } from '@nestjs/microservices';
 import { TransferEntity } from '@transfer/transfer/entities/transfer.entity';
@@ -58,7 +60,21 @@ export class AccountServiceService
   implements BasicMicroserviceService<AccountDocument> {
   private readonly preorders = new Map<string, PreorderData>();
   private cryptoType: FireblocksIntegrationService | null = null;
-  private readonly userService: UserServiceService
+
+  constructor(
+    @InjectPinoLogger(AccountServiceService.name)
+    protected readonly logger: PinoLogger,
+    private configService: ConfigService,
+    @Inject(BuildersService)
+    private readonly builder: BuildersService,
+    @Inject(AccountServiceMongooseService)
+    private lib: AccountServiceMongooseService,
+    private readonly integration: IntegrationService,
+    @Inject(UserServiceService)
+    private readonly userService: UserServiceService,
+    @Inject(CACHE_MANAGER)
+    private cacheManager: Cache
+  ) { }
   async cleanWallet(query: QuerySearchAnyDto) {
     throw new NotImplementedException();
     // query = query || new QuerySearchAnyDto();
@@ -149,16 +165,7 @@ export class AccountServiceService
     );
     return Promise.all(promises);
   }
-  constructor(
-    @InjectPinoLogger(AccountServiceService.name)
-    protected readonly logger: PinoLogger,
-    private configService: ConfigService,
-    @Inject(BuildersService)
-    private readonly builder: BuildersService,
-    @Inject(AccountServiceMongooseService)
-    private lib: AccountServiceMongooseService,
-    private readonly integration: IntegrationService,
-  ) { }
+
   async download(
     query: QuerySearchAnyDto,
     context?: any,
@@ -722,27 +729,59 @@ export class AccountServiceService
     }
   }
 
-  private createPreorder(dto: WithdrawalPreorderDto, totalAmount: number, networkFee: number, baseFee: number): PreorderResponse {
-    const preorderId = `WD_${Date.now()}`;
-    const preorder: PreorderData = {
-      ...dto,
-      totalAmount,
-      networkFee,
-      baseFee,
-      fees: { networkFee, baseFee },
-      createdAt: new Date()
-    };
-    this.preorders.set(preorderId, preorder);
-    return {
-      preorderId,
-      totalAmount,
-      originWalletId: dto.walletId,
-      destinationAddress: dto.destinationAddress,
-      network: dto.network,
-      fees: { networkFee, baseFee },
-      netAmount: dto.amount,
-      expiresAt: new Date(Date.now() + WITHDRAWAL_CONFIG.timing.maxConfirmationTime * 1000)
-    };
+  private async createPreorder(
+    dto: WithdrawalPreorderDto,
+    totalAmount: number,
+    networkFee: number,
+    baseFee: number
+  ): Promise<PreorderResponse> {
+    try {
+      const preorderId = `WD_${Date.now()}`;
+      const preorder: PreorderData = {
+        ...dto,
+        totalAmount,
+        networkFee,
+        baseFee,
+        fees: { networkFee, baseFee },
+        createdAt: new Date()
+      };
+
+      await this.cacheManager.set(
+        `preorder:${preorderId}`,
+        JSON.stringify(preorder),
+        WITHDRAWAL_CONFIG.timing.maxConfirmationTime
+      );
+
+      const expiresAt = new Date(
+        Date.now() + WITHDRAWAL_CONFIG.timing.maxConfirmationTime * 1000
+      );
+
+      this.logger.info(
+        `[createPreorder] Preorder created and cached: preorderId=${preorderId}, expiresAt=${expiresAt}`
+      );
+
+      return {
+        preorderId,
+        totalAmount,
+        originWalletId: dto.walletId,
+        destinationAddress: dto.destinationAddress,
+        network: dto.network,
+        fees: { networkFee, baseFee },
+        netAmount: dto.amount,
+        expiresAt
+      };
+    } catch (error) {
+      this.logger.error(
+        `[createPreorder] Failed to create preorder: error=${error instanceof Error ? error.message : 'Unknown error'}`
+      );
+      throw new WithdrawalError(
+        WithdrawalErrorCode.EXECUTION_FAILED,
+        'Failed to create withdrawal preorder',
+        {
+          fees: { networkFee, baseFee }
+        }
+      );
+    }
   }
 
   async validateAndGenerateDepositQr(dto: QrDepositDto, userId: string): Promise<QrDepositResponse> {
@@ -854,10 +893,12 @@ export class AccountServiceService
   }
 
   async executeWithdrawalOrder(dto: WithdrawalExecuteDto): Promise<WithdrawalResponse> {
-    const preorder = this.preorders.get(dto.preorderId);
-    if (!preorder) {
+    const preorderData = await this.cacheManager.get(`preorder:${dto.preorderId}`);
+    if (!preorderData) {
       throw new WithdrawalError(WithdrawalErrorCode.INVALID_PREORDER, 'Preorder not found');
     }
+
+    const preorder: PreorderData = JSON.parse(preorderData as string);
 
     try {
       const sourceWallet = await this.validateSourceWallet(preorder.walletId);
@@ -873,7 +914,8 @@ export class AccountServiceService
 
       const [transaction] = depositResponse.data;
       await this.updateWalletBalance(preorder.walletId, sourceWallet.amountCustodial, preorder.totalAmount);
-      this.preorders.delete(dto.preorderId);
+
+      await this.cacheManager.del(`preorder:${dto.preorderId}`);
 
       return {
         transactionId: transaction.transactionId || transaction.id || String(Date.now()),

@@ -1,6 +1,5 @@
 import { AffiliateModule } from '@affiliate/affiliate';
 import { DistributedCacheModule } from '@app/distributed-cache';
-import { jwtConstants } from '@auth/auth/constants/auth.constant';
 import { BuildersModule } from '@builder/builders';
 import { PomeloProcessConstants } from '@common/common/utils/pomelo.integration.process.constants';
 import { PomeloHttpUtils } from '@common/common/utils/pomelo.integration.process.http.utils';
@@ -23,6 +22,7 @@ import { ApiKeyAffiliateStrategy } from './strategies/api.key.affiliate.strategy
 import { ApiKeyStrategy } from './strategies/api.key.strategy';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { LocalStrategy } from './strategies/local.strategy';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 
 @Module({
   imports: [
@@ -33,11 +33,15 @@ import { LocalStrategy } from './strategies/local.strategy';
     PassportModule,
     AffiliateModule,
     PermissionModule,
-    JwtModule.register({
-      secret: jwtConstants.secret,
-      signOptions: {
-        expiresIn: jwtConstants.expiresIn,
-      },
+    JwtModule.registerAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => ({
+        secret: configService.getOrThrow('AUTH_SECRET'),
+        signOptions: {
+          expiresIn: configService.getOrThrow('AUTH_EXPIRE_IN'),
+        },
+      })
     }),
     IntegrationModule,
   ],
@@ -59,4 +63,4 @@ import { LocalStrategy } from './strategies/local.strategy';
   ],
   exports: [AuthService, CaslAbilityFactory, PomeloSignatureGuard],
 })
-export class AuthModule {}
+export class AuthModule { }

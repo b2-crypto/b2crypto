@@ -30,6 +30,8 @@ import {
   Controller,
   Delete,
   Get,
+  HttpCode,
+  HttpStatus,
   Inject, NotImplementedException,
   Param,
   Patch,
@@ -1695,26 +1697,41 @@ export class WalletServiceController extends AccountServiceController {
   @ApiTags(SwaggerSteakeyConfigEnum.TAG_WALLET)
   @ApiSecurity('b2crypto-key')
   @ApiBearerAuth('bearerToken')
+  @HttpCode(HttpStatus.CREATED)
   @UseGuards(ApiKeyAuthGuard, JwtAuthGuard)
   async createWithdrawalPreorder(
     @Body() dto: WithdrawalPreorderDto,
     @Req() req?: any,
-  ): Promise<PreorderResponse> {
+  ): Promise<{
+    data: PreorderResponse; statusCode: HttpStatus
+  }> {
     const userId = CommonService.getUserId(req);
-    return this.walletService.validateAndCreateWithdrawalPreorder(dto, userId);
+    const preorderCreated = await this.walletService.validateAndCreateWithdrawalPreorder(dto, userId);
+    return {
+      statusCode: HttpStatus.CREATED,
+      data: preorderCreated
+    }
   }
 
   @Post('external-withdrawal-confirm')
   @ApiTags(SwaggerSteakeyConfigEnum.TAG_WALLET)
   @ApiSecurity('b2crypto-key')
   @ApiBearerAuth('bearerToken')
+  @HttpCode(HttpStatus.CREATED)
   @UseGuards(ApiKeyAuthGuard, JwtAuthGuard)
   async executeWithdrawal(
     @Body() dto: WithdrawalExecuteDto,
     @Req() req?: any,
-  ): Promise<WithdrawalResponse> {
+  ): Promise<{ data: WithdrawalResponse; statusCode: HttpStatus }> {
     const userId = CommonService.getUserId(req);
-    return this.walletService.validateAndExecuteWithdrawal(dto, userId);
+    const withdrawalCreated = await this.walletService.validateAndExecuteWithdrawal(dto, userId);
+
+    return {
+      statusCode: HttpStatus.CREATED,
+      data: withdrawalCreated
+    }
+
+
   }
 
 }
