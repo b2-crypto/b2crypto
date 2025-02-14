@@ -20,7 +20,7 @@ export interface WithdrawalErrorDetails {
     originalError?: string | Error | unknown;
     stack?: string;
     errorCode?: string;
-
+    networkFee?: number;
     preorderId?: string;
     response?: unknown;
     userId?: string;
