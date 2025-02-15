@@ -135,7 +135,6 @@ export class FireBlocksNotificationsController {
       isRtaStatusActualCompleted &&
       isRtaStatusCachedNotCompleted
     ) {
-      this.cacheManager.set(rta.id, rta.status, 30 * 60 * 1000);
       this.logger.info(`[webhook] Rta Cached: ${rta.id}:${rta.status}`);
 
       const txList = await this.builder.getPromiseTransferEventClient(
@@ -156,6 +155,8 @@ export class FireBlocksNotificationsController {
         this.logger.info(`[webhook] getTransferDto: ${JSON.stringify(dto)}`);
 
         if (dto) {
+          await this.cacheManager.set(rta.id, rta.status, 30 * 60 * 1000);
+
           this.builder.emitTransferEventClient(
             EventsNamesTransferEnum.createOne,
             dto,
