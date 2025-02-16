@@ -81,6 +81,10 @@ export class FireBlocksNotificationsController {
   async webhook(@Req() req: any, @Body() data: any) {
     this.logger.info(`[webhook] data: ${JSON.stringify(data)}`);
     this.logger.info(`[webhook] headers: ${JSON.stringify(req.headers)}`);
+    const response = {
+      statusCode: 200,
+      message: 'ok',
+    };
     //const isVerified = this.verifySign(req);
     //this.logger.info(isVerified, 'getTransferDto.isVerified');
     //if (isVerified) {
@@ -93,116 +97,139 @@ export class FireBlocksNotificationsController {
 
     this.logger.info(`[webhook] rta: ${JSON.stringify(rta)}`);
 
-    const rtaStatusCached = await this.cacheManager.get<string>(rta?.id ?? '');
-    this.logger.info(`[webhook] rtaStatusCached: ${rtaStatusCached}`);
+    if (!rta.id) {
+      this.logger.warn(`[webhook] rta.id: ${rta?.id}`);
+      return response;
+    }
 
-    const isRtaStatusCachedNotCompleted =
-      rtaStatusCached !== 'COMPLETED' && rtaStatusCached !== 'CONFIRMED';
-    this.logger.info(
-      `[webhook] isRtaStatusCachedNotCompleted: ${isRtaStatusCachedNotCompleted}`,
-    );
+    const isRtaStatusActualNotCompleted = (rta) => {
+      const result = rta?.status !== 'CONFIRMED' || rta?.status !== 'COMPLETED';
 
-    const isRtaStatusActualCompleted =
-      rta?.status === 'CONFIRMED' || rta?.status === 'COMPLETED';
-    this.logger.info(
-      `[webhook] isRtaStatusActualCompleted: ${isRtaStatusActualCompleted}`,
-    );
+      this.logger.info(`[webhook] isRtaStatusActualCompleted: ${result}`);
+
+      return result;
+    };
+
+    if (isRtaStatusActualNotCompleted(rta)) {
+      this.logger.warn(
+        `[webhook] isRtaStatusActualNotCompleted: ${rta?.status}`,
+      );
+      return response;
+    }
 
     const isRtaTypeValid = (rta) => {
-      if (rta?.source?.type === 'UNKNOWN') return true;
+      if (rta?.source?.type === 'UNKNOWN') {
+        this.logger.info(`[webhook] isRtaTypeValid: ${true}`);
+        return true;
+      }
 
       if (
         rta?.source?.type === 'VAULT_ACCOUNT' &&
         rta?.destination?.type === 'EXTERNAL_WALLET'
-      )
+      ) {
+        this.logger.info(`[webhook] isRtaTypeValid: ${true}`);
         return true;
+      }
 
       if (
         rta?.source?.type === 'VAULT_ACCOUNT' &&
         rta?.destination?.type === 'VAULT_ACCOUNT' &&
         rta?.destination?.name === 'Mix'
-      )
+      ) {
+        this.logger.info(`[webhook] isRtaTypeValid: ${true}`);
         return true;
+      }
 
+      this.logger.warn(`[webhook] isRtaTypeValid: ${false}`);
       return false;
     };
 
-    this.logger.info(`[webhook] isRtaTypeValid: ${isRtaTypeValid(rta)}`);
-
-    if (
-      rta.id &&
-      isRtaTypeValid(rta) &&
-      isRtaStatusActualCompleted &&
-      isRtaStatusCachedNotCompleted
-    ) {
-      this.logger.info(`[webhook] Rta Cached: ${rta.id}:${rta.status}`);
-
-      const txList = await this.builder.getPromiseTransferEventClient(
-        EventsNamesTransferEnum.findAll,
-        {
-          where: {
-            idPayment: rta.id,
-          },
-        },
+    if (!isRtaTypeValid(rta)) {
+      this.logger.warn(
+        `[webhook] rta?.source?.type: ${rta?.source?.type} | rta?.destination?.type: ${rta?.destination?.type} | rta?.destination?.name: ${rta?.destination?.name}`,
       );
-      const tx = txList.list[0];
-
-      this.logger.info(`[webhook] tx: ${JSON.stringify(tx)}`);
-
-      if (!tx) {
-        const dto = await this.getTransferDto(data);
-
-        this.logger.info(`[webhook] getTransferDto: ${JSON.stringify(dto)}`);
-
-        if (dto) {
-          await this.cacheManager.set(rta.id, rta.status, 30 * 60 * 1000);
-
-          this.builder.emitTransferEventClient(
-            EventsNamesTransferEnum.createOne,
-            dto,
-          );
-
-          this.logger.info(`[webhook] txCreate: ${JSON.stringify(dto)}`);
-        }
-
-        //} else if (rta?.status === 'COMPLETED' && !tx.isApprove) {
-      } else if (!tx.isApprove) {
-        const status = await this.builder.getPromiseStatusEventClient(
-          EventsNamesStatusEnum.findOneByName,
-          StatusCashierEnum.APPROVED,
-        );
-        tx.statusPayment = rta.status;
-        tx.status = status;
-
-        // Find status list
-        this.builder.emitTransferEventClient(
-          EventsNamesTransferEnum.updateOne,
-          {
-            id: tx._id,
-            status: status._id,
-            responsePayment: data,
-            statusPayment: tx.statusPayment,
-            isApprove: true,
-            rejectedAt: null,
-            approvedAt: new Date(),
-          },
-        );
-
-        this.logger.info(`[webhook] txUpdate: ${JSON.stringify(tx)}`);
-      }
+      return response;
     }
 
-    this.logger.info(
-      `[webhook] rta.status: ${rta?.status} | rta?.id - rta.status : ${rta?.id} - ${rta.status}`,
+    const rtaStatusCached = await this.cacheManager.get<string>(rta?.id ?? '');
+    this.logger.info(`[webhook] rtaStatusCached: ${rtaStatusCached}`);
+
+    const isRtaStatusCachedCompleted = (rtaStatus) => {
+      const result = rtaStatus === 'COMPLETED' && rtaStatus === 'CONFIRMED';
+
+      this.logger.info(`[webhook] isRtaStatusCachedCompleted: ${result}`);
+
+      return result;
+    };
+
+    if (isRtaStatusCachedCompleted(rtaStatusCached)) {
+      this.logger.warn(
+        `[webhook] isRtaStatusCachedCompleted: ${rtaStatusCached}`,
+      );
+      return response;
+    }
+
+    const txList = await this.builder.getPromiseTransferEventClient(
+      EventsNamesTransferEnum.findAll,
+      {
+        where: {
+          idPayment: rta.id,
+        },
+      },
     );
+    const tx = txList.list[0];
+
+    this.logger.info(`[webhook] tx: ${JSON.stringify(tx)}`);
+
+    if (!tx) {
+      const dto = await this.getTransferDto(data);
+
+      this.logger.info(`[webhook] getTransferDto: ${JSON.stringify(dto)}`);
+
+      if (dto) {
+        await this.cacheManager.set(rta.id, rta.status, 30 * 60 * 1000);
+
+        this.logger.info(
+          `[webhook] cacheManager.set: ${rta.id}: ${rta.status}`,
+        );
+
+        this.builder.emitTransferEventClient(
+          EventsNamesTransferEnum.createOne,
+          dto,
+        );
+
+        this.logger.info(`[webhook] txCreate: ${JSON.stringify(dto)}`);
+      }
+
+      //} else if (rta?.status === 'COMPLETED' && !tx.isApprove) {
+    } else if (!tx.isApprove) {
+      const status = await this.builder.getPromiseStatusEventClient(
+        EventsNamesStatusEnum.findOneByName,
+        StatusCashierEnum.APPROVED,
+      );
+      tx.statusPayment = rta.status;
+      tx.status = status;
+
+      // Find status list
+      this.builder.emitTransferEventClient(EventsNamesTransferEnum.updateOne, {
+        id: tx._id,
+        status: status._id,
+        responsePayment: data,
+        statusPayment: tx.statusPayment,
+        isApprove: true,
+        rejectedAt: null,
+        approvedAt: new Date(),
+      });
+
+      this.logger.info(`[webhook] txUpdate: ${JSON.stringify(tx)}`);
+    }
+
+    this.logger.info(`[webhook] rta.status: ${rta?.status}`);
 
     //}
     //return isVerified ? 'ok' : 'fail';
     //this.logger.info(this.verifySign(req), 'getTransferDto.isVerified');
-    return {
-      statusCode: 200,
-      message: 'ok',
-    };
+    return response;
   }
 
   private verifySign(req) {
