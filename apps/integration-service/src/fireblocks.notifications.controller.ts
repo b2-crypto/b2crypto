@@ -98,7 +98,7 @@ export class FireBlocksNotificationsController {
     this.logger.info(`[webhook] rta: ${JSON.stringify(rta)}`);
 
     if (!rta.id) {
-      this.logger.warn(`[webhook] rta.id: ${rta?.id}`);
+      this.logger.info(`[webhook] rta.id: ${rta?.id}`);
       return response;
     }
 
@@ -111,7 +111,7 @@ export class FireBlocksNotificationsController {
     };
 
     if (isRtaStatusActualNotCompleted(rta)) {
-      this.logger.warn(
+      this.logger.info(
         `[webhook] isRtaStatusActualNotCompleted: ${rta?.status}`,
       );
       return response;
@@ -140,12 +140,12 @@ export class FireBlocksNotificationsController {
         return true;
       }
 
-      this.logger.warn(`[webhook] isRtaTypeValid: ${false}`);
+      this.logger.info(`[webhook] isRtaTypeValid: ${false}`);
       return false;
     };
 
     if (!isRtaTypeValid(rta)) {
-      this.logger.warn(
+      this.logger.info(
         `[webhook] rta?.source?.type: ${rta?.source?.type} | rta?.destination?.type: ${rta?.destination?.type} | rta?.destination?.name: ${rta?.destination?.name}`,
       );
       return response;
@@ -163,7 +163,7 @@ export class FireBlocksNotificationsController {
     };
 
     if (isRtaStatusCachedCompleted(rtaStatusCached)) {
-      this.logger.warn(
+      this.logger.info(
         `[webhook] isRtaStatusCachedCompleted: ${rtaStatusCached}`,
       );
       return response;
