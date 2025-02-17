@@ -97,26 +97,26 @@ export class FireBlocksNotificationsController {
 
     this.logger.info(`[webhook] rta: ${JSON.stringify(rta)}`);
 
-    const rtaStatusCached = await this.cacheManager.get<string>(rta?.id ?? '');
+    // const rtaStatusCached = await this.cacheManager.get<string>(rta?.id ?? '');
 
     const rtaStatusActualNotCompleted = this.isRtaStatusActualNotCompleted(rta);
     const rtaTypeValid = this.isRtaTypeValid(rta);
-    const rtaStatusCachedCompleted =
-      this.isRtaStatusCachedCompleted(rtaStatusCached);
+    // const rtaStatusCachedCompleted =
+    //   this.isRtaStatusCachedCompleted(rtaStatusCached);
 
     this.logger.info(
       `[webhook] rtaStatusActualNotCompleted: ${rtaStatusActualNotCompleted}`,
     );
     this.logger.info(`[webhook] rtaTypeValid: ${rtaTypeValid}`);
-    this.logger.info(
-      `[webhook] rtaStatusCachedCompleted: ${rtaStatusCachedCompleted}`,
-    );
+    // this.logger.info(
+    //   `[webhook] rtaStatusCachedCompleted: ${rtaStatusCachedCompleted}`,
+    // );
 
     if (rtaStatusActualNotCompleted) return response;
 
     if (!rtaTypeValid) return response;
 
-    if (rtaStatusCachedCompleted) return response;
+    // if (rtaStatusCachedCompleted) return response;
 
     const txList = await this.builder.getPromiseTransferEventClient(
       EventsNamesTransferEnum.findAll,
@@ -136,18 +136,18 @@ export class FireBlocksNotificationsController {
       this.logger.info(`[webhook] getTransferDto: ${JSON.stringify(dto)}`);
 
       if (dto) {
-        await this.cacheManager.set(rta.id, rta.status, 30 * 60 * 1000);
-
-        this.logger.info(
-          `[webhook] cacheManager.set: ${rta.id}: ${rta.status}`,
-        );
-
         this.builder.emitTransferEventClient(
           EventsNamesTransferEnum.createOne,
           dto,
         );
 
         this.logger.info(`[webhook] txCreate: ${JSON.stringify(dto)}`);
+
+        // await this.cacheManager.set(rta.id, rta.status, 30 * 60 * 1000);
+
+        // this.logger.info(
+        //   `[webhook] cacheManager.set: ${rta.id}: ${rta.status}`,
+        // );
       }
 
       //} else if (rta?.status === 'COMPLETED' && !tx.isApprove) {
