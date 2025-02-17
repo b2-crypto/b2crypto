@@ -48,6 +48,8 @@ export class FiatIntegrationClient {
     const fromParsed = from === 'USDT' ? 'USD' : from;
     const url = `${apiURL}?access_key=${apiKey}&from=${fromParsed}&to=${toParsed}&amount=${amount}`;
 
+    this.logger.info(`[getCurrencyConversion] url: ${url}`);
+
     const data = await fetch(url, {
       method: 'GET',
     })
