@@ -97,74 +97,28 @@ export class FireBlocksNotificationsController {
 
     this.logger.info(`[webhook] rta: ${JSON.stringify(rta)}`);
 
-    if (!rta.id) {
-      this.logger.info(`[webhook] rta.id: ${rta?.id}`);
-      return response;
-    }
-
-    const isRtaStatusActualNotCompleted = (rta) => {
-      const result = rta?.status !== 'CONFIRMED' || rta?.status !== 'COMPLETED';
-
-      this.logger.info(`[webhook] isRtaStatusActualCompleted: ${result}`);
-
-      return result;
-    };
-
-    if (isRtaStatusActualNotCompleted(rta)) {
-      this.logger.info(
-        `[webhook] isRtaStatusActualNotCompleted: ${rta?.status}`,
-      );
-      return response;
-    }
-
-    const isRtaTypeValid = (rta) => {
-      if (rta?.source?.type === 'UNKNOWN') {
-        this.logger.info(`[webhook] isRtaTypeValid: ${true}`);
-        return true;
-      }
-
-      if (
-        rta?.source?.type === 'VAULT_ACCOUNT' &&
-        rta?.destination?.type === 'EXTERNAL_WALLET'
-      ) {
-        this.logger.info(`[webhook] isRtaTypeValid: ${true}`);
-        return true;
-      }
-
-      if (
-        rta?.source?.type === 'VAULT_ACCOUNT' &&
-        rta?.destination?.type === 'VAULT_ACCOUNT' &&
-        rta?.destination?.name === 'Mix'
-      ) {
-        this.logger.info(`[webhook] isRtaTypeValid: ${true}`);
-        return true;
-      }
-
-      this.logger.info(`[webhook] isRtaTypeValid: ${false}`);
-      return false;
-    };
-
-    if (!isRtaTypeValid(rta)) {
-      this.logger.info(
-        `[webhook] rta?.source?.type: ${rta?.source?.type} | rta?.destination?.type: ${rta?.destination?.type} | rta?.destination?.name: ${rta?.destination?.name}`,
-      );
-      return response;
-    }
-
     const rtaStatusCached = await this.cacheManager.get<string>(rta?.id ?? '');
-    this.logger.info(`[webhook] rtaStatusCached: ${rtaStatusCached}`);
 
-    const isRtaStatusCachedCompleted = (rtaStatus) => {
-      const result = rtaStatus === 'COMPLETED' && rtaStatus === 'CONFIRMED';
+    const rtaStatusActualNotCompleted = this.isRtaStatusActualNotCompleted(rta);
+    const rtaTypeValid = this.isRtaTypeValid(rta);
+    const rtaStatusCachedCompleted =
+      this.isRtaStatusCachedCompleted(rtaStatusCached);
 
-      this.logger.info(`[webhook] isRtaStatusCachedCompleted: ${result}`);
-
-      return result;
-    };
-
-    if (isRtaStatusCachedCompleted(rtaStatusCached)) {
+    if (rtaStatusActualNotCompleted) {
       this.logger.info(
-        `[webhook] isRtaStatusCachedCompleted: ${rtaStatusCached}`,
+        `[webhook] rtaStatusActualNotCompleted: ${rtaStatusActualNotCompleted}`,
+      );
+      return response;
+    }
+
+    if (!rtaTypeValid) {
+      this.logger.info(`[webhook] rtaTypeValid: ${rtaTypeValid}`);
+      return response;
+    }
+
+    if (rtaStatusCachedCompleted) {
+      this.logger.info(
+        `[webhook] rtaStatusCachedCompleted: ${rtaStatusCachedCompleted}`,
       );
       return response;
     }
@@ -375,5 +329,52 @@ export class FireBlocksNotificationsController {
       userRejecter: isApproved ? null : wallet.owner,
       description: data.note,
     } as unknown as TransferCreateDto;
+  }
+
+  private isRtaStatusActualNotCompleted(rta) {
+    const result = rta?.status !== 'CONFIRMED' || rta?.status !== 'COMPLETED';
+
+    this.logger.info(
+      `[isRtaStatusActualNotCompleted] rta?.status: ${rta?.status}`,
+    );
+
+    return result;
+  }
+
+  private isRtaTypeValid(rta) {
+    this.logger.info(
+      `[isRtaTypeValid] rta?.source?.type: ${rta?.source?.type}`,
+    );
+    this.logger.info(
+      `[isRtaTypeValid] rta?.destination?.type: ${rta?.destination?.type}`,
+    );
+    this.logger.info(
+      `[isRtaTypeValid] rta?.destination?.name: ${rta?.destination?.name}`,
+    );
+
+    if (rta?.source?.type?.toUpperCase() === 'UNKNOWN') return true;
+
+    if (
+      rta?.source?.type?.toUpperCase() === 'VAULT_ACCOUNT' &&
+      rta?.destination?.type?.toUpperCase() === 'EXTERNAL_WALLET'
+    )
+      return true;
+
+    if (
+      rta?.source?.type?.toUpperCase() === 'VAULT_ACCOUNT' &&
+      rta?.destination?.type?.toUpperCase() === 'VAULT_ACCOUNT' &&
+      rta?.destination?.name === 'Mix'
+    )
+      return true;
+
+    return false;
+  }
+
+  private isRtaStatusCachedCompleted(rtaStatus) {
+    const result = rtaStatus === 'COMPLETED' && rtaStatus === 'CONFIRMED';
+
+    this.logger.info(`[isRtaStatusCachedCompleted] rtaStatus: ${rtaStatus}`);
+
+    return result;
   }
 }
