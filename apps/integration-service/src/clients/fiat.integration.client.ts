@@ -1,5 +1,5 @@
 import { Traceable } from '@amplication/opentelemetry-nestjs';
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 
 export interface IExchangeRate {
@@ -57,7 +57,26 @@ export class FiatIntegrationClient {
       .catch((error) => {
         this.logger.error(`[getCurrencyConversion] ${error.message || error}`);
 
-        throw new InternalServerErrorException(error);
+        const rateCOPUSD = 1 / 4000;
+        const rateUSDCOP = 4200;
+        const rate = fromParsed === 'USD' ? rateUSDCOP : rateCOPUSD;
+
+        return {
+          success: false,
+          query: {
+            from: fromParsed,
+            to: toParsed,
+            amount,
+          },
+          info: {
+            timestamp: new Date().getMilliseconds(),
+            rate,
+          },
+          date: new Date().toISOString(),
+          result: amount * rate,
+        } satisfies IExchangeRate;
+
+        // throw new InternalServerErrorException(error);
       });
 
     this.logger.info(`[getCurrencyConversion] ${JSON.stringify(data)}`);
