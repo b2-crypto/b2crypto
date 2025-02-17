@@ -104,24 +104,19 @@ export class FireBlocksNotificationsController {
     const rtaStatusCachedCompleted =
       this.isRtaStatusCachedCompleted(rtaStatusCached);
 
-    if (rtaStatusActualNotCompleted) {
-      this.logger.info(
-        `[webhook] rtaStatusActualNotCompleted: ${rtaStatusActualNotCompleted}`,
-      );
-      return response;
-    }
+    this.logger.info(
+      `[webhook] rtaStatusActualNotCompleted: ${rtaStatusActualNotCompleted}`,
+    );
+    this.logger.info(`[webhook] rtaTypeValid: ${rtaTypeValid}`);
+    this.logger.info(
+      `[webhook] rtaStatusCachedCompleted: ${rtaStatusCachedCompleted}`,
+    );
 
-    if (!rtaTypeValid) {
-      this.logger.info(`[webhook] rtaTypeValid: ${rtaTypeValid}`);
-      return response;
-    }
+    if (rtaStatusActualNotCompleted) return response;
 
-    if (rtaStatusCachedCompleted) {
-      this.logger.info(
-        `[webhook] rtaStatusCachedCompleted: ${rtaStatusCachedCompleted}`,
-      );
-      return response;
-    }
+    if (!rtaTypeValid) return response;
+
+    if (rtaStatusCachedCompleted) return response;
 
     const txList = await this.builder.getPromiseTransferEventClient(
       EventsNamesTransferEnum.findAll,
@@ -332,7 +327,11 @@ export class FireBlocksNotificationsController {
   }
 
   private isRtaStatusActualNotCompleted(rta) {
+<<<<<<< HEAD
+    const result = rta?.status !== 'CONFIRMED' && rta?.status !== 'COMPLETED';
+=======
     const result = rta?.status !== 'CONFIRMED' || rta?.status !== 'COMPLETED';
+>>>>>>> main
 
     this.logger.info(
       `[isRtaStatusActualNotCompleted] rta?.status: ${rta?.status}`,
