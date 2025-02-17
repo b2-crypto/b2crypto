@@ -52,6 +52,7 @@ export class FiatIntegrationClient {
 
     const data = await fetch(url, {
       method: 'GET',
+      signal: AbortSignal.timeout(500),
     })
       .then<IExchangeRate>((res) => res.json())
       .catch((error) => {
