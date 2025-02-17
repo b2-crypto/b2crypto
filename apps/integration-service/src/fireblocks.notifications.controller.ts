@@ -366,7 +366,7 @@ export class FireBlocksNotificationsController {
   }
 
   private isRtaStatusCachedCompleted(rtaStatus) {
-    const result = rtaStatus === 'COMPLETED' && rtaStatus === 'CONFIRMED';
+    const result = rtaStatus === 'COMPLETED' || rtaStatus === 'CONFIRMED';
 
     this.logger.info(`[isRtaStatusCachedCompleted] rtaStatus: ${rtaStatus}`);
 
