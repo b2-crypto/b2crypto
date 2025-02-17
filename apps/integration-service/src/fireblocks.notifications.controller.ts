@@ -221,6 +221,7 @@ export class FireBlocksNotificationsController {
     const isWithdrawal = data.destination.type === 'EXTERNAL_WALLET';
     if (isWithdrawal) {
       // TODO[hender-11-11-2024] Not save withdraw transfer
+      this.logger.info(`[getTransferDto] Withdrawal transfer not saved`);
       return null;
     }
     const ownerIdWallet = isDeposit ? data.destination.name : data.source.name;
@@ -326,7 +327,11 @@ export class FireBlocksNotificationsController {
   }
 
   private isRtaStatusActualNotCompleted(rta) {
+<<<<<<< HEAD
     const result = rta?.status !== 'CONFIRMED' && rta?.status !== 'COMPLETED';
+=======
+    const result = rta?.status !== 'CONFIRMED' || rta?.status !== 'COMPLETED';
+>>>>>>> main
 
     this.logger.info(
       `[isRtaStatusActualNotCompleted] rta?.status: ${rta?.status}`,
