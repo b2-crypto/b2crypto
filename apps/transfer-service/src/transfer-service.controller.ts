@@ -1013,7 +1013,6 @@ export class TransferServiceController implements GenericServiceController {
         ...transferDto,
       };
       if (webhookTransferDto.integration == 'Sales') {
-        let accountBrand = null;
         const accountBrandList =
           await this.builder.getPromiseAccountEventClient(
             EventsNamesAccountEnum.findAll,
@@ -1028,7 +1027,12 @@ export class TransferServiceController implements GenericServiceController {
               },
             },
           );
-        accountBrand = accountBrandList?.list?.[0];
+        const [accountBrand] = accountBrandList?.list ?? [];
+
+        this.logger.info(
+          `[createOneWebhook] accountBrand: ${JSON.stringify(accountBrand)}`,
+        );
+
         if (accountBrand?._id) {
           const paymentCard = await this.builder.getPromiseCategoryEventClient(
             EventsNamesCategoryEnum.findOneByNameType,
