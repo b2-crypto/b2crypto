@@ -50,9 +50,11 @@ export class FiatIntegrationClient {
 
     this.logger.info(`[getCurrencyConversion] url: ${url}`);
 
-    const rateCOPUSD = 1 / 4000;
-    const rateUSDCOP = 4200;
-    const rate = fromParsed === 'USD' ? rateUSDCOP : rateCOPUSD;
+    const rate = fromParsed === 'USD' ? 4000 : 4200;
+    const swapCOPUSDFactory = (amount: number, rate: number) => amount / rate;
+    const swapUSDCOPFactory = (amount: number, rate: number) => amount * rate;
+    const swapFactory =
+      fromParsed === 'USD' ? swapUSDCOPFactory : swapCOPUSDFactory;
 
     // const data = await fetch(url, {
     //   method: 'GET',
@@ -74,7 +76,7 @@ export class FiatIntegrationClient {
     //         rate,
     //       },
     //       date: new Date().toISOString(),
-    //       result: amount * rate,
+    //       result: swapFactory(amount, rate),
     //     } satisfies IExchangeRate;
 
     //     // throw new InternalServerErrorException(error);
@@ -83,6 +85,6 @@ export class FiatIntegrationClient {
     // this.logger.info(`[getCurrencyConversion] ${JSON.stringify(data)}`);
 
     // return data.result;
-    return amount * rate;
+    return swapFactory(amount, rate);
   }
 }
