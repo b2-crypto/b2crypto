@@ -54,35 +54,35 @@ export class FiatIntegrationClient {
     const rateUSDCOP = 4200;
     const rate = fromParsed === 'USD' ? rateUSDCOP : rateCOPUSD;
 
-    const data = await fetch(url, {
-      method: 'GET',
-      signal: AbortSignal.timeout(300),
-    })
-      .then<IExchangeRate>((res) => res.json())
-      .catch((error) => {
-        this.logger.error(`[getCurrencyConversion] ${error.message || error}`);
+    // const data = await fetch(url, {
+    //   method: 'GET',
+    //   signal: AbortSignal.timeout(300),
+    // })
+    //   .then<IExchangeRate>((res) => res.json())
+    //   .catch((error) => {
+    //     this.logger.error(`[getCurrencyConversion] ${error.message || error}`);
 
-        return {
-          success: false,
-          query: {
-            from: fromParsed,
-            to: toParsed,
-            amount,
-          },
-          info: {
-            timestamp: new Date().getMilliseconds(),
-            rate,
-          },
-          date: new Date().toISOString(),
-          result: amount * rate,
-        } satisfies IExchangeRate;
+    //     return {
+    //       success: false,
+    //       query: {
+    //         from: fromParsed,
+    //         to: toParsed,
+    //         amount,
+    //       },
+    //       info: {
+    //         timestamp: new Date().getMilliseconds(),
+    //         rate,
+    //       },
+    //       date: new Date().toISOString(),
+    //       result: amount * rate,
+    //     } satisfies IExchangeRate;
 
-        // throw new InternalServerErrorException(error);
-      });
+    //     // throw new InternalServerErrorException(error);
+    //   });
 
-    this.logger.info(`[getCurrencyConversion] ${JSON.stringify(data)}`);
+    // this.logger.info(`[getCurrencyConversion] ${JSON.stringify(data)}`);
 
-    return data.result;
-    // return amount * rate;
+    // return data.result;
+    return amount * rate;
   }
 }
