@@ -54,7 +54,9 @@ export class FiatIntegrationClient {
 
     const rate = rates.get(fromParsed + toParsed);
 
-    if (!rate) return amount;
+    if (!rate && fromParsed === 'USD') return amount;
+
+    if (!rate) throw new Error('Rate not found for ' + fromParsed + toParsed);
 
     const swapFactory = (amount: number, rate: number) => amount / rate;
 
