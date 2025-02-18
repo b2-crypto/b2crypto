@@ -50,17 +50,17 @@ export class FiatIntegrationClient {
 
     this.logger.info(`[getCurrencyConversion] url: ${url}`);
 
+    const rateCOPUSD = 1 / 4000;
+    const rateUSDCOP = 4200;
+    const rate = fromParsed === 'USD' ? rateUSDCOP : rateCOPUSD;
+
     const data = await fetch(url, {
       method: 'GET',
-      signal: AbortSignal.timeout(500),
+      signal: AbortSignal.timeout(300),
     })
       .then<IExchangeRate>((res) => res.json())
       .catch((error) => {
         this.logger.error(`[getCurrencyConversion] ${error.message || error}`);
-
-        const rateCOPUSD = 1 / 4000;
-        const rateUSDCOP = 4200;
-        const rate = fromParsed === 'USD' ? rateUSDCOP : rateCOPUSD;
 
         return {
           success: false,
@@ -83,5 +83,6 @@ export class FiatIntegrationClient {
     this.logger.info(`[getCurrencyConversion] ${JSON.stringify(data)}`);
 
     return data.result;
+    // return amount * rate;
   }
 }
