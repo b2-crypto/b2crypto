@@ -50,11 +50,13 @@ export class FiatIntegrationClient {
 
     this.logger.info(`[getCurrencyConversion] url: ${url}`);
 
-    const rate = fromParsed === 'USD' ? 4000 : 4200;
-    const swapCOPUSDFactory = (amount: number, rate: number) => amount / rate;
-    const swapUSDCOPFactory = (amount: number, rate: number) => amount * rate;
-    const swapFactory =
-      fromParsed === 'USD' ? swapUSDCOPFactory : swapCOPUSDFactory;
+    const rates = new Map<string, number>([['COPUSD', 4000]]);
+
+    const rate = rates.get(fromParsed + toParsed);
+
+    if (!rate) return amount;
+
+    const swapFactory = (amount: number, rate: number) => amount / rate;
 
     // const data = await fetch(url, {
     //   method: 'GET',
