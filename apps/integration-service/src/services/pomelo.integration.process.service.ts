@@ -102,12 +102,12 @@ export class PomeloIntegrationProcessService {
 
       const isTransactionRefund =
         pretransaction.operationType === OperationTransactionType.refund;
-      const isTransactionReversalRefund =
-        pretransaction.operationType ===
-        OperationTransactionType.reversal_refund;
+      // const isTransactionReversalRefund =
+      //   pretransaction.operationType ===
+      //   OperationTransactionType.reversal_refund;
 
       const [parentTransaction] =
-        isTransactionRefund || isTransactionReversalRefund
+        isTransactionRefund /* || isTransactionReversalRefund */
           ? await this.builder.getPromiseTransferEventClient<Transfer[]>(
               EventsNamesTransferEnum.findAll,
               {
@@ -139,22 +139,20 @@ export class PomeloIntegrationProcessService {
 
       const commisionNationalDetail = {
         _id: commisionNationalTransactionId,
-        amount:
-          isTransactionRefund || isTransactionReversalRefund
-            ? parentCommisionNational?.amount
-            : amount.amount * commisionNational,
+        amount: isTransactionRefund /* || isTransactionReversalRefund */
+          ? parentCommisionNational?.amount
+          : amount.amount * commisionNational,
         amountCustodial:
-          isTransactionRefund || isTransactionReversalRefund
+          isTransactionRefund /* || isTransactionReversalRefund */
             ? parentCommisionNational?.amountCustodial
             : amount.usd * commisionNational,
-        currency:
-          isTransactionRefund || isTransactionReversalRefund
-            ? parentCommisionNational?.currency
-            : amount.from === 'USD'
-            ? 'USDT'
-            : amount.from,
+        currency: isTransactionRefund /* || isTransactionReversalRefund */
+          ? parentCommisionNational?.currency
+          : amount.from === 'USD'
+          ? 'USDT'
+          : amount.from,
         currencyCustodial:
-          isTransactionRefund || isTransactionReversalRefund
+          isTransactionRefund /* || isTransactionReversalRefund */
             ? parentCommisionNational?.currencyCustodial
             : amount.to === 'USD'
             ? 'USDT'
