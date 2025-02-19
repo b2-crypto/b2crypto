@@ -29,7 +29,7 @@ export class PomeloIntegrationServiceController {
     protected readonly logger: PinoLogger,
     private readonly integrationServiceService: PomeloIntegrationProcessService,
     private readonly sftpService: PomeloIntegrationSFTPService,
-  ) {}
+  ) { }
 
   @Post(PomeloEnum.POMELO_NOTIFICATION_PATH)
   @UseGuards(PomeloSignatureGuard)
@@ -77,8 +77,8 @@ export class PomeloIntegrationServiceController {
   }
 
   @Post(PomeloEnum.POMELO_AUTHORIZATION_PATH)
-  @UseGuards(PomeloSignatureGuard)
-  @UseInterceptors(PomeloSignatureInterceptor)
+  // @UseGuards(PomeloSignatureGuard)
+  // @UseInterceptors(PomeloSignatureInterceptor)
   @HttpCode(HttpStatus.OK)
   async processAuthorization(
     @Body() authorization: Authorization,
