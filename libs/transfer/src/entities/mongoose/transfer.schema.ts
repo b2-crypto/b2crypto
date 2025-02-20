@@ -233,7 +233,7 @@ export class Transfer extends TransferEntity {
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'transfers' })
   parentTransaction?: Transfer;
 
-  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'transfers' })
+  @Prop({ type: [mongoose.Schema.Types.ObjectId], ref: 'transfers' })
   commisions: Transfer[];
 
   @Prop({ type: [CommisionDetailSchema] })
