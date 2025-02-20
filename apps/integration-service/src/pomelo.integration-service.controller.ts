@@ -87,7 +87,12 @@ export class PomeloIntegrationServiceController {
   ): Promise<any> {
     this.logger.info(`[processAuthorization] Idempotency: ${idempotency}`);
     authorization.idempotency = idempotency;
-    this.logger.info(`[processAuthorization] Authorization: ${authorization}`);
+    this.logger.info(
+      `[processAuthorization] Authorization: ${JSON.stringify(authorization)}`,
+    );
+    this.logger.info(
+      `[processAuthorization] Authorization: ${JSON.stringify(headers)}`,
+    );
     const result = await this.integrationServiceService.processAuthorization(
       authorization,
       headers,
