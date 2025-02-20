@@ -293,6 +293,7 @@ export class TransferServiceService
       transfer.userCreator = transfer.userCreator ?? account.owner;
       transfer.userAccount = account.owner ?? transfer.userCreator;
       transfer.accountPrevBalance = account.amount;
+      transfer.accountResultBalance = account.amount;
       const transferSaved = await this.lib.create(transfer);
       if (
         transferSaved.typeTransaction?.toString() === depositLinkCategory._id
@@ -538,14 +539,24 @@ export class TransferServiceService
       ) {
         multiply = -1;
       }
-      accountToUpdate.amount += transferSaved.amount * multiply;
+      const amountCommisions =
+        transferSaved?.commisionsDetails?.reduce((total, commision) => {
+          return total + commision.amountCustodial;
+        }, 0) ?? 0;
+
+      accountToUpdate.amount +=
+        (transferSaved.amountCustodial ?? transferSaved.amount) * multiply +
+        amountCommisions * multiply;
+
+      transferSaved.accountResultBalance = accountToUpdate.amount;
     }
-    transferSaved.accountResultBalance = accountToUpdate.amount;
+
     const accountUpdated = await this.accountService.updateOne(accountToUpdate);
     this.builder.emitUserEventClient(
       EventsNamesUserEnum.checkBalanceUser,
       transferSaved.userAccount,
     );
+
     await transferSaved.save();
     return accountUpdated;
   }

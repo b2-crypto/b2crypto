@@ -41,6 +41,12 @@ export class CommisionDetail {
 
   @Prop()
   currencyCustodial: string;
+
+  @Prop({
+    type: String,
+    enum: CommisionTypeEnum,
+  })
+  commisionType: CommisionTypeEnum;
 }
 
 export const CommisionDetailSchema =

@@ -96,7 +96,7 @@ export class PomeloIntegrationProcessService {
         currencyCustodial: amount.to === 'USD' ? 'USDT' : amount.to,
         showToOwner: true,
         commisions:
-          process?.transaction?.type?.toLowerCase() === 'international'
+          process.transaction.origin === CommisionTypeEnum.INTERNATIONAL
             ? [
                 commisionNationalTransactionId,
                 commisionInternationalTransactionId,
@@ -163,6 +163,7 @@ export class PomeloIntegrationProcessService {
             : amount.to === 'USD'
             ? 'USDT'
             : amount.to,
+        commisionType: CommisionTypeEnum.NATIONAL,
       };
 
       const commisionInternationalDetail = {
@@ -187,6 +188,7 @@ export class PomeloIntegrationProcessService {
             : amount.to === 'USD'
             ? 'USDT'
             : amount.to,
+        commisionType: CommisionTypeEnum.INTERNATIONAL,
       };
 
       const transaction = parentTransaction
@@ -201,12 +203,18 @@ export class PomeloIntegrationProcessService {
             currencyCustodial:
               parentTransaction?.currencyCustodial ??
               pretransaction.currencyCustodial,
-            commisionsDetail:
-              process?.transaction?.type === CommisionTypeEnum.INTERNATIONAL
+            commisionsDetails:
+              process.transaction.origin === CommisionTypeEnum.INTERNATIONAL
                 ? [commisionNationalDetail, commisionInternationalDetail]
                 : [commisionNationalDetail],
           }
-        : pretransaction;
+        : {
+            ...pretransaction,
+            commisionsDetails:
+              process.transaction.origin === CommisionTypeEnum.INTERNATIONAL
+                ? [commisionNationalDetail, commisionInternationalDetail]
+                : [commisionNationalDetail],
+          };
 
       this.builder.emitTransferEventClient(
         EventsNamesTransferEnum.createOneWebhook,
