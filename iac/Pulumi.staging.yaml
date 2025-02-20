@@ -142,3 +142,7 @@ config:
     secure: AAABAJeRDHN4vz+kZkySmwAMEr1M6j0oAifaVFmhalqQ9kUB+5L/zWJYBVaO6VmxCJJT+eZ2InuFHIkqg0w=
   b2crypto-iac:OTLP_API_KEY:
     secure: AAABAFFqaE25ijR5Qsq8LK4HCxeyG82nsk6gPtcUoV+Zo/4LodhQAiMGjRqfuQ2uP90scgJ/Vz6i9K7i/pVA+CIDonE=
+  b2crypto-iac:COMMISION_NATIONAL:
+    secure: AAABAL+51b9elMFCXrtadfDjGvZd7GbGzDMR8Bx9RArqW+nL
+  b2crypto-iac:COMMISION_INTERNATIONAL:
+    secure: AAABAGI43ZMwqvgOVU6pXnZE1SCOD9LrvNCJ3nsyOkOOFRXj

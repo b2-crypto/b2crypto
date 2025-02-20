@@ -153,3 +153,7 @@ config:
     secure: AAABAK5+BpTwAkg6vhuWO19wqRK6IDG/XTO26N0dKYQ6TFXxmqXBsNzGQLyF598/q1//XSXTgAult3rN8wIPwBd/t+A=
   b2crypto-iac:TASK_CPU_MONOLITH: '1024'
   b2crypto-iac:TASK_MEMORY_MONOLITH: '2048'
+  b2crypto-iac:COMMISION_NATIONAL:
+    secure: AAABADx/oufcOoY3CL39X6UJt+kYsdnGC6SaRBZwAldpbDrp
+  b2crypto-iac:COMMISION_INTERNATIONAL:
+    secure: AAABAI3Jy/fb6vSDl9ZCoPCg3p/MxD8kNsJ9tLYuW3hxbDp6
