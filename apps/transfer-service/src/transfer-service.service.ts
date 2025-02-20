@@ -542,28 +542,26 @@ export class TransferServiceService
       ) {
         multiply = -1;
       }
-
-      this.logger.info(
-        `[newTransfer] transferSaved: ${JSON.stringify(
-          transferSaved?.toJSON() ?? transferSaved,
-        )}`,
-      );
+      const amountCommisions =
+        transferSaved?.commisionsDetails?.reduce((total, commision) => {
+          return total + commision.amountCustodial;
+        }, 0) ?? 0;
 
       const amountTransaction =
-        (transferSaved.amountCustodial ?? transferSaved.amount) * multiply;
-      accountToUpdate.amount += amountTransaction;
+        transferSaved.amountCustodial ?? transferSaved.amount;
 
-      this.logger.info(
-        `[newTransfer] Operation: ${transferSaved.operationType} | AmountTransaction: ${amountTransaction} | AccountPrevBalance: ${transferSaved.accountPrevBalance} | AccountResultBalance: ${accountToUpdate.amount}`,
-      );
+      accountToUpdate.amount +=
+        amountTransaction * multiply + amountCommisions * multiply;
+
+      transferSaved.accountResultBalance = accountToUpdate.amount;
     }
 
-    transferSaved.accountResultBalance = accountToUpdate.amount;
     const accountUpdated = await this.accountService.updateOne(accountToUpdate);
     this.builder.emitUserEventClient(
       EventsNamesUserEnum.checkBalanceUser,
       transferSaved.userAccount,
     );
+
     await transferSaved.save();
     return accountUpdated;
   }

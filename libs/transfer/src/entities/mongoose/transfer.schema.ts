@@ -41,6 +41,12 @@ export class CommisionDetail {
 
   @Prop()
   currencyCustodial: string;
+
+  @Prop({
+    type: String,
+    enum: CommisionTypeEnum,
+  })
+  commisionType: CommisionTypeEnum;
 }
 
 export const CommisionDetailSchema =
@@ -233,7 +239,7 @@ export class Transfer extends TransferEntity {
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'transfers' })
   parentTransaction?: Transfer;
 
-  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'transfers' })
+  @Prop({ type: [mongoose.Schema.Types.ObjectId], ref: 'transfers' })
   commisions: Transfer[];
 
   @Prop({ type: [CommisionDetailSchema] })

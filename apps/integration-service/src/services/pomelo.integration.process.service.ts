@@ -10,6 +10,7 @@ import {
 } from '@integration/integration/dto/pomelo.process.body.dto';
 import { PomeloCache } from '@integration/integration/util/pomelo.integration.process.cache';
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { Transfer } from '@transfer/transfer/entities/mongoose/transfer.schema';
 import { OperationTransactionType } from '@transfer/transfer/enum/operation.transaction.type.enum';
 import EventsNamesAccountEnum from 'apps/account-service/src/enum/events.names.account.enum';
@@ -33,6 +34,7 @@ export class PomeloIntegrationProcessService {
     private readonly cache: PomeloCache,
     private readonly currencyConversion: FiatIntegrationClient,
     private readonly builder: BuildersService,
+    private readonly configService: ConfigService,
   ) {}
 
   private async process(
@@ -67,10 +69,12 @@ export class PomeloIntegrationProcessService {
     authorize?: boolean,
   ) {
     try {
-      const commisionNational = parseFloat(process.env.COMMISION_NATIONAL);
-      // const commisionInternational = parseFloat(
-      //   process.env.COMMISION_INTERNATIONAL,
-      // );
+      const commisionNational = parseFloat(
+        this.configService.getOrThrow('COMMISION_NATIONAL'),
+      );
+      const commisionInternational = parseFloat(
+        this.configService.getOrThrow('COMMISION_INTERNATIONAL'),
+      );
       const transactionId = new mongo.ObjectId();
       const commisionNationalTransactionId = new mongo.ObjectId();
       const commisionInternationalTransactionId = new mongo.ObjectId();
@@ -92,7 +96,7 @@ export class PomeloIntegrationProcessService {
         currencyCustodial: amount.to === 'USD' ? 'USDT' : amount.to,
         showToOwner: true,
         commisions:
-          process?.transaction?.type?.toLowerCase() === 'international'
+          process.transaction.origin === CommisionTypeEnum.INTERNATIONAL
             ? [
                 commisionNationalTransactionId,
                 commisionInternationalTransactionId,
@@ -159,6 +163,7 @@ export class PomeloIntegrationProcessService {
             : amount.to === 'USD'
             ? 'USDT'
             : amount.to,
+        commisionType: CommisionTypeEnum.NATIONAL,
       };
 
       // const commisionInternationalDetail = {
@@ -183,6 +188,7 @@ export class PomeloIntegrationProcessService {
       //       : amount.to === 'USD'
       //       ? 'USDT'
       //       : amount.to,
+      //   commisionType: CommisionTypeEnum.INTERNATIONAL,
       // };
 
       const transaction = parentTransaction
@@ -198,11 +204,17 @@ export class PomeloIntegrationProcessService {
               parentTransaction?.currencyCustodial ??
               pretransaction.currencyCustodial,
             commisionsDetail:
-              process?.transaction?.type?.toLowerCase() === 'international'
+              process.transaction.origin === CommisionTypeEnum.INTERNATIONAL
                 ? [commisionNationalDetail /* , commisionInternationalDetail */]
                 : [commisionNationalDetail],
           }
-        : pretransaction;
+        : {
+            ...pretransaction,
+            commisionsDetails:
+              process.transaction.origin === CommisionTypeEnum.INTERNATIONAL
+                ? [commisionNationalDetail /* , commisionInternationalDetail */]
+                : [commisionNationalDetail],
+          };
 
       this.builder.emitTransferEventClient(
         EventsNamesTransferEnum.createOneWebhook,
@@ -211,7 +223,7 @@ export class PomeloIntegrationProcessService {
 
       if (authorize && Number(amount.amount) * commisionNational > 0) {
         this.logger.info(
-          `[createTransferRecord] Commision to B2Fintech: ${
+          `[createTransferRecord] Commision to B2Fintech National: ${
             amount.amount * commisionNational
           }`,
         );
@@ -243,12 +255,14 @@ export class PomeloIntegrationProcessService {
       // if (
       //   authorize &&
       //   Number(amount.amount) * commisionInternational > 0 &&
-      //   process.transaction.origin.toLowerCase() === 'international'
+      //   process.transaction.origin === CommisionTypeEnum.INTERNATIONAL
       // ) {
       //   this.logger.info(
-      //     `${response?.message} - $${amount.amount * commisionInternational}`,
-      //     'Commision to B2Fintech',
+      //     `[createTransferRecord] Commision to B2Fintech International: ${
+      //       amount.amount * commisionInternational
+      //     }`,
       //   );
+
       //   this.builder.emitTransferEventClient(
       //     EventsNamesTransferEnum.createOneWebhook,
       //     {
