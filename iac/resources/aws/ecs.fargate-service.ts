@@ -85,10 +85,10 @@ export const ecsFargateService = new awsx.ecs.FargateService(
                 mongoAtlasClusterExisting?.connectionStrings.apply(
                   (connections) => connections[0].standardSrv,
                 ) ??
-                  // mongoAtlasCluster?.connectionStrings.apply(
-                  //   (connections) => connections[0].standardSrv,
-                  // ) ??
-                  mongodbatlasServerlessInstance?.connectionStringsStandardSrv,
+                // mongoAtlasCluster?.connectionStrings.apply(
+                //   (connections) => connections[0].standardSrv,
+                // ) ??
+                mongodbatlasServerlessInstance?.connectionStringsStandardSrv,
                 SECRETS.MONGOATLAS_USERNAME,
                 SECRETS.MONGOATLAS_PASSWORD,
               ])
@@ -286,6 +286,14 @@ export const ecsFargateService = new awsx.ecs.FargateService(
           {
             name: 'V1_DB_NAME',
             value: SECRETS.V1_DB_NAME,
+          },
+          {
+            name: 'COMMISION_NATIONAL',
+            value: SECRETS.COMMISION_NATIONAL,
+          },
+          {
+            name: 'COMMISION_INTERNATIONAL',
+            value: SECRETS.COMMISION_INTERNATIONAL,
           },
         ],
         portMappings: [
