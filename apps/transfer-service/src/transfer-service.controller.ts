@@ -984,6 +984,10 @@ export class TransferServiceController implements GenericServiceController {
       transferDto._id = webhookTransferDto._id;
       transferDto.parentTransaction =
         webhookTransferDto.parentTransaction ?? null;
+      transferDto.showToOwner = webhookTransferDto.showToOwner;
+      transferDto.commisions = webhookTransferDto.commisions;
+      transferDto.commisionsDetails = webhookTransferDto.commisionsDetails;
+      transferDto.commisionType = webhookTransferDto.commisionType;
       transferDto.crm = crm;
       transferDto.status = status;
       transferDto.account = account._id.toString();

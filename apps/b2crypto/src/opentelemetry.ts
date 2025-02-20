@@ -10,7 +10,9 @@ import {
   ATTR_SERVICE_VERSION,
 } from '@opentelemetry/semantic-conventions';
 
-export const serviceName = `${process.env.APP_NAME || 'b2crypto'}.${process.env.STACK || 'dev'}`;
+export const serviceName = `${process.env.APP_NAME || 'b2crypto'}.${
+  process.env.STACK || 'dev'
+}`;
 
 const resource = new Resource({
   [ATTR_SERVICE_NAME]: serviceName,
