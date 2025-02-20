@@ -91,7 +91,7 @@ export class PomeloIntegrationServiceController {
       `[processAuthorization] Authorization: ${JSON.stringify(authorization)}`,
     );
     this.logger.info(
-      `[processAuthorization] Authorization: ${JSON.stringify(headers)}`,
+      `[processAuthorization] Headers: ${JSON.stringify(headers)}`,
     );
     const result = await this.integrationServiceService.processAuthorization(
       authorization,
