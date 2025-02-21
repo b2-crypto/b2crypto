@@ -523,6 +523,10 @@ export class TransferServiceService
       affiliate: account.affiliate,
     };
 
+    this.logger.info(
+      `[updateAccount] commisions: ${transferSaved.commisionsDetails.length}`,
+    );
+
     if (transferSaved.isApprove) {
       let multiply = 1;
       if (
@@ -551,10 +555,11 @@ export class TransferServiceService
       const amountTransaction =
         transferSaved.amountCustodial ?? transferSaved.amount;
 
-      accountToUpdate.amount +=
+      const amountTotal =
         amountTransaction * multiply + amountCommisions * multiply;
 
-      transferSaved.accountResultBalance = accountToUpdate.amount;
+      transferSaved.accountPrevBalance =
+        -1 * amountTotal + accountToUpdate.amount;
     }
 
     const accountUpdated = await this.accountService.updateOne(accountToUpdate);

@@ -95,6 +95,7 @@ export class PomeloIntegrationProcessService {
         currency: amount.from === 'USD' ? 'USDT' : amount.from,
         currencyCustodial: amount.to === 'USD' ? 'USDT' : amount.to,
         showToOwner: true,
+        isApprove: response?.status === CardsEnum.CARD_PROCESS_OK,
         commisions:
           process.transaction.origin === CommisionTypeEnum.INTERNATIONAL
             ? [
@@ -221,10 +222,12 @@ export class PomeloIntegrationProcessService {
         transaction,
       );
 
-      if (authorize && Number(amount.amount) * commisionNational > 0) {
+      const amountUSD = amount.usd ?? amount.amount;
+
+      if (authorize && amountUSD * commisionNational > 0) {
         this.logger.info(
           `[createTransferRecord] Commision to B2Fintech National: ${
-            amount.amount * commisionNational
+            amountUSD * commisionNational
           }`,
         );
 
@@ -248,18 +251,19 @@ export class PomeloIntegrationProcessService {
                 ? 'Refund commision to User'
                 : 'Commision to B2Fintech',
             showToOwner: false,
+            // isManualTx: true,
           },
         );
       }
 
       if (
         authorize &&
-        Number(amount.amount) * commisionInternational > 0 &&
+        amountUSD * commisionInternational > 0 &&
         process.transaction.origin === CommisionTypeEnum.INTERNATIONAL
       ) {
         this.logger.info(
           `[createTransferRecord] Commision to B2Fintech International: ${
-            amount.amount * commisionInternational
+            amountUSD * commisionInternational
           }`,
         );
 
@@ -284,6 +288,7 @@ export class PomeloIntegrationProcessService {
               ? 'Reversal refund commision to User'
               : 'Commision to B2Fintech',
             showToOwner: false,
+            // isManualTx: true,
           },
         );
       }
@@ -323,6 +328,12 @@ export class PomeloIntegrationProcessService {
     usdAmount: number,
   ): Promise<any> {
     try {
+      const commisionNational = parseFloat(
+        this.configService.getOrThrow('COMMISION_NATIONAL'),
+      );
+      const commisionInternational = parseFloat(
+        this.configService.getOrThrow('COMMISION_INTERNATIONAL'),
+      );
       this.logger.info('[executeProcess] ExecuteProcess start');
       /* if (
         process?.installments &&
@@ -353,6 +364,11 @@ export class PomeloIntegrationProcessService {
           amount: usdAmount,
           movement,
           authorize,
+          commision:
+            commisionNational +
+            (process.transaction.origin === CommisionTypeEnum.INTERNATIONAL
+              ? commisionInternational
+              : 0),
         },
       );
       return this.buildProcessResponse(processResult, authorize);
