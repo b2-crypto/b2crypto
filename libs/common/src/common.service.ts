@@ -300,6 +300,7 @@ export class CommonService {
       method: fetchData.method,
       headers: fetchData.headers,
       body: undefined,
+      signal: fetchData.signal,
     };
     if (fetchData.data) {
       if (

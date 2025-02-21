@@ -7,4 +7,5 @@ export class FetchData {
   headers?: any;
   getFormatKey?: any;
   postFormatKey?: any;
+  signal?: AbortSignal;
 }
