@@ -196,6 +196,14 @@ export class PomeloIntegrationProcessService {
         ? {
             ...pretransaction,
             parentTransaction: parentTransaction._id,
+            parentTransactionDetail: {
+              _id: parentTransaction._id,
+              amount: parentTransaction.amount,
+              currency: parentTransaction.currency,
+              amountCustodial: parentTransaction.amountCustodial,
+              currencyCustodial: parentTransaction.currencyCustodial,
+              operationType: parentTransaction.operationType,
+            },
             amount: parentTransaction?.amount ?? pretransaction.amount,
             currency: parentTransaction?.currency ?? pretransaction.currency,
             amountCustodial:
@@ -204,6 +212,11 @@ export class PomeloIntegrationProcessService {
             currencyCustodial:
               parentTransaction?.currencyCustodial ??
               pretransaction.currencyCustodial,
+            amountComissions:
+              process.transaction.origin === CommisionTypeEnum.INTERNATIONAL
+                ? commisionNationalDetail.amountCustodial +
+                  commisionInternationalDetail.amountCustodial
+                : commisionNationalDetail.amountCustodial,
             commisionsDetails:
               process.transaction.origin === CommisionTypeEnum.INTERNATIONAL
                 ? [commisionNationalDetail, commisionInternationalDetail]
@@ -250,7 +263,8 @@ export class PomeloIntegrationProcessService {
               isTransactionRefund || isTransactionReversalRefund
                 ? 'Refund commision to User'
                 : 'Commision to B2Fintech',
-            showToOwner: false,
+            showToOwner: true,
+            commisionsDetails: [],
             // isManualTx: true,
           },
         );
@@ -287,7 +301,8 @@ export class PomeloIntegrationProcessService {
               : isTransactionReversalRefund
               ? 'Reversal refund commision to User'
               : 'Commision to B2Fintech',
-            showToOwner: false,
+            showToOwner: true,
+            commisionsDetails: [commisionNationalDetail],
             // isManualTx: true,
           },
         );
