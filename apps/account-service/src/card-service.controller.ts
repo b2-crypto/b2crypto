@@ -114,7 +114,9 @@ export class CardServiceController extends AccountServiceController {
   }
 
   private readonly BLOCK_BALANCE_PERCENTAGE: number =
-    this.configService.get<number>('AUTHORIZATIONS_BLOCK_BALANCE_PERCENTAGE');
+    this.configService.getOrThrow<number>(
+      'AUTHORIZATIONS_BLOCK_BALANCE_PERCENTAGE',
+    );
 
   @Patch('pin')
   @ApiTags(SwaggerSteakeyConfigEnum.TAG_CARD)
@@ -2085,19 +2087,19 @@ export class CardServiceController extends AccountServiceController {
       );
       if (data.authorize) {
         const allowedBalance =
-          card.amount * (1.0 - this.BLOCK_BALANCE_PERCENTAGE);
+          card.amount * (1.0 - this.BLOCK_BALANCE_PERCENTAGE - data.commision);
         if (allowedBalance <= data.amount) {
           this.logger.info(
             `[processPomeloTransaction] Card proccess: ${CardsEnum.CARD_PROCESS_INSUFFICIENT_FUNDS}`,
           );
           return CardsEnum.CARD_PROCESS_INSUFFICIENT_FUNDS;
         }
-        txnAmount = data.amount * -1;
+        txnAmount = (data.amount + data.amount * data.commision) * -1;
       } else {
         txnAmount =
           data.movement.toUpperCase() === 'DEBIT'
-            ? data.amount * -1
-            : data.amount * 1;
+            ? (data.amount + data.amount * data.commision) * -1
+            : (data.amount + data.amount * data.commision) * 1;
       }
       await this.cardService.customUpdateOne({
         id: card._id,

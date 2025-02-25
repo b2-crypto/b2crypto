@@ -49,7 +49,7 @@ export const sdk = new NodeSDK({
   }) as any,
   spanProcessors: [
     new tracing.BatchSpanProcessor(tracesExporter),
-    new tracing.SimpleSpanProcessor(new tracing.ConsoleSpanExporter()),
+    // new tracing.SimpleSpanProcessor(new tracing.ConsoleSpanExporter()),
   ],
   logRecordProcessors: [new logs.BatchLogRecordProcessor(logsExporter)],
   instrumentations: [getNodeAutoInstrumentations()],

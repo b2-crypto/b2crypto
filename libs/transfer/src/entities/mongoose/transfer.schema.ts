@@ -79,6 +79,9 @@ export class Transfer extends TransferEntity {
   @Prop()
   amountCustodial: number;
 
+  @Prop()
+  amountComissions: number;
+
   @Prop({ type: String, enum: CountryCodeEnum })
   country: CountryCodeEnum;
 
