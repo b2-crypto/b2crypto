@@ -16,47 +16,36 @@ services:
       - ./../../localstorage/rmq/log/:/var/log/rabbitmq/
     networks:
       - b2crypto_net
-  mongodb:
-    image: mongo:8.0.4-noble
-    container_name: mongodb
-    ports:
-      - 27017:27017
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: root
-      MONGO_INITDB_ROOT_PASSWORD: dbpwd
-      MONGO_INITDB_DATABASE: b2crypto
-    command:
-      - '--logpath'
-      - '/var/log/mongodb/mongod.log'
-    volumes:
-      - ./../../localstorage/mongo/data/:/data/db
-    networks:
-      - b2crypto_net
-  redis:
-    image: redis:6.2-alpine
-    container_name: rediscache
-    restart: always
-    ports:
-      - '6379:6379'
-    environment:
-      REDIS_DAEMON_USER: b2crypto
-      REDIS_PASSWORD: b2crypto
-      REDIS_MASTER_PASSWORD: b2crypto
-    volumes:
-      - ./../../localstorage/redis/data:/data
-    networks:
-      - b2crypto_net
-  jaeger:
-    image: jaegertracing/all-in-one:1.63.0
-    container_name: jaeger
-    ports:
-      - '16686:16686'
-      - '4317:4317'
-      - '4318:4318'
-    environment:
-      - LOG_LEVEL=debug
-    networks:
-      - b2crypto_net
+  # mongodb:
+  #   image: mongo:8.0.4-noble
+  #   container_name: mongodb
+  #   ports:
+  #     - 27017:27017
+  #   environment:
+  #     MONGO_INITDB_ROOT_USERNAME: root
+  #     MONGO_INITDB_ROOT_PASSWORD: dbpwd
+  #     MONGO_INITDB_DATABASE: b2crypto
+  #   command:
+  #     - '--logpath'
+  #     - '/var/log/mongodb/mongod.log'
+  #   volumes:
+  #     - ./../../localstorage/mongo/data/:/data/db
+  #   networks:
+  #     - b2crypto_net
+  # redis:
+  #   image: redis:6.2-alpine
+  #   container_name: rediscache
+  #   restart: always
+  #   ports:
+  #     - '6379:6379'
+  #   environment:
+  #     REDIS_DAEMON_USER: b2crypto
+  #     REDIS_PASSWORD: b2crypto
+  #     REDIS_MASTER_PASSWORD: b2crypto
+  #   volumes:
+  #     - ./../../localstorage/redis/data:/data
+  #   networks:
+  #     - b2crypto_net
 networks:
   b2crypto_net:
     driver: bridge
