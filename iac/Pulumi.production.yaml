@@ -158,6 +158,4 @@ config:
   b2crypto-iac:APP_VERSION: 0.9.0
   b2crypto-iac:OTP_VALIDATION_TIME_SECONDS: "120"
   b2crypto-iac:COMMISION_INTERNATIONAL:
-    secure: AAABAJp8fvU4iEWxIHeae3Kg5rMeQby4vDj/cX4fT6ViAwhW
-  b2crypto-iac:COMMISION_NATIONAL:
-    secure: AAABAM5e3WpmcMAVEnQyOzkniWg+JOezJBNaFRuVfErAFm2e
+    secure: AAABAKvXEWf2DoeZZsM+nh8qTMmfm9biiqsbb+JKZCBcpiCQ
