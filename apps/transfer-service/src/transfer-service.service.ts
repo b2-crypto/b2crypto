@@ -296,12 +296,7 @@ export class TransferServiceService
       transfer.typeAccountType = account.accountType;
       transfer.userCreator = transfer.userCreator ?? account.owner;
       transfer.userAccount = account.owner ?? transfer.userCreator;
-      transfer.accountPrevBalance = transfer.commisionType
-        ? this.createPrevBalance(transfer, account)
-        : account.amount;
-      transfer.accountResultBalance = transfer.commisionType
-        ? this.createResultBalance(transfer, account)
-        : account.amount;
+      transfer.accountPrevBalance = account.amount;
       const transferSaved = await this.lib.create(transfer);
       if (
         transferSaved.typeTransaction?.toString() === depositLinkCategory._id
@@ -363,54 +358,6 @@ export class TransferServiceService
       return transferSaved;
     }
     throw new BadRequestException(this.getMessageError(data));
-  }
-
-  private createPrevBalance(
-    transfer: TransferCreateDto | TransferDocument,
-    account: AccountDocument | AccountInterface,
-  ): number {
-    const multiply = -1 * this.getMultiplyAmount(transfer.operationType);
-    const currentCommisionAmount = transfer.amountCustodial;
-    const previousCommisionsAmount = transfer.commisionsDetails?.reduce(
-      (prev, curr) => prev + curr.amountCustodial,
-      0,
-    );
-
-    return (
-      account.amount +
-      multiply * (currentCommisionAmount + previousCommisionsAmount)
-    );
-  }
-
-  private createResultBalance(
-    transfer: TransferCreateDto | TransferDocument,
-    account: AccountDocument | AccountInterface,
-  ): number {
-    const multiply = -1 * this.getMultiplyAmount(transfer.operationType);
-    const previousCommisionsAmount = transfer.commisionsDetails?.reduce(
-      (prev, curr) => prev + curr.amountCustodial,
-      0,
-    );
-
-    return account.amount + multiply * previousCommisionsAmount;
-  }
-
-  private getMultiplyAmount(operationType: OperationTransactionType): number {
-    if (
-      operationType === OperationTransactionType.reversal_deposit ||
-      operationType === OperationTransactionType.reversal_credit ||
-      operationType === OperationTransactionType.reversal_refund ||
-      operationType === OperationTransactionType.reversal_payment ||
-      operationType === OperationTransactionType.reversal_extra_cash ||
-      operationType === OperationTransactionType.chargeback ||
-      operationType === OperationTransactionType.debit ||
-      operationType === OperationTransactionType.withdrawal ||
-      operationType === OperationTransactionType.purchase
-    ) {
-      return -1;
-    }
-
-    return 1;
   }
 
   async newDepositFromAffiliate(
@@ -575,28 +522,48 @@ export class TransferServiceService
       affiliate: account.affiliate,
     };
 
-    this.logger.info(
-      `[updateAccount] commisions: ${transferSaved.commisionsDetails.length}`,
-    );
-
     if (transferSaved.isApprove) {
-      transferSaved.accountPrevBalance = this.createPrevBalance(
-        transferSaved,
-        account,
+      let multiply = 1;
+      if (
+        transferSaved.operationType ===
+          OperationTransactionType.reversal_deposit ||
+        transferSaved.operationType ===
+          OperationTransactionType.reversal_credit ||
+        transferSaved.operationType ===
+          OperationTransactionType.reversal_refund ||
+        transferSaved.operationType ===
+          OperationTransactionType.reversal_payment ||
+        transferSaved.operationType ===
+          OperationTransactionType.reversal_extra_cash ||
+        transferSaved.operationType === OperationTransactionType.chargeback ||
+        transferSaved.operationType === OperationTransactionType.debit ||
+        transferSaved.operationType === OperationTransactionType.withdrawal ||
+        transferSaved.operationType === OperationTransactionType.purchase
+      ) {
+        multiply = -1;
+      }
+
+      this.logger.info(
+        `[newTransfer] transferSaved: ${JSON.stringify(
+          transferSaved?.toJSON() ?? transferSaved,
+        )}`,
       );
 
-      transferSaved.accountResultBalance = this.createResultBalance(
-        transferSaved,
-        account,
+      const amountTransaction =
+        (transferSaved.amountCustodial ?? transferSaved.amount) * multiply;
+      accountToUpdate.amount += amountTransaction;
+
+      this.logger.info(
+        `[newTransfer] Operation: ${transferSaved.operationType} | AmountTransaction: ${amountTransaction} | AccountPrevBalance: ${transferSaved.accountPrevBalance} | AccountResultBalance: ${accountToUpdate.amount}`,
       );
     }
 
+    transferSaved.accountResultBalance = accountToUpdate.amount;
     const accountUpdated = await this.accountService.updateOne(accountToUpdate);
     this.builder.emitUserEventClient(
       EventsNamesUserEnum.checkBalanceUser,
       transferSaved.userAccount,
     );
-
     await transferSaved.save();
     return accountUpdated;
   }
