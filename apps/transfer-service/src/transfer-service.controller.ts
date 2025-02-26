@@ -981,17 +981,6 @@ export class TransferServiceController implements GenericServiceController {
       }
 
       const transferDto: TransferCreateDto = new TransferCreateDto();
-      transferDto._id = webhookTransferDto._id;
-      transferDto.parentTransaction =
-        webhookTransferDto.parentTransaction ?? null;
-      transferDto.showToOwner = webhookTransferDto.showToOwner;
-      transferDto.commisions = webhookTransferDto.commisions;
-      transferDto.commisionsDetails = webhookTransferDto.commisionsDetails;
-      transferDto.commisionType = webhookTransferDto.commisionType;
-      transferDto.isManualTx =
-        webhookTransferDto.isManualTx ?? transferDto.isManualTx;
-      transferDto.isApprove =
-        webhookTransferDto.isApprove ?? transferDto.isApprove;
       transferDto.crm = crm;
       transferDto.status = status;
       transferDto.account = account._id.toString();
