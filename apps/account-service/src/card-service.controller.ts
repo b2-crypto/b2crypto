@@ -354,7 +354,7 @@ export class CardServiceController extends AccountServiceController {
           price,
           user,
           `PURCHASE_${createDto.type}_${createDto.accountType}`,
-          sourceAccount, // Usar la cuenta especificada o null
+          sourceAccount, 
           `Compra de ${createDto.type} ${createDto.accountType} ${level.name}`,
         );
       } catch (err) {
