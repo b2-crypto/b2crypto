@@ -342,11 +342,20 @@ export class CardServiceController extends AccountServiceController {
     let tx = null;
     if (price > 0) {
       try {
+        // Obtener la cuenta de origen si se especificó
+        let sourceAccount = null;
+        if (createDto.fromAccountId) {
+          sourceAccount = await this.getAccountService().findOneById(createDto.fromAccountId);
+          if (!sourceAccount) {
+            throw new BadRequestException('Source account not found');
+          }
+        }
+        
         tx = await this.txPurchaseCard(
           price,
           user,
           `PURCHASE_${createDto.type}_${createDto.accountType}`,
-          null,
+          sourceAccount, // Usar la cuenta especificada o null
           `Compra de ${createDto.type} ${createDto.accountType} ${level.name}`,
         );
       } catch (err) {
@@ -441,7 +450,7 @@ export class CardServiceController extends AccountServiceController {
         }
       }
       account.save();
-
+  
       const walletDTO = {
         owner: account.owner,
         name: 'USD Tether (Tron)',
