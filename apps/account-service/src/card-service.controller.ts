@@ -342,7 +342,6 @@ export class CardServiceController extends AccountServiceController {
     let tx = null;
     if (price > 0) {
       try {
-        // Obtener la cuenta de origen si se especificó
         let sourceAccount = null;
         if (createDto.fromAccountId) {
           sourceAccount = await this.getAccountService().findOneById(createDto.fromAccountId);
