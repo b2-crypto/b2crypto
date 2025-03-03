@@ -579,7 +579,28 @@ export class TransferServiceService
       `[updateAccount] commisions: ${transferSaved.commisionsDetails.length}`,
     );
 
-    if (transferSaved.isApprove) {
+    if (
+      transferSaved.isApprove &&
+      (transferSaved.operationType === OperationTransactionType.deposit ||
+        transferSaved.operationType === OperationTransactionType.withdrawal)
+    ) {
+      const multiply = this.getMultiplyAmount(transferSaved.operationType);
+      const resultBalance =
+        account.amount +
+        multiply * (transferSaved.amountCustodial ?? transferSaved.amount);
+
+      transferSaved.accountPrevBalance = account.amount;
+
+      transferSaved.accountResultBalance = resultBalance;
+
+      accountToUpdate.amount = resultBalance;
+    }
+
+    if (
+      transferSaved.isApprove &&
+      transferSaved.operationType !== OperationTransactionType.deposit &&
+      transferSaved.operationType !== OperationTransactionType.withdrawal
+    ) {
       transferSaved.accountPrevBalance = this.createPrevBalance(
         transferSaved,
         account,
