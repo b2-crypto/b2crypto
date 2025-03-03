@@ -146,3 +146,7 @@ config:
   b2crypto-iac:V1_DB_NAME:
     secure: AAABAJqqCLtNaTSspvUShsBeu2nzUZaWn7eWth+rliQ=
   b2crypto-iac:OTP_VALIDATION_TIME_SECONDS: "120"
+  b2crypto-iac:OTLP_HOST:
+    secure: AAABACsSBLyUxCAWh2EKJxMreHL3tX/qMVWt+1LwWxV7ETGWuwpQMu3EA8PILLmyrZ8vqGjVHc4ockoXeoc=
+  b2crypto-iac:OTLP_API_KEY:
+    secure: AAABAPWDiHcV0wwDCNUsBJIhA504550aIsLM5W7YwK3ISWYhQAr12tXGzVIg4LI73I7ASKIMxAqB163LbtwWH279pTU=

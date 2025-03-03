@@ -137,3 +137,7 @@ config:
   b2crypto-iac:TASK_MEMORY_MONOLITH: "2048"
   b2crypto-iac:TASK_CPU_MONOLITH: "1024"
   b2crypto-iac:OTP_VALIDATION_TIME_SECONDS: "120"
+  b2crypto-iac:OTLP_HOST:
+    secure: AAABAJzRGlB0flJItWfVYub8503TH3NBE+CJ8BPkMH69cEieVhrI4duFS881CMWPgP4v/FAdX3BvVU6/jPA=
+  b2crypto-iac:OTLP_API_KEY:
+    secure: AAABAPo34+JTKl517zsMlbZ8yT+ib4HK/RrsWGlMlMlR8vzpJOwANWfZSusqchSwLIJ5R0eUeNJIM6at+GPp0mj3rNw=
