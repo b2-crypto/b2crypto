@@ -5,6 +5,7 @@ import {
   BadRequestException,
   ExecutionContext,
   Injectable,
+  InternalServerErrorException,
 } from '@nestjs/common';
 import { RmqContext } from '@nestjs/microservices';
 import { SchedulerRegistry } from '@nestjs/schedule';
@@ -300,6 +301,7 @@ export class CommonService {
       method: fetchData.method,
       headers: fetchData.headers,
       body: undefined,
+      signal: fetchData.signal,
     };
     if (fetchData.data) {
       if (
@@ -322,12 +324,12 @@ export class CommonService {
     if (fetchData.token) {
       request.headers.Authorization = `Bearer ${fetchData.token}`;
     }
-    const response = await fetch(
-      `${fetchData.urlBase}${fetchData.uri}`,
-      request,
-    );
-    const json = await response.json();
-    return json;
+
+    return fetch(`${fetchData.urlBase}${fetchData.uri}`, request)
+      .then((res) => res.json())
+      .catch((error) => {
+        throw new InternalServerErrorException(error);
+      });
   }
 
   static async getNextOpenPort(startFrom = 3000): Promise<number> {

@@ -1729,71 +1729,77 @@ export class CardServiceController extends AccountServiceController {
       }
       const cardId = (rta.data && rta.data['id']) || rta['id'];
       this.logger.info(`[physicalActiveCard] cardId actived ${cardId}`);
-      let crd = null;
-      let card = null;
-      let cards = null;
-      try {
-        cards = await cardIntegration.getCard(cardId);
-        this.logger.info(
-          `[physicalActiveCard] Result pomelo active ${JSON.stringify(cards)}`,
-        );
-        crd = cards.data;
-        this.logger.info(`[physicalActiveCard] Search card active ${cardId}`);
-        card = await this.cardService.findAll({
-          where: {
-            'cardConfig.id': crd.id,
-          },
-        });
-      } catch (err) {
-        this.logger.error(`[physicalActiveCard] Error get card pomelo ${err}`);
-        throw new BadRequestException('Get Card error');
-      }
-      if (!card.totalElements) {
-        const cardDto = this.buildCardDto(crd, user.personalData, user.email);
-        cardDto.pin = configActivate.pin;
-        const n_card = await this.cardService.createOne(
-          cardDto as AccountCreateDto,
-        );
-        this.logger.info(
-          `[physicalActiveCard] Card created ${n_card.id} for ${user.email}`,
-        );
-        let afgName = 'grupo-1';
-        if (configActivate.promoCode == 'pm2413') {
-          afgName = 'grupo-3';
-        }
-        const cardAfg = await this.getAfgByLevel(afgName, true);
-        const group = await this.buildAFG(null, cardAfg);
-        const afg = group.list[0];
-        try {
-          const rta = await cardIntegration.updateCard({
-            id: crd?.id,
-            affinity_group_id: afg.valueGroup,
-          });
-          this.logger.info(
-            `[physicalActiveCard] Updated AFG Card-${
-              n_card?.id
-            } ${JSON.stringify(rta.data)}`,
-          );
-          this.cardBuilder.emitAccountEventClient(
-            EventsNamesAccountEnum.updateOne,
-            {
-              id: n_card?.id.toString(),
-              group: afg._id,
-            },
-          );
-        } catch (error) {
-          this.logger.error(
-            `[physicalActiveCard] Update AFG Card-${n_card?.id}-${user.email} ${
-              error.message || error
-            }`,
-          );
-          //throw new BadRequestException('Bad update card');
-        }
-      }
+
       return {
         statusCode: 200,
         data: 'Card actived',
       };
+
+      // let crd = null;
+      // let card = null;
+      // let cards = null;
+      // try {
+      //   cards = await cardIntegration.getCard(cardId);
+      //   this.logger.info(
+      //     `[physicalActiveCard] Result pomelo active ${JSON.stringify(cards)}`,
+      //   );
+      //   crd = cards.data;
+      //   this.logger.info(`[physicalActiveCard] Search card active ${cardId}`);
+      //   card = await this.cardService.findAll({
+      //     where: {
+      //       'cardConfig.id': crd.id,
+      //     },
+      //   });
+      // } catch (err) {
+      //   this.logger.error(`[physicalActiveCard] Error get card pomelo ${err}`);
+      //   throw new BadRequestException('Get Card error');
+      // }
+      // if (!card.totalElements) {
+      //   const cardDto = this.buildCardDto(crd, user.personalData, user.email);
+      //   cardDto.pin = configActivate.pin;
+      //   const n_card = await this.cardService.createOne(
+      //     cardDto as AccountCreateDto,
+      //   );
+      //   this.logger.info(
+      //     `[physicalActiveCard] Card created ${n_card.id} for ${user.email}`,
+      //   );
+      //   let afgName = 'grupo-1';
+      //   if (configActivate.promoCode == 'pm2413') {
+      //     afgName = 'grupo-3';
+      //   }
+      //   const cardAfg = await this.getAfgByLevel(afgName, true);
+      //   const group = await this.buildAFG(null, cardAfg);
+      //   const afg = group.list[0];
+      //   try {
+      //     const rta = await cardIntegration.updateCard({
+      //       id: crd?.id,
+      //       affinity_group_id: afg.valueGroup,
+      //     });
+      //     this.logger.info(
+      //       `[physicalActiveCard] Updated AFG Card-${
+      //         n_card?.id
+      //       } ${JSON.stringify(rta.data)}`,
+      //     );
+      //     this.cardBuilder.emitAccountEventClient(
+      //       EventsNamesAccountEnum.updateOne,
+      //       {
+      //         id: n_card?.id.toString(),
+      //         group: afg._id,
+      //       },
+      //     );
+      //   } catch (error) {
+      //     this.logger.error(
+      //       `[physicalActiveCard] Update AFG Card-${n_card?.id}-${user.email} ${
+      //         error.message || error
+      //       }`,
+      //     );
+      //     //throw new BadRequestException('Bad update card');
+      //   }
+      // }
+      // return {
+      //   statusCode: 200,
+      //   data: 'Card actived',
+      // };
     }
     return rta;
   }

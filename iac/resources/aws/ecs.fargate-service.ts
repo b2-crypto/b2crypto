@@ -287,6 +287,14 @@ export const ecsFargateService = new awsx.ecs.FargateService(
             name: 'V1_DB_NAME',
             value: SECRETS.V1_DB_NAME,
           },
+          {
+            name: 'COMMISION_NATIONAL',
+            value: SECRETS.COMMISION_NATIONAL,
+          },
+          {
+            name: 'COMMISION_INTERNATIONAL',
+            value: SECRETS.COMMISION_INTERNATIONAL,
+          },
         ],
         portMappings: [
           {
