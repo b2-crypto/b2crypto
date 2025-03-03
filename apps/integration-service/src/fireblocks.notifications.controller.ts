@@ -81,74 +81,104 @@ export class FireBlocksNotificationsController {
   async webhook(@Req() req: any, @Body() data: any) {
     this.logger.info(`[webhook] data: ${JSON.stringify(data)}`);
     this.logger.info(`[webhook] headers: ${JSON.stringify(req.headers)}`);
+    const response = {
+      statusCode: 200,
+      message: 'ok',
+    };
     //const isVerified = this.verifySign(req);
     //this.logger.info(isVerified, 'getTransferDto.isVerified');
     //if (isVerified) {
     const rta = data.data;
-    this.logger.info(`[webhook] rta: ${JSON.stringify(rta)}`);
-    if (
-      rta.id &&
-      rta.status &&
-      (rta?.source?.type === 'UNKNOWN' ||
-        (rta?.source?.type === 'VAULT_ACCOUNT' &&
-          rta?.destination?.type === 'EXTERNAL_WALLET')) &&
-      (rta?.status === 'CONFIRMED' || rta?.status === 'COMPLETED') &&
-      !(await this.cacheManager.get<string>(rta.id))
-    ) {
-      this.cacheManager.set(rta.id, rta.status, 10 * 1000);
-      const txList = await this.builder.getPromiseTransferEventClient(
-        EventsNamesTransferEnum.findAll,
-        {
-          where: {
-            idPayment: rta.id,
-          },
-        },
-      );
-      const tx = txList.list[0];
 
-      this.logger.info(`[webhook] tx: ${JSON.stringify(tx)}`);
-
-      if (!tx) {
-        const dto = await this.getTransferDto(data);
-        if (dto) {
-          this.builder.emitTransferEventClient(
-            EventsNamesTransferEnum.createOne,
-            dto,
-          );
-        }
-        //} else if (rta?.status === 'COMPLETED' && !tx.isApprove) {
-      } else if (!tx.isApprove) {
-        const status = await this.builder.getPromiseStatusEventClient(
-          EventsNamesStatusEnum.findOneByName,
-          StatusCashierEnum.APPROVED,
-        );
-        tx.statusPayment = rta.status;
-        tx.status = status;
-        // Find status list
-        this.builder.emitTransferEventClient(
-          EventsNamesTransferEnum.updateOne,
-          {
-            id: tx._id,
-            status: status._id,
-            responsePayment: data,
-            statusPayment: tx.statusPayment,
-            isApprove: true,
-            rejectedAt: null,
-            approvedAt: new Date(),
-          },
-        );
-      }
-      this.logger.info(
-        `[webhook] rta.status: ${rta?.status} | rta?.id - rta.status : ${rta?.id} - ${rta.status}`,
-      );
+    if (!rta) {
+      this.logger.error(`[webhook] rta: ${JSON.stringify(rta)}`);
+      throw new BadRequestException('Rta is not valid');
     }
+
+    this.logger.info(`[webhook] rta: ${JSON.stringify(rta)}`);
+
+    // const rtaStatusCached = await this.cacheManager.get<string>(rta?.id ?? '');
+
+    const rtaStatusActualNotCompleted = this.isRtaStatusActualNotCompleted(rta);
+    const rtaTypeValid = this.isRtaTypeValid(rta);
+    // const rtaStatusCachedCompleted =
+    //   this.isRtaStatusCachedCompleted(rtaStatusCached);
+
+    this.logger.info(
+      `[webhook] rtaStatusActualNotCompleted: ${rtaStatusActualNotCompleted}`,
+    );
+    this.logger.info(`[webhook] rtaTypeValid: ${rtaTypeValid}`);
+    // this.logger.info(
+    //   `[webhook] rtaStatusCachedCompleted: ${rtaStatusCachedCompleted}`,
+    // );
+
+    if (rtaStatusActualNotCompleted) return response;
+
+    if (!rtaTypeValid) return response;
+
+    // if (rtaStatusCachedCompleted) return response;
+
+    const txList = await this.builder.getPromiseTransferEventClient(
+      EventsNamesTransferEnum.findAll,
+      {
+        where: {
+          idPayment: rta.id,
+        },
+      },
+    );
+    const tx = txList.list[0];
+
+    this.logger.info(`[webhook] tx: ${JSON.stringify(tx)}`);
+
+    if (!tx) {
+      const dto = await this.getTransferDto(data);
+
+      this.logger.info(`[webhook] getTransferDto: ${JSON.stringify(dto)}`);
+
+      if (dto) {
+        this.builder.emitTransferEventClient(
+          EventsNamesTransferEnum.createOne,
+          dto,
+        );
+
+        this.logger.info(`[webhook] txCreate: ${JSON.stringify(dto)}`);
+
+        // await this.cacheManager.set(rta.id, rta.status, 30 * 60 * 1000);
+
+        // this.logger.info(
+        //   `[webhook] cacheManager.set: ${rta.id}: ${rta.status}`,
+        // );
+      }
+
+      //} else if (rta?.status === 'COMPLETED' && !tx.isApprove) {
+    } else if (!tx.isApprove) {
+      const status = await this.builder.getPromiseStatusEventClient(
+        EventsNamesStatusEnum.findOneByName,
+        StatusCashierEnum.APPROVED,
+      );
+      tx.statusPayment = rta.status;
+      tx.status = status;
+
+      // Find status list
+      this.builder.emitTransferEventClient(EventsNamesTransferEnum.updateOne, {
+        id: tx._id,
+        status: status._id,
+        responsePayment: data,
+        statusPayment: tx.statusPayment,
+        isApprove: true,
+        rejectedAt: null,
+        approvedAt: new Date(),
+      });
+
+      this.logger.info(`[webhook] txUpdate: ${JSON.stringify(tx)}`);
+    }
+
+    this.logger.info(`[webhook] rta.status: ${rta?.status}`);
+
     //}
     //return isVerified ? 'ok' : 'fail';
     //this.logger.info(this.verifySign(req), 'getTransferDto.isVerified');
-    return {
-      statusCode: 200,
-      message: 'ok',
-    };
+    return response;
   }
 
   private verifySign(req) {
@@ -191,6 +221,7 @@ export class FireBlocksNotificationsController {
     const isWithdrawal = data.destination.type === 'EXTERNAL_WALLET';
     if (isWithdrawal) {
       // TODO[hender-11-11-2024] Not save withdraw transfer
+      this.logger.info(`[getTransferDto] Withdrawal transfer not saved`);
       return null;
     }
     const ownerIdWallet = isDeposit ? data.destination.name : data.source.name;
@@ -293,5 +324,52 @@ export class FireBlocksNotificationsController {
       userRejecter: isApproved ? null : wallet.owner,
       description: data.note,
     } as unknown as TransferCreateDto;
+  }
+
+  private isRtaStatusActualNotCompleted(rta) {
+    const result = rta?.status !== 'CONFIRMED' && rta?.status !== 'COMPLETED';
+
+    this.logger.info(
+      `[isRtaStatusActualNotCompleted] rta?.status: ${rta?.status}`,
+    );
+
+    return result;
+  }
+
+  private isRtaTypeValid(rta) {
+    this.logger.info(
+      `[isRtaTypeValid] rta?.source?.type: ${rta?.source?.type}`,
+    );
+    this.logger.info(
+      `[isRtaTypeValid] rta?.destination?.type: ${rta?.destination?.type}`,
+    );
+    this.logger.info(
+      `[isRtaTypeValid] rta?.destination?.name: ${rta?.destination?.name}`,
+    );
+
+    if (rta?.source?.type?.toUpperCase() === 'UNKNOWN') return true;
+
+    if (
+      rta?.source?.type?.toUpperCase() === 'VAULT_ACCOUNT' &&
+      rta?.destination?.type?.toUpperCase() === 'EXTERNAL_WALLET'
+    )
+      return true;
+
+    if (
+      rta?.source?.type?.toUpperCase() === 'VAULT_ACCOUNT' &&
+      rta?.destination?.type?.toUpperCase() === 'VAULT_ACCOUNT' &&
+      rta?.destination?.name === 'Mix'
+    )
+      return true;
+
+    return false;
+  }
+
+  private isRtaStatusCachedCompleted(rtaStatus) {
+    const result = rtaStatus === 'COMPLETED' || rtaStatus === 'CONFIRMED';
+
+    this.logger.info(`[isRtaStatusCachedCompleted] rtaStatus: ${rtaStatus}`);
+
+    return result;
   }
 }

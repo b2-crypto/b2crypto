@@ -1,5 +1,5 @@
 import { Traceable } from '@amplication/opentelemetry-nestjs';
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 
 export interface IExchangeRate {
@@ -48,18 +48,47 @@ export class FiatIntegrationClient {
     const fromParsed = from === 'USDT' ? 'USD' : from;
     const url = `${apiURL}?access_key=${apiKey}&from=${fromParsed}&to=${toParsed}&amount=${amount}`;
 
-    const data = await fetch(url, {
-      method: 'GET',
-    })
-      .then<IExchangeRate>((res) => res.json())
-      .catch((error) => {
-        this.logger.error(`[getCurrencyConversion] ${error.message || error}`);
+    this.logger.info(`[getCurrencyConversion] url: ${url}`);
 
-        throw new InternalServerErrorException(error);
-      });
+    const rates = new Map<string, number>([['COPUSD', 4000]]);
 
-    this.logger.info(`[getCurrencyConversion] ${JSON.stringify(data)}`);
+    const rate = rates.get(fromParsed + toParsed);
 
-    return data.result;
+    if (!rate && fromParsed === 'USD') return amount;
+
+    if (!rate) throw new Error('Rate not found for ' + fromParsed + toParsed);
+
+    const swapFactory = (amount: number, rate: number) => amount / rate;
+
+    // const data = await fetch(url, {
+    //   method: 'GET',
+    //   signal: AbortSignal.timeout(300),
+    // })
+    //   .then<IExchangeRate>((res) => res.json())
+    //   .catch((error) => {
+    //     this.logger.error(`[getCurrencyConversion] ${error.message || error}`);
+
+    //     return {
+    //       success: false,
+    //       query: {
+    //         from: fromParsed,
+    //         to: toParsed,
+    //         amount,
+    //       },
+    //       info: {
+    //         timestamp: new Date().getMilliseconds(),
+    //         rate,
+    //       },
+    //       date: new Date().toISOString(),
+    //       result: swapFactory(amount, rate),
+    //     } satisfies IExchangeRate;
+
+    //     // throw new InternalServerErrorException(error);
+    //   });
+
+    // this.logger.info(`[getCurrencyConversion] ${JSON.stringify(data)}`);
+
+    // return data.result;
+    return swapFactory(amount, rate);
   }
 }
