@@ -69,12 +69,12 @@ config:
   b2crypto-iac:RABBIT_MQ_USERNAME:
     secure: AAABAHreYFQ4iFjfKy2GGCveK/jSdOGgKjWikkcTcn3xpxASLoxViQ==
   b2crypto-iac:REDIS_HOST:
-    secure: AAABAMBCr7T4S+O7byxnAaHqyx6csgRKHj7vF9lskqXfIcYXxzJvWj8znW0VMKSEwa7v9NawTTmEbau6sE464H0JhTKUp+IYcKZn1MpGczatFCphTaY=
+    secure: AAABAC5QJ9wbEWa5WQwxnbqwu2wTwhl7OE1i7fwkPb1QewYMXeBHrOV8uqf6q/rtepmGIx4nyD0wwj+1jGhoBbX3yjpEU5clcj50EEHeClgMEgsvAQ==
   b2crypto-iac:REDIS_PASSWORD:
-    secure: AAABAFfmApRg/M46ywuTWpRivAMMgiwmZgtbZoTWY1urL3IH27GKyYfnAITv2hcsQQEd1rpmov6YOFs92mE71A==
-  b2crypto-iac:REDIS_PORT: "14419"
+    secure: AAABAHLE4ukYTlsd3YFKs5mMl5X8i9z51zh1fExmvqYU8jTgRj7oCAs5bhRAG1czvp/so8jKySuIi7jLptK6xA==
+  b2crypto-iac:REDIS_PORT: "10790"
   b2crypto-iac:REDIS_USERNAME:
-    secure: AAABAHfW2+azlTMDrX5w4/fgKHChcw3jYFbJRhpJ9gI/bntVVgBS
+    secure: AAABAOToiO1TMiQKNYD9TlRu3qqiCKr3p9FGOi0x/zKml3DzbZTO
   b2crypto-iac:STACK: testing
   b2crypto-iac:TESTING: "false"
   b2crypto-iac:TZ: UTC
