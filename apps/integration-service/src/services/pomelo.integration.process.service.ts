@@ -72,9 +72,9 @@ export class PomeloIntegrationProcessService {
       const commisionNational = parseFloat(
         this.configService.getOrThrow('COMMISION_NATIONAL'),
       );
-      // const commisionInternational = parseFloat(
-      //   this.configService.getOrThrow('COMMISION_INTERNATIONAL'),
-      // );
+      const commisionInternational = parseFloat(
+        this.configService.getOrThrow('COMMISION_INTERNATIONAL'),
+      );
       const transactionId = new mongo.ObjectId();
       const commisionNationalTransactionId = new mongo.ObjectId();
       const commisionInternationalTransactionId = new mongo.ObjectId();
@@ -407,7 +407,8 @@ export class PomeloIntegrationProcessService {
           amount: usdAmount,
           movement,
           authorize,
-          commision: commisionNational +
+          commision:
+            commisionNational +
             (process.transaction.origin === CommisionTypeEnum.INTERNATIONAL
               ? commisionInternational
               : 0),
