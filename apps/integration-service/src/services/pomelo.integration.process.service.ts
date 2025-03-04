@@ -105,33 +105,45 @@ export class PomeloIntegrationProcessService {
             : [commisionNationalTransactionId],
       };
 
+      const isTransactionReversalPurchase =
+        pretransaction.operationType ===
+        OperationTransactionType.reversal_purchase;
       const isTransactionRefund =
         pretransaction.operationType === OperationTransactionType.refund;
       const isTransactionReversalRefund =
         pretransaction.operationType ===
         OperationTransactionType.reversal_refund;
 
+      const operationTypeParent = CommissionsTypePreviousMap.get(
+        pretransaction.operationType,
+      );
+
       const [parentTransaction] =
-        isTransactionRefund || isTransactionReversalRefund
-          ? await this.builder.getPromiseTransferEventClient<Transfer[]>(
-              EventsNamesTransferEnum.findAll,
-              {
-                'requestBodyJson.transaction.id':
-                  process?.transaction?.original_transaction_id,
-                operationType: CommissionsTypePreviousMap.get(
-                  pretransaction.operationType,
-                ),
-              },
-            )
+        isTransactionReversalPurchase ||
+        isTransactionRefund ||
+        isTransactionReversalRefund
+          ? (
+              await this.builder.getPromiseTransferEventClient<{
+                list: Transfer[];
+              }>(EventsNamesTransferEnum.findAll, {
+                where: {
+                  'requestBodyJson.transaction.id':
+                    process?.transaction?.original_transaction_id,
+                  operationType: operationTypeParent,
+                  leadCrmName: { $ne: 'Sales' },
+                },
+              })
+            ).list
           : [];
 
       const parentCommisions = parentTransaction
-        ? await this.builder.getPromiseTransferEventClient<Transfer[]>(
-            EventsNamesTransferEnum.findAll,
-            {
-              _id: { $in: parentTransaction.commisions },
-            },
-          )
+        ? (
+            await this.builder.getPromiseTransferEventClient<{
+              list: Transfer[];
+            }>(EventsNamesTransferEnum.findAll, {
+              where: { _id: { $in: parentTransaction?.commisions ?? [] } },
+            })
+          ).list
         : [];
 
       const parentCommisionNational = parentCommisions.find(
@@ -145,21 +157,29 @@ export class PomeloIntegrationProcessService {
       const commisionNationalDetail = {
         _id: commisionNationalTransactionId,
         amount:
-          isTransactionRefund || isTransactionReversalRefund
+          isTransactionReversalPurchase ||
+          isTransactionRefund ||
+          isTransactionReversalRefund
             ? parentCommisionNational?.amount
             : amount.amount * commisionNational,
         amountCustodial:
-          isTransactionRefund || isTransactionReversalRefund
+          isTransactionReversalPurchase ||
+          isTransactionRefund ||
+          isTransactionReversalRefund
             ? parentCommisionNational?.amountCustodial
             : amount.usd * commisionNational,
         currency:
-          isTransactionRefund || isTransactionReversalRefund
+          isTransactionReversalPurchase ||
+          isTransactionRefund ||
+          isTransactionReversalRefund
             ? parentCommisionNational?.currency
             : amount.from === 'USD'
             ? 'USDT'
             : amount.from,
         currencyCustodial:
-          isTransactionRefund || isTransactionReversalRefund
+          isTransactionReversalPurchase ||
+          isTransactionRefund ||
+          isTransactionReversalRefund
             ? parentCommisionNational?.currencyCustodial
             : amount.to === 'USD'
             ? 'USDT'
@@ -170,21 +190,29 @@ export class PomeloIntegrationProcessService {
       const commisionInternationalDetail = {
         _id: commisionInternationalTransactionId,
         amount:
-          isTransactionRefund || isTransactionReversalRefund
+          isTransactionReversalPurchase ||
+          isTransactionRefund ||
+          isTransactionReversalRefund
             ? parentCommisionInternational?.amount
             : amount.amount * commisionInternational,
         amountCustodial:
-          isTransactionRefund || isTransactionReversalRefund
+          isTransactionReversalPurchase ||
+          isTransactionRefund ||
+          isTransactionReversalRefund
             ? parentCommisionInternational?.amountCustodial
             : amount.usd * commisionInternational,
         currency:
-          isTransactionRefund || isTransactionReversalRefund
+          isTransactionReversalPurchase ||
+          isTransactionRefund ||
+          isTransactionReversalRefund
             ? parentCommisionInternational?.currency
             : amount.from === 'USD'
             ? 'USDT'
             : amount.from,
         currencyCustodial:
-          isTransactionRefund || isTransactionReversalRefund
+          isTransactionReversalPurchase ||
+          isTransactionRefund ||
+          isTransactionReversalRefund
             ? parentCommisionInternational?.currencyCustodial
             : amount.to === 'USD'
             ? 'USDT'
