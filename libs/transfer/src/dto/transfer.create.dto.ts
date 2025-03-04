@@ -1,11 +1,14 @@
+import { CommisionTypeEnum } from '@account/account/enum/commision-type.enum';
 import TypesAccountEnum from '@account/account/enum/types.account.enum';
 import CountryCodeEnum from '@common/common/enums/country.code.b2crypto.enum';
 import { CreateAnyDto } from '@common/common/models/create-any.dto';
 import { ApiProperty } from '@nestjs/swagger';
 import {
+  IsArray,
   IsBoolean,
   IsDate,
   IsEmpty,
+  IsEnum,
   IsMongoId,
   IsNotEmpty,
   IsNumber,
@@ -13,6 +16,7 @@ import {
   IsString,
 } from 'class-validator';
 import { ObjectId } from 'mongodb';
+import { CommisionDetail } from '../entities/mongoose/transfer.schema';
 import { OperationTransactionType } from '../enum/operation.transaction.type.enum';
 
 export class TransferCreateDto extends CreateAnyDto {
@@ -266,4 +270,28 @@ export class TransferCreateDto extends CreateAnyDto {
 
   @IsBoolean()
   checkedOnCashier = false;
+
+  @IsMongoId()
+  @IsOptional()
+  _id?: ObjectId;
+
+  @IsMongoId()
+  @IsOptional()
+  parentTransaction?: ObjectId;
+
+  @IsBoolean()
+  @IsOptional()
+  showToOwner?: boolean;
+
+  @IsArray()
+  @IsOptional()
+  commisions?: ObjectId[];
+
+  @IsArray()
+  @IsOptional()
+  commisionsDetails?: CommisionDetail[];
+
+  @IsEnum(CommisionTypeEnum)
+  @IsOptional()
+  commisionType?: CommisionTypeEnum;
 }
