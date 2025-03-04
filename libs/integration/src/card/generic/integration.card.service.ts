@@ -139,7 +139,13 @@ export class IntegrationCardService<
     }
   }
 
-  private async fetch(method: string, uri: string, data?: any, headers?) {
+  private async fetch(
+    method: string,
+    uri: string,
+    data?: any,
+    headers?: Record<string, string>,
+    signal?: AbortSignal,
+  ) {
     return CommonService.fetch({
       getFormatKey: this.routesMap.getFormatKey,
       urlBase: this.client.url,
@@ -148,6 +154,7 @@ export class IntegrationCardService<
       method,
       data,
       uri,
+      signal,
     });
   }
 
@@ -225,7 +232,13 @@ export class IntegrationCardService<
       request.previous_card_id = configActivate.prevCardId;
     }
     //return this.http.post(this.routesMap.activateCard, request);
-    return this.fetch('POST', this.routesMap.activateCard, request);
+    return this.fetch(
+      'POST',
+      this.routesMap.activateCard,
+      request,
+      undefined,
+      AbortSignal.timeout(10000),
+    );
   }
 
   async getAffinityGroup(
