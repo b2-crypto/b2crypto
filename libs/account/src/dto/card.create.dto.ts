@@ -45,4 +45,14 @@ export class CardCreateDto extends AccountCreateDto {
     description: 'Card pin',
   })
   pin: string;
+
+  @IsString()
+  @IsOptional()
+  @ApiProperty({
+    required: false,
+    type: String,
+    description: 'ID of the account to use for payment',
+    example: '6098a54b2c365f0012d7c457',
+  })
+  fromAccountId: string;
 }
