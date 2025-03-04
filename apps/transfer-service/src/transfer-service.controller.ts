@@ -179,7 +179,13 @@ export class TransferServiceController implements GenericServiceController {
   // @CheckPoliciesAbility(new PolicyHandlerTransferRead())
   async findAll(@Query() query: QuerySearchAnyDto, @Req() req?) {
     //query = await this.filterFromUserPermissions(query, req);
-    return this.transferService.getAll(query);
+    this.logger.info(`[findAll] query: ${JSON.stringify(query)}`);
+
+    const result = await this.transferService.getAll(query);
+
+    this.logger.info(`[findAll] result: ${JSON.stringify(result)}`);
+
+    return result;
   }
 
   @NoCache()
