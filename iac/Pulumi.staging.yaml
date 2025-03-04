@@ -145,3 +145,4 @@ config:
     secure: AAABAOl5+pbHSVW/MDThBh6AVSCO2qhrZWaYdJLEFp6yaSup
   b2crypto-iac:COMMISION_NATIONAL:
     secure: AAABACBhUSMQFDM+uxelCVwMUGVKRjB8k9pfUvwb8tWp666i
+  b2crypto-iac:APP_VERSION: 0.9.0
