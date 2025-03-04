@@ -150,10 +150,11 @@ export class AccountServiceService
   ): Promise<AccountDocument[]> {
     throw new NotImplementedException('Method not implemented.');
   }
+
+  
   async availableWalletsFireblocks(
-    query?: QuerySearchAnyDto,
-  ): Promise<ResponsePaginator<AccountDocument>> {
-    // Job to check fireblocks available wallets
+    query?: QuerySearchAnyDto
+  ): Promise<any> {
     query = query || new QuerySearchAnyDto();
     query.where = query.where || {};
     query.take = 10000;
@@ -161,11 +162,9 @@ export class AccountServiceService
     query.where.owner = {
       $exists: false,
     };
+    
     const cryptoList = await this.lib.findAll(query);
-    // const fireblocksCrm = await this.builder.getPromiseCrmEventClient(
-    //   EventsNamesCrmEnum.findOneByName,
-    //   IntegrationCryptoEnum.FIREBLOCKS,
-    // );
+    
     if (!cryptoList.totalElements) {
       const fireblocksCrm = await this.builder.getPromiseCrmEventClient(
         EventsNamesCrmEnum.findOneByName,
@@ -193,9 +192,77 @@ export class AccountServiceService
       });
       cryptoList.list = await Promise.all(promises);
     }
-    return cryptoList;
+    
+    const organizedWallets = this.organizeWalletList(cryptoList.list);
+    
+    return {
+      statusCode: 200,
+      message: "success",
+      description: "success",
+      data: organizedWallets,
+      page: {
+        nextPage: cryptoList.nextPage,
+        prevPage: cryptoList.prevPage,
+        lastPage: cryptoList.lastPage,
+        firstPage: cryptoList.firstPage,
+        currentPage: cryptoList.currentPage,
+        totalElements: cryptoList.totalElements,
+        elementsPerPage: cryptoList.elementsPerPage
+      }
+    };
   }
-
+  
+  private organizeWalletList(walletList: AccountDocument[]): any {
+    const accountIdFilters = ['USDT', 'BTC', 'TRX', 'BCH', 'ADA', 'USD', 'DAI', 'ETH', 'LTC'];
+    
+    const result: Record<string, any> = {};
+    
+    accountIdFilters.forEach(currency => {
+      result[currency] = {
+        networks: {}
+      };
+    });
+    
+    const otherWallets: Record<string, any[]> = {};
+    
+    walletList.forEach(wallet => {
+      if (!wallet.accountId) return;
+      
+      const parts = wallet.accountId.split('_');
+      const firstPart = parts[0];
+      
+      if (accountIdFilters.includes(firstPart)) {
+        let network = "MAIN";
+        
+        if (parts.length > 1) {
+          network = parts[1] || "MAIN";
+        }
+        
+        if (!result[firstPart].networks[network]) {
+          result[firstPart].networks[network] = [];
+        }
+        
+        const walletCopy = wallet.toObject ? wallet.toObject() : JSON.parse(JSON.stringify(wallet));
+        result[firstPart].networks[network].push(walletCopy);
+      } else {
+        if (!otherWallets[firstPart]) {
+          otherWallets[firstPart] = [];
+        }
+        
+        otherWallets[firstPart].push(wallet);
+      }
+    });
+    
+    for (const currency of accountIdFilters) {
+      if (Object.keys(result[currency].networks).length === 0) {
+        delete result[currency];
+      }
+    }
+    
+    result.others = otherWallets;
+    
+    return result;
+  }
   async networksWalletsFireblocks(query?: QuerySearchAnyDto): Promise<any> {
     // Job to check fireblocks available wallets
     query = query || new QuerySearchAnyDto();
