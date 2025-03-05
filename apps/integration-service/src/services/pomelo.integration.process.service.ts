@@ -21,7 +21,7 @@ import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import { FiatIntegrationClient } from '../clients/fiat.integration.client';
 import { PomeloProcessEnum } from '../enums/pomelo.process.enum';
 import {
-  CommissionsTypeMap,
+  CommissionsTypeDescriptionMap,
   CommissionsTypePreviousMap,
 } from '../maps/commisions-type.map';
 
@@ -280,17 +280,14 @@ export class PomeloIntegrationProcessService {
             integration: 'Sales',
             requestBodyJson: process,
             requestHeadersJson: headers,
-            operationType:
-              CommissionsTypeMap.get(transaction.operationType) ??
-              OperationTransactionType.purchase,
+            operationType: transaction.operationType,
             status: response?.status ?? CardsEnum.CARD_PROCESS_OK,
             descriptionStatusPayment:
               response?.status_detail ?? CardsEnum.CARD_PROCESS_OK,
             description: response?.message ?? '',
             page:
-              isTransactionRefund || isTransactionReversalRefund
-                ? 'Refund commision to User'
-                : 'Commision to B2Fintech',
+              CommissionsTypeDescriptionMap.get(transaction.operationType) ??
+              'Commision to B2Fintech',
             showToOwner: true,
             commisionsDetails: [],
             // isManualTx: true,
@@ -317,18 +314,14 @@ export class PomeloIntegrationProcessService {
             integration: 'Sales',
             requestBodyJson: process,
             requestHeadersJson: headers,
-            operationType:
-              CommissionsTypeMap.get(transaction.operationType) ??
-              OperationTransactionType.purchase,
+            operationType: transaction.operationType,
             status: response?.status ?? CardsEnum.CARD_PROCESS_OK,
             descriptionStatusPayment:
               response?.status_detail ?? CardsEnum.CARD_PROCESS_OK,
             description: response?.message ?? '',
-            page: isTransactionRefund
-              ? 'Refund commision to User'
-              : isTransactionReversalRefund
-              ? 'Reversal refund commision to User'
-              : 'Commision to B2Fintech',
+            page:
+              CommissionsTypeDescriptionMap.get(transaction.operationType) ??
+              'Commision to B2Fintech',
             showToOwner: true,
             commisionsDetails: [commisionNationalDetail],
             // isManualTx: true,
