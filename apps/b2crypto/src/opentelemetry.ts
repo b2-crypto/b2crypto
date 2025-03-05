@@ -47,10 +47,7 @@ export const sdk = new NodeSDK({
     exporter: metricsExporter,
     exportIntervalMillis: 10000,
   }) as any,
-  spanProcessors: [
-    new tracing.BatchSpanProcessor(tracesExporter),
-    new tracing.SimpleSpanProcessor(new tracing.ConsoleSpanExporter()),
-  ],
+  spanProcessors: [new tracing.BatchSpanProcessor(tracesExporter)],
   logRecordProcessors: [new logs.BatchLogRecordProcessor(logsExporter)],
   instrumentations: [getNodeAutoInstrumentations()],
 });
