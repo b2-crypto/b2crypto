@@ -373,7 +373,7 @@ export class CardServiceController extends AccountServiceController {
       } else {
         account.userCardConfig = user.userCard;
       }
-      account.email = account.email ?? user.personalData.email[0] ?? user.email;
+      account.email = account.email ?? user.email ?? user.personalData.email[0];
       // Validate Affinity Group
       if (!account?.group?.valueGroup) {
         /* const affinityGroup = await cardIntegration.getAffinityGroup(
