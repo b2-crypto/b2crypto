@@ -338,7 +338,7 @@ export class CardServiceController extends AccountServiceController {
     createDto.pin =
       createDto.pin ??
       CommonService.getNumberDigits(CommonService.randomIntNumber(9999), 4);
-    createDto.email = user.personalData.email[0] ?? user.email;
+    createDto.email = user.email ?? user.personalData.email[0];
     const account = await this.cardService.createOne(createDto);
     let tx = null;
     if (price > 0) {
