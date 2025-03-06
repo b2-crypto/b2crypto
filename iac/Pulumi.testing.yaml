@@ -69,12 +69,12 @@ config:
   b2crypto-iac:RABBIT_MQ_USERNAME:
     secure: AAABAHreYFQ4iFjfKy2GGCveK/jSdOGgKjWikkcTcn3xpxASLoxViQ==
   b2crypto-iac:REDIS_HOST:
-    secure: AAABAMBCr7T4S+O7byxnAaHqyx6csgRKHj7vF9lskqXfIcYXxzJvWj8znW0VMKSEwa7v9NawTTmEbau6sE464H0JhTKUp+IYcKZn1MpGczatFCphTaY=
+    secure: AAABAD6z2A+HS/gIPsRJK6sW55fAqLR2Qy/YxRjuWFoZUTmBXu0CzusXgiLpYFiQghE7WZ0cS9XtYbpbCb98JscDZH/hLtNDY4K98HctIDdNYVRxgw==
   b2crypto-iac:REDIS_PASSWORD:
-    secure: AAABAFfmApRg/M46ywuTWpRivAMMgiwmZgtbZoTWY1urL3IH27GKyYfnAITv2hcsQQEd1rpmov6YOFs92mE71A==
-  b2crypto-iac:REDIS_PORT: "14419"
+    secure: AAABACyv7Og67CYr1NV/ThsalS/DeBxp8MSqhKA8fzna6GsEAlTsViwhkX7xNkTfYQO0RMqaTy7ydN4fEODSKw==
+  b2crypto-iac:REDIS_PORT: "10790"
   b2crypto-iac:REDIS_USERNAME:
-    secure: AAABAHfW2+azlTMDrX5w4/fgKHChcw3jYFbJRhpJ9gI/bntVVgBS
+    secure: AAABAFpti1CqETkAJiGyNLD2sd2pwbnzEqngEidTtE7gkm14moWH
   b2crypto-iac:STACK: testing
   b2crypto-iac:TESTING: "false"
   b2crypto-iac:TZ: UTC
@@ -150,3 +150,10 @@ config:
     secure: AAABACsSBLyUxCAWh2EKJxMreHL3tX/qMVWt+1LwWxV7ETGWuwpQMu3EA8PILLmyrZ8vqGjVHc4ockoXeoc=
   b2crypto-iac:OTLP_API_KEY:
     secure: AAABAPWDiHcV0wwDCNUsBJIhA504550aIsLM5W7YwK3ISWYhQAr12tXGzVIg4LI73I7ASKIMxAqB163LbtwWH279pTU=
+  b2crypto-iac:APP_VERSION: 0.9.0
+  b2crypto-iac:COMMISION_NATIONAL:
+    secure: AAABAPu93owLariJV6kdii9dUZwAYM8AfHQwKqtz8aiPhaIZ
+  b2crypto-iac:COMMISION_INTERNATIONAL:
+    secure: AAABAF9vPi1whtmx1ipp3oeZRLO63OxiYBSlGGEcMOkPsKqW
+  b2crypto-iac:TASK_CPU_MONOLITH: "1024"
+  b2crypto-iac:TASK_MEMORY_MONOLITH: "2048"
