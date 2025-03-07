@@ -2063,7 +2063,6 @@ export class CardServiceController extends AccountServiceController {
   async processPomeloTransaction(@Ctx() ctx: RmqContext, @Payload() data: any) {
     CommonService.ack(ctx);
     try {
-      let txnAmount = 0;
       this.logger.info(
         `[processPomeloTransaction] Looking for card: ${data.id}`,
       );
@@ -2093,19 +2092,20 @@ export class CardServiceController extends AccountServiceController {
       if (data.authorize) {
         const allowedBalance =
           card.amount * (1.0 - this.BLOCK_BALANCE_PERCENTAGE - data.commision);
+
         if (allowedBalance <= data.amount) {
           this.logger.info(
             `[processPomeloTransaction] Card proccess: ${CardsEnum.CARD_PROCESS_INSUFFICIENT_FUNDS}`,
           );
           return CardsEnum.CARD_PROCESS_INSUFFICIENT_FUNDS;
         }
-        txnAmount = (data.amount + data.amount * data.commision) * -1;
-      } else {
-        txnAmount =
-          data.movement.toUpperCase() === 'DEBIT'
-            ? (data.amount + data.amount * data.commision) * -1
-            : (data.amount + data.amount * data.commision) * 1;
       }
+
+      const txnAmount =
+        data.movement.toUpperCase() === 'DEBIT'
+          ? data.amount * (1 + data.commision) * -1
+          : data.amount * (1 + data.commision);
+
       await this.cardService.customUpdateOne({
         id: card._id,
         $inc: {
