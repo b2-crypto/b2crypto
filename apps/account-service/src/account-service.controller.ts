@@ -90,6 +90,7 @@ export class AccountServiceController implements GenericServiceController {
   @NoCache()
   findAllMe(@Query() query: QuerySearchAnyDto, @Req() req?: any) {
     query = CommonService.getQueryWithUserId(query, req, 'owner');
+    query.where.showToOwner = query.where?.showToOwner ?? true;
     return this.accountService.findAll(query);
   }
 

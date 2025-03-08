@@ -235,6 +235,7 @@ export class CardServiceController extends AccountServiceController {
     query = query ?? {};
     query.where = query.where ?? {};
     query.where.type = TypesAccountEnum.CARD;
+    query.where.showToOwner = query.where?.showToOwner ?? true;
     query = CommonService.getQueryWithUserId(query, req, 'owner');
     const rta = await this.cardService.findAll(query);
     rta.list.forEach(async (account) => {
