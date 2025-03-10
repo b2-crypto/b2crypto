@@ -149,7 +149,7 @@ export class CategoryServiceService {
         name: country.name,
         iso2: country.iso2,
         iso3: country.iso3,
-        phone_code: country.phone_code,
+        phone_code: country.phone_code || '+##',
         currency: country.currency,
         region: country.region,
         flagUrl: `https://flagcdn.com/w320/${country.iso2.toLowerCase()}.png`
@@ -165,7 +165,7 @@ export class CategoryServiceService {
       
       return states.map(state => ({
         id: state.id,
-        name: state.name,
+        name: state.name.replace(/ Department$/i, ''),
         state_code: state.state_code,
         country_id: state.country_id,
         country_code: state.country_code,
