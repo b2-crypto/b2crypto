@@ -86,9 +86,9 @@ export class PomeloIntegrationProcessService {
         requestHeadersJson: headers,
         operationType:
           OperationTransactionType[process?.transaction?.type?.toLowerCase()],
-        status: response?.status ?? CardsEnum.CARD_PROCESS_OK,
+        status: process?.status ?? CardsEnum.CARD_PROCESS_OK,
         descriptionStatusPayment:
-          response?.status_detail ?? CardsEnum.CARD_PROCESS_OK,
+          process?.status_detail ?? CardsEnum.CARD_PROCESS_OK,
         description: response?.message ?? '',
         amount: amount.amount,
         amountCustodial: amount.usd,
