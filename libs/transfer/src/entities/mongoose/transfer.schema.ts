@@ -184,9 +184,6 @@ export class Transfer extends TransferEntity {
   @Prop({ default: true })
   showToOwner: boolean;
 
-  @Prop({ default: false })
-  isManualTx: boolean;
-
   @Prop({
     type: String,
     enum: CommisionTypeEnum,
