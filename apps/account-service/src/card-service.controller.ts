@@ -235,6 +235,7 @@ export class CardServiceController extends AccountServiceController {
     query = query ?? {};
     query.where = query.where ?? {};
     query.where.type = TypesAccountEnum.CARD;
+    query.where.showToOwner = query.where?.showToOwner ?? true;
     query = CommonService.getQueryWithUserId(query, req, 'owner');
     const rta = await this.cardService.findAll(query);
     rta.list.forEach(async (account) => {
@@ -338,6 +339,7 @@ export class CardServiceController extends AccountServiceController {
     createDto.pin =
       createDto.pin ??
       CommonService.getNumberDigits(CommonService.randomIntNumber(9999), 4);
+    createDto.email = user.email ?? user.personalData.email[0];
     const account = await this.cardService.createOne(createDto);
     let tx = null;
     if (price > 0) {
@@ -380,7 +382,7 @@ export class CardServiceController extends AccountServiceController {
       } else {
         account.userCardConfig = user.userCard;
       }
-      account.email = account.email ?? user.personalData.email[0] ?? user.email;
+      account.email = account.email ?? user.email ?? user.personalData.email[0];
       // Validate Affinity Group
       if (!account?.group?.valueGroup) {
         /* const affinityGroup = await cardIntegration.getAffinityGroup(
@@ -2070,7 +2072,6 @@ export class CardServiceController extends AccountServiceController {
   async processPomeloTransaction(@Ctx() ctx: RmqContext, @Payload() data: any) {
     CommonService.ack(ctx);
     try {
-      let txnAmount = 0;
       this.logger.info(
         `[processPomeloTransaction] Looking for card: ${data.id}`,
       );
@@ -2099,20 +2100,21 @@ export class CardServiceController extends AccountServiceController {
       );
       if (data.authorize) {
         const allowedBalance =
-          card.amount * (1.0 - this.BLOCK_BALANCE_PERCENTAGE);
+          card.amount * (1.0 - this.BLOCK_BALANCE_PERCENTAGE - data.commision);
+
         if (allowedBalance <= data.amount) {
           this.logger.info(
             `[processPomeloTransaction] Card proccess: ${CardsEnum.CARD_PROCESS_INSUFFICIENT_FUNDS}`,
           );
           return CardsEnum.CARD_PROCESS_INSUFFICIENT_FUNDS;
         }
-        txnAmount = data.amount * -1;
-      } else {
-        txnAmount =
-          data.movement.toUpperCase() === 'DEBIT'
-            ? data.amount * -1
-            : data.amount * 1;
       }
+
+      const txnAmount =
+        data.movement.toUpperCase() === 'DEBIT'
+          ? data.amount * (1 + data.commision) * -1
+          : data.amount * (1 + data.commision);
+
       await this.cardService.customUpdateOne({
         id: card._id,
         $inc: {

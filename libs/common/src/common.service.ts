@@ -10,12 +10,7 @@ import {
 import { RmqContext } from '@nestjs/microservices';
 import { SchedulerRegistry } from '@nestjs/schedule';
 import * as bcrypt from 'bcrypt';
-import {
-  isBoolean,
-  isDateString,
-  isEmail,
-  isPhoneNumber,
-} from 'class-validator';
+import { isDateString, isEmail, isPhoneNumber } from 'class-validator';
 import * as http from 'http';
 import { CountryCode } from 'libphonenumber-js';
 import { FetchData } from './models/fetch-data.model';
@@ -382,9 +377,9 @@ export class CommonService {
     query = query ?? {};
     query.where = query.where ?? {};
     query.where[attrName] = userId;
-    query.where.showToOwner = isBoolean(query.where.showToOwner)
-      ? query.where.showToOwner
-      : true;
+    // query.where.showToOwner = isBoolean(query.where.showToOwner)
+    //   ? query.where.showToOwner
+    //   : true;
     return query;
   }
   static checkWhitelistedIps(context: ExecutionContext): boolean {

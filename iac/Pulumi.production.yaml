@@ -103,9 +103,9 @@ config:
   b2crypto-iac:LOGO_URL: https://message-templates-resource.s3.eu-west-3.amazonaws.com/logo/b2pay.png
   b2crypto-iac:SOCIAL_MEDIA_ICONS: '{"facebook":"https://message-templates-resource.s3.eu-west-3.amazonaws.com/social/facebook.png","instagram":"https://message-templates-resource.s3.eu-west-3.amazonaws.com/social/instagram.png","linkedin":"https://message-templates-resource.s3.eu-west-3.amazonaws.com/social/linkedin.png","youtube":"https://message-templates-resource.s3.eu-west-3.amazonaws.com/social/youtube.png"}'
   b2crypto-iac:SOCIAL_MEDIA_LINKS: '{"facebook":"https://www.facebook.com/share/qT7RXDDgRqKigRnn/?mibextid=LQQJ4d","linkedin":"https://www.linkedin.com/company/b2fintech/?viewAsMember=true","instagram":"https://www.instagram.com/b2fintech/","youtube":"https://www.youtube.com"}'
-  b2crypto-iac:DESIRED_COUNT_TASK: '1'
+  b2crypto-iac:DESIRED_COUNT_TASK: '2'
   b2crypto-iac:MAX_CAPACITY_AUTOSCALING: '10'
-  b2crypto-iac:MIN_CAPACITY_AUTOSCALING: '1'
+  b2crypto-iac:MIN_CAPACITY_AUTOSCALING: '2'
   b2crypto-iac:MQ_DEPLOYMENT_MODE: SINGLE_INSTANCE
   b2crypto-iac:RABBIT_MQ_INSTANCE_TYPE: mq.m5.large
   b2crypto-iac:MONGOATLAS_PROJECT_ID:
@@ -149,14 +149,14 @@ config:
     secure: AAABANiFuO8c5fxFo6qKXeFsaueV2wR5IvsjpD8uE+ojy1e6IelF+d4mW0EyY82sTzgy+Q==
   b2crypto-iac:AWS_SECRET_KEY:
     secure: AAABAGabyp3icdJdarqH7JzJLAJ7wbF/O0/Pd1mia1AaDT7/YKZ1BnjLa9yn3I0lfQEMImIU6IuhsJCuHgwSfsmMZJ/hAnlY
-  b2crypto-iac:TASK_CPU_MONOLITH: "2048"
-  b2crypto-iac:TASK_MEMORY_MONOLITH: "8192"
+  b2crypto-iac:TASK_CPU_MONOLITH: '2048'
+  b2crypto-iac:TASK_MEMORY_MONOLITH: '8192'
   b2crypto-iac:OTLP_API_KEY:
-    secure: AAABAGdquUWvpghB/6krNjbA3HHzOgCetoD1BlX9/MDdHFvqZF3Z3BaQAKFXgNXJlKVrDRCL+xtGQkiH8ZE7NZLRiRk=
+    secure: AAABAGiudGn81j5pawiLcrb5tMeQa4K3Zwhj8isGUiLvnkE0cSq0WSvWlBBucX0CEOekw85JUR/aXsVSR4Bcz096jlU=
   b2crypto-iac:OTLP_HOST:
-    secure: AAABAHTGIOXPVYUfMTZXgqQslIl8kCEf1GHwXP16+8WpI0+oaXQepR2iyp8I+WUVVxd8M1NVRvF00mdUgFg=
+    secure: AAABADFFgvjXE442Y5yoz0tM7MrTGe5uJNkjBi0rKXCKQpyZNvV0MMeqq008MRB7Thc9SVQxkMfkay2ZNJ8=
   b2crypto-iac:APP_VERSION: 0.9.0
-  b2crypto-iac:OTP_VALIDATION_TIME_SECONDS: "120"
+  b2crypto-iac:OTP_VALIDATION_TIME_SECONDS: '120'
   b2crypto-iac:COMMISION_INTERNATIONAL:
     secure: AAABAPUWYchH7HVNHjQcibWBsgeI5gYR+BM6+7eKqC6c4WV8
   b2crypto-iac:COMMISION_NATIONAL:
