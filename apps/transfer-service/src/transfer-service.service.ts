@@ -580,10 +580,11 @@ export class TransferServiceService
     );
 
     if (
-      transferSaved.isApprove &&
-      (transferSaved.operationType === OperationTransactionType.deposit ||
-        transferSaved.operationType === OperationTransactionType.withdrawal) &&
-      transferSaved.isManualTx
+      (transferSaved.isApprove &&
+        transferSaved.operationType === OperationTransactionType.deposit) ||
+      (transferSaved.isApprove &&
+        transferSaved.operationType === OperationTransactionType.withdrawal &&
+        transferSaved.isManualTx)
     ) {
       const multiply = this.getMultiplyAmount(transferSaved.operationType);
       const resultBalance =
@@ -597,7 +598,11 @@ export class TransferServiceService
       accountToUpdate.amount = resultBalance;
     }
 
-    if (transferSaved.isApprove && !transferSaved.isManualTx) {
+    if (
+      transferSaved.isApprove &&
+      transferSaved.operationType !== OperationTransactionType.deposit &&
+      !transferSaved.isManualTx
+    ) {
       transferSaved.accountPrevBalance = this.createPrevBalance(
         transferSaved,
         account,
