@@ -1,33 +1,143 @@
 import { Traceable } from '@amplication/opentelemetry-nestjs';
-import { Injectable } from '@nestjs/common';
+import { Injectable, Inject } from '@nestjs/common';
 import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
+import { Cache, CACHE_MANAGER } from '@nestjs/cache-manager';
+import { firstValueFrom } from 'rxjs';
+import { HttpService } from '@nestjs/axios';
+import { TrmResponse, TrmResult } from '../interfaces/trm.interfaces';
+import { ConfigService } from '@nestjs/config';
 
-export interface IExchangeRate {
-  success: boolean;
-  query: IQuery;
-  info: IInfo;
-  date: string;
-  result: number;
-}
 
-export interface IQuery {
-  from: string;
-  to: string;
-  amount: number;
-}
-
-export interface IInfo {
-  timestamp: number;
-  rate: number;
-}
 
 @Traceable()
 @Injectable()
 export class FiatIntegrationClient {
+  private trmCopUsd: number = 4000;
+  private readonly TRM_CACHE_KEY = 'TRM_COP_USD';
+  private readonly TRM_API_URL;
+  private trmLastUpdated: Date = new Date();
+  private trmUpdateInProgress: boolean = false;
+
   constructor(
+    @Inject(ConfigService)
+    readonly configService: ConfigService,
     @InjectPinoLogger(FiatIntegrationClient.name)
     protected readonly logger: PinoLogger,
-  ) {}
+    @Inject(CACHE_MANAGER)
+    private cacheManager: Cache,
+    private readonly httpService: HttpService,
+  ) {
+    this.initializeTrm();
+    this.TRM_API_URL = configService.getOrThrow('TRM_ENDPOINT')
+  }
+
+  private async initializeTrm(): Promise<void> {
+    try {
+      const result = await this.updateTrmRate();
+      this.logger.info(`[initializeTrm] TRM inicial obtenida desde ${result.source}: ${result.value}`);
+    } catch (error) {
+      this.logger.error(`[initializeTrm] Error al obtener TRM inicial: ${error.message || error}`);
+    }
+  }
+
+  private async updateTrmRate(): Promise<TrmResult> {
+    if (this.trmUpdateInProgress) {
+      return {
+        value: this.trmCopUsd,
+        source: 'default',
+        updated: false,
+        timestamp: this.trmLastUpdated
+      };
+    }
+
+    this.trmUpdateInProgress = true;
+
+    try {
+      const cachedTrm = await this.getTrmFromCache();
+
+      if (cachedTrm) {
+        this.trmCopUsd = cachedTrm;
+        this.trmLastUpdated = new Date();
+        this.logger.info(`[updateTrmRate] TRM obtenida de cache: COP/USD = ${this.trmCopUsd}`);
+
+        return {
+          value: this.trmCopUsd,
+          source: 'cache',
+          updated: true,
+          timestamp: this.trmLastUpdated
+        };
+      }
+
+      const trmValue = await this.fetchTrmFromApi();
+
+      if (trmValue) {
+        this.trmCopUsd = trmValue;
+        this.trmLastUpdated = new Date();
+
+
+        this.logger.info(`[updateTrmRate] TRM actualizada desde API y guardada en cache: COP/USD = ${this.trmCopUsd}`);
+
+        return {
+          value: this.trmCopUsd,
+          source: 'api',
+          updated: true,
+          timestamp: this.trmLastUpdated
+        };
+      }
+
+      this.logger.warn(`[updateTrmRate] No se pudo obtener TRM nueva, usando valor por defecto: ${this.trmCopUsd}`);
+
+      return {
+        value: this.trmCopUsd,
+        source: 'default',
+        updated: false,
+        timestamp: this.trmLastUpdated
+      };
+    } catch (error) {
+      this.logger.error(`[updateTrmRate] Error actualizando TRM: ${error.message || error}`);
+
+      return {
+        value: this.trmCopUsd,
+        source: 'default',
+        updated: false,
+        timestamp: this.trmLastUpdated
+      };
+    } finally {
+      this.trmUpdateInProgress = false;
+    }
+  }
+
+  private async fetchTrmFromApi(): Promise<number | null> {
+    try {
+      const payload = {
+        currency: "COP",
+        createdAtTimezone: "America/Bogota"
+      };
+
+      const response = await firstValueFrom(
+        this.httpService.post<TrmResponse>(this.TRM_API_URL, payload)
+      );
+
+      if (response.data && response.data.value) {
+        this.logger.info(`[fetchTrmFromApi] TRM obtenida de API: ${response.data.value}`);
+        return response.data.value;
+      }
+
+      return null;
+    } catch (error) {
+      this.logger.error(`[fetchTrmFromApi] Error al obtener TRM de API: ${error.message || error}`);
+      return null;
+    }
+  }
+
+  private async getTrmFromCache(): Promise<number | null> {
+    try {
+      return await this.cacheManager.get<number>(this.TRM_CACHE_KEY);
+    } catch (error) {
+      this.logger.error(`[getTrmFromCache] Error al obtener TRM de caché: ${error.message || error}`);
+      return null;
+    }
+  }
 
   async getCurrencyConversionCustodial(
     from: string,
@@ -42,53 +152,35 @@ export class FiatIntegrationClient {
     from: string,
     amount: number,
   ): Promise<number> {
-    const apiURL = process.env.CURRENCY_CONVERSION_API_URL;
-    const apiKey = process.env.CURRENCY_CONVERSION_API_KEY;
     const toParsed = to === 'USDT' ? 'USD' : to;
     const fromParsed = from === 'USDT' ? 'USD' : from;
-    const url = `${apiURL}?access_key=${apiKey}&from=${fromParsed}&to=${toParsed}&amount=${amount}`;
 
-    this.logger.info(`[getCurrencyConversion] url: ${url}`);
+    this.logger.info(`[getCurrencyConversion] Conversión de ${fromParsed} a ${toParsed} por ${amount}`);
 
-    const rates = new Map<string, number>([['COPUSD', 4000]]);
+    if (fromParsed === 'USD') return amount;
 
-    const rate = rates.get(fromParsed + toParsed);
+    try {
+      const trmResult = await this.updateTrmRate();
 
-    if (!rate && fromParsed === 'USD') return amount;
+      if (!trmResult.updated) {
+        this.logger.warn(`[getCurrencyConversion] Usando TRM posiblemente obsoleta (${trmResult.source}): ${this.trmCopUsd}`);
+      }
 
-    if (!rate) throw new Error('Rate not found for ' + fromParsed + toParsed);
+      const rates = new Map<string, number>([['COPUSD', this.trmCopUsd]]);
+      const rate = rates.get(fromParsed + toParsed);
 
-    const swapFactory = (amount: number, rate: number) => amount / rate;
+      if (!rate) {
+        throw new Error(`Tasa de conversión no encontrada para ${fromParsed} a ${toParsed}`);
+      }
 
-    // const data = await fetch(url, {
-    //   method: 'GET',
-    //   signal: AbortSignal.timeout(300),
-    // })
-    //   .then<IExchangeRate>((res) => res.json())
-    //   .catch((error) => {
-    //     this.logger.error(`[getCurrencyConversion] ${error.message || error}`);
+      const swapFactory = (amount: number, rate: number) => amount / rate;
+      const result = swapFactory(amount, rate);
 
-    //     return {
-    //       success: false,
-    //       query: {
-    //         from: fromParsed,
-    //         to: toParsed,
-    //         amount,
-    //       },
-    //       info: {
-    //         timestamp: new Date().getMilliseconds(),
-    //         rate,
-    //       },
-    //       date: new Date().toISOString(),
-    //       result: swapFactory(amount, rate),
-    //     } satisfies IExchangeRate;
-
-    //     // throw new InternalServerErrorException(error);
-    //   });
-
-    // this.logger.info(`[getCurrencyConversion] ${JSON.stringify(data)}`);
-
-    // return data.result;
-    return swapFactory(amount, rate);
+      this.logger.info(`[getCurrencyConversion] Usando tasa: ${rate}, resultado: ${result}`);
+      return result;
+    } catch (error) {
+      this.logger.error(`[getCurrencyConversion] Error en conversión de moneda: ${error.message || error}`);
+      throw new Error(`Error al realizar conversión de ${fromParsed} a ${toParsed}: ${error.message}`);
+    }
   }
 }
