@@ -393,13 +393,6 @@ export class PomeloIntegrationProcessService {
           authorize,
         );
       }
-
-      const commision =
-        commisionNational +
-        (process.transaction.origin === CommisionTypeEnum.INTERNATIONAL
-          ? commisionInternational
-          : 0);
-
       const processResult = await this.builder.getPromiseAccountEventClient(
         EventsNamesAccountEnum.pomeloTransaction,
         {
@@ -407,7 +400,11 @@ export class PomeloIntegrationProcessService {
           amount: usdAmount,
           movement,
           authorize,
-          commision,
+          commision:
+            commisionNational +
+            (process.transaction.origin === CommisionTypeEnum.INTERNATIONAL
+              ? commisionInternational
+              : 0),
         },
       );
       return this.buildProcessResponse(processResult, authorize);
