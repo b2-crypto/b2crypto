@@ -58,6 +58,9 @@ export const CommisionDetailSchema =
 export class Transfer extends TransferEntity {
   id: ObjectId;
 
+  @Prop({ default: false })
+  isManualTx: boolean;
+
   @Prop()
   numericId: number;
 
@@ -183,9 +186,6 @@ export class Transfer extends TransferEntity {
 
   @Prop({ default: true })
   showToOwner: boolean;
-
-  @Prop({ default: false })
-  isManualTx: boolean;
 
   @Prop({
     type: String,
