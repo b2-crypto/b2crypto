@@ -86,9 +86,9 @@ export class PomeloIntegrationProcessService {
         requestHeadersJson: headers,
         operationType:
           OperationTransactionType[process?.transaction?.type?.toLowerCase()],
-        status: process?.status ?? CardsEnum.CARD_PROCESS_OK,
+        status: response?.status ?? CardsEnum.CARD_PROCESS_OK,
         descriptionStatusPayment:
-          process?.status_detail ?? CardsEnum.CARD_PROCESS_OK,
+          response?.status_detail ?? CardsEnum.CARD_PROCESS_OK,
         description: response?.message ?? '',
         amount: amount.amount,
         amountCustodial: amount.usd,
@@ -290,6 +290,7 @@ export class PomeloIntegrationProcessService {
               'Commision to B2Fintech',
             showToOwner: true,
             commisionsDetails: [],
+            isApprove: response?.status === CardsEnum.CARD_PROCESS_OK,
             // isManualTx: true,
           },
         );
@@ -324,6 +325,7 @@ export class PomeloIntegrationProcessService {
               'Commision to B2Fintech',
             showToOwner: true,
             commisionsDetails: [commisionNationalDetail],
+            isApprove: response?.status === CardsEnum.CARD_PROCESS_OK,
             // isManualTx: true,
           },
         );
