@@ -584,7 +584,8 @@ export class TransferServiceService
         transferSaved.operationType === OperationTransactionType.deposit) ||
       (transferSaved.isApprove &&
         transferSaved.operationType === OperationTransactionType.withdrawal &&
-        transferSaved.isManualTx)
+        (transferSaved.isManualTx ||
+          transferSaved.leadCrmName === 'Fireblocks'))
     ) {
       const multiply = this.getMultiplyAmount(transferSaved.operationType);
       const resultBalance =
@@ -601,6 +602,7 @@ export class TransferServiceService
     if (
       transferSaved.isApprove &&
       transferSaved.operationType !== OperationTransactionType.deposit &&
+      transferSaved.leadCrmName !== 'Fireblocks' &&
       !transferSaved.isManualTx
     ) {
       transferSaved.accountPrevBalance = this.createPrevBalance(
