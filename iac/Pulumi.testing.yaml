@@ -157,3 +157,4 @@ config:
   b2crypto-iac:APP_VERSION: 0.9.0
   b2crypto-iac:TASK_CPU_MONOLITH: "1024"
   b2crypto-iac:TASK_MEMORY_MONOLITH: "2048"
+  b2crypto-iac:TRM_ENDPOINT: https://api-trms-testing.b2fintech.com
