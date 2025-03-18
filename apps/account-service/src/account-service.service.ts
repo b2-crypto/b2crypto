@@ -151,9 +151,80 @@ export class AccountServiceService
   }
 
 
-  async availableWalletsFireblocks(
-    query?: QuerySearchAnyDto
-  ): Promise<any> {
+
+  private organizeWalletList(walletList: AccountDocument[]): any {
+    const accountIdFilters = ['USDT', 'BTC', 'TRX', 'BCH', 'ADA', 'USD', 'DAI', 'ETH', 'LTC'];
+
+    const tempResult: Record<string, any> = {};
+
+    accountIdFilters.forEach(currency => {
+      tempResult[currency] = {
+        networks: {}
+      };
+    });
+
+    walletList.forEach(wallet => {
+      if (!wallet.accountId) return;
+
+      const { asset, network } = this.determineAssetAndNetwork(wallet);
+
+      if (!tempResult[asset]) {
+        tempResult[asset] = {
+          networks: {}
+        };
+      }
+
+      if (!tempResult[asset].networks[network]) {
+        tempResult[asset].networks[network] = [];
+      }
+
+      const walletCopy = wallet.toObject ? wallet.toObject() : JSON.parse(JSON.stringify(wallet));
+      tempResult[asset].networks[network].push(walletCopy);
+    });
+
+    const result = [];
+
+    accountIdFilters.forEach(currency => {
+      if (tempResult[currency] && Object.keys(tempResult[currency].networks).length > 0) {
+        const networks = [];
+
+        Object.entries(tempResult[currency].networks).forEach(([networkName, wallets]) => {
+          networks.push({
+            name: networkName,
+            wallets: wallets
+          });
+        });
+
+        result.push({
+          name: currency,
+          network: networks
+        });
+      }
+    });
+
+    Object.keys(tempResult).forEach(currency => {
+      if (!accountIdFilters.includes(currency) && Object.keys(tempResult[currency].networks).length > 0) {
+        const networks = [];
+
+        Object.entries(tempResult[currency].networks).forEach(([networkName, wallets]) => {
+          networks.push({
+            name: networkName,
+            wallets: wallets
+          });
+        });
+
+        result.push({
+          name: currency,
+          network: networks
+        });
+      }
+    });
+
+    return result;
+  }
+
+  async availableWalletsFireblocks(query?: QuerySearchAnyDto): Promise<any> {
+
     query = query || new QuerySearchAnyDto();
     query.where = query.where || {};
     query.take = 10000;
@@ -211,53 +282,6 @@ export class AccountServiceService
     };
   }
 
-  private organizeWalletList(walletList: AccountDocument[]): any {
-    const accountIdFilters = ['USDT', 'BTC', 'TRX', 'BCH', 'ADA', 'USD', 'DAI', 'ETH', 'LTC'];
-
-    const result: Record<string, any> = {};
-
-    accountIdFilters.forEach(currency => {
-      result[currency] = {
-        networks: {}
-      };
-    });
-
-    walletList.forEach(wallet => {
-      if (!wallet.accountId) return;
-
-      const { asset, network } = this.determineAssetAndNetwork(wallet);
-
-      if (!result[asset]) {
-        result[asset] = {
-          networks: {}
-        };
-      }
-
-      if (!result[asset].networks[network]) {
-        result[asset].networks[network] = [];
-      }
-
-      const walletCopy = wallet.toObject ? wallet.toObject() : JSON.parse(JSON.stringify(wallet));
-
-      result[asset].networks[network].push(walletCopy);
-    });
-
-    const sortedResult: Record<string, any> = {};
-
-    accountIdFilters.forEach(currency => {
-      if (result[currency] && Object.keys(result[currency].networks).length > 0) {
-        sortedResult[currency] = result[currency];
-      }
-    });
-
-    Object.keys(result).forEach(currency => {
-      if (!accountIdFilters.includes(currency) && Object.keys(result[currency].networks).length > 0) {
-        sortedResult[currency] = result[currency];
-      }
-    });
-
-    return sortedResult;
-  }
 
   private determineAssetAndNetwork(wallet: AccountDocument): { asset: string; network: string } {
     let asset: string;
