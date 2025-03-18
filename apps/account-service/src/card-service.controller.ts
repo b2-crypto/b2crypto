@@ -281,6 +281,9 @@ export class CardServiceController extends AccountServiceController {
       level.slug,
       createDto.accountType === CardTypesAccountEnum.PHYSICAL,
     );
+
+    this.logger.info(`[createOne] cardAfg: ${JSON.stringify(cardAfg)}`);
+
     let price = 0;
     if (!cardAfg || cardAfg === AfgNamesEnum.NA) {
       level = await this.cardBuilder.getPromiseCategoryEventClient(
@@ -324,6 +327,11 @@ export class CardServiceController extends AccountServiceController {
         slug: `/${cardGroupName}/ig`,
       },
     );
+
+    this.logger.info(
+      `[createOne] levelCardGroup: ${JSON.stringify(levelCardGroup)}`,
+    );
+
     const cardGroupPrice = await this.cardBuilder.getPromiseCategoryEventClient(
       EventsNamesCategoryEnum.findOneByNameType,
       {
@@ -331,6 +339,11 @@ export class CardServiceController extends AccountServiceController {
         slug: 'precio-card-extra',
       },
     );
+
+    this.logger.info(
+      `[createOne] cardGroupPrice: ${JSON.stringify(cardGroupPrice)}`,
+    );
+
     price = cardGroupPrice.valueNumber;
     createDto.owner = user._id;
     if (createDto.pin && createDto.pin?.toString().length != 4) {
@@ -340,7 +353,13 @@ export class CardServiceController extends AccountServiceController {
       createDto.pin ??
       CommonService.getNumberDigits(CommonService.randomIntNumber(9999), 4);
     createDto.email = user.email ?? user.personalData.email[0];
+
+    this.logger.info(`[createOne] createDto: ${JSON.stringify(createDto)}`);
+
     const account = await this.cardService.createOne(createDto);
+
+    this.logger.info(`[createOne] account: ${JSON.stringify(account)}`);
+
     let tx = null;
     if (price > 0) {
       try {
@@ -356,6 +375,9 @@ export class CardServiceController extends AccountServiceController {
         throw err;
       }
     }
+
+    this.logger.info(`[createOne] tx: ${JSON.stringify(tx)}`);
+
     try {
       const cardIntegration = await this.integration.getCardIntegration(
         IntegrationCardEnum.POMELO,
@@ -364,6 +386,11 @@ export class CardServiceController extends AccountServiceController {
       if (!cardIntegration) {
         throw new BadRequestException('Bad integration card');
       }
+
+      this.logger.info(
+        `[createOne] cardIntegration: ${JSON.stringify(cardIntegration)}`,
+      );
+
       // Validate User Card
       if (!user.userCard) {
         account.userCardConfig = await this.getUserCard(
@@ -374,7 +401,8 @@ export class CardServiceController extends AccountServiceController {
       } else {
         account.userCardConfig = user.userCard;
       }
-      account.email = account.email ?? user.email ?? user.personalData.email[0];
+      account.email =
+        user.email ?? account.email ?? user.personalData?.email[0];
       // Validate Affinity Group
       if (!account?.group?.valueGroup) {
         /* const affinityGroup = await cardIntegration.getAffinityGroup(
@@ -383,6 +411,9 @@ export class CardServiceController extends AccountServiceController {
         const afg = affinityGroup.data[0]; */
         // TODO[hender - 2024/06/05]
         const group = await this.buildAFG(null, cardAfg);
+
+        this.logger.info(`[createOne] group: ${JSON.stringify(group)}`);
+
         account.group = group.list[0];
       }
       // Create Card
@@ -407,6 +438,9 @@ export class CardServiceController extends AccountServiceController {
           createDto?.address?.neighborhood ??
           user.personalData?.location?.address?.neighborhood,
       };
+
+      this.logger.info(`[createOne] address: ${JSON.stringify(address)}`);
+
       const cardDataIntegration = {
         user_id: account.userCardConfig.id,
         affinity_group_id: account.group.valueGroup,
@@ -414,6 +448,12 @@ export class CardServiceController extends AccountServiceController {
         address: address,
         previous_card_id: null,
       };
+
+      this.logger.info(
+        `[createOne] cardDataIntegration: ${JSON.stringify(
+          cardDataIntegration,
+        )}`,
+      );
       // if (createDto.prevAccount) {
       //   const prevCard = await this.cardService.findOneById(
       //     createDto.prevAccount.toString(),
@@ -424,6 +464,9 @@ export class CardServiceController extends AccountServiceController {
       //   cardDataIntegration.previous_card_id = prevCard.cardConfig.id;
       // }
       const card = await cardIntegration.createCard(cardDataIntegration);
+
+      this.logger.info(`[createOne] card: ${JSON.stringify(card)}`);
+
       const error = card['error'];
       if (error) {
         // TODO[hender - 2024-08-12] If problems with data user in Pomelo, flag to update in pomelo when update profile user
@@ -450,6 +493,9 @@ export class CardServiceController extends AccountServiceController {
         type: TypesAccountEnum.WALLET,
         accountType: WalletTypesAccountEnum.VAULT,
       };
+
+      this.logger.info(`[createOne] walletDTO: ${JSON.stringify(walletDTO)}`);
+
       const countWalletsUser =
         await this.cardBuilder.getPromiseAccountEventClient(
           EventsNamesAccountEnum.count,
@@ -458,12 +504,20 @@ export class CardServiceController extends AccountServiceController {
             where: walletDTO,
           },
         );
+
+      this.logger.info(
+        `[createOne] countWalletsUser: ${JSON.stringify(countWalletsUser)}`,
+      );
+
       if (countWalletsUser < 1) {
         this.cardBuilder.emitAccountEventClient(
           EventsNamesAccountEnum.createOneWallet,
           walletDTO,
         );
       }
+
+      this.logger.info(`[createOne] account: ${JSON.stringify(account)}`);
+
       return account;
     } catch (err) {
       await this.getAccountService().deleteOneById(account._id);
@@ -1297,11 +1351,9 @@ export class CardServiceController extends AccountServiceController {
     cardAfg: AfgNamesEnum = AfgNamesEnum.CONSUMER_VIRTUAL_1K,
   ) {
     let afg =
-      process.env.ENVIRONMENT === 'DEV' || process.env.ENVIRONMENT === 'STAGE'
-        ? this.getAfgStage(cardAfg)
-        : process.env.ENVIRONMENT === 'PROD'
+      process.env.ENVIRONMENT === 'PROD'
         ? this.getAfgProd(cardAfg)
-        : null;
+        : this.getAfgStage(cardAfg);
     this.logger.info(`[buildAFG] ${JSON.stringify(afg)}`);
     // TODO[hender-20/08/2024] check the level user (individual/corporate)
     if (afgId) {
@@ -2366,7 +2418,8 @@ export class CardServiceController extends AccountServiceController {
           typeDocId = 'PASSPORT';
           break;
       }
-      const userCard = await cardIntegration.createUser({
+
+      const userCardDto = {
         name: account?.personalData?.name ?? user.personalData.name,
         surname: account?.personalData?.lastName ?? user.personalData.lastName,
         identification_type: typeDocId,
@@ -2387,12 +2440,24 @@ export class CardServiceController extends AccountServiceController {
         legal_address: legalAddress,
         operation_country: country,
         zip_code: legalAddress.zip_code,
-      } as unknown as UserCardDto);
-      const error = userCard['error'];
+      } as unknown as UserCardDto;
+
+      this.logger.info(
+        `[createOne] userCardDto: ${JSON.stringify(userCardDto)}`,
+      );
+
+      const userCardCreated = await cardIntegration.createUser(userCardDto);
+
+      this.logger.info(
+        `[createOne] userCardCreated: ${JSON.stringify(userCardCreated)}`,
+      );
+
+      const error = userCardCreated['error'];
+
       if (error) {
         throw new BadRequestException(error);
       }
-      userCardConfig = userCard.data as unknown as UserCard;
+      userCardConfig = userCardCreated.data as unknown as UserCard;
     }
     await this.cardBuilder.getPromiseUserEventClient(
       EventsNamesUserEnum.updateOne,
@@ -2401,6 +2466,11 @@ export class CardServiceController extends AccountServiceController {
         userCard: userCardConfig,
       },
     );
+
+    this.logger.info(
+      `[createOne] userCardConfig: ${JSON.stringify(userCardConfig)}`,
+    );
+
     return userCardConfig;
   }
 
