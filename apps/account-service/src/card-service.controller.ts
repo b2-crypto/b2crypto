@@ -2446,7 +2446,11 @@ export class CardServiceController extends AccountServiceController {
         `[createOne] userCardDto: ${JSON.stringify(userCardDto)}`,
       );
 
-      const userCardCreated = await cardIntegration.createUser(userCardDto);
+      const userCardCreated = await cardIntegration.createUser(
+        userCardDto,
+        null,
+        AbortSignal.timeout(15000),
+      );
 
       this.logger.info(
         `[createOne] userCardCreated: ${JSON.stringify(userCardCreated)}`,
