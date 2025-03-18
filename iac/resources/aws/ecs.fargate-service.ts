@@ -33,6 +33,7 @@ import {
   TASK_CPU_MONOLITH,
   TASK_MEMORY_MONOLITH,
   TESTING,
+  TRM_ENDPOINT,
   TZ,
   URL_API_EMAIL_APP,
 } from '../../secrets';
@@ -85,10 +86,10 @@ export const ecsFargateService = new awsx.ecs.FargateService(
                 mongoAtlasClusterExisting?.connectionStrings.apply(
                   (connections) => connections[0].standardSrv,
                 ) ??
-                  // mongoAtlasCluster?.connectionStrings.apply(
-                  //   (connections) => connections[0].standardSrv,
-                  // ) ??
-                  mongodbatlasServerlessInstance?.connectionStringsStandardSrv,
+                // mongoAtlasCluster?.connectionStrings.apply(
+                //   (connections) => connections[0].standardSrv,
+                // ) ??
+                mongodbatlasServerlessInstance?.connectionStringsStandardSrv,
                 SECRETS.MONGOATLAS_USERNAME,
                 SECRETS.MONGOATLAS_PASSWORD,
               ])
@@ -294,6 +295,10 @@ export const ecsFargateService = new awsx.ecs.FargateService(
           {
             name: 'COMMISION_INTERNATIONAL',
             value: SECRETS.COMMISION_INTERNATIONAL,
+          },
+          {
+            name: 'TRM_ENDPOINT',
+            value: TRM_ENDPOINT,
           },
         ],
         portMappings: [

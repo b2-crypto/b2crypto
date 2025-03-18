@@ -151,7 +151,6 @@ export class AccountServiceService
   }
 
 
-
   private organizeWalletList(walletList: AccountDocument[]): any {
     const accountIdFilters = ['USDT', 'BTC', 'TRX', 'BCH', 'ADA', 'USD', 'DAI', 'ETH', 'LTC'];
 
@@ -225,6 +224,7 @@ export class AccountServiceService
 
   async availableWalletsFireblocks(query?: QuerySearchAnyDto): Promise<any> {
 
+
     query = query || new QuerySearchAnyDto();
     query.where = query.where || {};
     query.take = 10000;
@@ -234,6 +234,7 @@ export class AccountServiceService
     };
 
     const cryptoList = await this.lib.findAll(query);
+
 
     if (!cryptoList.totalElements) {
       const fireblocksCrm = await this.builder.getPromiseCrmEventClient(
@@ -263,7 +264,9 @@ export class AccountServiceService
       cryptoList.list = await Promise.all(promises);
     }
 
+
     const organizedWallets = this.organizeWalletList(cryptoList.list);
+
 
     return {
       statusCode: 200,
@@ -383,6 +386,7 @@ export class AccountServiceService
       network
     };
   }
+
   async networksWalletsFireblocks(query?: QuerySearchAnyDto): Promise<any> {
     query = query || new QuerySearchAnyDto();
     query.where = query.where || {};

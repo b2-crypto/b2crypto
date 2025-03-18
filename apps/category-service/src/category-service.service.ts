@@ -166,6 +166,7 @@ export class CategoryServiceService {
       return states.map(state => ({
         id: state.id,
         name: state.name.replace(/ Department$/i, ''),
+
         state_code: state.state_code,
         country_id: state.country_id,
         country_code: state.country_code,
