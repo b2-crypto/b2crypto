@@ -512,4 +512,55 @@ export class CategoryServiceController implements GenericServiceController {
     CommonService.ack(ctx);
     return category;
   }
+  @Get('/geographic/countries')
+  @NoCache()
+  @AllowAnon()
+  @ApiTags('Geographic Data')
+  @ApiResponse({
+    status: 200,
+    description: 'Lista de países con URLs de banderas',
+    type: Array,
+  })
+  @ApiResponse(ResponseB2Crypto.getResponseSwagger(400))
+  @ApiResponse(ResponseB2Crypto.getResponseSwagger(404))
+  @ApiResponse(ResponseB2Crypto.getResponseSwagger(500))
+  async getCountries(): Promise<any[]> {
+    return this.categoryService.getGeographicDataFromLibrary('COUNTRY');
+  }
+  
+  @Get('/geographic/departments/:countryId')
+  @NoCache()
+  @AllowAnon()
+  @ApiTags('Geographic Data')
+  @ApiResponse({
+    status: 200,
+    description: 'Lista de departamentos/estados para un país específico',
+    type: Array,
+  })
+  @ApiResponse(ResponseB2Crypto.getResponseSwagger(400))
+  @ApiResponse(ResponseB2Crypto.getResponseSwagger(404))
+  @ApiResponse(ResponseB2Crypto.getResponseSwagger(500))
+  async getDepartmentsByCountry(
+    @Param('countryId') countryId: string,
+  ): Promise<any[]> {
+    return this.categoryService.getGeographicDataFromLibrary('DEPARTMENT', countryId);
+  }
+  
+  @Get('/geographic/cities/:stateId')
+  @NoCache()
+  @AllowAnon()
+  @ApiTags('Geographic Data')
+  @ApiResponse({
+    status: 200,
+    description: 'Lista de ciudades para un departamento/estado específico',
+    type: Array,
+  })
+  @ApiResponse(ResponseB2Crypto.getResponseSwagger(400))
+  @ApiResponse(ResponseB2Crypto.getResponseSwagger(404))
+  @ApiResponse(ResponseB2Crypto.getResponseSwagger(500))
+  async getCitiesByState(
+    @Param('stateId') stateId: string,
+  ): Promise<any[]> {
+    return this.categoryService.getGeographicDataFromLibrary('CITY', stateId);
+  }
 }
