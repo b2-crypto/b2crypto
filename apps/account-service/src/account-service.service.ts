@@ -42,8 +42,7 @@ import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 @Traceable()
 @Injectable()
 export class AccountServiceService
-  implements BasicMicroserviceService<AccountDocument>
-{
+  implements BasicMicroserviceService<AccountDocument> {
   async cleanWallet(query: QuerySearchAnyDto) {
     throw new NotImplementedException();
     // query = query || new QuerySearchAnyDto();
@@ -143,7 +142,7 @@ export class AccountServiceService
     @Inject(AccountServiceMongooseService)
     private lib: AccountServiceMongooseService,
     private readonly integration: IntegrationService,
-  ) {}
+  ) { }
   async download(
     query: QuerySearchAnyDto,
     context?: any,
@@ -151,10 +150,81 @@ export class AccountServiceService
     throw new NotImplementedException('Method not implemented.');
   }
 
-  
-  async availableWalletsFireblocks(
-    query?: QuerySearchAnyDto
-  ): Promise<any> {
+
+  private organizeWalletList(walletList: AccountDocument[]): any {
+    const accountIdFilters = ['USDT', 'BTC', 'TRX', 'BCH', 'ADA', 'USD', 'DAI', 'ETH', 'LTC'];
+
+    const tempResult: Record<string, any> = {};
+
+    accountIdFilters.forEach(currency => {
+      tempResult[currency] = {
+        networks: {}
+      };
+    });
+
+    walletList.forEach(wallet => {
+      if (!wallet.accountId) return;
+
+      const { asset, network } = this.determineAssetAndNetwork(wallet);
+
+      if (!tempResult[asset]) {
+        tempResult[asset] = {
+          networks: {}
+        };
+      }
+
+      if (!tempResult[asset].networks[network]) {
+        tempResult[asset].networks[network] = [];
+      }
+
+      const walletCopy = wallet.toObject ? wallet.toObject() : JSON.parse(JSON.stringify(wallet));
+      tempResult[asset].networks[network].push(walletCopy);
+    });
+
+    const result = [];
+
+    accountIdFilters.forEach(currency => {
+      if (tempResult[currency] && Object.keys(tempResult[currency].networks).length > 0) {
+        const networks = [];
+
+        Object.entries(tempResult[currency].networks).forEach(([networkName, wallets]) => {
+          networks.push({
+            name: networkName,
+            wallets: wallets
+          });
+        });
+
+        result.push({
+          name: currency,
+          network: networks
+        });
+      }
+    });
+
+    Object.keys(tempResult).forEach(currency => {
+      if (!accountIdFilters.includes(currency) && Object.keys(tempResult[currency].networks).length > 0) {
+        const networks = [];
+
+        Object.entries(tempResult[currency].networks).forEach(([networkName, wallets]) => {
+          networks.push({
+            name: networkName,
+            wallets: wallets
+          });
+        });
+
+        result.push({
+          name: currency,
+          network: networks
+        });
+      }
+    });
+
+    return result;
+  }
+
+  async availableWalletsFireblocks(query?: QuerySearchAnyDto): Promise<any> {
+
+
     query = query || new QuerySearchAnyDto();
     query.where = query.where || {};
     query.take = 10000;
@@ -162,9 +232,10 @@ export class AccountServiceService
     query.where.owner = {
       $exists: false,
     };
-    
+
     const cryptoList = await this.lib.findAll(query);
-    
+
+
     if (!cryptoList.totalElements) {
       const fireblocksCrm = await this.builder.getPromiseCrmEventClient(
         EventsNamesCrmEnum.findOneByName,
@@ -192,9 +263,11 @@ export class AccountServiceService
       });
       cryptoList.list = await Promise.all(promises);
     }
-    
+
+
     const organizedWallets = this.organizeWalletList(cryptoList.list);
-    
+
+
     return {
       statusCode: 200,
       message: "success",
@@ -211,60 +284,110 @@ export class AccountServiceService
       }
     };
   }
-  
-  private organizeWalletList(walletList: AccountDocument[]): any {
-    const accountIdFilters = ['USDT', 'BTC', 'TRX', 'BCH', 'ADA', 'USD', 'DAI', 'ETH', 'LTC'];
-    
-    const result: Record<string, any> = {};
-    
-    accountIdFilters.forEach(currency => {
-      result[currency] = {
-        networks: {}
-      };
-    });
-    
-    const otherWallets: Record<string, any[]> = {};
-    
-    walletList.forEach(wallet => {
-      if (!wallet.accountId) return;
-      
-      const parts = wallet.accountId.split('_');
-      const firstPart = parts[0];
-      
-      if (accountIdFilters.includes(firstPart)) {
-        let network = "MAIN";
-        
-        if (parts.length > 1) {
-          network = parts[1] || "MAIN";
-        }
-        
-        if (!result[firstPart].networks[network]) {
-          result[firstPart].networks[network] = [];
-        }
-        
-        const walletCopy = wallet.toObject ? wallet.toObject() : JSON.parse(JSON.stringify(wallet));
-        result[firstPart].networks[network].push(walletCopy);
+
+
+  private determineAssetAndNetwork(wallet: AccountDocument): { asset: string; network: string } {
+    let asset: string;
+
+    const accountIdParts = wallet.accountId.split('_');
+    const firstPartId = accountIdParts[0];
+
+    if (wallet.accountId.includes('USDT_S2UZ')) {
+      asset = 'USDT';
+    }
+    else if (wallet.currency && wallet.currency !== 'USDT') {
+      asset = wallet.currency;
+    }
+    else if (wallet.protocol === 'BASE_ASSET' && !accountIdParts[1]) {
+      asset = firstPartId;
+    }
+    else if (wallet.name) {
+      const nameFirstWord = wallet.name.split(' ')[0];
+      if (nameFirstWord === 'Tether' || nameFirstWord === 'USD') {
+        asset = 'USDT';
+      } else if (/Bitcoin|BTC/.test(wallet.name)) {
+        asset = 'BTC';
+      } else if (/Ethereum|ETH/.test(wallet.name)) {
+        asset = 'ETH';
+      } else if (/Tron|TRX/.test(wallet.name)) {
+        asset = 'TRX';
+      } else if (/Arbitrum|ARB/.test(wallet.name)) {
+        asset = 'ARB';
+      } else if (/Matic|MATIC/.test(wallet.name)) {
+        asset = 'MATIC';
+      } else if (/BNB/.test(wallet.name)) {
+        asset = 'BNB';
       } else {
-        if (!otherWallets[firstPart]) {
-          otherWallets[firstPart] = [];
-        }
-        
-        otherWallets[firstPart].push(wallet);
+        asset = firstPartId;
       }
-    });
-    
-    for (const currency of accountIdFilters) {
-      if (Object.keys(result[currency].networks).length === 0) {
-        delete result[currency];
+    } else {
+      asset = firstPartId;
+    }
+
+    let network: string;
+
+    if (accountIdParts.length > 1 && accountIdParts[1] && accountIdParts[1] !== 'S2UZ') {
+      network = accountIdParts[1];
+    }
+    else if (wallet.name) {
+      const nameParts = wallet.name.split(' ');
+      const lastPart = nameParts[nameParts.length - 1];
+      if (lastPart.startsWith('(') && lastPart.endsWith(')')) {
+        network = lastPart.slice(1, -1);
       }
     }
-    
-    result.others = otherWallets;
-    
-    return result;
+
+    if (!network && wallet.protocol && wallet.protocol !== "BASE_ASSET") {
+      network = wallet.protocol;
+    }
+
+    if (!network && wallet.nativeAccountName) {
+      if (wallet.nativeAccountName.includes('_')) {
+        network = wallet.nativeAccountName.split('_')[1];
+      }
+      else if (wallet.nativeAccountName.includes('-')) {
+        const parts = wallet.nativeAccountName.split('-');
+        if (parts.length > 1 && parts[1]) {
+          network = parts[1];
+        }
+      }
+      else if (wallet.nativeAccountName.includes('POLYGON')) {
+        network = 'POLYGON';
+      }
+      else if (wallet.nativeAccountName === wallet.accountId) {
+        network = asset;
+      }
+    }
+
+    if (!network) {
+      if (asset === 'BTC') {
+        network = 'BITCOIN';
+      } else if (asset === 'ETH') {
+        network = 'ETHEREUM';
+      } else if (asset === 'TRX') {
+        network = 'TRON';
+      } else if (asset === 'USDT') {
+        network = 'TETHER';
+      } else if (asset === 'BCH') {
+        network = 'BCH';
+      } else if (asset === 'ADA') {
+        network = 'CARDANO';
+      } else if (asset === 'DAI') {
+        network = 'DAI';
+      } else if (asset === 'LTC') {
+        network = 'LITECOIN';
+      } else {
+        network = asset;
+      }
+    }
+
+    return {
+      asset,
+      network
+    };
   }
+
   async networksWalletsFireblocks(query?: QuerySearchAnyDto): Promise<any> {
-    // Job to check fireblocks available wallets
     query = query || new QuerySearchAnyDto();
     query.where = query.where || {};
     query.take = 10000;
@@ -538,13 +661,11 @@ export class AccountServiceService
           date,
         ),
       ];
-      const name = `${
-        process.env.ENVIRONMENT !== EnvironmentEnum.prod
-          ? process.env.ENVIRONMENT
-          : ''
-      } Balance Report ${
-        query.where?.type ?? 'all types'
-      } - ${this.printShortDate(date)} UTC`;
+      const name = `${process.env.ENVIRONMENT !== EnvironmentEnum.prod
+        ? process.env.ENVIRONMENT
+        : ''
+        } Balance Report ${query.where?.type ?? 'all types'
+        } - ${this.printShortDate(date)} UTC`;
       this.sendEmailToList(promises, name);
       this.logger.info('[getBalanceReport] Balance Report sended');
     });
