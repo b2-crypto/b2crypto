@@ -171,9 +171,19 @@ export class IntegrationCardService<
     }
     return await this.fetch('GET', path);
   }
-  async createUser(userCard: TUserCardDto): Promise<AxiosResponse<any[], any>> {
+  async createUser(
+    userCard: TUserCardDto,
+    headers?: Record<string, string>,
+    signal?: AbortSignal,
+  ): Promise<AxiosResponse<any[], any>> {
     //return this.http.post(this.routesMap.createUser, userCard);
-    return this.fetch('POST', this.routesMap.createUser, userCard);
+    return this.fetch(
+      'POST',
+      this.routesMap.createUser,
+      userCard,
+      headers,
+      signal,
+    );
   }
   async updateUser(userCard: TUserCardDto): Promise<AxiosResponse<any[], any>> {
     return this.http.patch(this.routesMap.updateUser, userCard);
