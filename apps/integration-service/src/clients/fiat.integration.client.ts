@@ -110,15 +110,11 @@ export class FiatIntegrationClient {
 
   private async fetchTrmFromApi(): Promise<number | null> {
     try {
-      const payload = {
-        currency: "COP",
-        createdAtTimezone: "America/Bogota"
-      };
 
       const response = await firstValueFrom(
-        this.httpService.post<TrmResponse>(this.TRM_API_URL, payload)
+        this.httpService.get<TrmResponse>(`${this.TRM_API_URL}/api/v1/trms/current?currency=COP`)
       );
-
+      console.log(response)
       if (response.data && response.data.value) {
         this.logger.info(`[fetchTrmFromApi] TRM obtenida de API: ${response.data.value}`);
         return response.data.value;
