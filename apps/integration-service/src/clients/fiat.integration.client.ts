@@ -14,6 +14,7 @@ import { ConfigService } from '@nestjs/config';
 export class FiatIntegrationClient {
   private trmCopUsd: number = 4000;
   private readonly TRM_CACHE_KEY = 'trm.current.COP';
+
   private readonly TRM_API_URL;
   private trmLastUpdated: Date = new Date();
   private trmUpdateInProgress: boolean = false;

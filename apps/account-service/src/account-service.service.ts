@@ -151,6 +151,7 @@ export class AccountServiceService
   }
 
 
+
   private organizeWalletList(walletList: AccountDocument[]): any {
     const accountIdFilters = ['USDT', 'BTC', 'TRX', 'BCH', 'ADA', 'USD', 'DAI', 'ETH', 'LTC'];
 
@@ -223,6 +224,7 @@ export class AccountServiceService
   }
 
   async availableWalletsFireblocks(query?: QuerySearchAnyDto): Promise<any> {
+
     query = query || new QuerySearchAnyDto();
     query.where = query.where || {};
     query.take = 10000;
@@ -279,6 +281,7 @@ export class AccountServiceService
       }
     };
   }
+
 
   private determineAssetAndNetwork(wallet: AccountDocument): { asset: string; network: string } {
     let asset: string;
