@@ -17,9 +17,13 @@ export interface IInfo {
     rate: number;
 }
 
+export interface TrmValue {
+    value: number;
+}
+
 export interface TrmResponse {
     id: string;
-    value: number;
+    value: TrmValue;
     validStartDatetime: string;
     validStartTimezone: string;
     validEndDatetime: string;
