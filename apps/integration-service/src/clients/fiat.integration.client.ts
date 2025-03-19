@@ -7,8 +7,6 @@ import { HttpService } from '@nestjs/axios';
 import { TrmResponse, TrmResult } from '../interfaces/trm.interfaces';
 import { ConfigService } from '@nestjs/config';
 
-
-
 @Traceable()
 @Injectable()
 export class FiatIntegrationClient {
@@ -57,7 +55,7 @@ export class FiatIntegrationClient {
       const cachedTrm = await this.getTrmFromCache();
 
       if (cachedTrm) {
-        this.trmCopUsd = cachedTrm;
+        this.trmCopUsd = cachedTrm.value.value;
         this.trmLastUpdated = new Date();
         this.logger.info(`[updateTrmRate] TRM obtenida de cache: COP/USD = ${this.trmCopUsd}`);
 
@@ -72,9 +70,8 @@ export class FiatIntegrationClient {
       const trmValue = await this.fetchTrmFromApi();
 
       if (trmValue) {
-        this.trmCopUsd = trmValue;
+        this.trmCopUsd = trmValue.value.value;
         this.trmLastUpdated = new Date();
-
 
         this.logger.info(`[updateTrmRate] TRM actualizada desde API y guardada en cache: COP/USD = ${this.trmCopUsd}`);
 
@@ -108,16 +105,15 @@ export class FiatIntegrationClient {
     }
   }
 
-  private async fetchTrmFromApi(): Promise<number | null> {
+  private async fetchTrmFromApi(): Promise<any | null> {
     try {
-
       const response = await firstValueFrom(
         this.httpService.get<TrmResponse>(`${this.TRM_API_URL}/api/v1/trms/current?currency=COP`)
       );
-      console.log(response)
+      console.log(response);
       if (response.data && response.data.value) {
-        this.logger.info(`[fetchTrmFromApi] TRM obtenida de API: ${response.data.value}`);
-        return response.data.value;
+        this.logger.info(`[fetchTrmFromApi] TRM obtenida de API: ${response.data.value.value}`);
+        return response.data;
       }
 
       return null;
@@ -127,9 +123,9 @@ export class FiatIntegrationClient {
     }
   }
 
-  private async getTrmFromCache(): Promise<number | null> {
+  private async getTrmFromCache(): Promise<any | null> {
     try {
-      return await this.cacheManager.get<number>(this.TRM_CACHE_KEY);
+      return await this.cacheManager.get(this.TRM_CACHE_KEY);
     } catch (error) {
       this.logger.error(`[getTrmFromCache] Error al obtener TRM de caché: ${error.message || error}`);
       return null;
