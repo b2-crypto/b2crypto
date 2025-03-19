@@ -376,10 +376,10 @@ export class TransferServiceService
       0,
     );
 
-    return (
-      account.amount +
-      multiply * (currentCommisionAmount + previousCommisionsAmount)
-    );
+    return transfer.isApprove
+      ? account.amount +
+          multiply * (currentCommisionAmount + previousCommisionsAmount)
+      : account.amount;
   }
 
   private createResultBalance(
@@ -392,7 +392,9 @@ export class TransferServiceService
       0,
     );
 
-    return account.amount + multiply * previousCommisionsAmount;
+    return transfer.isApprove
+      ? account.amount + multiply * previousCommisionsAmount
+      : account.amount;
   }
 
   private getMultiplyAmount(operationType: OperationTransactionType): number {
