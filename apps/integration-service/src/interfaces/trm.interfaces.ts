@@ -41,6 +41,27 @@ export interface TrmResponse {
     deletedBy: string | null;
 }
 
+export interface TrmApiResponse {
+    id: string;
+    name: string;
+    rate: number;
+    validStartDatetime: string;
+    validStartTimezone: string;
+    validEndDatetime: string;
+    validEndTimezone: string;
+    isDeleted: boolean;
+    createdAtDatetime: string;
+    createdAtTimezone: string;
+    updatedAtDatetime: string | null;
+    updatedAtTimezone: string | null;
+    deletedAtDatetime: string | null;
+    deletedAtTimezone: string | null;
+    createdBy: string;
+    updatedBy: string | null;
+    deletedBy: string | null;
+    trmId: string;
+}
+
 export interface TrmResult {
     value: number;
     source: 'cache' | 'api' | 'default';
