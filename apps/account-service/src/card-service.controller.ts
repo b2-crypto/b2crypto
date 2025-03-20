@@ -366,24 +366,13 @@ export class CardServiceController extends AccountServiceController {
     if (price > 0) {
       try {
 
-
-        let sourceAccount = null;
-        if (createDto.fromAccountId) {
-          sourceAccount = await this.getAccountService().findOneById(
-            createDto.fromAccountId,
-          );
-          if (!sourceAccount) {
-            throw new BadRequestException('Source account not found');
-          }
-        }
-
         tx = await this.txPurchaseCard(
           price,
           user,
           `PURCHASE_${createDto.type}_${createDto.accountType}`,
           null,
           `Compra de ${createDto.type} ${createDto.accountType} ${level.name}`,
-          createDto.fromAccountId || '',
+          createDto.fromAccountId,
         );
       } catch (err) {
         await this.getAccountService().deleteOneById(account._id);
@@ -545,7 +534,7 @@ export class CardServiceController extends AccountServiceController {
           `Compra de ${createDto.type} ${createDto.accountType} ${level.name}`,
           `Reversal`,
           true,
-          createDto.fromAccountId || '',
+          createDto.fromAccountId,
         );
       }
       this.logger.error(
@@ -590,14 +579,16 @@ export class CardServiceController extends AccountServiceController {
         ? CommonService.getSlug('Reversal purchase')
         : CommonService.getSlug('Purchase wallet'),
     );
-    if (!account) {     
+    if (!account) {
+
+   
       const listAccount = await this.cardBuilder.getPromiseAccountEventClient(
         EventsNamesAccountEnum.findAll,
         {
           where: {
             type: 'WALLET',
+            accountId: fromAccountId ?? 'TRX_USDT_S2UZ',
             owner: owner._id,
-            _id: fromAccountId
           },
         },
       );
