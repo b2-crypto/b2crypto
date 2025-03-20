@@ -590,27 +590,14 @@ export class CardServiceController extends AccountServiceController {
         ? CommonService.getSlug('Reversal purchase')
         : CommonService.getSlug('Purchase wallet'),
     );
-    if (!account) {
-
-      interface QueryWhere {
-        type: string;
-        owner: typeof owner._id;
-        _id: string;
-        accountId?: string;
-      }
-
-      const queryWhere: QueryWhere = {
-        type: 'WALLET',
-        owner: owner._id,
-        _id: fromAccountId
-      };
+    if (!account) {     
       const listAccount = await this.cardBuilder.getPromiseAccountEventClient(
         EventsNamesAccountEnum.findAll,
         {
           where: {
             type: 'WALLET',
-            accountId: 'TRX_USDT_S2UZ',
             owner: owner._id,
+            _id: fromAccountId
           },
         },
       );
