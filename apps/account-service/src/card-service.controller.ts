@@ -365,7 +365,9 @@ export class CardServiceController extends AccountServiceController {
       try {
         let sourceAccount = null;
         if (createDto.fromAccountId) {
-          sourceAccount = await this.getAccountService().findOneById(createDto.fromAccountId);
+          sourceAccount = await this.getAccountService().findOneById(
+            createDto.fromAccountId,
+          );
           if (!sourceAccount) {
             throw new BadRequestException('Source account not found');
           }
@@ -379,7 +381,7 @@ export class CardServiceController extends AccountServiceController {
           `Compra de ${createDto.type} ${createDto.accountType} ${level.name}`,
           undefined,
           false,
-          createDto.fromAccountId || ''
+          createDto.fromAccountId || '',
         );
       } catch (err) {
         await this.getAccountService().deleteOneById(account._id);
@@ -541,7 +543,7 @@ export class CardServiceController extends AccountServiceController {
           `Compra de ${createDto.type} ${createDto.accountType} ${level.name}`,
           `Reversal`,
           true,
-          createDto.fromAccountId || ''
+          createDto.fromAccountId || '',
         );
       }
       this.logger.error(
@@ -576,7 +578,7 @@ export class CardServiceController extends AccountServiceController {
     description?: string,
     page?: string,
     reversal = false,
-    fromAccountId?: string
+    fromAccountId?: string,
   ) {
     const pspAccount = await this.getPspAccountBySlug(
       CommonService.getSlug('b2fintech'),
@@ -608,8 +610,8 @@ export class CardServiceController extends AccountServiceController {
       const listAccount = await this.cardBuilder.getPromiseAccountEventClient(
         EventsNamesAccountEnum.findAll,
         {
-          where: queryWhere
-        }
+          where: queryWhere,
+        },
       );
 
       if (!listAccount.totalElements) {
@@ -748,19 +750,19 @@ export class CardServiceController extends AccountServiceController {
   private getAfgByLevel(levelSlug: string, cardPhysical = false): AfgNamesEnum {
     const map = cardPhysical
       ? {
-        'grupo-0': AfgNamesEnum.NA,
-        'grupo-1': AfgNamesEnum.CONSUMER_NOMINADA_3K,
-        'grupo-2': AfgNamesEnum.CONSUMER_NOMINADA_10K,
-        'grupo-3': AfgNamesEnum.CONSUMER_INNOMINADA_25K,
-        'grupo-4': AfgNamesEnum.CONSUMER_INNOMINADA_100K,
-      }
+          'grupo-0': AfgNamesEnum.NA,
+          'grupo-1': AfgNamesEnum.CONSUMER_NOMINADA_3K,
+          'grupo-2': AfgNamesEnum.CONSUMER_NOMINADA_10K,
+          'grupo-3': AfgNamesEnum.CONSUMER_INNOMINADA_25K,
+          'grupo-4': AfgNamesEnum.CONSUMER_INNOMINADA_100K,
+        }
       : {
-        'grupo-0': AfgNamesEnum.CONSUMER_VIRTUAL_1K,
-        'grupo-1': AfgNamesEnum.CONSUMER_VIRTUAL_1K,
-        'grupo-2': AfgNamesEnum.CONSUMER_VIRTUAL_2K,
-        'grupo-3': AfgNamesEnum.CONSUMER_VIRTUAL_5K,
-        'grupo-4': AfgNamesEnum.CONSUMER_VIRTUAL_10K,
-      };
+          'grupo-0': AfgNamesEnum.CONSUMER_VIRTUAL_1K,
+          'grupo-1': AfgNamesEnum.CONSUMER_VIRTUAL_1K,
+          'grupo-2': AfgNamesEnum.CONSUMER_VIRTUAL_2K,
+          'grupo-3': AfgNamesEnum.CONSUMER_VIRTUAL_5K,
+          'grupo-4': AfgNamesEnum.CONSUMER_VIRTUAL_10K,
+        };
 
     return (
       map[levelSlug] ??
@@ -1929,14 +1931,14 @@ export class CardServiceController extends AccountServiceController {
       'https://cardsstyles.s3.eu-west-3.amazonaws.com/cardsstyles2.css';
     const html = pug.render(
       '<iframe ' +
-      `${width}` +
-      `${height}` +
-      'allow="clipboard-write" ' +
-      'class="iframe-list" ' +
-      'scrolling="no" ' +
-      `src="${url}/v1/${cardIdPomelo}?auth=${token['access_token']}&styles=${urlStyles}&field_list=pan,code,pin,name,expiration&layout=card&locale=${locale}" ` +
-      'frameBorder="0">' +
-      '</iframe>',
+        `${width}` +
+        `${height}` +
+        'allow="clipboard-write" ' +
+        'class="iframe-list" ' +
+        'scrolling="no" ' +
+        `src="${url}/v1/${cardIdPomelo}?auth=${token['access_token']}&styles=${urlStyles}&field_list=pan,code,pin,name,expiration&layout=card&locale=${locale}" ` +
+        'frameBorder="0">' +
+        '</iframe>',
     );
     return res
       .setHeader('Content-Type', 'text/html; charset=utf-8')
@@ -2427,7 +2429,7 @@ export class CardServiceController extends AccountServiceController {
       birthDate = new Date(birthDate);
       const legalAddress = this.getLegalAddress(
         account?.personalData?.location.address ??
-        user.personalData.location.address,
+          user.personalData.location.address,
       );
       const country = 'COL';
       /* const country = countries.filter(

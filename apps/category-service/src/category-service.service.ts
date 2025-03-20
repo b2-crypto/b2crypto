@@ -14,9 +14,9 @@ import { PspAccountInterface } from '@psp-account/psp-account/entities/psp-accou
 import { OperationTransactionType } from '@transfer/transfer/enum/operation.transaction.type.enum';
 import EventsNamesPermissionEnum from 'apps/permission-service/src/enum/events.names.permission.enum';
 import EventsNamesPspAccountEnum from 'apps/psp-service/src/enum/events.names.psp.acount.enum';
+import csc from 'countries-states-cities';
 import { CategoryResponseDto } from './dto/category.response.dto';
 import { PspAccountResponseDto } from './dto/psp.account.response.dto';
-import csc from 'countries-states-cities';
 
 @Traceable()
 @Injectable()
@@ -140,11 +140,14 @@ export class CategoryServiceService {
     page.list = paginator.list.map((pa) => new PspAccountResponseDto(pa));
     return page;
   }
-  async getGeographicDataFromLibrary(type: string, parentId?: string): Promise<any[]> {
+  async getGeographicDataFromLibrary(
+    type: string,
+    parentId?: string,
+  ): Promise<any[]> {
     if (type === 'COUNTRY') {
       const countries = csc.getAllCountries();
-      
-      return countries.map(country => ({
+
+      return countries.map((country) => ({
         id: country.id,
         name: country.name,
         iso2: country.iso2,
@@ -152,18 +155,17 @@ export class CategoryServiceService {
         phone_code: country.phone_code || '+##',
         currency: country.currency,
         region: country.region,
-        flagUrl: `https://flagcdn.com/w320/${country.iso2.toLowerCase()}.png`
+        flagUrl: `https://flagcdn.com/w320/${country.iso2.toLowerCase()}.png`,
       }));
-    } 
-    else if (type === 'DEPARTMENT') {
+    } else if (type === 'DEPARTMENT') {
       if (!parentId) {
         return [];
       }
-      
+
       const countryId = parseInt(parentId, 10);
       const states = csc.getStatesOfCountry(countryId);
-      
-      return states.map(state => ({
+
+      return states.map((state) => ({
         id: state.id,
         name: state.name.replace(/ Department$/i, ''),
 
@@ -171,16 +173,15 @@ export class CategoryServiceService {
         country_id: state.country_id,
         country_code: state.country_code,
       }));
-    } 
-    else if (type === 'CITY') {
+    } else if (type === 'CITY') {
       if (!parentId) {
         return [];
       }
-      
+
       const stateId = parseInt(parentId, 10);
       const cities = csc.getCitiesOfState(stateId);
-      
-      return cities.map(city => ({
+
+      return cities.map((city) => ({
         id: city.id,
         name: city.name,
         state_id: city.state_id,
@@ -188,8 +189,7 @@ export class CategoryServiceService {
         country_code: city.country_code,
       }));
     }
-    
+
     return [];
   }
-  
 }
