@@ -245,6 +245,8 @@ export class CardServiceController extends AccountServiceController {
     return rta;
   }
 
+
+
   @ApiSecurity('b2crypto-key')
   @ApiBearerAuth('bearerToken')
   @Post('create')
@@ -363,6 +365,8 @@ export class CardServiceController extends AccountServiceController {
     let tx = null;
     if (price > 0) {
       try {
+
+
         let sourceAccount = null;
         if (createDto.fromAccountId) {
           sourceAccount = await this.getAccountService().findOneById(
@@ -377,10 +381,8 @@ export class CardServiceController extends AccountServiceController {
           price,
           user,
           `PURCHASE_${createDto.type}_${createDto.accountType}`,
-          sourceAccount,
+          null,
           `Compra de ${createDto.type} ${createDto.accountType} ${level.name}`,
-          undefined,
-          false,
           createDto.fromAccountId || '',
         );
       } catch (err) {
@@ -589,31 +591,29 @@ export class CardServiceController extends AccountServiceController {
         : CommonService.getSlug('Purchase wallet'),
     );
     if (!account) {
+
       interface QueryWhere {
         type: string;
         owner: typeof owner._id;
-        _id?: string;
+        _id: string;
         accountId?: string;
       }
 
       const queryWhere: QueryWhere = {
         type: 'WALLET',
         owner: owner._id,
+        _id: fromAccountId
       };
-
-      if (fromAccountId) {
-        queryWhere._id = fromAccountId;
-      } else {
-        queryWhere.accountId = 'TRX_USDT_S2UZ';
-      }
-
       const listAccount = await this.cardBuilder.getPromiseAccountEventClient(
         EventsNamesAccountEnum.findAll,
         {
-          where: queryWhere,
+          where: {
+            type: 'WALLET',
+            accountId: 'TRX_USDT_S2UZ',
+            owner: owner._id,
+          },
         },
       );
-
       if (!listAccount.totalElements) {
         throw new BadRequestException('Need wallet to pay');
       }
