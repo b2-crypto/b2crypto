@@ -28,7 +28,7 @@ export type TransferDocument = Transfer & Document;
 @Schema()
 export class CommisionDetail {
   @Prop()
-  _id: ObjectId;
+  _id: mongoose.Types.ObjectId;
 
   @Prop()
   amount: number;

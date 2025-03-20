@@ -11,19 +11,19 @@ import {
 import { PomeloCache } from '@integration/integration/util/pomelo.integration.process.cache';
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { Transfer } from '@transfer/transfer/entities/mongoose/transfer.schema';
+import {
+  CommisionDetail,
+  Transfer,
+} from '@transfer/transfer/entities/mongoose/transfer.schema';
 import { OperationTransactionType } from '@transfer/transfer/enum/operation.transaction.type.enum';
 import EventsNamesAccountEnum from 'apps/account-service/src/enum/events.names.account.enum';
 import EventsNamesMessageEnum from 'apps/message-service/src/enum/events.names.message.enum';
 import EventsNamesTransferEnum from 'apps/transfer-service/src/enum/events.names.transfer.enum';
-import { mongo } from 'mongoose';
+import mongoose from 'mongoose';
 import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import { FiatIntegrationClient } from '../clients/fiat.integration.client';
 import { PomeloProcessEnum } from '../enums/pomelo.process.enum';
-import {
-  CommissionsTypeDescriptionMap,
-  CommissionsTypePreviousMap,
-} from '../maps/commisions-type.map';
+import { CommissionsTypeDescriptionMap } from '../maps/commisions-type.map';
 
 @Traceable()
 @Injectable()
@@ -61,6 +61,272 @@ export class PomeloIntegrationProcessService {
     return response;
   }
 
+  private isOperationHasParent(process: any): boolean {
+    return [
+      OperationTransactionType.refund,
+      OperationTransactionType.reversal_deposit,
+      OperationTransactionType.reversal_chargeback,
+      OperationTransactionType.reversal_credit,
+      OperationTransactionType.reversal_debit,
+      OperationTransactionType.reversal_withdrawal,
+      OperationTransactionType.reversal_refund,
+      OperationTransactionType.reversal_payment,
+      OperationTransactionType.reversal_extra_cash,
+      OperationTransactionType.reversal_purchase,
+    ].includes(process?.transaction?.type);
+  }
+
+  private isOperationHasReversal(process: any): boolean {
+    return [
+      OperationTransactionType.reversal_deposit,
+      OperationTransactionType.reversal_chargeback,
+      OperationTransactionType.reversal_credit,
+      OperationTransactionType.reversal_debit,
+      OperationTransactionType.reversal_withdrawal,
+      OperationTransactionType.reversal_refund,
+      OperationTransactionType.reversal_payment,
+      OperationTransactionType.reversal_extra_cash,
+      OperationTransactionType.reversal_purchase,
+    ].includes(process?.transaction?.type);
+  }
+
+  private isOperationHasCommissions(process: any): boolean {
+    return [
+      OperationTransactionType.credit,
+      OperationTransactionType.reversal_credit,
+      OperationTransactionType.debit,
+      OperationTransactionType.reversal_debit,
+      OperationTransactionType.withdrawal,
+      OperationTransactionType.reversal_withdrawal,
+      OperationTransactionType.payment,
+      OperationTransactionType.reversal_payment,
+      OperationTransactionType.extra_cash,
+      OperationTransactionType.reversal_extra_cash,
+      OperationTransactionType.purchase,
+      OperationTransactionType.reversal_purchase,
+    ].includes(process?.transaction?.type);
+  }
+
+  private async findParentTransaction(process: any): Promise<Transfer | null> {
+    const [parentTransaction] = (
+      await this.builder.getPromiseTransferEventClient<{
+        list: Transfer[];
+      }>(EventsNamesTransferEnum.findAll, {
+        where: {
+          'requestBodyJson.transaction.id':
+            process?.transaction?.original_transaction_id,
+          // operationType: operationTypeParent,
+          leadCrmName: { $ne: 'Sales' },
+        },
+      })
+    ).list;
+
+    return parentTransaction;
+  }
+
+  private async findParentCommissions(
+    parentTransaction?: Transfer,
+  ): Promise<Transfer[]> {
+    return (
+      await this.builder.getPromiseTransferEventClient<{
+        list: Transfer[];
+      }>(EventsNamesTransferEnum.findAll, {
+        where: { _id: { $in: parentTransaction?.commisions ?? [] } },
+      })
+    ).list;
+  }
+
+  private buildNationalCommissionDetail({
+    id,
+    process,
+    parentCommisionNational,
+    transferAmount,
+    transferAmountCustodial,
+    percentageCommisionNational,
+    transferCurrency,
+    transferCurrencyCustodial,
+  }: {
+    id: mongoose.Types.ObjectId;
+    process: any;
+    parentCommisionNational: Transfer;
+    percentageCommisionNational: number;
+    transferAmount: number;
+    transferAmountCustodial: number;
+    transferCurrency: string;
+    transferCurrencyCustodial: string;
+  }): CommisionDetail {
+    const isOperationHasReversal = this.isOperationHasReversal(process);
+
+    return {
+      _id: id,
+      amount: isOperationHasReversal
+        ? parentCommisionNational?.amount
+        : transferAmount * percentageCommisionNational,
+      amountCustodial: isOperationHasReversal
+        ? parentCommisionNational?.amountCustodial
+        : transferAmountCustodial * percentageCommisionNational,
+      currency: isOperationHasReversal
+        ? parentCommisionNational?.currency
+        : transferCurrency === 'USD'
+        ? 'USDT'
+        : transferCurrency,
+      currencyCustodial: isOperationHasReversal
+        ? parentCommisionNational?.currencyCustodial
+        : transferCurrencyCustodial === 'USD'
+        ? 'USDT'
+        : transferCurrencyCustodial,
+      commisionType: CommisionTypeEnum.NATIONAL,
+    };
+  }
+
+  private buildInternationalCommissionDetail({
+    id,
+    process,
+    parentCommisionInternational,
+    percentageCommisionInternational,
+    transferAmount,
+    transferAmountCustodial,
+    transferCurrency,
+    transferCurrencyCustodial,
+  }: {
+    id: mongoose.Types.ObjectId;
+    process: any;
+    parentCommisionInternational: Transfer;
+    percentageCommisionInternational: number;
+    transferAmount: number;
+    transferAmountCustodial: number;
+    transferCurrency: string;
+    transferCurrencyCustodial: string;
+  }): CommisionDetail {
+    const isOperationHasReversal = this.isOperationHasReversal(process);
+
+    return {
+      _id: id,
+      amount: isOperationHasReversal
+        ? parentCommisionInternational?.amount
+        : transferAmount * percentageCommisionInternational,
+      amountCustodial: isOperationHasReversal
+        ? parentCommisionInternational?.amountCustodial
+        : transferAmountCustodial * percentageCommisionInternational,
+      currency: isOperationHasReversal
+        ? parentCommisionInternational?.currency
+        : transferCurrency === 'USD'
+        ? 'USDT'
+        : transferCurrency,
+      currencyCustodial: isOperationHasReversal
+        ? parentCommisionInternational?.currencyCustodial
+        : transferCurrencyCustodial === 'USD'
+        ? 'USDT'
+        : transferCurrencyCustodial,
+      commisionType: CommisionTypeEnum.INTERNATIONAL,
+    };
+  }
+
+  private buildTransaction({
+    transactionId,
+    commisionNationalTransactionId,
+    commisionInternationalTransactionId,
+    bodyProcess,
+    headersProccess,
+    response,
+    parentTransaction,
+    transferAmount,
+    transferAmountCustodial,
+    transferCurrency,
+    transferCurrencyCustodial,
+    commisionNationalDetail,
+    commisionInternationalDetail,
+  }: {
+    transactionId: mongoose.Types.ObjectId;
+    commisionNationalTransactionId: mongoose.Types.ObjectId;
+    commisionInternationalTransactionId: mongoose.Types.ObjectId;
+    bodyProcess: any;
+    headersProccess: any;
+    response: any;
+    parentTransaction: Transfer;
+    transferAmount: number;
+    transferAmountCustodial: number;
+    transferCurrency: string;
+    transferCurrencyCustodial: string;
+    commisionNationalDetail: CommisionDetail;
+    commisionInternationalDetail: CommisionDetail;
+  }) {
+    const isOperationHasReversal = this.isOperationHasReversal(bodyProcess);
+    const isOperationHasCommissions =
+      this.isOperationHasCommissions(bodyProcess);
+
+    const pretransaction = {
+      _id: transactionId,
+      parentTransaction: null,
+      integration: 'Pomelo',
+      requestBodyJson: bodyProcess,
+      requestHeadersJson: headersProccess,
+      operationType:
+        OperationTransactionType[bodyProcess?.transaction?.type?.toLowerCase()],
+      status: response?.status ?? CardsEnum.CARD_PROCESS_OK,
+      descriptionStatusPayment:
+        response?.status_detail ?? CardsEnum.CARD_PROCESS_OK,
+      description: response?.message ?? '',
+      amount: transferAmount,
+      amountCustodial: transferAmountCustodial,
+      currency: transferCurrency === 'USD' ? 'USDT' : transferCurrency,
+      currencyCustodial:
+        transferCurrencyCustodial === 'USD'
+          ? 'USDT'
+          : transferCurrencyCustodial,
+      showToOwner: true,
+      isApprove: response?.status === CardsEnum.CARD_PROCESS_OK,
+      commisions: isOperationHasCommissions
+        ? bodyProcess.transaction.origin === CommisionTypeEnum.INTERNATIONAL
+          ? [
+              commisionNationalTransactionId,
+              commisionInternationalTransactionId,
+            ]
+          : [commisionNationalTransactionId]
+        : [],
+      amountComissions: isOperationHasCommissions
+        ? bodyProcess.transaction.origin === CommisionTypeEnum.INTERNATIONAL
+          ? commisionNationalDetail.amountCustodial +
+            commisionInternationalDetail.amountCustodial
+          : commisionNationalDetail.amountCustodial
+        : 0,
+      commisionsDetails: isOperationHasCommissions
+        ? bodyProcess.transaction.origin === CommisionTypeEnum.INTERNATIONAL
+          ? [commisionNationalDetail, commisionInternationalDetail]
+          : [commisionNationalDetail]
+        : 0,
+    };
+
+    return parentTransaction
+      ? {
+          ...pretransaction,
+          parentTransaction: parentTransaction._id,
+          parentTransactionDetail: {
+            _id: parentTransaction._id,
+            amount: parentTransaction.amount,
+            currency: parentTransaction.currency,
+            amountCustodial: parentTransaction.amountCustodial,
+            currencyCustodial: parentTransaction.currencyCustodial,
+            operationType: parentTransaction.operationType,
+          },
+          amount: isOperationHasReversal
+            ? parentTransaction?.amount ?? pretransaction.amount
+            : pretransaction.amount,
+          currency: isOperationHasReversal
+            ? parentTransaction?.currency ?? pretransaction.currency
+            : pretransaction.currency,
+          amountCustodial: isOperationHasReversal
+            ? parentTransaction?.amountCustodial ??
+              pretransaction.amountCustodial
+            : pretransaction.amountCustodial,
+          currencyCustodial: isOperationHasReversal
+            ? parentTransaction?.currencyCustodial ??
+              pretransaction.currencyCustodial
+            : pretransaction.currencyCustodial,
+        }
+      : pretransaction;
+  }
+
   private async createTransferRecord(
     process: any,
     headers: any,
@@ -69,82 +335,114 @@ export class PomeloIntegrationProcessService {
     authorize?: boolean,
   ) {
     try {
-      const commisionNational = parseFloat(
+      const percentageCommisionNational = parseFloat(
         this.configService.getOrThrow('COMMISION_NATIONAL'),
       );
-      const commisionInternational = parseFloat(
+      const percentageCommisionInternational = parseFloat(
         this.configService.getOrThrow('COMMISION_INTERNATIONAL'),
       );
-      const transactionId = new mongo.ObjectId();
-      const commisionNationalTransactionId = new mongo.ObjectId();
-      const commisionInternationalTransactionId = new mongo.ObjectId();
-      const pretransaction = {
-        _id: transactionId,
-        parentTransaction: null,
-        integration: 'Pomelo',
-        requestBodyJson: process,
-        requestHeadersJson: headers,
-        operationType:
-          OperationTransactionType[process?.transaction?.type?.toLowerCase()],
-        status: response?.status ?? CardsEnum.CARD_PROCESS_OK,
-        descriptionStatusPayment:
-          response?.status_detail ?? CardsEnum.CARD_PROCESS_OK,
-        description: response?.message ?? '',
-        amount: amount.amount,
-        amountCustodial: amount.usd,
-        currency: amount.from === 'USD' ? 'USDT' : amount.from,
-        currencyCustodial: amount.to === 'USD' ? 'USDT' : amount.to,
-        showToOwner: true,
-        isApprove: response?.status === CardsEnum.CARD_PROCESS_OK,
-        commisions:
-          process.transaction.origin === CommisionTypeEnum.INTERNATIONAL
-            ? [
-                commisionNationalTransactionId,
-                commisionInternationalTransactionId,
-              ]
-            : [commisionNationalTransactionId],
-      };
+      const transactionId = new mongoose.Types.ObjectId();
+      const commisionNationalTransactionId = new mongoose.Types.ObjectId();
+      const commisionInternationalTransactionId = new mongoose.Types.ObjectId();
+      // const pretransaction = {
+      //   _id: transactionId,
+      //   parentTransaction: null,
+      //   integration: 'Pomelo',
+      //   requestBodyJson: process,
+      //   requestHeadersJson: headers,
+      //   operationType:
+      //     OperationTransactionType[process?.transaction?.type?.toLowerCase()],
+      //   status: response?.status ?? CardsEnum.CARD_PROCESS_OK,
+      //   descriptionStatusPayment:
+      //     response?.status_detail ?? CardsEnum.CARD_PROCESS_OK,
+      //   description: response?.message ?? '',
+      //   amount: amount.amount,
+      //   amountCustodial: amount.usd,
+      //   currency: amount.from === 'USD' ? 'USDT' : amount.from,
+      //   currencyCustodial: amount.to === 'USD' ? 'USDT' : amount.to,
+      //   showToOwner: true,
+      //   isApprove: response?.status === CardsEnum.CARD_PROCESS_OK,
+      //   commisions:
+      //     process.transaction.origin === CommisionTypeEnum.INTERNATIONAL
+      //       ? [
+      //           commisionNationalTransactionId,
+      //           commisionInternationalTransactionId,
+      //         ]
+      //       : [commisionNationalTransactionId],
+      // };
 
-      const isTransactionReversalPurchase =
-        pretransaction.operationType ===
-        OperationTransactionType.reversal_purchase;
-      const isTransactionRefund =
-        pretransaction.operationType === OperationTransactionType.refund;
-      const isTransactionReversalRefund =
-        pretransaction.operationType ===
-        OperationTransactionType.reversal_refund;
+      // const isTransactionReversalPurchase =
+      //   pretransaction.operationType ===
+      //   OperationTransactionType.reversal_purchase;
+      // const isTransactionRefund =
+      //   pretransaction.operationType === OperationTransactionType.refund;
+      // const isTransactionReversalRefund =
+      //   pretransaction.operationType ===
+      //   OperationTransactionType.reversal_refund;
 
-      const operationTypeParent = CommissionsTypePreviousMap.get(
-        pretransaction.operationType,
+      // const operationTypeParent = CommissionsTypePreviousMap.get(
+      //   pretransaction.operationType,
+      // );
+
+      //============================================================
+      //= Start - Find Parent Transaction
+      //============================================================
+      // const [parentTransaction] =
+      //   isTransactionReversalPurchase ||
+      //   isTransactionRefund ||
+      //   isTransactionReversalRefund
+      //     ? (
+      //         await this.builder.getPromiseTransferEventClient<{
+      //           list: Transfer[];
+      //         }>(EventsNamesTransferEnum.findAll, {
+      //           where: {
+      //             'requestBodyJson.transaction.id':
+      //               process?.transaction?.original_transaction_id,
+      //             operationType: operationTypeParent,
+      //             leadCrmName: { $ne: 'Sales' },
+      //           },
+      //         })
+      //       ).list
+      //     : [];
+
+      const parentTransaction = this.isOperationHasParent(process)
+        ? await this.findParentTransaction(process)
+        : null;
+
+      this.logger.info(
+        `[createTransferRecord] Parent Transaction: ${JSON.stringify(
+          parentTransaction,
+          null,
+          2,
+        )}`,
       );
+      //============================================================
 
-      const [parentTransaction] =
-        isTransactionReversalPurchase ||
-        isTransactionRefund ||
-        isTransactionReversalRefund
-          ? (
-              await this.builder.getPromiseTransferEventClient<{
-                list: Transfer[];
-              }>(EventsNamesTransferEnum.findAll, {
-                where: {
-                  'requestBodyJson.transaction.id':
-                    process?.transaction?.original_transaction_id,
-                  operationType: operationTypeParent,
-                  leadCrmName: { $ne: 'Sales' },
-                },
-              })
-            ).list
-          : [];
+      //============================================================
+      //= Start - Find Parent Commissions
+      //============================================================
+      // const parentCommisions = parentTransaction
+      //   ? (
+      //       await this.builder.getPromiseTransferEventClient<{
+      //         list: Transfer[];
+      //       }>(EventsNamesTransferEnum.findAll, {
+      //         where: { _id: { $in: parentTransaction?.commisions ?? [] } },
+      //       })
+      //     ).list
+      //   : [];
 
       const parentCommisions = parentTransaction
-        ? (
-            await this.builder.getPromiseTransferEventClient<{
-              list: Transfer[];
-            }>(EventsNamesTransferEnum.findAll, {
-              where: { _id: { $in: parentTransaction?.commisions ?? [] } },
-            })
-          ).list
+        ? await this.findParentCommissions(parentTransaction)
         : [];
+
+      this.logger.info(
+        `[createTransferRecord] Parent Commissions: ${JSON.stringify(
+          parentCommisions,
+          null,
+          2,
+        )}`,
+      );
+      //============================================================
 
       const parentCommisionNational = parentCommisions.find(
         (tx) => tx.commisionType === CommisionTypeEnum.NATIONAL,
@@ -154,109 +452,198 @@ export class PomeloIntegrationProcessService {
         (tx) => tx.commisionType === CommisionTypeEnum.INTERNATIONAL,
       );
 
-      const commisionNationalDetail = {
-        _id: commisionNationalTransactionId,
-        amount:
-          isTransactionReversalPurchase ||
-          isTransactionRefund ||
-          isTransactionReversalRefund
-            ? parentCommisionNational?.amount
-            : amount.amount * commisionNational,
-        amountCustodial:
-          isTransactionReversalPurchase ||
-          isTransactionRefund ||
-          isTransactionReversalRefund
-            ? parentCommisionNational?.amountCustodial
-            : amount.usd * commisionNational,
-        currency:
-          isTransactionReversalPurchase ||
-          isTransactionRefund ||
-          isTransactionReversalRefund
-            ? parentCommisionNational?.currency
-            : amount.from === 'USD'
-            ? 'USDT'
-            : amount.from,
-        currencyCustodial:
-          isTransactionReversalPurchase ||
-          isTransactionRefund ||
-          isTransactionReversalRefund
-            ? parentCommisionNational?.currencyCustodial
-            : amount.to === 'USD'
-            ? 'USDT'
-            : amount.to,
-        commisionType: CommisionTypeEnum.NATIONAL,
-      };
+      //============================================================
+      //= Start - Build National Commission Detail
+      //============================================================
+      // const commisionNationalDetail = {
+      //   _id: commisionNationalTransactionId,
+      //   amount:
+      //     isTransactionReversalPurchase ||
+      //     // isTransactionRefund ||
+      //     isTransactionReversalRefund
+      //       ? parentCommisionNational?.amount
+      //       : amount.amount * percentageCommisionNational,
+      //   amountCustodial:
+      //     isTransactionReversalPurchase ||
+      //     // isTransactionRefund ||
+      //     isTransactionReversalRefund
+      //       ? parentCommisionNational?.amountCustodial
+      //       : amount.usd * percentageCommisionNational,
+      //   currency:
+      //     isTransactionReversalPurchase ||
+      //     // isTransactionRefund ||
+      //     isTransactionReversalRefund
+      //       ? parentCommisionNational?.currency
+      //       : amount.from === 'USD'
+      //       ? 'USDT'
+      //       : amount.from,
+      //   currencyCustodial:
+      //     isTransactionReversalPurchase ||
+      //     // isTransactionRefund ||
+      //     isTransactionReversalRefund
+      //       ? parentCommisionNational?.currencyCustodial
+      //       : amount.to === 'USD'
+      //       ? 'USDT'
+      //       : amount.to,
+      //   commisionType: CommisionTypeEnum.NATIONAL,
+      // };
 
-      const commisionInternationalDetail = {
-        _id: commisionInternationalTransactionId,
-        amount:
-          isTransactionReversalPurchase ||
-          isTransactionRefund ||
-          isTransactionReversalRefund
-            ? parentCommisionInternational?.amount
-            : amount.amount * commisionInternational,
-        amountCustodial:
-          isTransactionReversalPurchase ||
-          isTransactionRefund ||
-          isTransactionReversalRefund
-            ? parentCommisionInternational?.amountCustodial
-            : amount.usd * commisionInternational,
-        currency:
-          isTransactionReversalPurchase ||
-          isTransactionRefund ||
-          isTransactionReversalRefund
-            ? parentCommisionInternational?.currency
-            : amount.from === 'USD'
-            ? 'USDT'
-            : amount.from,
-        currencyCustodial:
-          isTransactionReversalPurchase ||
-          isTransactionRefund ||
-          isTransactionReversalRefund
-            ? parentCommisionInternational?.currencyCustodial
-            : amount.to === 'USD'
-            ? 'USDT'
-            : amount.to,
-        commisionType: CommisionTypeEnum.INTERNATIONAL,
-      };
+      const commisionNationalDetail = this.buildNationalCommissionDetail({
+        id: commisionNationalTransactionId,
+        process,
+        parentCommisionNational,
+        percentageCommisionNational,
+        transferAmount: amount.amount,
+        transferAmountCustodial: amount.usd,
+        transferCurrency: amount.from,
+        transferCurrencyCustodial: amount.to,
+      });
 
-      const transaction = parentTransaction
-        ? {
-            ...pretransaction,
-            parentTransaction: parentTransaction._id,
-            parentTransactionDetail: {
-              _id: parentTransaction._id,
-              amount: parentTransaction.amount,
-              currency: parentTransaction.currency,
-              amountCustodial: parentTransaction.amountCustodial,
-              currencyCustodial: parentTransaction.currencyCustodial,
-              operationType: parentTransaction.operationType,
-            },
-            amount: parentTransaction?.amount ?? pretransaction.amount,
-            currency: parentTransaction?.currency ?? pretransaction.currency,
-            amountCustodial:
-              parentTransaction?.amountCustodial ??
-              pretransaction.amountCustodial,
-            currencyCustodial:
-              parentTransaction?.currencyCustodial ??
-              pretransaction.currencyCustodial,
-            amountComissions:
-              process.transaction.origin === CommisionTypeEnum.INTERNATIONAL
-                ? commisionNationalDetail.amountCustodial +
-                  commisionInternationalDetail.amountCustodial
-                : commisionNationalDetail.amountCustodial,
-            commisionsDetails:
-              process.transaction.origin === CommisionTypeEnum.INTERNATIONAL
-                ? [commisionNationalDetail, commisionInternationalDetail]
-                : [commisionNationalDetail],
-          }
-        : {
-            ...pretransaction,
-            commisionsDetails:
-              process.transaction.origin === CommisionTypeEnum.INTERNATIONAL
-                ? [commisionNationalDetail, commisionInternationalDetail]
-                : [commisionNationalDetail],
-          };
+      this.logger.info(
+        `[createTransferRecord] Commission National Detail: ${JSON.stringify(
+          commisionNationalDetail,
+          null,
+          2,
+        )}`,
+      );
+      //============================================================
+
+      //============================================================
+      //= Start - Build International Commission Detail
+      //============================================================
+      // const commisionInternationalDetail = {
+      //   _id: commisionInternationalTransactionId,
+      //   amount:
+      //     isTransactionReversalPurchase ||
+      //     // isTransactionRefund ||
+      //     isTransactionReversalRefund
+      //       ? parentCommisionInternational?.amount
+      //       : amount.amount * percentageCommisionInternational,
+      //   amountCustodial:
+      //     isTransactionReversalPurchase ||
+      //     // isTransactionRefund ||
+      //     isTransactionReversalRefund
+      //       ? parentCommisionInternational?.amountCustodial
+      //       : amount.usd * percentageCommisionInternational,
+      //   currency:
+      //     isTransactionReversalPurchase ||
+      //     // isTransactionRefund ||
+      //     isTransactionReversalRefund
+      //       ? parentCommisionInternational?.currency
+      //       : amount.from === 'USD'
+      //       ? 'USDT'
+      //       : amount.from,
+      //   currencyCustodial:
+      //     isTransactionReversalPurchase ||
+      //     // isTransactionRefund ||
+      //     isTransactionReversalRefund
+      //       ? parentCommisionInternational?.currencyCustodial
+      //       : amount.to === 'USD'
+      //       ? 'USDT'
+      //       : amount.to,
+      //   commisionType: CommisionTypeEnum.INTERNATIONAL,
+      // };
+
+      const commisionInternationalDetail =
+        this.buildInternationalCommissionDetail({
+          id: commisionInternationalTransactionId,
+          process,
+          parentCommisionInternational,
+          percentageCommisionInternational,
+          transferAmount: amount.amount,
+          transferAmountCustodial: amount.usd,
+          transferCurrency: amount.from,
+          transferCurrencyCustodial: amount.to,
+        });
+
+      this.logger.info(
+        `[createTransferRecord] Commission International Detail: ${JSON.stringify(
+          commisionInternationalDetail,
+          null,
+          2,
+        )}`,
+      );
+      //============================================================
+
+      //============================================================
+      //= Start - Build Transaction
+      //============================================================
+      // const transaction = parentTransaction
+      //   ? {
+      //       ...pretransaction,
+      //       parentTransaction: parentTransaction._id,
+      //       parentTransactionDetail: {
+      //         _id: parentTransaction._id,
+      //         amount: parentTransaction.amount,
+      //         currency: parentTransaction.currency,
+      //         amountCustodial: parentTransaction.amountCustodial,
+      //         currencyCustodial: parentTransaction.currencyCustodial,
+      //         operationType: parentTransaction.operationType,
+      //       },
+      //       amount:
+      //         isTransactionReversalPurchase || isTransactionReversalRefund
+      //           ? parentTransaction?.amount ?? pretransaction.amount
+      //           : pretransaction.amount,
+      //       currency:
+      //         isTransactionReversalPurchase || isTransactionReversalRefund
+      //           ? parentTransaction?.currency ?? pretransaction.currency
+      //           : pretransaction.currency,
+      //       amountCustodial:
+      //         isTransactionReversalPurchase || isTransactionReversalRefund
+      //           ? parentTransaction?.amountCustodial ??
+      //             pretransaction.amountCustodial
+      //           : pretransaction.amountCustodial,
+      //       currencyCustodial:
+      //         isTransactionReversalPurchase || isTransactionReversalRefund
+      //           ? parentTransaction?.currencyCustodial ??
+      //             pretransaction.currencyCustodial
+      //           : pretransaction.currencyCustodial,
+      //       amountComissions:
+      //         isTransactionRefund || isTransactionReversalRefund
+      //           ? 0
+      //           : process.transaction.origin === CommisionTypeEnum.INTERNATIONAL
+      //           ? commisionNationalDetail.amountCustodial +
+      //             commisionInternationalDetail.amountCustodial
+      //           : commisionNationalDetail.amountCustodial,
+      //       commisionsDetails:
+      //         isTransactionRefund || isTransactionReversalRefund
+      //           ? []
+      //           : process.transaction.origin === CommisionTypeEnum.INTERNATIONAL
+      //           ? [commisionNationalDetail, commisionInternationalDetail]
+      //           : [commisionNationalDetail],
+      //     }
+      //   : {
+      //       ...pretransaction,
+      //       commisionsDetails:
+      //         process.transaction.origin === CommisionTypeEnum.INTERNATIONAL
+      //           ? [commisionNationalDetail, commisionInternationalDetail]
+      //           : [commisionNationalDetail],
+      //     };
+
+      const transaction = this.buildTransaction({
+        transactionId,
+        commisionNationalTransactionId,
+        commisionInternationalTransactionId,
+        bodyProcess: process,
+        headersProccess: headers,
+        response,
+        parentTransaction,
+        transferAmount: amount.amount,
+        transferAmountCustodial: amount.usd,
+        transferCurrency: amount.from,
+        transferCurrencyCustodial: amount.to,
+        commisionNationalDetail,
+        commisionInternationalDetail,
+      });
+
+      this.logger.info(
+        `[createTransferRecord] Transaction: ${JSON.stringify(
+          transaction,
+          null,
+          2,
+        )}`,
+      );
+      //============================================================
 
       this.builder.emitTransferEventClient(
         EventsNamesTransferEnum.createOneWebhook,
@@ -265,69 +652,75 @@ export class PomeloIntegrationProcessService {
 
       const amountUSD = amount.usd ?? amount.amount;
 
-      if (authorize && amountUSD * commisionNational > 0) {
+      if (authorize && amountUSD * percentageCommisionNational > 0) {
+        const commisionNational = {
+          ...commisionNationalDetail,
+          parentTransaction: transactionId,
+          integration: 'Sales',
+          requestBodyJson: process,
+          requestHeadersJson: headers,
+          operationType: transaction.operationType,
+          status: response?.status ?? CardsEnum.CARD_PROCESS_OK,
+          descriptionStatusPayment:
+            response?.status_detail ?? CardsEnum.CARD_PROCESS_OK,
+          description: response?.message ?? '',
+          page:
+            CommissionsTypeDescriptionMap.get(transaction.operationType) ??
+            'Commision to B2Fintech',
+          showToOwner: true,
+          commisionsDetails: [],
+          isApprove: response?.status === CardsEnum.CARD_PROCESS_OK,
+        };
+
         this.logger.info(
-          `[createTransferRecord] Commision to B2Fintech National: ${
-            amountUSD * commisionNational
-          }`,
+          `[createTransferRecord] Commision National: ${JSON.stringify(
+            commisionNational,
+            null,
+            2,
+          )}`,
         );
 
         this.builder.emitTransferEventClient(
           EventsNamesTransferEnum.createOneWebhook,
-          {
-            ...commisionNationalDetail,
-            parentTransaction: transactionId,
-            integration: 'Sales',
-            requestBodyJson: process,
-            requestHeadersJson: headers,
-            operationType: transaction.operationType,
-            status: response?.status ?? CardsEnum.CARD_PROCESS_OK,
-            descriptionStatusPayment:
-              response?.status_detail ?? CardsEnum.CARD_PROCESS_OK,
-            description: response?.message ?? '',
-            page:
-              CommissionsTypeDescriptionMap.get(transaction.operationType) ??
-              'Commision to B2Fintech',
-            showToOwner: true,
-            commisionsDetails: [],
-            isApprove: response?.status === CardsEnum.CARD_PROCESS_OK,
-            // isManualTx: true,
-          },
+          commisionNational,
         );
       }
 
       if (
         authorize &&
-        amountUSD * commisionInternational > 0 &&
+        amountUSD * percentageCommisionInternational > 0 &&
         process.transaction.origin === CommisionTypeEnum.INTERNATIONAL
       ) {
+        const commisionInternational = {
+          ...commisionInternationalDetail,
+          parentTransaction: transactionId,
+          integration: 'Sales',
+          requestBodyJson: process,
+          requestHeadersJson: headers,
+          operationType: transaction.operationType,
+          status: response?.status ?? CardsEnum.CARD_PROCESS_OK,
+          descriptionStatusPayment:
+            response?.status_detail ?? CardsEnum.CARD_PROCESS_OK,
+          description: response?.message ?? '',
+          page:
+            CommissionsTypeDescriptionMap.get(transaction.operationType) ??
+            'Commision to B2Fintech',
+          showToOwner: true,
+          commisionsDetails: [commisionNationalDetail],
+          isApprove: response?.status === CardsEnum.CARD_PROCESS_OK,
+        };
+
         this.logger.info(
-          `[createTransferRecord] Commision to B2Fintech International: ${
-            amountUSD * commisionInternational
-          }`,
+          `[createTransferRecord] Commision International: ${JSON.stringify(
+            commisionInternational,
+            null,
+            2,
+          )}`,
         );
 
         this.builder.emitTransferEventClient(
           EventsNamesTransferEnum.createOneWebhook,
-          {
-            ...commisionInternationalDetail,
-            parentTransaction: transactionId,
-            integration: 'Sales',
-            requestBodyJson: process,
-            requestHeadersJson: headers,
-            operationType: transaction.operationType,
-            status: response?.status ?? CardsEnum.CARD_PROCESS_OK,
-            descriptionStatusPayment:
-              response?.status_detail ?? CardsEnum.CARD_PROCESS_OK,
-            description: response?.message ?? '',
-            page:
-              CommissionsTypeDescriptionMap.get(transaction.operationType) ??
-              'Commision to B2Fintech',
-            showToOwner: true,
-            commisionsDetails: [commisionNationalDetail],
-            isApprove: response?.status === CardsEnum.CARD_PROCESS_OK,
-            // isManualTx: true,
-          },
+          commisionInternational,
         );
       }
     } catch (error) {
@@ -366,10 +759,10 @@ export class PomeloIntegrationProcessService {
     usdAmount: number,
   ): Promise<any> {
     try {
-      const commisionNational = parseFloat(
+      const percentageCommisionNational = parseFloat(
         this.configService.getOrThrow('COMMISION_NATIONAL'),
       );
-      const commisionInternational = parseFloat(
+      const percentageCommisionInternational = parseFloat(
         this.configService.getOrThrow('COMMISION_INTERNATIONAL'),
       );
       this.logger.info('[executeProcess] ExecuteProcess start');
@@ -403,9 +796,9 @@ export class PomeloIntegrationProcessService {
           movement,
           authorize,
           commision:
-            commisionNational +
+            percentageCommisionNational +
             (process.transaction.origin === CommisionTypeEnum.INTERNATIONAL
-              ? commisionInternational
+              ? percentageCommisionInternational
               : 0),
         },
       );
