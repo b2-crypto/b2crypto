@@ -67,7 +67,7 @@ export class FiatIntegrationClient {
     return this.getCurrencyConversion(to, from, amount);
   }
 
-  private async getCurrentPair(pair: string): Promise<IPair> {
+  private async getCurrentPair(pair: string): Promise<IPair | null> {
     this.logger.info(`[getCurrentPair] Consultando par: ${pair}`);
 
     const url = `${this.TRM_API_URL}/api/v1/pairs/current?name=${pair}`;
@@ -113,6 +113,12 @@ export class FiatIntegrationClient {
     if (fromParsed === 'USD') return amount;
 
     const pair = await this.getCurrentPair(fromParsed + toParsed);
+
+    if (!pair) {
+      this.logger.error(`[getCurrencyConversion] Pair not found: ${pairName}`);
+
+      throw new Error(`Pair not found`);
+    }
 
     const swapResult = amount * pair.rate;
 
