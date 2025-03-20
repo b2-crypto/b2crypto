@@ -34,7 +34,7 @@ export interface IInfo {
 @Injectable()
 export class FiatIntegrationClient {
   private trmCopUsd = 4000;
-  private readonly TRM_CACHE_KEY = 'trm.current.COP';
+  private readonly TRM_CACHE_KEY = 'COPUSD';
 
   private readonly TRM_API_URL: string;
   private trmLastUpdated = new Date();
@@ -69,7 +69,6 @@ export class FiatIntegrationClient {
 
   private async updateTrmRate(from = 'COP', to = 'USD'): Promise<TrmResult> {
     const currencyPair = `${from}${to}`;
-    const cacheKey = this.TRM_CACHE_KEY;
 
     if (this.trmUpdateInProgress) {
       return {
@@ -83,7 +82,7 @@ export class FiatIntegrationClient {
     this.trmUpdateInProgress = true;
 
     try {
-      const cachedTrm = await this.getTrmFromCache(cacheKey);
+      const cachedTrm = await this.getTrmFromCache(currencyPair);
       if (cachedTrm) {
         let rate: number;
 
@@ -256,7 +255,7 @@ export class FiatIntegrationClient {
 
     this.logger.info(`[getCurrencyConversion] url: ${url}`);
 
-    if (fromParsed === toParsed) return amount;
+    if ( fromParsed === 'USD') return amount;
 
     try {
       const currencyPair = fromParsed + toParsed;
