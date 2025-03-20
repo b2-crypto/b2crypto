@@ -29,7 +29,7 @@ export class PomeloIntegrationServiceController {
     protected readonly logger: PinoLogger,
     private readonly integrationServiceService: PomeloIntegrationProcessService,
     private readonly sftpService: PomeloIntegrationSFTPService,
-  ) { }
+  ) {}
 
   @Post(PomeloEnum.POMELO_NOTIFICATION_PATH)
   @UseGuards(PomeloSignatureGuard)
