@@ -370,7 +370,7 @@ export class TransferServiceService
     account: AccountDocument | AccountInterface,
   ): number {
     const multiply = -1 * this.getMultiplyAmount(transfer.operationType);
-    const currentCommisionAmount = transfer.amountCustodial;
+    const currentCommisionAmount = transfer.amountCustodial ?? transfer.amount;
     const previousCommisionsAmount = transfer.commisionsDetails?.reduce(
       (prev, curr) => prev + curr.amountCustodial,
       0,
