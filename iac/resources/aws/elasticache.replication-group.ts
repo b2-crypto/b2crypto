@@ -6,6 +6,7 @@ import { ec2Vpc } from './ec2.vpc';
 export const elasticacheSubnetGroupRedis = new aws.elasticache.SubnetGroup(
   `${PROJECT_NAME}-subnet-group-${STACK}`,
   {
+    name: `${PROJECT_NAME}-subnet-group-${STACK}`,
     subnetIds: ec2Vpc.publicSubnetIds,
     description: 'Subnet group for Redis',
     tags: TAGS,
