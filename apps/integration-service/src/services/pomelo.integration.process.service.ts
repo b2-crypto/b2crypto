@@ -9,7 +9,11 @@ import {
   NotificationDto,
 } from '@integration/integration/dto/pomelo.process.body.dto';
 import { PomeloCache } from '@integration/integration/util/pomelo.integration.process.cache';
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import {
+  HttpStatus,
+  Injectable,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import {
   CommisionDetail,
@@ -43,11 +47,40 @@ export class PomeloIntegrationProcessService {
     authorize: boolean,
     headers: any,
   ): Promise<any> {
-    let response;
-    response = await this.cache.getResponse(idempotency);
+    let response = await this.cache.getResponse(idempotency);
+
+    response = typeof response === 'string' ? JSON.parse(response) : response;
+
     if (response == null) {
       response = await this.cache.setTooEarly(idempotency);
       const amount = await this.getAmount(process);
+
+      //REVIEW - Check if transaction already executed
+      // const transactionId = process.transaction.id;
+
+      // const transactions = await this.builder.getPromiseTransferEventClient<{
+      //   list: Transfer[];
+      // }>(EventsNamesTransferEnum.findAll, {
+      //   where: {
+      //     'requestBodyJson.transaction.id': transactionId,
+      //     leadCrmName: { $ne: 'Sales' },
+      //   },
+      // });
+
+      // if (transactions.list.length > 0) {
+      //   this.logger.info(
+      //     `[executeProcess] Transaction already executed: ${JSON.stringify(
+      //       transactions.list,
+      //       null,
+      //       2,
+      //     )}`,
+      //   );
+      //   return this.buildProcessResponse(
+      //     CardsEnum.CARD_PROCESS_TRANSACTION_EXISTS,
+      //     authorize,
+      //   );
+      // }
+
       response = await this.executeProcess(process, authorize, amount.usd);
       await this.cache.setResponse(idempotency, response);
       await this.createTransferRecord(
@@ -156,15 +189,21 @@ export class PomeloIntegrationProcessService {
     transferCurrencyCustodial: string;
   }): CommisionDetail {
     const isOperationHasReversal = this.isOperationHasReversal(process);
+    const isOperationHasCommissions = this.isOperationHasCommissions(process);
 
     return {
       _id: id,
-      amount: isOperationHasReversal
-        ? parentCommisionNational?.amount
-        : transferAmount * percentageCommisionNational,
-      amountCustodial: isOperationHasReversal
-        ? parentCommisionNational?.amountCustodial
-        : transferAmountCustodial * percentageCommisionNational,
+      amount: isOperationHasCommissions
+        ? transferAmount * percentageCommisionNational /* isOperationHasReversal
+          ? parentCommisionNational?.amount
+          : transferAmount * percentageCommisionNational */
+        : 0,
+      amountCustodial: isOperationHasCommissions
+        ? transferAmountCustodial *
+          percentageCommisionNational /* isOperationHasReversal
+          ? parentCommisionNational?.amountCustodial
+          : transferAmountCustodial * percentageCommisionNational */
+        : 0,
       currency: isOperationHasReversal
         ? parentCommisionNational?.currency
         : transferCurrency === 'USD'
@@ -199,15 +238,22 @@ export class PomeloIntegrationProcessService {
     transferCurrencyCustodial: string;
   }): CommisionDetail {
     const isOperationHasReversal = this.isOperationHasReversal(process);
+    const isOperationHasCommissions = this.isOperationHasCommissions(process);
 
     return {
       _id: id,
-      amount: isOperationHasReversal
-        ? parentCommisionInternational?.amount
-        : transferAmount * percentageCommisionInternational,
-      amountCustodial: isOperationHasReversal
-        ? parentCommisionInternational?.amountCustodial
-        : transferAmountCustodial * percentageCommisionInternational,
+      amount: isOperationHasCommissions
+        ? transferAmount *
+          percentageCommisionInternational /* isOperationHasReversal
+          ? parentCommisionInternational?.amount
+          : transferAmount * percentageCommisionInternational */
+        : 0,
+      amountCustodial: isOperationHasCommissions
+        ? transferAmountCustodial *
+          percentageCommisionInternational /* isOperationHasReversal
+          ? parentCommisionInternational?.amountCustodial
+          : transferAmountCustodial * percentageCommisionInternational */
+        : 0,
       currency: isOperationHasReversal
         ? parentCommisionInternational?.currency
         : transferCurrency === 'USD'
@@ -251,7 +297,7 @@ export class PomeloIntegrationProcessService {
     commisionNationalDetail: CommisionDetail;
     commisionInternationalDetail: CommisionDetail;
   }) {
-    const isOperationHasReversal = this.isOperationHasReversal(bodyProcess);
+    // const isOperationHasReversal = this.isOperationHasReversal(bodyProcess);
     const isOperationHasCommissions =
       this.isOperationHasCommissions(bodyProcess);
 
@@ -276,25 +322,23 @@ export class PomeloIntegrationProcessService {
           : transferCurrencyCustodial,
       showToOwner: true,
       isApprove: response?.status === CardsEnum.CARD_PROCESS_OK,
-      commisions: isOperationHasCommissions
-        ? bodyProcess.transaction.origin === CommisionTypeEnum.INTERNATIONAL
+      commisions:
+        bodyProcess.transaction.origin === CommisionTypeEnum.INTERNATIONAL
           ? [
               commisionNationalTransactionId,
               commisionInternationalTransactionId,
             ]
-          : [commisionNationalTransactionId]
-        : [],
+          : [commisionNationalTransactionId],
       amountComissions: isOperationHasCommissions
         ? bodyProcess.transaction.origin === CommisionTypeEnum.INTERNATIONAL
           ? commisionNationalDetail.amountCustodial +
             commisionInternationalDetail.amountCustodial
           : commisionNationalDetail.amountCustodial
         : 0,
-      commisionsDetails: isOperationHasCommissions
-        ? bodyProcess.transaction.origin === CommisionTypeEnum.INTERNATIONAL
+      commisionsDetails:
+        bodyProcess.transaction.origin === CommisionTypeEnum.INTERNATIONAL
           ? [commisionNationalDetail, commisionInternationalDetail]
-          : [commisionNationalDetail]
-        : 0,
+          : [commisionNationalDetail],
     };
 
     return parentTransaction
@@ -309,20 +353,24 @@ export class PomeloIntegrationProcessService {
             currencyCustodial: parentTransaction.currencyCustodial,
             operationType: parentTransaction.operationType,
           },
-          amount: isOperationHasReversal
+          amount:
+            /* isOperationHasReversal
             ? parentTransaction?.amount ?? pretransaction.amount
-            : pretransaction.amount,
-          currency: isOperationHasReversal
+            : pretransaction.amount */ pretransaction.amount,
+          currency:
+            /* isOperationHasReversal
             ? parentTransaction?.currency ?? pretransaction.currency
-            : pretransaction.currency,
-          amountCustodial: isOperationHasReversal
+            : pretransaction.currency */ pretransaction.currency,
+          amountCustodial:
+            /* isOperationHasReversal
             ? parentTransaction?.amountCustodial ??
               pretransaction.amountCustodial
-            : pretransaction.amountCustodial,
-          currencyCustodial: isOperationHasReversal
+            : pretransaction.amountCustodial */ pretransaction.amountCustodial,
+          currencyCustodial:
+            /* isOperationHasReversal
             ? parentTransaction?.currencyCustodial ??
               pretransaction.currencyCustodial
-            : pretransaction.currencyCustodial,
+            : pretransaction.currencyCustodial */ pretransaction.currencyCustodial,
         }
       : pretransaction;
   }
@@ -344,67 +392,10 @@ export class PomeloIntegrationProcessService {
       const transactionId = new mongoose.Types.ObjectId();
       const commisionNationalTransactionId = new mongoose.Types.ObjectId();
       const commisionInternationalTransactionId = new mongoose.Types.ObjectId();
-      // const pretransaction = {
-      //   _id: transactionId,
-      //   parentTransaction: null,
-      //   integration: 'Pomelo',
-      //   requestBodyJson: process,
-      //   requestHeadersJson: headers,
-      //   operationType:
-      //     OperationTransactionType[process?.transaction?.type?.toLowerCase()],
-      //   status: response?.status ?? CardsEnum.CARD_PROCESS_OK,
-      //   descriptionStatusPayment:
-      //     response?.status_detail ?? CardsEnum.CARD_PROCESS_OK,
-      //   description: response?.message ?? '',
-      //   amount: amount.amount,
-      //   amountCustodial: amount.usd,
-      //   currency: amount.from === 'USD' ? 'USDT' : amount.from,
-      //   currencyCustodial: amount.to === 'USD' ? 'USDT' : amount.to,
-      //   showToOwner: true,
-      //   isApprove: response?.status === CardsEnum.CARD_PROCESS_OK,
-      //   commisions:
-      //     process.transaction.origin === CommisionTypeEnum.INTERNATIONAL
-      //       ? [
-      //           commisionNationalTransactionId,
-      //           commisionInternationalTransactionId,
-      //         ]
-      //       : [commisionNationalTransactionId],
-      // };
-
-      // const isTransactionReversalPurchase =
-      //   pretransaction.operationType ===
-      //   OperationTransactionType.reversal_purchase;
-      // const isTransactionRefund =
-      //   pretransaction.operationType === OperationTransactionType.refund;
-      // const isTransactionReversalRefund =
-      //   pretransaction.operationType ===
-      //   OperationTransactionType.reversal_refund;
-
-      // const operationTypeParent = CommissionsTypePreviousMap.get(
-      //   pretransaction.operationType,
-      // );
 
       //============================================================
       //= Start - Find Parent Transaction
       //============================================================
-      // const [parentTransaction] =
-      //   isTransactionReversalPurchase ||
-      //   isTransactionRefund ||
-      //   isTransactionReversalRefund
-      //     ? (
-      //         await this.builder.getPromiseTransferEventClient<{
-      //           list: Transfer[];
-      //         }>(EventsNamesTransferEnum.findAll, {
-      //           where: {
-      //             'requestBodyJson.transaction.id':
-      //               process?.transaction?.original_transaction_id,
-      //             operationType: operationTypeParent,
-      //             leadCrmName: { $ne: 'Sales' },
-      //           },
-      //         })
-      //       ).list
-      //     : [];
-
       const parentTransaction = this.isOperationHasParent(process)
         ? await this.findParentTransaction(process)
         : null;
@@ -421,16 +412,6 @@ export class PomeloIntegrationProcessService {
       //============================================================
       //= Start - Find Parent Commissions
       //============================================================
-      // const parentCommisions = parentTransaction
-      //   ? (
-      //       await this.builder.getPromiseTransferEventClient<{
-      //         list: Transfer[];
-      //       }>(EventsNamesTransferEnum.findAll, {
-      //         where: { _id: { $in: parentTransaction?.commisions ?? [] } },
-      //       })
-      //     ).list
-      //   : [];
-
       const parentCommisions = parentTransaction
         ? await this.findParentCommissions(parentTransaction)
         : [];
@@ -455,39 +436,6 @@ export class PomeloIntegrationProcessService {
       //============================================================
       //= Start - Build National Commission Detail
       //============================================================
-      // const commisionNationalDetail = {
-      //   _id: commisionNationalTransactionId,
-      //   amount:
-      //     isTransactionReversalPurchase ||
-      //     // isTransactionRefund ||
-      //     isTransactionReversalRefund
-      //       ? parentCommisionNational?.amount
-      //       : amount.amount * percentageCommisionNational,
-      //   amountCustodial:
-      //     isTransactionReversalPurchase ||
-      //     // isTransactionRefund ||
-      //     isTransactionReversalRefund
-      //       ? parentCommisionNational?.amountCustodial
-      //       : amount.usd * percentageCommisionNational,
-      //   currency:
-      //     isTransactionReversalPurchase ||
-      //     // isTransactionRefund ||
-      //     isTransactionReversalRefund
-      //       ? parentCommisionNational?.currency
-      //       : amount.from === 'USD'
-      //       ? 'USDT'
-      //       : amount.from,
-      //   currencyCustodial:
-      //     isTransactionReversalPurchase ||
-      //     // isTransactionRefund ||
-      //     isTransactionReversalRefund
-      //       ? parentCommisionNational?.currencyCustodial
-      //       : amount.to === 'USD'
-      //       ? 'USDT'
-      //       : amount.to,
-      //   commisionType: CommisionTypeEnum.NATIONAL,
-      // };
-
       const commisionNationalDetail = this.buildNationalCommissionDetail({
         id: commisionNationalTransactionId,
         process,
@@ -511,39 +459,6 @@ export class PomeloIntegrationProcessService {
       //============================================================
       //= Start - Build International Commission Detail
       //============================================================
-      // const commisionInternationalDetail = {
-      //   _id: commisionInternationalTransactionId,
-      //   amount:
-      //     isTransactionReversalPurchase ||
-      //     // isTransactionRefund ||
-      //     isTransactionReversalRefund
-      //       ? parentCommisionInternational?.amount
-      //       : amount.amount * percentageCommisionInternational,
-      //   amountCustodial:
-      //     isTransactionReversalPurchase ||
-      //     // isTransactionRefund ||
-      //     isTransactionReversalRefund
-      //       ? parentCommisionInternational?.amountCustodial
-      //       : amount.usd * percentageCommisionInternational,
-      //   currency:
-      //     isTransactionReversalPurchase ||
-      //     // isTransactionRefund ||
-      //     isTransactionReversalRefund
-      //       ? parentCommisionInternational?.currency
-      //       : amount.from === 'USD'
-      //       ? 'USDT'
-      //       : amount.from,
-      //   currencyCustodial:
-      //     isTransactionReversalPurchase ||
-      //     // isTransactionRefund ||
-      //     isTransactionReversalRefund
-      //       ? parentCommisionInternational?.currencyCustodial
-      //       : amount.to === 'USD'
-      //       ? 'USDT'
-      //       : amount.to,
-      //   commisionType: CommisionTypeEnum.INTERNATIONAL,
-      // };
-
       const commisionInternationalDetail =
         this.buildInternationalCommissionDetail({
           id: commisionInternationalTransactionId,
@@ -568,58 +483,6 @@ export class PomeloIntegrationProcessService {
       //============================================================
       //= Start - Build Transaction
       //============================================================
-      // const transaction = parentTransaction
-      //   ? {
-      //       ...pretransaction,
-      //       parentTransaction: parentTransaction._id,
-      //       parentTransactionDetail: {
-      //         _id: parentTransaction._id,
-      //         amount: parentTransaction.amount,
-      //         currency: parentTransaction.currency,
-      //         amountCustodial: parentTransaction.amountCustodial,
-      //         currencyCustodial: parentTransaction.currencyCustodial,
-      //         operationType: parentTransaction.operationType,
-      //       },
-      //       amount:
-      //         isTransactionReversalPurchase || isTransactionReversalRefund
-      //           ? parentTransaction?.amount ?? pretransaction.amount
-      //           : pretransaction.amount,
-      //       currency:
-      //         isTransactionReversalPurchase || isTransactionReversalRefund
-      //           ? parentTransaction?.currency ?? pretransaction.currency
-      //           : pretransaction.currency,
-      //       amountCustodial:
-      //         isTransactionReversalPurchase || isTransactionReversalRefund
-      //           ? parentTransaction?.amountCustodial ??
-      //             pretransaction.amountCustodial
-      //           : pretransaction.amountCustodial,
-      //       currencyCustodial:
-      //         isTransactionReversalPurchase || isTransactionReversalRefund
-      //           ? parentTransaction?.currencyCustodial ??
-      //             pretransaction.currencyCustodial
-      //           : pretransaction.currencyCustodial,
-      //       amountComissions:
-      //         isTransactionRefund || isTransactionReversalRefund
-      //           ? 0
-      //           : process.transaction.origin === CommisionTypeEnum.INTERNATIONAL
-      //           ? commisionNationalDetail.amountCustodial +
-      //             commisionInternationalDetail.amountCustodial
-      //           : commisionNationalDetail.amountCustodial,
-      //       commisionsDetails:
-      //         isTransactionRefund || isTransactionReversalRefund
-      //           ? []
-      //           : process.transaction.origin === CommisionTypeEnum.INTERNATIONAL
-      //           ? [commisionNationalDetail, commisionInternationalDetail]
-      //           : [commisionNationalDetail],
-      //     }
-      //   : {
-      //       ...pretransaction,
-      //       commisionsDetails:
-      //         process.transaction.origin === CommisionTypeEnum.INTERNATIONAL
-      //           ? [commisionNationalDetail, commisionInternationalDetail]
-      //           : [commisionNationalDetail],
-      //     };
-
       const transaction = this.buildTransaction({
         transactionId,
         commisionNationalTransactionId,
@@ -779,6 +642,7 @@ export class PomeloIntegrationProcessService {
           authorize,
         );
       } */
+
       const cardId = process?.card?.id || '';
       const movement = PomeloProcessEnum[process?.transaction?.type];
       if (usdAmount < 0) {
@@ -788,6 +652,17 @@ export class PomeloIntegrationProcessService {
           authorize,
         );
       }
+
+      const isOperationHasCommissions = this.isOperationHasCommissions(process);
+      const isOperationInternational =
+        process.transaction.origin === CommisionTypeEnum.INTERNATIONAL;
+
+      const percentageCommisions = isOperationHasCommissions
+        ? isOperationInternational
+          ? percentageCommisionNational + percentageCommisionInternational
+          : percentageCommisionNational
+        : 0;
+
       const processResult = await this.builder.getPromiseAccountEventClient(
         EventsNamesAccountEnum.pomeloTransaction,
         {
@@ -795,11 +670,7 @@ export class PomeloIntegrationProcessService {
           amount: usdAmount,
           movement,
           authorize,
-          commision:
-            percentageCommisionNational +
-            (process.transaction.origin === CommisionTypeEnum.INTERNATIONAL
-              ? percentageCommisionInternational
-              : 0),
+          commision: percentageCommisions,
         },
       );
       return this.buildProcessResponse(processResult, authorize);
@@ -818,11 +689,19 @@ export class PomeloIntegrationProcessService {
           status: CardsEnum.CARD_PROCESS_OK,
           message: `Transaction approved.`,
           status_detail: CardsEnum.CARD_PROCESS_OK,
+          statusCode: HttpStatus.OK,
+        };
+      } else if (result === CardsEnum.CARD_PROCESS_TRANSACTION_EXISTS) {
+        return {
+          status: CardsEnum.CARD_PROCESS_OK,
+          message: `Transaction approved.`,
+          status_detail: CardsEnum.CARD_PROCESS_TRANSACTION_EXISTS,
+          statusCode: HttpStatus.OK,
         };
       }
     } else if (result === CardsEnum.CARD_PROCESS_OK) {
       return {
-        statusCode: 204,
+        statusCode: HttpStatus.NO_CONTENT,
         body: {},
       };
     }
