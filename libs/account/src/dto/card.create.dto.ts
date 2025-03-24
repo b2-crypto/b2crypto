@@ -51,8 +51,8 @@ export class CardCreateDto extends AccountCreateDto {
   @ApiProperty({
     required: false,
     type: String,
-    description: 'accountd of the account to use for payment',
-    example: 'USDT_ARB',
+    description: 'ID of the account to use for payment',
+    example: '6098a54b2c365f0012d7c457',
   })
   fromAccountId: string;
 }
