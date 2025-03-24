@@ -53,24 +53,6 @@ export const ec2SecurityGroup = new aws.ec2.SecurityGroup(
   },
 );
 
-export const ec2SecurityGroupRedis = new aws.ec2.SecurityGroup(
-  `${PROJECT_NAME}-security-group-${STACK}`,
-  {
-    name: `${PROJECT_NAME}-security-group-${STACK}`,
-    vpcId: ec2Vpc.vpcId,
-    description: 'Security group for Redis',
-    ingress: [
-      {
-        protocol: 'tcp',
-        fromPort: parseInt(REDIS_PORT),
-        toPort: parseInt(REDIS_PORT),
-        cidrBlocks: ['0.0.0.0/0'],
-      },
-    ],
-    tags: TAGS,
-  },
-);
-
 // export const ec2SecurityGroupOptlCollector = new aws.ec2.SecurityGroup(
 //   `${PROJECT_NAME}-optl-collector-${STACK}`,
 //   {
