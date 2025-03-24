@@ -13,7 +13,7 @@ export const ec2SecurityGroup = new aws.ec2.SecurityGroup(
   `${PROJECT_NAME}-monolith-${STACK}`,
   {
     name: `${PROJECT_NAME}-monolith-${STACK}`,
-    description: 'Security group for Monolith',
+    // description: 'Security group for Monolith',
     vpcId: ec2Vpc.vpcId,
     ingress: [
       {
