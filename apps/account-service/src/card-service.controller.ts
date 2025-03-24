@@ -80,7 +80,9 @@ import WalletTypesAccountEnum from '@account/account/enum/wallet.types.account.e
 import { Traceable } from '@amplication/opentelemetry-nestjs';
 import { CategoryInterface } from '@category/category/entities/category.interface';
 import DocIdTypeEnum from '@common/common/enums/DocIdTypeEnum';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { PspAccountInterface } from '@psp-account/psp-account/entities/psp-account.interface';
+import { Cache } from 'cache-manager';
 import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import { ResponsePaginator } from '../../../libs/common/src/interfaces/response-pagination.interface';
 import { AccountServiceController } from './account-service.controller';
@@ -109,6 +111,7 @@ export class CardServiceController extends AccountServiceController {
     private readonly integration: IntegrationService,
     private readonly configService: ConfigService,
     private readonly currencyConversion: FiatIntegrationClient,
+    @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
   ) {
     super(logger, cardService, cardBuilder);
   }
@@ -2215,6 +2218,22 @@ export class CardServiceController extends AccountServiceController {
     @Payload() data: any,
   ) {
     CommonService.ack(ctx);
+
+    const IS_PROCESSING_CHECK_CARDS_IN_POMELO =
+      'isProcessingCheckCardsInPomelo';
+
+    const checkCardsInPomelo = await this.cacheManager.get<boolean>(
+      IS_PROCESSING_CHECK_CARDS_IN_POMELO,
+    );
+
+    if (checkCardsInPomelo) return;
+
+    await this.cacheManager.set(
+      IS_PROCESSING_CHECK_CARDS_IN_POMELO,
+      true,
+      5 * 60 * 1000,
+    );
+
     try {
       this.logger.info(`[checkCardsCreatedInPomelo] Start`);
       const paginator: ResponsePaginator<User> = new ResponsePaginator<User>();
