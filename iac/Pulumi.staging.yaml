@@ -71,8 +71,8 @@ config:
   b2crypto-iac:REDIS_HOST:
     secure: AAABAIwsCH4TIgMPQynxpV3tsJD5ivMuLF3nOyu43+UNcdHg3NcgX1yTeg/muIawjul5v8WQzyK3z31YBM/ti3xffiqS5TQ2BWTy3wyX1517bjwSSw==
   b2crypto-iac:REDIS_PASSWORD:
-    secure: AAABANhvOflWUkSrSJXjNWZL/2V0OKOOFxMsfnuA8ZIiyS+mkJ7+GzKtYcV0JBYYicqJ9Q19j6oGRE+60+XCmg==
-  b2crypto-iac:REDIS_PORT: "10790"
+    secure: AAABACcIA/saSfZ1kCrRzEulpY15VUIL+1mEOXgnEMD5W4f0k67pltHkPlUlD+8G+WlLo9OzVkRQbOV1otD4Fg==
+  b2crypto-iac:REDIS_PORT: "6379"
   b2crypto-iac:REDIS_USERNAME:
     secure: AAABAFXkm6lT2wlH8kDQBKBuX0QNOKeBlklfqttIiHZNj7hZChS6
   b2crypto-iac:STACK: staging
