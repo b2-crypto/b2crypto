@@ -44,7 +44,6 @@ import { ec2SecurityGroup } from './ec2.security-group';
 import { ec2Vpc } from './ec2.vpc';
 import { ecrImage, TAG } from './ecr.image';
 import { ecsCluster } from './ecs.cluster';
-import { elasticacheReplicationGroupRedis } from './elasticache.replication-group';
 import { lbApplicationLoadBalancer } from './lb.application-load-balancer';
 import { mqBrokerRabbitMQ } from './mq.broker';
 
@@ -123,10 +122,7 @@ export const ecsFargateService = new awsx.ecs.FargateService(
           },
           {
             name: 'REDIS_HOST',
-            value:
-              elasticacheReplicationGroupRedis.primaryEndpointAddress.apply(
-                (value) => `${value}:${REDIS_PORT}`,
-              ),
+            value: SECRETS.REDIS_HOST,
           },
           {
             name: 'REDIS_USERNAME',
