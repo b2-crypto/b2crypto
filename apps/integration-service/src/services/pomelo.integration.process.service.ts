@@ -530,7 +530,7 @@ export class PomeloIntegrationProcessService {
           page:
             CommissionsTypeDescriptionMap.get(transaction.operationType) ??
             'Commision to B2Fintech',
-          showToOwner: true,
+          showToOwner: false,
           commisionsDetails: [],
           isApprove: response?.status === CardsEnum.CARD_PROCESS_OK,
         };
@@ -568,7 +568,7 @@ export class PomeloIntegrationProcessService {
           page:
             CommissionsTypeDescriptionMap.get(transaction.operationType) ??
             'Commision to B2Fintech',
-          showToOwner: true,
+          showToOwner: false,
           commisionsDetails: [commisionNationalDetail],
           isApprove: response?.status === CardsEnum.CARD_PROCESS_OK,
         };
