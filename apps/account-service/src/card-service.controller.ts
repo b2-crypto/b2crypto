@@ -248,6 +248,8 @@ export class CardServiceController extends AccountServiceController {
     return rta;
   }
 
+
+
   @ApiSecurity('b2crypto-key')
   @ApiBearerAuth('bearerToken')
   @Post('create')
@@ -366,6 +368,7 @@ export class CardServiceController extends AccountServiceController {
     let tx = null;
     if (price > 0) {
       try {
+
         tx = await this.txPurchaseCard(
           createDto.fromAccountId,
           price,
@@ -534,7 +537,7 @@ export class CardServiceController extends AccountServiceController {
           null,
           `Compra de ${createDto.type} ${createDto.accountType} ${level.name}`,
           `Reversal`,
-          true,
+          true
         );
       }
       this.logger.error(
@@ -602,8 +605,9 @@ export class CardServiceController extends AccountServiceController {
     }
 
     if (totalPurchase > account.amount * 0.9) {
-      throw new BadRequestException('Wallet with enough balance');
+      throw new BadRequestException('Wallet with not enough balance');
     }
+  
     return this.cardBuilder.getPromiseTransferEventClient(
       EventsNamesTransferEnum.createOne,
       {
@@ -2227,6 +2231,22 @@ export class CardServiceController extends AccountServiceController {
     @Payload() data: any,
   ) {
     CommonService.ack(ctx);
+
+    const IS_PROCESSING_CHECK_CARDS_IN_POMELO =
+      'isProcessingCheckCardsInPomelo';
+
+    const checkCardsInPomelo = await this.cacheManager.get<boolean>(
+      IS_PROCESSING_CHECK_CARDS_IN_POMELO,
+    );
+
+    if (checkCardsInPomelo) return;
+
+    await this.cacheManager.set(
+      IS_PROCESSING_CHECK_CARDS_IN_POMELO,
+      true,
+      5 * 60 * 1000,
+    );
+
     try {
       this.logger.info(`[checkCardsCreatedInPomelo] Start`);
       const paginator: ResponsePaginator<User> = new ResponsePaginator<User>();
