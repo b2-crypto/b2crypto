@@ -3,7 +3,7 @@ WORKDIR /app
 RUN apk add --update --no-cache curl
 RUN apk add --update --no-cache python3 py3-pip
 RUN apk add --update --no-cache make gcc g++
-RUN npm install -g pnpm@^9.15.5
+RUN npm install -g pnpm
 RUN pnpm config set store-dir .pnpm-store
 
 FROM base AS build

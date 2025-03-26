@@ -3,6 +3,28 @@ import { ApiProperty } from '@nestjs/swagger';
 export class ResponsePaginator<TBasicEntity> {
   @ApiProperty({
     type: Number,
+    description: 'Status code',
+    example: 200,
+    nullable: true,
+  })
+  statusCode?: number;
+
+  @ApiProperty({
+    type: String,
+    example: 'success',
+    nullable: true,
+  })
+  message?: string;
+
+  @ApiProperty({
+    type: String,
+    example: 'success',
+    nullable: true,
+  })
+  description?: string;
+
+  @ApiProperty({
+    type: Number,
     description: 'Number of next page',
     example: 2,
   })

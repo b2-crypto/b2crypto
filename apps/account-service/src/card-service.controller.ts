@@ -248,6 +248,8 @@ export class CardServiceController extends AccountServiceController {
     return rta;
   }
 
+
+
   @ApiSecurity('b2crypto-key')
   @ApiBearerAuth('bearerToken')
   @Post('create')
@@ -367,6 +369,7 @@ export class CardServiceController extends AccountServiceController {
     if (price > 0) {
       try {
         tx = await this.txPurchaseCard(
+          createDto.fromAccountId,
           price,
           user,
           `PURCHASE_${createDto.type}_${createDto.accountType}`,
@@ -526,13 +529,14 @@ export class CardServiceController extends AccountServiceController {
       await this.getAccountService().deleteOneById(account._id);
       if (price > 0) {
         await this.txPurchaseCard(
+          createDto.fromAccountId,
           price,
           user,
           `REVERSAL_PURCHASE_${createDto.type}_${createDto.accountType}`,
           null,
           `Compra de ${createDto.type} ${createDto.accountType} ${level.name}`,
           `Reversal`,
-          true,
+          true
         );
       }
       this.logger.error(
@@ -560,6 +564,7 @@ export class CardServiceController extends AccountServiceController {
   }
 
   private async txPurchaseCard(
+    fromAccountId: string,
     totalPurchase: number,
     owner: User,
     type: string,
@@ -576,25 +581,32 @@ export class CardServiceController extends AccountServiceController {
         ? CommonService.getSlug('Reversal purchase')
         : CommonService.getSlug('Purchase wallet'),
     );
+  
     if (!account) {
+      const accountQuery = {
+        where: {
+          type: 'WALLET',
+          owner: owner._id,
+          _id: fromAccountId
+        }
+      };
+      
       const listAccount = await this.cardBuilder.getPromiseAccountEventClient(
         EventsNamesAccountEnum.findAll,
-        {
-          where: {
-            type: 'WALLET',
-            accountId: 'TRX_USDT_S2UZ',
-            owner: owner._id,
-          },
-        },
+        accountQuery
       );
+      
       if (!listAccount.totalElements) {
         throw new BadRequestException('Need wallet to pay');
       }
+      
       account = listAccount.list[0];
     }
+    
     if (totalPurchase > account.amount * 0.9) {
-      throw new BadRequestException('Wallet with enough balance');
+      throw new BadRequestException('Wallet with not enough balance');
     }
+  
     return this.cardBuilder.getPromiseTransferEventClient(
       EventsNamesTransferEnum.createOne,
       {
