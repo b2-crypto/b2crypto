@@ -1,5 +1,7 @@
 import { Traceable } from '@amplication/opentelemetry-nestjs';
-import { Injectable } from '@nestjs/common';
+import { Cache, CACHE_MANAGER } from '@nestjs/cache-manager';
+import { Inject, Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 
 export interface IExchangeRate {
@@ -21,20 +23,80 @@ export interface IInfo {
   rate: number;
 }
 
+export interface IPair {
+  id: string;
+  name: string;
+  rate: number;
+  validStartDatetime: string;
+  validStartTimezone: string;
+  validEndDatetime: string;
+  validEndTimezone: string;
+  isDeleted: boolean;
+  createdAtDatetime: string;
+  createdAtTimezone: string;
+  updatedAtDatetime: any;
+  updatedAtTimezone: any;
+  deletedAtDatetime: any;
+  deletedAtTimezone: any;
+  createdBy: string;
+  updatedBy: any;
+  deletedBy: any;
+  trmId: string;
+}
+
 @Traceable()
 @Injectable()
 export class FiatIntegrationClient {
+  private readonly TRM_API_URL: string;
+
   constructor(
     @InjectPinoLogger(FiatIntegrationClient.name)
     protected readonly logger: PinoLogger,
-  ) {}
+    @Inject(CACHE_MANAGER)
+    private cacheManager: Cache,
+    private readonly configService: ConfigService,
+  ) {
+    this.TRM_API_URL = this.configService.getOrThrow('TRM_ENDPOINT');
+  }
 
   async getCurrencyConversionCustodial(
     from: string,
     amount: number,
   ): Promise<any> {
-    const to = process.env.DEFAULT_CURRENCY_CONVERSION_COIN;
+    const to = process.env.DEFAULT_CURRENCY_CONVERSION_COIN || 'USD';
     return this.getCurrencyConversion(to, from, amount);
+  }
+
+  private async getCurrentPair(pair: string): Promise<IPair | null> {
+    this.logger.info(`[getCurrentPair] Consultando par: ${pair}`);
+
+    const url = `${this.TRM_API_URL}/api/v1/pairs/current?name=${pair}`;
+
+    this.logger.info(`[getCurrencyConversion] url: ${url}`);
+
+    try {
+      const pairCached = await this.cacheManager.get<{ value: IPair }>(pair);
+
+      const pairResponse =
+        pairCached?.value ??
+        (await fetch(url, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }).then<IPair>((response) => response.json()));
+
+      if (!pairCached?.value)
+        await this.cacheManager.set(pair, pairResponse, 48 * 60 * 60 * 1000);
+
+      return pairResponse;
+    } catch (error) {
+      this.logger.error(
+        `[getCurrentPair] Error get pair: ${error.message || error}`,
+      );
+
+      throw new Error(`Error get pair`);
+    }
   }
 
   async getCurrencyConversion(
@@ -42,53 +104,26 @@ export class FiatIntegrationClient {
     from: string,
     amount: number,
   ): Promise<number> {
-    const apiURL = process.env.CURRENCY_CONVERSION_API_URL;
-    const apiKey = process.env.CURRENCY_CONVERSION_API_KEY;
     const toParsed = to === 'USDT' ? 'USD' : to;
     const fromParsed = from === 'USDT' ? 'USD' : from;
-    const url = `${apiURL}?access_key=${apiKey}&from=${fromParsed}&to=${toParsed}&amount=${amount}`;
+    const pairName = fromParsed + toParsed;
 
-    this.logger.info(`[getCurrencyConversion] url: ${url}`);
+    this.logger.info(`[getCurrencyConversion] Consultando par: ${pairName}`);
 
-    const rates = new Map<string, number>([['COPUSD', 4000]]);
+    if (fromParsed === 'USD') return amount;
 
-    const rate = rates.get(fromParsed + toParsed);
+    const pair = await this.getCurrentPair(fromParsed + toParsed);
 
-    if (!rate && fromParsed === 'USD') return amount;
+    if (!pair) {
+      this.logger.error(`[getCurrencyConversion] Pair not found: ${pairName}`);
 
-    if (!rate) throw new Error('Rate not found for ' + fromParsed + toParsed);
+      throw new Error(`Pair not found`);
+    }
 
-    const swapFactory = (amount: number, rate: number) => amount / rate;
+    const swapResult = amount * pair.rate;
 
-    // const data = await fetch(url, {
-    //   method: 'GET',
-    //   signal: AbortSignal.timeout(300),
-    // })
-    //   .then<IExchangeRate>((res) => res.json())
-    //   .catch((error) => {
-    //     this.logger.error(`[getCurrencyConversion] ${error.message || error}`);
+    this.logger.info(`[getCurrencyConversion] swapResult: ${swapResult}`);
 
-    //     return {
-    //       success: false,
-    //       query: {
-    //         from: fromParsed,
-    //         to: toParsed,
-    //         amount,
-    //       },
-    //       info: {
-    //         timestamp: new Date().getMilliseconds(),
-    //         rate,
-    //       },
-    //       date: new Date().toISOString(),
-    //       result: swapFactory(amount, rate),
-    //     } satisfies IExchangeRate;
-
-    //     // throw new InternalServerErrorException(error);
-    //   });
-
-    // this.logger.info(`[getCurrencyConversion] ${JSON.stringify(data)}`);
-
-    // return data.result;
-    return swapFactory(amount, rate);
+    return swapResult;
   }
 }

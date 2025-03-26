@@ -137,12 +137,13 @@ config:
   b2crypto-iac:TASK_MEMORY_MONOLITH: "2048"
   b2crypto-iac:TASK_CPU_MONOLITH: "1024"
   b2crypto-iac:OTP_VALIDATION_TIME_SECONDS: "120"
-  b2crypto-iac:OTLP_HOST:
-    secure: AAABAJzRGlB0flJItWfVYub8503TH3NBE+CJ8BPkMH69cEieVhrI4duFS881CMWPgP4v/FAdX3BvVU6/jPA=
-  b2crypto-iac:OTLP_API_KEY:
-    secure: AAABAPo34+JTKl517zsMlbZ8yT+ib4HK/RrsWGlMlMlR8vzpJOwANWfZSusqchSwLIJ5R0eUeNJIM6at+GPp0mj3rNw=
   b2crypto-iac:COMMISION_INTERNATIONAL:
-    secure: AAABAOl5+pbHSVW/MDThBh6AVSCO2qhrZWaYdJLEFp6yaSup
+    secure: AAABAE0pnxjRg5jZNwpJQ9syHQ2TJ4Y4hiG36jJUvQVSDCV2
   b2crypto-iac:COMMISION_NATIONAL:
-    secure: AAABACBhUSMQFDM+uxelCVwMUGVKRjB8k9pfUvwb8tWp666i
+    secure: AAABAIUQ4mbREfArUY5Ov0JIdMKlanYYABjNfBxv398axnPT
+  b2crypto-iac:OTLP_HOST:
+    secure: AAABAMu9Vm/eMV/Jje82olEc/1KUuhx4SIiJNfOoA1icfraSdFdRaH9UBxR4CL+Xbkb4hqPsQ+kVzoSwzqc=
+  b2crypto-iac:OTLP_API_KEY:
+    secure: AAABAFZanau1bM/ujfPvOxrjgVEIBPnkx18OQQhL/MTp7h6Hkzlm4iOvl96kBlfHLn7aSLb6hKSlKOTvLY++2poOj0A=
   b2crypto-iac:APP_VERSION: 0.9.0
+  b2crypto-iac:TRM_ENDPOINT: https://api-trms-staging.b2fintech.com
