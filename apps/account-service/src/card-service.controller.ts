@@ -581,28 +581,28 @@ export class CardServiceController extends AccountServiceController {
         ? CommonService.getSlug('Reversal purchase')
         : CommonService.getSlug('Purchase wallet'),
     );
-  
+
     if (!account) {
       const accountQuery = {
         where: {
           type: 'WALLET',
           owner: owner._id,
-          _id: fromAccountId
-        }
+          _id: fromAccountId,
+        },
       };
-      
+
       const listAccount = await this.cardBuilder.getPromiseAccountEventClient(
         EventsNamesAccountEnum.findAll,
-        accountQuery
+        accountQuery,
       );
-      
+
       if (!listAccount.totalElements) {
         throw new BadRequestException('Need wallet to pay');
       }
-      
+
       account = listAccount.list[0];
     }
-    
+
     if (totalPurchase > account.amount * 0.9) {
       throw new BadRequestException('Wallet with not enough balance');
     }
