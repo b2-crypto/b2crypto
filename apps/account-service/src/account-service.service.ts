@@ -151,11 +151,6 @@ export class AccountServiceService
   ): Promise<AccountDocument[]> {
     throw new NotImplementedException('Method not implemented.');
   }
-<<<<<<< Updated upstream
-  async availableWalletsFireblocks(
-    query?: QuerySearchAnyDto,
-  ): Promise<ResponsePaginator<AccountDocument>> {
-=======
 
   private organizeWalletList(walletList: AccountDocument[]) {
     const accountIdFilters = [
@@ -251,7 +246,6 @@ export class AccountServiceService
   }
 
   async availableWalletsFireblocks(query?: QuerySearchAnyDto) {
->>>>>>> Stashed changes
     // Job to check fireblocks available wallets
     query = query || new QuerySearchAnyDto();
     query.where = query.where || {};
@@ -292,9 +286,6 @@ export class AccountServiceService
       });
       cryptoList.list = await Promise.all(promises);
     }
-<<<<<<< Updated upstream
-    return cryptoList;
-=======
 
     const organizedWallets = this.organizeWalletList(
       cryptoList.list,
@@ -416,7 +407,6 @@ export class AccountServiceService
       asset,
       network,
     };
->>>>>>> Stashed changes
   }
 
   async networksWalletsFireblocks(query?: QuerySearchAnyDto): Promise<any> {
