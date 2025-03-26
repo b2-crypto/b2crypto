@@ -280,8 +280,8 @@ export class PomeloIntegrationProcessService {
     transferAmountCustodial,
     transferCurrency,
     transferCurrencyCustodial,
+    // commisionInternationalDetail,
     commisionNationalDetail,
-    commisionInternationalDetail,
   }: {
     transactionId: mongoose.Types.ObjectId;
     commisionNationalTransactionId: mongoose.Types.ObjectId;
@@ -295,7 +295,7 @@ export class PomeloIntegrationProcessService {
     transferCurrency: string;
     transferCurrencyCustodial: string;
     commisionNationalDetail: CommisionDetail;
-    commisionInternationalDetail: CommisionDetail;
+    // commisionInternationalDetail: CommisionDetail;
   }) {
     // const isOperationHasReversal = this.isOperationHasReversal(bodyProcess);
     const isOperationHasCommissions =
@@ -323,22 +323,22 @@ export class PomeloIntegrationProcessService {
       showToOwner: true,
       isApprove: response?.status === CardsEnum.CARD_PROCESS_OK,
       commisions:
-        bodyProcess.transaction.origin === CommisionTypeEnum.INTERNATIONAL
+        /* bodyProcess.transaction.origin === CommisionTypeEnum.INTERNATIONAL
           ? [
               commisionNationalTransactionId,
               commisionInternationalTransactionId,
             ]
-          : [commisionNationalTransactionId],
+          : */ [commisionNationalTransactionId],
       amountComissions: isOperationHasCommissions
-        ? bodyProcess.transaction.origin === CommisionTypeEnum.INTERNATIONAL
+        ? /* bodyProcess.transaction.origin === CommisionTypeEnum.INTERNATIONAL
           ? commisionNationalDetail.amountCustodial +
             commisionInternationalDetail.amountCustodial
-          : commisionNationalDetail.amountCustodial
+          : */ commisionNationalDetail.amountCustodial
         : 0,
       commisionsDetails:
-        bodyProcess.transaction.origin === CommisionTypeEnum.INTERNATIONAL
+        /* bodyProcess.transaction.origin === CommisionTypeEnum.INTERNATIONAL
           ? [commisionNationalDetail, commisionInternationalDetail]
-          : [commisionNationalDetail],
+          : */ [commisionNationalDetail],
     };
 
     return parentTransaction
@@ -386,9 +386,9 @@ export class PomeloIntegrationProcessService {
       const percentageCommisionNational = parseFloat(
         this.configService.getOrThrow('COMMISION_NATIONAL'),
       );
-      const percentageCommisionInternational = parseFloat(
-        this.configService.getOrThrow('COMMISION_INTERNATIONAL'),
-      );
+      // const percentageCommisionInternational = parseFloat(
+      //   this.configService.getOrThrow('COMMISION_INTERNATIONAL'),
+      // );
       const transactionId = new mongoose.Types.ObjectId();
       const commisionNationalTransactionId = new mongoose.Types.ObjectId();
       const commisionInternationalTransactionId = new mongoose.Types.ObjectId();
@@ -429,9 +429,9 @@ export class PomeloIntegrationProcessService {
         (tx) => tx.commisionType === CommisionTypeEnum.NATIONAL,
       );
 
-      const parentCommisionInternational = parentCommisions.find(
-        (tx) => tx.commisionType === CommisionTypeEnum.INTERNATIONAL,
-      );
+      // const parentCommisionInternational = parentCommisions.find(
+      //   (tx) => tx.commisionType === CommisionTypeEnum.INTERNATIONAL,
+      // );
 
       //============================================================
       //= Start - Build National Commission Detail
@@ -459,25 +459,25 @@ export class PomeloIntegrationProcessService {
       //============================================================
       //= Start - Build International Commission Detail
       //============================================================
-      const commisionInternationalDetail =
-        this.buildInternationalCommissionDetail({
-          id: commisionInternationalTransactionId,
-          process,
-          parentCommisionInternational,
-          percentageCommisionInternational,
-          transferAmount: amount.amount,
-          transferAmountCustodial: amount.usd,
-          transferCurrency: amount.from,
-          transferCurrencyCustodial: amount.to,
-        });
+      // const commisionInternationalDetail =
+      //   this.buildInternationalCommissionDetail({
+      //     id: commisionInternationalTransactionId,
+      //     process,
+      //     parentCommisionInternational,
+      //     percentageCommisionInternational,
+      //     transferAmount: amount.amount,
+      //     transferAmountCustodial: amount.usd,
+      //     transferCurrency: amount.from,
+      //     transferCurrencyCustodial: amount.to,
+      //   });
 
-      this.logger.info(
-        `[createTransferRecord] Commission International Detail: ${JSON.stringify(
-          commisionInternationalDetail,
-          null,
-          2,
-        )}`,
-      );
+      // this.logger.info(
+      //   `[createTransferRecord] Commission International Detail: ${JSON.stringify(
+      //     commisionInternationalDetail,
+      //     null,
+      //     2,
+      //   )}`,
+      // );
       //============================================================
 
       //============================================================
@@ -496,7 +496,7 @@ export class PomeloIntegrationProcessService {
         transferCurrency: amount.from,
         transferCurrencyCustodial: amount.to,
         commisionNationalDetail,
-        commisionInternationalDetail,
+        // commisionInternationalDetail,
       });
 
       this.logger.info(
@@ -515,6 +515,9 @@ export class PomeloIntegrationProcessService {
 
       const amountUSD = amount.usd ?? amount.amount;
 
+      //============================================================
+      //= Start - Create commission National
+      //============================================================
       if (authorize && amountUSD * percentageCommisionNational > 0) {
         const commisionNational = {
           ...commisionNationalDetail,
@@ -548,44 +551,49 @@ export class PomeloIntegrationProcessService {
           commisionNational,
         );
       }
+      //============================================================
 
-      if (
-        authorize &&
-        amountUSD * percentageCommisionInternational > 0 &&
-        process.transaction.origin === CommisionTypeEnum.INTERNATIONAL
-      ) {
-        const commisionInternational = {
-          ...commisionInternationalDetail,
-          parentTransaction: transactionId,
-          integration: 'Sales',
-          requestBodyJson: process,
-          requestHeadersJson: headers,
-          operationType: transaction.operationType,
-          status: response?.status ?? CardsEnum.CARD_PROCESS_OK,
-          descriptionStatusPayment:
-            response?.status_detail ?? CardsEnum.CARD_PROCESS_OK,
-          description: response?.message ?? '',
-          page:
-            CommissionsTypeDescriptionMap.get(transaction.operationType) ??
-            'Commision to B2Fintech',
-          showToOwner: true,
-          commisionsDetails: [commisionNationalDetail],
-          isApprove: response?.status === CardsEnum.CARD_PROCESS_OK,
-        };
+      //============================================================
+      //= Start - Create commission International
+      //============================================================
+      // if (
+      //   authorize &&
+      //   amountUSD * percentageCommisionInternational > 0 &&
+      //   process.transaction.origin === CommisionTypeEnum.INTERNATIONAL
+      // ) {
+      //   const commisionInternational = {
+      //     ...commisionInternationalDetail,
+      //     parentTransaction: transactionId,
+      //     integration: 'Sales',
+      //     requestBodyJson: process,
+      //     requestHeadersJson: headers,
+      //     operationType: transaction.operationType,
+      //     status: response?.status ?? CardsEnum.CARD_PROCESS_OK,
+      //     descriptionStatusPayment:
+      //       response?.status_detail ?? CardsEnum.CARD_PROCESS_OK,
+      //     description: response?.message ?? '',
+      //     page:
+      //       CommissionsTypeDescriptionMap.get(transaction.operationType) ??
+      //       'Commision to B2Fintech',
+      //     showToOwner: true,
+      //     commisionsDetails: [commisionNationalDetail],
+      //     isApprove: response?.status === CardsEnum.CARD_PROCESS_OK,
+      //   };
 
-        this.logger.info(
-          `[createTransferRecord] Commision International: ${JSON.stringify(
-            commisionInternational,
-            null,
-            2,
-          )}`,
-        );
+      //   this.logger.info(
+      //     `[createTransferRecord] Commision International: ${JSON.stringify(
+      //       commisionInternational,
+      //       null,
+      //       2,
+      //     )}`,
+      //   );
 
-        this.builder.emitTransferEventClient(
-          EventsNamesTransferEnum.createOneWebhook,
-          commisionInternational,
-        );
-      }
+      //   this.builder.emitTransferEventClient(
+      //     EventsNamesTransferEnum.createOneWebhook,
+      //     commisionInternational,
+      //   );
+      // }
+      //============================================================
     } catch (error) {
       this.logger.info(
         `[createTransferRecord] Error creating transfer: ${
@@ -625,9 +633,9 @@ export class PomeloIntegrationProcessService {
       const percentageCommisionNational = parseFloat(
         this.configService.getOrThrow('COMMISION_NATIONAL'),
       );
-      const percentageCommisionInternational = parseFloat(
-        this.configService.getOrThrow('COMMISION_INTERNATIONAL'),
-      );
+      // const percentageCommisionInternational = parseFloat(
+      //   this.configService.getOrThrow('COMMISION_INTERNATIONAL'),
+      // );
       this.logger.info('[executeProcess] ExecuteProcess start');
       /* if (
         process?.installments &&
@@ -654,13 +662,13 @@ export class PomeloIntegrationProcessService {
       }
 
       const isOperationHasCommissions = this.isOperationHasCommissions(process);
-      const isOperationInternational =
-        process.transaction.origin === CommisionTypeEnum.INTERNATIONAL;
+      // const isOperationInternational =
+      //   process.transaction.origin === CommisionTypeEnum.INTERNATIONAL;
 
       const percentageCommisions = isOperationHasCommissions
-        ? isOperationInternational
+        ? /* isOperationInternational
           ? percentageCommisionNational + percentageCommisionInternational
-          : percentageCommisionNational
+          : */ percentageCommisionNational
         : 0;
 
       const processResult = await this.builder.getPromiseAccountEventClient(
