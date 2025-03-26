@@ -38,6 +38,7 @@ import EventsNamesStatusEnum from 'apps/status-service/src/enum/events.names.sta
 import EventsNamesTransferEnum from 'apps/transfer-service/src/enum/events.names.transfer.enum';
 import * as fs from 'fs';
 import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
+import { IData } from './interfaces/available-wallets.interface';
 
 @Traceable()
 @Injectable()
@@ -244,7 +245,7 @@ export class AccountServiceService
     return result;
   }
 
-  async availableWalletsFireblocks(query?: QuerySearchAnyDto): Promise<any> {
+  async availableWalletsFireblocks(query?: QuerySearchAnyDto) {
     // Job to check fireblocks available wallets
     query = query || new QuerySearchAnyDto();
     query.where = query.where || {};
@@ -286,7 +287,9 @@ export class AccountServiceService
       cryptoList.list = await Promise.all(promises);
     }
 
-    const organizedWallets = this.organizeWalletList(cryptoList.list);
+    const organizedWallets = this.organizeWalletList(
+      cryptoList.list,
+    ) as IData[];
 
     return {
       statusCode: 200,
@@ -583,6 +586,7 @@ export class AccountServiceService
     }
     return this.lib.update(id, updateDto);
   }
+
   async customUpdateOne(updateRequest: any): Promise<AccountDocument> {
     const id = updateRequest.id ?? updateRequest._id;
     delete updateRequest.id;
