@@ -573,6 +573,7 @@ export class CardServiceController extends AccountServiceController {
         ? CommonService.getSlug('Reversal purchase')
         : CommonService.getSlug('Purchase wallet'),
     );
+<<<<<<< Updated upstream
     if (!account) {
       const listAccount = await this.cardBuilder.getPromiseAccountEventClient(
         EventsNamesAccountEnum.findAll,
@@ -589,9 +590,37 @@ export class CardServiceController extends AccountServiceController {
       }
       account = listAccount.list[0];
     }
+=======
+
+    if (!account) {
+      const accountQuery = {
+        where: {
+          type: 'WALLET',
+          owner: owner._id,
+          _id: fromAccountId,
+        },
+      };
+
+      const listAccount = await this.cardBuilder.getPromiseAccountEventClient(
+        EventsNamesAccountEnum.findAll,
+        accountQuery,
+      );
+
+      if (!listAccount.totalElements) {
+        throw new BadRequestException('Need wallet to pay');
+      }
+
+      account = listAccount.list[0];
+    }
+
+>>>>>>> Stashed changes
     if (totalPurchase > account.amount * 0.9) {
       throw new BadRequestException('Wallet with enough balance');
     }
+<<<<<<< Updated upstream
+=======
+
+>>>>>>> Stashed changes
     return this.cardBuilder.getPromiseTransferEventClient(
       EventsNamesTransferEnum.createOne,
       {
