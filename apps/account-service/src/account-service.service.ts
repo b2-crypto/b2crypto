@@ -373,6 +373,7 @@ export class AccountServiceService
     }
     return this.lib.update(id, updateDto);
   }
+
   async customUpdateOne(updateRequest: any): Promise<AccountDocument> {
     const id = updateRequest.id ?? updateRequest._id;
     delete updateRequest.id;
