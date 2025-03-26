@@ -80,7 +80,9 @@ import WalletTypesAccountEnum from '@account/account/enum/wallet.types.account.e
 import { Traceable } from '@amplication/opentelemetry-nestjs';
 import { CategoryInterface } from '@category/category/entities/category.interface';
 import DocIdTypeEnum from '@common/common/enums/DocIdTypeEnum';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { PspAccountInterface } from '@psp-account/psp-account/entities/psp-account.interface';
+import { Cache } from 'cache-manager';
 import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import { ResponsePaginator } from '../../../libs/common/src/interfaces/response-pagination.interface';
 import { AccountServiceController } from './account-service.controller';
@@ -109,6 +111,7 @@ export class CardServiceController extends AccountServiceController {
     private readonly integration: IntegrationService,
     private readonly configService: ConfigService,
     private readonly currencyConversion: FiatIntegrationClient,
+    @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
   ) {
     super(logger, cardService, cardBuilder);
   }
@@ -364,6 +367,7 @@ export class CardServiceController extends AccountServiceController {
     if (price > 0) {
       try {
         tx = await this.txPurchaseCard(
+          createDto.fromAccountId,
           price,
           user,
           `PURCHASE_${createDto.type}_${createDto.accountType}`,
@@ -523,6 +527,7 @@ export class CardServiceController extends AccountServiceController {
       await this.getAccountService().deleteOneById(account._id);
       if (price > 0) {
         await this.txPurchaseCard(
+          createDto.fromAccountId,
           price,
           user,
           `REVERSAL_PURCHASE_${createDto.type}_${createDto.accountType}`,
@@ -557,6 +562,7 @@ export class CardServiceController extends AccountServiceController {
   }
 
   private async txPurchaseCard(
+    fromAccountId: string,
     totalPurchase: number,
     owner: User,
     type: string,
