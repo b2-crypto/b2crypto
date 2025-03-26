@@ -368,7 +368,6 @@ export class CardServiceController extends AccountServiceController {
     let tx = null;
     if (price > 0) {
       try {
-
         tx = await this.txPurchaseCard(
           createDto.fromAccountId,
           price,
