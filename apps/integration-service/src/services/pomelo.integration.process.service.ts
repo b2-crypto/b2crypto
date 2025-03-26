@@ -525,6 +525,7 @@ export class PomeloIntegrationProcessService {
         headers,
       );
 
+
       this.sendAdjustmentNotificationEmail(adjustment).catch((error) => {
         this.logger.error(
           `[ProcessNotification] Error sending adjustment notification email ${
@@ -584,35 +585,82 @@ export class PomeloIntegrationProcessService {
       true,
       headers,
     );
-
+  
+    let transactionDate = '';
+    let transactionTime = '';
+  
+    if (authorization.transaction?.local_date_time) {
+      const txnDate = new Date(authorization.transaction.local_date_time);
+      
+      transactionDate = txnDate.toLocaleDateString('es-ES', {
+        day: '2-digit',
+        month: 'long',
+        year: 'numeric',
+      });
+      
+      transactionTime = txnDate.toLocaleTimeString('es-ES', {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false,
+      }) + 'h';
+    } else {
+      const now = new Date();
+      transactionDate = now.toLocaleDateString('es-ES', {
+        day: '2-digit',
+        month: 'long',
+        year: 'numeric',
+      });
+      transactionTime = now.toLocaleTimeString('es-ES', {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false,
+      }) + 'h';
+    }
+  
+    let amountFormatted = '';
+    let currencyCode = '';
+    
+    if (authorization.amount?.local?.total && authorization.amount?.local?.currency) {
+      currencyCode = authorization.amount.local.currency;
+      const totalAmount = parseFloat(authorization.amount.local.total);
+      amountFormatted = new Intl.NumberFormat('es-ES', {
+        style: 'currency',
+        currency: currencyCode
+      }).format(totalAmount);
+    }
+  
     const data = {
       transport: TransportEnum.EMAIL,
       vars: {
-        cardId: authorization.card.id,
-        transactionDate: new Date().toLocaleString('es-ES', {
-          timeZone: 'America/Bogota',
-          year: 'numeric',
-          month: '2-digit',
-          day: '2-digit',
-          hour: '2-digit',
-          minute: '2-digit',
-          second: '2-digit',
-        }),
-        customerName: '',
+        cardId: authorization.card?.id || '',
+        name: '', 
+        transactionDate: transactionDate,
+        transactionTime: transactionTime,
         transactionStatus: process.status,
-        transactionType: authorization.transaction?.type,
-        merchantName: authorization.merchant?.name,
-        cardLastFour: authorization.card?.last_four,
-        amountLocal: authorization.amount?.local?.total,
-        currencyLocal: authorization.amount?.local?.currency,
+        transactionType: authorization.transaction?.type || '',
+        merchant: authorization.merchant?.name || '',
+        lastFourDigits: authorization.card?.last_four || '',
+        amountReload: amountFormatted,
+        currency: currencyCode,
       },
     };
-
+  
+    if (process.status === 'REJECTED') {
+      (data.vars as any).rejectionReason = process.status_detail || process.message;
+  
+      this.builder.emitMessageEventClient(
+        EventsNamesMessageEnum.sendPurchaseRejected,
+        data,
+      );
+      
+      console.log(`Correo de notificación de rechazo enviado para transacción ${authorization.idempotency}`);
+    }
+  
     this.builder.emitMessageEventClient(
       EventsNamesMessageEnum.sendPurchases,
       data,
     );
-
+  
     return process;
   }
 }

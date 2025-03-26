@@ -1,0 +1,57 @@
+- const iconsInfo = typeof icons === 'string' ? JSON.parse(icons) : icons
+- const iconsMails = typeof iconsEmail === 'string' ? JSON.parse(iconsEmail) : iconsEmail
+
+doctype html
+html(lang="es")
+  include ./partials/head.pug
+  body
+    .container
+      include ./partials/header.pug
+      .content
+        div(style="display: flex; justify-content: center; align-items: center; flex-direction: column;")
+          img(src=iconsInfo.warning alt=iconsInfo.warning)
+          p.title(style="margin-block-end: 0.5em; margin-block-start: 0.5em;") Alerta de Seguridad
+        p 
+          small Estimado/a #{vars.name},
+        p 
+          small Te informamos que hubo un inicio de sesión sospechoso desde otro dispositivo:
+
+        .icon-info
+          img(src=iconsMails.date alt=iconsMails.date height="25vh")
+          div 
+            small.small-title Fecha y Hora
+            br
+            small 14 de Julio del 2024, 17:55h
+
+        .icon-info
+          img(src=iconsMails.device alt=iconsMails.device height="25vh")
+
+          div 
+            small.small-title Dispositivo
+            br
+            small iPhone (iPhone 14,7)
+
+        .icon-info
+          img(src=iconsMails.location alt=iconsMails.location height="25vh")
+          div 
+            small.small-title Ubicación
+            br
+            small Cerca de Munich, Baravia, Alemania
+        p
+          small Si fuiste tu, ignora este mail.
+
+        div(style="padding: 1em 0em;")
+          hr
+
+        p
+          small
+            strong ¿No reconoces esta actividad?
+
+        p
+          small Cambia tu contraseña inmediatamente para evitar accesos no autorizados y mejorar la seguridad de tu cuenta.
+
+        div(style="display: flex; justify-content: center; align-items: center; gap: 0.5em;")
+          a.button(href="#" target="_blank" rel="noopener noreferrer") Enlace para cambiar contraseña
+          a.button(href="#" target="_blank" rel="noopener noreferrer") Contactar con el servicio al cliente
+
+      include ./partials/footer.pug

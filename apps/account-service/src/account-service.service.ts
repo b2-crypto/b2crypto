@@ -529,6 +529,7 @@ export class AccountServiceService
   ): Promise<AccountDocument> {
     const account = await this.lib.create(createDto);
 
+    
     if (account && account.email) {
       const data = {
         destinyText: account.email,
@@ -539,9 +540,11 @@ export class AccountServiceService
           cardType: account.type,
           accountId: account.accountId,
           status: account.statusText,
+          owner: account.owner
         },
       };
 
+      
       this.logger.info(
         `[createOne] Account Request Confirmation Email Prepared ${JSON.stringify(
           data,

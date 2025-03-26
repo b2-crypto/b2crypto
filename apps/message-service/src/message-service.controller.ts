@@ -222,6 +222,19 @@ export class MessageServiceController implements GenericServiceController {
       this.logger.error(`[eventSendEmailReport] error: ${err.message || err}`);
     }
   }
+  @AllowAnon()
+  @EventPattern(EventsNamesMessageEnum.sendPurchaseRejected)
+  async eventSendPurchaseRejected(
+    @Payload() message: MessageCreateDto,
+    @Ctx() ctx: RmqContext,
+  ) {
+    CommonService.ack(ctx);
+    try {
+      await this.messageService.sendEmailBalanceReport(message);
+    } catch (err) {
+      this.logger.error(`[eventSendEmailReport] error: ${err.message || err}`);
+    }
+  }
 
   @AllowAnon()
   @EventPattern(EventsNamesMessageEnum.sendCardRequestConfirmationEmail)

@@ -1,0 +1,29 @@
+doctype html
+html(lang="es")
+  include ./partials/head.pug
+  body
+    .container
+      include ./partials/header.pug
+      .content
+        p.title Confirmación de registro
+        p
+          | Estimado/a #{vars.name},
+
+        p
+          | ¡Bienvenido/a a B2pay!
+        p
+          | Gracias por registrarte con nosotros. Para completar tu registro y activar tu cuenta, por favor verifica tu dirección de correo electrónico copiando y pegando el siguiente código en la casilla correspondiente.
+
+        div(style="text-align: center; margin: 25px 0;")
+          each digit in vars.otp.toString().split('')
+            span.otp-digit #{digit}
+
+        p
+          | Gracias por confiar en B2pay.
+
+        hr
+        
+        p
+          | Si tienes alguna pregunta o necesitas asistencia, no dudes en contactarnos a través de asistencia@b2pay.com.
+
+      include ./partials/footer.pug

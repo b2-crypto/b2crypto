@@ -21,6 +21,7 @@ import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import * as pug from 'pug';
 import { EmailMessageBuilder } from './email-message.builder';
 import TemplatesMessageEnum from './enum/templates.message.enum';
+import EventsNamesPersonEnum from 'apps/person-service/src/enum/events.names.person.enum';
 
 @Traceable()
 @Injectable()
@@ -46,6 +47,7 @@ export class MessageServiceService {
   async getOne(id: string) {
     return this.lib.findOne(id);
   }
+
 
   async getAll(query: QuerySearchAnyDto) {
     return this.lib.findAll(query);
@@ -100,9 +102,7 @@ export class MessageServiceService {
       .build();
     return this.sendEmail(emailMessage, TemplatesMessageEnum.otpNotification);
   }
-
   async sendEmailBalanceReport(message: MessageCreateDto) {
-    //return this.sendEmail(message, TemplatesMessageEnum.report);
     const emailMessage = new EmailMessageBuilder()
       .setName(message.name ?? 'Balance Report')
       .setBody(message.body ?? `Your balance is here.`)
@@ -115,20 +115,45 @@ export class MessageServiceService {
   }
 
   async sendCardRequestConfirmationEmail(message: MessageCreateDto) {
+    const ownerID = message.vars.owner;
+    if(ownerID){  const user = await this.builder.getPromiseUserEventClient(
+        EventsNamesUserEnum.findOneById,
+        { _id: ownerID },
+      );
+      const userPerson = await  this.builder.getPromisePersonEventClient(
+        EventsNamesPersonEnum.findOneById, {_id: user.personalData });
+    
     const emailMessage = new EmailMessageBuilder()
       .setName('Card Request Confirmation')
       .setBody('Your card request has been confirmed')
+      .setOriginText(this.getOriginEmail())
+      .setDestinyText(message.destinyText)
+      .setVars({
+        ...message.vars,
+        name: user.userCard.name && user.userCard.surname ? `${user.userCard.name} ${user.userCard.surname}` : user.name,
+        address: userPerson.location.address.street_name
+      })
+      .build();
+    return this.sendEmail(
+      emailMessage,
+      TemplatesMessageEnum.cardRequestConfirmation,
+    );}
+  }
+
+  async sendProfileRegistrationCreation(message: MessageCreateDto) {
+    const emailMessage = new EmailMessageBuilder()
+      .setName('Profile Registration Creation')
+      .setBody('Your profile has been created')
       .setOriginText(this.getOriginEmail())
       .setDestinyText(message.destinyText)
       .setVars(message.vars)
       .build();
     return this.sendEmail(
       emailMessage,
-      TemplatesMessageEnum.cardRequestConfirmation,
+      TemplatesMessageEnum.profileRegistrationCreation,
     );
   }
-
-  async sendProfileRegistrationCreation(message: MessageCreateDto) {
+  async sendPurchaseRejected(message: MessageCreateDto) {
     const emailMessage = new EmailMessageBuilder()
       .setName('Profile Registration Creation')
       .setBody('Your profile has been created')
@@ -157,7 +182,7 @@ export class MessageServiceService {
   }
 
   async sendVirtualPhysicalCards(message: MessageCreateDto) {
-    const emailMessage = new EmailMessageBuilder()
+  const emailMessage = new EmailMessageBuilder()
       .setName('Virtual/Physical Cards')
       .setBody('Your virtual/physical card details')
       .setOriginText(this.getOriginEmail())
