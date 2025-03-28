@@ -9,7 +9,7 @@ html(lang="es")
       include ./partials/header.pug
       .content
         div(style="display: flex; justify-content: center; align-items: center; flex-direction: column;")
-          img(src=iconsInfo.success alt=iconsInfo.success)
+          span(style="font-size: 3em; color: #28a745;") ✅
           p.title(style="margin-block-end: 0.5em; margin-block-start: 0.5em;") ¡Compra aprobada exitosamente! 📦
         p 
           small #{vars.name}, ¡Tu compra ha sido aprobada exitosamente! 
@@ -20,42 +20,40 @@ html(lang="es")
           small
             strong Detalles de la Compra:
 
-        .icon-info
-          img(src=iconsMails.date alt=iconsMails.date height="25vh")
-          div 
-            small.small-title Fecha y Hora
-            br
-            small 14 de Julio del 2024, 17:55h
-        .icon-info
-          img(src=iconsMails.location alt=iconsMails.location height="25vh")
-          div 
-            small.small-title Establecimiento
-            br
-            small Blank Street Coffee
-        .icon-info
-          img(src=iconsMails.currency alt=iconsMails.currency height="25vh")
-          div 
-            small.small-title Moneda
-            br
-            small #{vars.currency}
-        .icon-info
-          img(src=iconsMails.amount alt=iconsMails.amount height="25vh")
-          div 
-            small.small-title Monto
-            br
-            small #{vars.amountReload}
-        .icon-info
-          img(src=iconsMails.paymentMethod alt=iconsMails.paymentMethod height="25vh")
-          div 
-            small.small-title Método de Pago Utilizado
-            br
-            small xxxx xxxx 9898
-
-        p
-          small Para ver los detalles de tu compra, por favor haz click en el siguiente boton.
-
-        div(style="display: flex; justify-content: center; align-items: center; gap: 0.5em;")
-          a.button(href="#" target="_blank" rel="noopener noreferrer") Ver transacción
+        .transaction-info(style="display: flex; margin-bottom: 22px;")
+          div(style="display: flex; align-items: center; width: 30px;")
+            span(style="font-size: 1.3em;") 📅
+          div(style="display: flex; align-items: center;")
+            strong(style="margin-right: 8px; color: #000;") Fecha y Hora
+            span(style="color: #000;") 14 de Julio del 2024, 17:55h
+        
+        .transaction-info(style="display: flex; margin-bottom: 22px;")
+          div(style="display: flex; align-items: center; width: 30px;")
+            span(style="font-size: 1.3em;") 🏪
+          div(style="display: flex; align-items: center;")
+            strong(style="margin-right: 8px; color: #000;") Establecimiento
+            span(style="color: #000;") Blank Street Coffee
+        
+        .transaction-info(style="display: flex; margin-bottom: 22px;")
+          div(style="display: flex; align-items: center; width: 30px;")
+            span(style="font-size: 1.3em;") 💰
+          div(style="display: flex; align-items: center;")
+            strong(style="margin-right: 8px; color: #000;") Moneda
+            span(style="color: #000;") #{vars.currency}
+        
+        .transaction-info(style="display: flex; margin-bottom: 22px;")
+          div(style="display: flex; align-items: center; width: 30px;")
+            span(style="font-size: 1.3em;") 💸
+          div(style="display: flex; align-items: center;")
+            strong(style="margin-right: 8px; color: #000;") Monto
+            span(style="color: #000;") #{vars.amountReload}
+        
+        .transaction-info(style="display: flex; margin-bottom: 22px;")
+          div(style="display: flex; align-items: center; width: 30px;")
+            span(style="font-size: 1.3em;") 💳
+          div(style="display: flex; align-items: center;")
+            strong(style="margin-right: 8px; color: #000;") Método de Pago Utilizado
+            span(style="color: #000;") xxxx xxxx 9898
 
         p
           small Gracias por utilizar nuestros servicios para realizar tu compra.

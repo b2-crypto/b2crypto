@@ -230,7 +230,7 @@ export class MessageServiceController implements GenericServiceController {
   ) {
     CommonService.ack(ctx);
     try {
-      await this.messageService.sendEmailBalanceReport(message);
+      await this.messageService.sendPurchaseRejected(message);
     } catch (err) {
       this.logger.error(`[eventSendEmailReport] error: ${err.message || err}`);
     }

@@ -9,8 +9,7 @@ html(lang="es")
       include ./partials/header.pug
       .content
         div(style="display: flex; justify-content: center; align-items: center; flex-direction: column;")
-          img(src=iconsInfo.info alt=iconsInfo.info)
-          p.title(style="margin-block-end: 0.5em; margin-block-start: 0.5em;") Información de tu deposito
+          p.title(style="margin-block-end: 0.5em; margin-block-start: 0.5em;") Información de tu depósito
         p 
           small Estimado/a #{vars.name},
         p 
@@ -18,38 +17,34 @@ html(lang="es")
 
         p 
           small
-            strong Detalles del deposito:
+            strong Detalles del depósito:
 
-        .icon-info
-          img(src=iconsMails.currency alt=iconsMails.currency height="25vh")
-          div 
-            small.small-title Moneda
-            br
-            small #{vars.currency}
-        .icon-info
-          img(src=iconsMails.reloadAmount alt=iconsMails.reloadAmount height="25vh")
-
-          div 
-            small.small-title Saldo Depositado
-            br
-            small #{vars.amountReload}
-        .icon-info
-          img(src=iconsMails.date alt=iconsMails.date height="25vh")
-          div 
-            small.small-title Fecha y Hora
-            br
-            small 14 de Julio del 2024, 17:55h
-        .icon-info
-          img(src=iconsMails.hash alt=iconsMails.hash height="25vh")
-          div 
-            small.small-title Hash de la Transacción
-            br
-            small 02BF54U79
-
-        p
-          small Puedes verificar tu saldo y el historial completo de tus transacciones accediendo a tu wallet a través del siguiente boton.
-
-        div(style="display: flex; justify-content: center; align-items: center; gap: 0.5em;")
-          a.button(href="#" target="_blank" rel="noopener noreferrer") Verificar saldo
+        .transaction-info(style="display: flex; margin-bottom: 22px;")
+          div(style="display: flex; align-items: center; width: 30px;")
+            span(style="font-size: 1.3em;") 💰
+          div(style="display: flex; align-items: center;")
+            strong(style="margin-right: 8px; color: #000;") Moneda
+            span(style="color: #000;") #{vars.currency}
+        
+        .transaction-info(style="display: flex; margin-bottom: 22px;")
+          div(style="display: flex; align-items: center; width: 30px;")
+            span(style="font-size: 1.3em;") 💸
+          div(style="display: flex; align-items: center;")
+            strong(style="margin-right: 8px; color: #000;") Saldo Depositado
+            span(style="color: #000;") #{vars.amountReload}
+        
+        .transaction-info(style="display: flex; margin-bottom: 22px;")
+          div(style="display: flex; align-items: center; width: 30px;")
+            span(style="font-size: 1.3em;") 📅
+          div(style="display: flex; align-items: center;")
+            strong(style="margin-right: 8px; color: #000;") Fecha y Hora
+            span(style="color: #000;") #{vars.transactionDate || ''}#{vars.transactionDate && vars.transactionTime ? ', ' : ''}#{vars.transactionTime || ''}
+        
+        .transaction-info(style="display: flex; margin-bottom: 22px;")
+          div(style="display: flex; align-items: center; width: 30px;")
+            span(style="font-size: 1.3em;") 🔢
+          div(style="display: flex; align-items: center;")
+            strong(style="margin-right: 8px; color: #000;") Hash de la Transacción
+            span(style="color: #000;") #{vars.hash || vars.transactionHash || ''}
 
       include ./partials/footer.pug

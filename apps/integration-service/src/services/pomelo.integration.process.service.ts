@@ -35,7 +35,7 @@ export class PomeloIntegrationProcessService {
     private readonly currencyConversion: FiatIntegrationClient,
     private readonly builder: BuildersService,
     private readonly configService: ConfigService,
-  ) {}
+  ) { }
 
   private async process(
     process: any,
@@ -99,9 +99,9 @@ export class PomeloIntegrationProcessService {
         commisions:
           process.transaction.origin === CommisionTypeEnum.INTERNATIONAL
             ? [
-                commisionNationalTransactionId,
-                commisionInternationalTransactionId,
-              ]
+              commisionNationalTransactionId,
+              commisionInternationalTransactionId,
+            ]
             : [commisionNationalTransactionId],
       };
 
@@ -120,30 +120,30 @@ export class PomeloIntegrationProcessService {
 
       const [parentTransaction] =
         isTransactionReversalPurchase ||
-        isTransactionRefund ||
-        isTransactionReversalRefund
+          isTransactionRefund ||
+          isTransactionReversalRefund
           ? (
-              await this.builder.getPromiseTransferEventClient<{
-                list: Transfer[];
-              }>(EventsNamesTransferEnum.findAll, {
-                where: {
-                  'requestBodyJson.transaction.id':
-                    process?.transaction?.original_transaction_id,
-                  operationType: operationTypeParent,
-                  leadCrmName: { $ne: 'Sales' },
-                },
-              })
-            ).list
+            await this.builder.getPromiseTransferEventClient<{
+              list: Transfer[];
+            }>(EventsNamesTransferEnum.findAll, {
+              where: {
+                'requestBodyJson.transaction.id':
+                  process?.transaction?.original_transaction_id,
+                operationType: operationTypeParent,
+                leadCrmName: { $ne: 'Sales' },
+              },
+            })
+          ).list
           : [];
 
       const parentCommisions = parentTransaction
         ? (
-            await this.builder.getPromiseTransferEventClient<{
-              list: Transfer[];
-            }>(EventsNamesTransferEnum.findAll, {
-              where: { _id: { $in: parentTransaction?.commisions ?? [] } },
-            })
-          ).list
+          await this.builder.getPromiseTransferEventClient<{
+            list: Transfer[];
+          }>(EventsNamesTransferEnum.findAll, {
+            where: { _id: { $in: parentTransaction?.commisions ?? [] } },
+          })
+        ).list
         : [];
 
       const parentCommisionNational = parentCommisions.find(
@@ -158,32 +158,32 @@ export class PomeloIntegrationProcessService {
         _id: commisionNationalTransactionId,
         amount:
           isTransactionReversalPurchase ||
-          isTransactionRefund ||
-          isTransactionReversalRefund
+            isTransactionRefund ||
+            isTransactionReversalRefund
             ? parentCommisionNational?.amount
             : amount.amount * commisionNational,
         amountCustodial:
           isTransactionReversalPurchase ||
-          isTransactionRefund ||
-          isTransactionReversalRefund
+            isTransactionRefund ||
+            isTransactionReversalRefund
             ? parentCommisionNational?.amountCustodial
             : amount.usd * commisionNational,
         currency:
           isTransactionReversalPurchase ||
-          isTransactionRefund ||
-          isTransactionReversalRefund
+            isTransactionRefund ||
+            isTransactionReversalRefund
             ? parentCommisionNational?.currency
             : amount.from === 'USD'
-            ? 'USDT'
-            : amount.from,
+              ? 'USDT'
+              : amount.from,
         currencyCustodial:
           isTransactionReversalPurchase ||
-          isTransactionRefund ||
-          isTransactionReversalRefund
+            isTransactionRefund ||
+            isTransactionReversalRefund
             ? parentCommisionNational?.currencyCustodial
             : amount.to === 'USD'
-            ? 'USDT'
-            : amount.to,
+              ? 'USDT'
+              : amount.to,
         commisionType: CommisionTypeEnum.NATIONAL,
       };
 
@@ -191,72 +191,72 @@ export class PomeloIntegrationProcessService {
         _id: commisionInternationalTransactionId,
         amount:
           isTransactionReversalPurchase ||
-          isTransactionRefund ||
-          isTransactionReversalRefund
+            isTransactionRefund ||
+            isTransactionReversalRefund
             ? parentCommisionInternational?.amount
             : amount.amount * commisionInternational,
         amountCustodial:
           isTransactionReversalPurchase ||
-          isTransactionRefund ||
-          isTransactionReversalRefund
+            isTransactionRefund ||
+            isTransactionReversalRefund
             ? parentCommisionInternational?.amountCustodial
             : amount.usd * commisionInternational,
         currency:
           isTransactionReversalPurchase ||
-          isTransactionRefund ||
-          isTransactionReversalRefund
+            isTransactionRefund ||
+            isTransactionReversalRefund
             ? parentCommisionInternational?.currency
             : amount.from === 'USD'
-            ? 'USDT'
-            : amount.from,
+              ? 'USDT'
+              : amount.from,
         currencyCustodial:
           isTransactionReversalPurchase ||
-          isTransactionRefund ||
-          isTransactionReversalRefund
+            isTransactionRefund ||
+            isTransactionReversalRefund
             ? parentCommisionInternational?.currencyCustodial
             : amount.to === 'USD'
-            ? 'USDT'
-            : amount.to,
+              ? 'USDT'
+              : amount.to,
         commisionType: CommisionTypeEnum.INTERNATIONAL,
       };
 
       const transaction = parentTransaction
         ? {
-            ...pretransaction,
-            parentTransaction: parentTransaction._id,
-            parentTransactionDetail: {
-              _id: parentTransaction._id,
-              amount: parentTransaction.amount,
-              currency: parentTransaction.currency,
-              amountCustodial: parentTransaction.amountCustodial,
-              currencyCustodial: parentTransaction.currencyCustodial,
-              operationType: parentTransaction.operationType,
-            },
-            amount: parentTransaction?.amount ?? pretransaction.amount,
-            currency: parentTransaction?.currency ?? pretransaction.currency,
-            amountCustodial:
-              parentTransaction?.amountCustodial ??
-              pretransaction.amountCustodial,
-            currencyCustodial:
-              parentTransaction?.currencyCustodial ??
-              pretransaction.currencyCustodial,
-            amountComissions:
-              process.transaction.origin === CommisionTypeEnum.INTERNATIONAL
-                ? commisionNationalDetail.amountCustodial +
-                  commisionInternationalDetail.amountCustodial
-                : commisionNationalDetail.amountCustodial,
-            commisionsDetails:
-              process.transaction.origin === CommisionTypeEnum.INTERNATIONAL
-                ? [commisionNationalDetail, commisionInternationalDetail]
-                : [commisionNationalDetail],
-          }
+          ...pretransaction,
+          parentTransaction: parentTransaction._id,
+          parentTransactionDetail: {
+            _id: parentTransaction._id,
+            amount: parentTransaction.amount,
+            currency: parentTransaction.currency,
+            amountCustodial: parentTransaction.amountCustodial,
+            currencyCustodial: parentTransaction.currencyCustodial,
+            operationType: parentTransaction.operationType,
+          },
+          amount: parentTransaction?.amount ?? pretransaction.amount,
+          currency: parentTransaction?.currency ?? pretransaction.currency,
+          amountCustodial:
+            parentTransaction?.amountCustodial ??
+            pretransaction.amountCustodial,
+          currencyCustodial:
+            parentTransaction?.currencyCustodial ??
+            pretransaction.currencyCustodial,
+          amountComissions:
+            process.transaction.origin === CommisionTypeEnum.INTERNATIONAL
+              ? commisionNationalDetail.amountCustodial +
+              commisionInternationalDetail.amountCustodial
+              : commisionNationalDetail.amountCustodial,
+          commisionsDetails:
+            process.transaction.origin === CommisionTypeEnum.INTERNATIONAL
+              ? [commisionNationalDetail, commisionInternationalDetail]
+              : [commisionNationalDetail],
+        }
         : {
-            ...pretransaction,
-            commisionsDetails:
-              process.transaction.origin === CommisionTypeEnum.INTERNATIONAL
-                ? [commisionNationalDetail, commisionInternationalDetail]
-                : [commisionNationalDetail],
-          };
+          ...pretransaction,
+          commisionsDetails:
+            process.transaction.origin === CommisionTypeEnum.INTERNATIONAL
+              ? [commisionNationalDetail, commisionInternationalDetail]
+              : [commisionNationalDetail],
+        };
 
       this.builder.emitTransferEventClient(
         EventsNamesTransferEnum.createOneWebhook,
@@ -267,8 +267,7 @@ export class PomeloIntegrationProcessService {
 
       if (authorize && amountUSD * commisionNational > 0) {
         this.logger.info(
-          `[createTransferRecord] Commision to B2Fintech National: ${
-            amountUSD * commisionNational
+          `[createTransferRecord] Commision to B2Fintech National: ${amountUSD * commisionNational
           }`,
         );
 
@@ -302,8 +301,7 @@ export class PomeloIntegrationProcessService {
         process.transaction.origin === CommisionTypeEnum.INTERNATIONAL
       ) {
         this.logger.info(
-          `[createTransferRecord] Commision to B2Fintech International: ${
-            amountUSD * commisionInternational
+          `[createTransferRecord] Commision to B2Fintech International: ${amountUSD * commisionInternational
           }`,
         );
 
@@ -332,8 +330,7 @@ export class PomeloIntegrationProcessService {
       }
     } catch (error) {
       this.logger.info(
-        `[createTransferRecord] Error creating transfer: ${
-          error.message || error
+        `[createTransferRecord] Error creating transfer: ${error.message || error
         }`,
       );
     }
@@ -528,8 +525,7 @@ export class PomeloIntegrationProcessService {
 
       this.sendAdjustmentNotificationEmail(adjustment).catch((error) => {
         this.logger.error(
-          `[ProcessNotification] Error sending adjustment notification email ${
-            error.message || error
+          `[ProcessNotification] Error sending adjustment notification email ${error.message || error
           }`,
         );
       });
@@ -537,8 +533,7 @@ export class PomeloIntegrationProcessService {
       return processed;
     } catch (error) {
       this.logger.error(
-        `[ProcessNotification] Error processing adjustment ${
-          error.message || error
+        `[ProcessNotification] Error processing adjustment ${error.message || error
         }`,
       );
     }
@@ -585,19 +580,19 @@ export class PomeloIntegrationProcessService {
       true,
       headers,
     );
-  
+
     let transactionDate = '';
     let transactionTime = '';
-  
+
     if (authorization.transaction?.local_date_time) {
       const txnDate = new Date(authorization.transaction.local_date_time);
-      
+
       transactionDate = txnDate.toLocaleDateString('es-ES', {
         day: '2-digit',
         month: 'long',
         year: 'numeric',
       });
-      
+
       transactionTime = txnDate.toLocaleTimeString('es-ES', {
         hour: '2-digit',
         minute: '2-digit',
@@ -616,10 +611,10 @@ export class PomeloIntegrationProcessService {
         hour12: false,
       }) + 'h';
     }
-  
+
     let amountFormatted = '';
     let currencyCode = '';
-    
+
     if (authorization.amount?.local?.total && authorization.amount?.local?.currency) {
       currencyCode = authorization.amount.local.currency;
       const totalAmount = parseFloat(authorization.amount.local.total);
@@ -628,12 +623,11 @@ export class PomeloIntegrationProcessService {
         currency: currencyCode
       }).format(totalAmount);
     }
-  
     const data = {
       transport: TransportEnum.EMAIL,
       vars: {
         cardId: authorization.card?.id || '',
-        name: '', 
+        name: '',
         transactionDate: transactionDate,
         transactionTime: transactionTime,
         transactionStatus: process.status,
@@ -644,23 +638,24 @@ export class PomeloIntegrationProcessService {
         currency: currencyCode,
       },
     };
-  
+
     if (process.status === 'REJECTED') {
       (data.vars as any).rejectionReason = process.status_detail || process.message;
-  
+
       this.builder.emitMessageEventClient(
         EventsNamesMessageEnum.sendPurchaseRejected,
         data,
       );
-      
+
       console.log(`Correo de notificación de rechazo enviado para transacción ${authorization.idempotency}`);
     }
-  
+
     this.builder.emitMessageEventClient(
       EventsNamesMessageEnum.sendPurchases,
       data,
     );
-  
+
     return process;
   }
 }
+

@@ -6,47 +6,51 @@ html(lang="es")
       include ./partials/header.pug
       .content
         div(style="display: flex; justify-content: center; align-items: center; flex-direction: column;")
-          img(src=iconsInfo.error alt=iconsInfo.error)
+          span(style="font-size: 3em;") ❌
           p.title(style="margin-block-end: 0.5em; margin-block-start: 0.5em;") Su transacción no ha podido completarse
         p 
-          small #{vars.name}, su operación no ha podido ser procesada
+          small #{vars.name || 'Estimado cliente'}, su operación no ha podido ser procesada
         p 
-          small Queremos informarle que su intento de pago realizado el #{vars.transactionDate} a las #{vars.transactionTime} en #{vars.merchant} no pudo ser completado. A continuación encontrará los detalles de esta operación:
+          small Queremos informarle que su intento de pago realizado el #{vars.transactionDate || 'N/A'} a las #{vars.transactionTime || 'N/A'} en #{vars.merchant || 'N/A'} no pudo ser completado. A continuación encontrará los detalles de esta operación:
 
         p 
           small
             strong Información de la Transacción:
 
-        .icon-info
-          img(src=iconsMails.date alt=iconsMails.date height="25vh")
-          div 
-            small.small-title Fecha y Hora
-            br
-            small #{vars.transactionDate}, #{vars.transactionTime}
-        .icon-info
-          img(src=iconsMails.location alt=iconsMails.location height="25vh")
-          div 
-            small.small-title Comercio
-            br
-            small #{vars.merchant}
-        .icon-info
-          img(src=iconsMails.currency alt=iconsMails.currency height="25vh")
-          div 
-            small.small-title Moneda
-            br
-            small #{vars.currency}
-        .icon-info
-          img(src=iconsMails.amount alt=iconsMails.amount height="25vh")
-          div 
-            small.small-title Importe
-            br
-            small #{vars.amountReload}
-        .icon-info
-          img(src=iconsMails.paymentMethod alt=iconsMails.paymentMethod height="25vh")
-          div 
-            small.small-title Método de Pago
-            br
-            small xxxx xxxx #{vars.lastFourDigits}
+        .transaction-info(style="display: flex; margin-bottom: 22px;")
+          div(style="display: flex; align-items: center; width: 30px;")
+            span(style="font-size: 1.3em;") 📅
+          div(style="display: flex; align-items: center;")
+            strong(style="margin-right: 8px; color: #000;") Fecha y Hora
+            span(style="color: #000;") #{vars.transactionDate || 'N/A'}, #{vars.transactionTime || 'N/A'}
+        
+        .transaction-info(style="display: flex; margin-bottom: 22px;")
+          div(style="display: flex; align-items: center; width: 30px;")
+            span(style="font-size: 1.3em;") 🏪
+          div(style="display: flex; align-items: center;")
+            strong(style="margin-right: 8px; color: #000;") Comercio
+            span(style="color: #000;") #{vars.merchant || 'N/A'}
+        
+        .transaction-info(style="display: flex; margin-bottom: 22px;")
+          div(style="display: flex; align-items: center; width: 30px;")
+            span(style="font-size: 1.3em;") 💰
+          div(style="display: flex; align-items: center;")
+            strong(style="margin-right: 8px; color: #000;") Moneda
+            span(style="color: #000;") #{vars.currency || 'N/A'}
+        
+        .transaction-info(style="display: flex; margin-bottom: 22px;")
+          div(style="display: flex; align-items: center; width: 30px;")
+            span(style="font-size: 1.3em;") 💸
+          div(style="display: flex; align-items: center;")
+            strong(style="margin-right: 8px; color: #000;") Importe
+            span(style="color: #000;") #{vars.amountReload || 'N/A'}
+        
+        .transaction-info(style="display: flex; margin-bottom: 22px;")
+          div(style="display: flex; align-items: center; width: 30px;")
+            span(style="font-size: 1.3em;") 💳
+          div(style="display: flex; align-items: center;")
+            strong(style="margin-right: 8px; color: #000;") Método de Pago
+            span(style="color: #000;") xxxx xxxx #{vars.lastFourDigits || 'N/A'}
 
         div(style="padding: 1em 0em;")
           hr

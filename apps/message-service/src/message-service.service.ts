@@ -116,28 +116,30 @@ export class MessageServiceService {
 
   async sendCardRequestConfirmationEmail(message: MessageCreateDto) {
     const ownerID = message.vars.owner;
-    if(ownerID){  const user = await this.builder.getPromiseUserEventClient(
+    if (ownerID) {
+      const user = await this.builder.getPromiseUserEventClient(
         EventsNamesUserEnum.findOneById,
         { _id: ownerID },
       );
-      const userPerson = await  this.builder.getPromisePersonEventClient(
-        EventsNamesPersonEnum.findOneById, {_id: user.personalData });
-    
-    const emailMessage = new EmailMessageBuilder()
-      .setName('Card Request Confirmation')
-      .setBody('Your card request has been confirmed')
-      .setOriginText(this.getOriginEmail())
-      .setDestinyText(message.destinyText)
-      .setVars({
-        ...message.vars,
-        name: user.userCard.name && user.userCard.surname ? `${user.userCard.name} ${user.userCard.surname}` : user.name,
-        address: userPerson.location.address.street_name
-      })
-      .build();
-    return this.sendEmail(
-      emailMessage,
-      TemplatesMessageEnum.cardRequestConfirmation,
-    );}
+      const userPerson = await this.builder.getPromisePersonEventClient(
+        EventsNamesPersonEnum.findOneById, { _id: user.personalData });
+
+      const emailMessage = new EmailMessageBuilder()
+        .setName('Card Request Confirmation')
+        .setBody('Your card request has been confirmed')
+        .setOriginText(this.getOriginEmail())
+        .setDestinyText(message.destinyText)
+        .setVars({
+          ...message.vars,
+          name: user.userCard.name && user.userCard.surname ? `${user.userCard.name} ${user.userCard.surname}` : user.name,
+          address: userPerson.location.address.street_name
+        })
+        .build();
+      return this.sendEmail(
+        emailMessage,
+        TemplatesMessageEnum.cardRequestConfirmation,
+      );
+    }
   }
 
   async sendProfileRegistrationCreation(message: MessageCreateDto) {
@@ -154,17 +156,33 @@ export class MessageServiceService {
     );
   }
   async sendPurchaseRejected(message: MessageCreateDto) {
-    const emailMessage = new EmailMessageBuilder()
-      .setName('Profile Registration Creation')
-      .setBody('Your profile has been created')
-      .setOriginText(this.getOriginEmail())
-      .setDestinyText(message.destinyText)
-      .setVars(message.vars)
-      .build();
-    return this.sendEmail(
-      emailMessage,
-      TemplatesMessageEnum.profileRegistrationCreation,
+
+    const account = await this.builder.getPromiseAccountEventClient(
+      EventsNamesAccountEnum.findOneByCardId,
+      { id: message.vars.cardId },
     );
+
+    const ownerID = account.owner;
+    if (ownerID) {
+      const user = await this.builder.getPromiseUserEventClient(
+        EventsNamesUserEnum.findOneById,
+        { _id: ownerID },
+      );
+
+      if (user && user.email) {
+        const emailMessage = new EmailMessageBuilder()
+          .setName('Purchase Rejected')
+          .setBody('Your purchase has been rejected')
+          .setOriginText(this.getOriginEmail())
+          .setDestinyText(user.email)
+          .setVars(message.vars)
+          .build();
+        return this.sendEmail(
+          emailMessage,
+          TemplatesMessageEnum.purchaseRejected,
+        );
+      }
+    }
   }
 
   async sendPasswordRestoredEmail(message: MessageCreateDto) {
@@ -182,7 +200,7 @@ export class MessageServiceService {
   }
 
   async sendVirtualPhysicalCards(message: MessageCreateDto) {
-  const emailMessage = new EmailMessageBuilder()
+    const emailMessage = new EmailMessageBuilder()
       .setName('Virtual/Physical Cards')
       .setBody('Your virtual/physical card details')
       .setOriginText(this.getOriginEmail())
@@ -257,7 +275,7 @@ export class MessageServiceService {
             customerName: user.name,
           })
           .build();
-        return this.sendEmail(emailMessage, TemplatesMessageEnum.purchases);
+        return this.sendEmail(emailMessage, TemplatesMessageEnum.purchaseSuccessfullyApproved);
       }
     }
   }
@@ -295,16 +313,10 @@ export class MessageServiceService {
     template: TemplatesMessageEnum,
   ) {
     try {
-      // if (
-      //   this.configService.get<string>('ENVIRONMENT') !== EnvironmentEnum.stage
-      // ) {
-      //   Logger.debug(message.destinyText, 'Sended email');
-      //   return { success: true };
-      // }
-
       const recipient = message.destinyText;
 
       if (!isEmail(recipient)) {
+        this.logger.error(`[sendEmail] Invalid recipient email address: ${recipient}`);
         throw new Error('Invalid recipient email address');
       }
 
@@ -312,9 +324,15 @@ export class MessageServiceService {
         'AWS_SES_FROM_DEFAULT',
         'no-reply@b2crypto.com',
       );
-      const html = this.compileHtml(message.vars ?? message, template);
 
-      await this.mailerService.sendMail({
+      this.logger.info(`[sendEmail] Attempting to send email to ${recipient} using template ${template}`);
+
+      const html = this.compileHtml(message.vars ?? message, template);
+      if (!html) {
+        throw new Error('Failed to compile email template');
+      }
+
+      const mailOptions = {
         to: recipient,
         from,
         subject: message.name,
@@ -323,11 +341,18 @@ export class MessageServiceService {
         context: message.vars,
         attachments: message.attachments,
         html,
-      });
+      };
+
+      await this.mailerService.sendMail(mailOptions);
+      this.logger.info(`[sendEmail] Successfully sent email to ${recipient}`);
 
       return { success: true };
     } catch (error) {
-      this.logger.error(`[sendEmail] error: ${error.message || error}`);
+      this.logger.error(`[sendEmail] Failed to send email: ${error.message}`, {
+        error,
+        recipient: message.destinyText,
+        template,
+      });
       return { success: false, error: error.message };
     }
   }
@@ -341,8 +366,13 @@ export class MessageServiceService {
       socialMediaLinks: this.configService.getOrThrow('SOCIAL_MEDIA_LINKS'),
       vars: vars,
     };
-    const rta = pug.renderFile(template, templateVars);
-    return rta;
+    try {
+      const rta = pug.renderFile(template, templateVars);
+      return rta;
+    } catch (error) {
+      this.logger.error(`[compileHtml] Failed to render template: ${error.message}`);
+      throw new Error(`Failed to render email template: ${error.message}`);
+    }
   }
 
   private getHeaderColorForTemplate(template: TemplatesMessageEnum): string {
@@ -394,3 +424,4 @@ export class MessageServiceService {
     return crm?.clientZone;
   }
 }
+

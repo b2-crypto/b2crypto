@@ -5,25 +5,62 @@ html(lang="es")
     .container
       include ./partials/header.pug
       .content
-        p.title Confirmación de registro
-        p
-          | Estimado/a #{vars.name},
-
-        p
-          | ¡Bienvenido/a a B2pay!
-        p
-          | Gracias por registrarte con nosotros. Para completar tu registro y activar tu cuenta, por favor verifica tu dirección de correo electrónico copiando y pegando el siguiente código en la casilla correspondiente.
-
-        div(style="text-align: center; margin: 25px 0;")
-          each digit in vars.otp.toString().split('')
-            span.otp-digit #{digit}
-
-        p
-          | Gracias por confiar en B2pay.
-
-        hr
+        div(style="display: flex; justify-content: center; align-items: center; flex-direction: column;")
         
+          p.title(style="margin-block-end: 0.5em; margin-block-start: 0.5em;") Su transacción no ha podido completarse
+        p 
+          small #{vars.name || 'Estimado cliente'}, su operación no ha podido ser procesada
+        p 
+          small Queremos informarle que su intento de pago realizado el #{vars.transactionDate || 'N/A'} a las #{vars.transactionTime || 'N/A'} en #{vars.merchant || 'N/A'} no pudo ser completado. A continuación encontrará los detalles de esta operación:
+
+        p 
+          small
+            strong Información de la Transacción:
+
+        .transaction-info(style="margin-bottom: 10px;")
+          span(style="font-size: 1.5em; margin-right: 10px;") 📅
+          small.small-title Fecha y Hora: 
+          small #{vars.transactionDate || 'N/A'}, #{vars.transactionTime || 'N/A'}
+        
+        .transaction-info(style="margin-bottom: 10px;")
+          span(style="font-size: 1.5em; margin-right: 10px;") 🏪
+          small.small-title Comercio: 
+          small #{vars.merchant || 'N/A'}
+        
+        .transaction-info(style="margin-bottom: 10px;")
+          span(style="font-size: 1.5em; margin-right: 10px;") 💰
+          small.small-title Moneda: 
+          small #{vars.currency || 'N/A'}
+        
+        .transaction-info(style="margin-bottom: 10px;")
+          span(style="font-size: 1.5em; margin-right: 10px;") 💸
+          small.small-title Importe: 
+          small #{vars.amountReload || 'N/A'}
+        
+        .transaction-info(style="margin-bottom: 10px;")
+          span(style="font-size: 1.5em; margin-right: 10px;") 💳
+          small.small-title Método de Pago: 
+          small xxxx xxxx #{vars.lastFourDigits || 'N/A'}
+
+        div(style="padding: 1em 0em;")
+          hr
+
         p
-          | Si tienes alguna pregunta o necesitas asistencia, no dudes en contactarnos a través de asistencia@b2pay.com.
+          small Recomendaciones para evitar futuros inconvenientes:
+
+        ul 
+          li
+            small Verifique el saldo disponible antes de realizar operaciones.
+          li
+            small Asegúrese de que su información de pago esté actualizada.
+          li
+            small Confirme que los datos de la transacción sean correctos.
+          li
+            small Recuerde que para garantizar la estabilidad de operaciones, establecemos un límite de gasto del 90% sobre sus fondos disponibles.
+
+        p
+          small Si necesita asistencia adicional, nuestro equipo de soporte está disponible para ayudarle.
+        p
+          small Lamentamos los inconvenientes ocasionados y trabajamos para mejorar su experiencia en futuras transacciones.
 
       include ./partials/footer.pug
