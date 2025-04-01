@@ -1,5 +1,6 @@
 onlyBuiltDependencies:
   - '@nestjs/core'
-  - nestjs-pino
+  - 'nestjs-pino'
   - '@pulumi/pulumi'
   - 'jest'
+  - 'qrcode'
