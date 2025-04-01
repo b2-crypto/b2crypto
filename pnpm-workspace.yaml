@@ -1,6 +1,6 @@
 onlyBuiltDependencies:
   - '@nestjs/core'
   - 'nestjs-pino'
-  - '@pulumi/pulumi'
-  - 'jest'
-  - 'qrcode'
+  - cpu-features
+  - protobufjs
+  - ssh2
