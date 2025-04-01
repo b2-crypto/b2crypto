@@ -1,0 +1,7 @@
+onlyBuiltDependencies:
+  - '@nestjs/core'
+  - nestjs-pino
+  - cpu-features
+  - protobufjs
+  - ssh2
+  - bcrypt
