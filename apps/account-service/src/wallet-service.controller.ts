@@ -31,6 +31,7 @@ import {
   Delete,
   Get,
   Inject,
+  NotFoundException,
   NotImplementedException,
   Param,
   Patch,
@@ -146,7 +147,7 @@ export class WalletServiceController extends AccountServiceController {
       cacheNameWalletCreate,
     );
     if (!creating && rta.totalElements == 0) {
-      await this.cacheManager.set(cacheNameWalletCreate, true, 6 * 1000);
+      await this.cacheManager.set(cacheNameWalletCreate, true, 15 * 1000);
       await this.createOne(
         {
           owner: query.where.owner,
@@ -278,21 +279,19 @@ export class WalletServiceController extends AccountServiceController {
       return this.walletService.updateOne(walletForUpdate);
     }
 
-    const accountMap = new Map<string, string>([
-      ['TRX_USDT_S2UZ', 'USD Theter (Tron)'],
-      ['USDT_ARB', 'Tether USD (Arbitrum)'],
-    ]);
+    const res = await this.walletService.availableWalletsFireblocks({
+      where: { accountId: upsertOneMe.accountId },
+    });
 
-    const walletName = accountMap.get(upsertOneMe.accountId);
+    const baseWallet = res.data[0]?.network[0]?.wallets[0];
 
-    if (!walletName) {
-      throw new BadRequestException('Account id not valid');
-    }
+    if (!baseWallet)
+      throw new NotFoundException(`Wallet ${upsertOneMe.accountId} not found`);
 
     const walletForCreate = {
       ...upsertOneMe,
       owner: userId,
-      name: walletName,
+      name: baseWallet.name,
       accountType: WalletTypesAccountEnum.VAULT,
       type: TypesAccountEnum.WALLET,
       pin: CommonService.getNumberDigits(
@@ -691,7 +690,7 @@ export class WalletServiceController extends AccountServiceController {
           },
         },
       })
-    ).list[0];
+    ).data[0]?.network[0]?.wallets[0];
 
     if (!walletBase) {
       throw new BadRequestException(

@@ -4,7 +4,7 @@ import { Injectable } from '@nestjs/common';
 @Traceable()
 @Injectable()
 export class PomeloProcessConstants {
-  public readonly TTL: number = 60;
+  public readonly TTL: number = 60 * 60 * 1000;
 
   public readonly RESPONSE_TOO_EARLY = {
     statusCode: 425,

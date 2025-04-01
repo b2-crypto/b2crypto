@@ -17,7 +17,7 @@ export class JobService {
     sendBalanceCardReports: '30 10 * * *',
     sweepOmnibus: CronExpression.EVERY_12_HOURS,
     checkBalanceUser: CronExpression.EVERY_DAY_AT_11AM,
-    checkCardsInPomelo: '0 */6 * * * *',
+    checkCardsInPomelo: '0 */8 * * * *',
     checkB2BinPayTransfers: CronExpression.EVERY_5_MINUTES,
     sendLast6hHistoryTransfer: CronExpression.EVERY_6_HOURS,
   };
@@ -93,6 +93,7 @@ export class JobService {
     this.logger.info(
       `[checkCardsInPomelo] Checking Cards in pomelo: ${this.env} - ${JobService.name}`,
     );
+
     if (this.env === EnvironmentEnum.prod) {
       this.builder.emitAccountEventClient(
         EventsNamesAccountEnum.checkCardsCreatedInPomelo,
