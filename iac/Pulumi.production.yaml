@@ -161,3 +161,4 @@ config:
     secure: AAABAPUWYchH7HVNHjQcibWBsgeI5gYR+BM6+7eKqC6c4WV8
   b2crypto-iac:COMMISION_NATIONAL:
     secure: AAABAIHkZ0h5IkKNNRLeu/gygN0Rl0TUcEIaHDHGDZ60aaj2
+  b2crypto-iac:TRM_ENDPOINT: https://api-trms.b2fintech.com
