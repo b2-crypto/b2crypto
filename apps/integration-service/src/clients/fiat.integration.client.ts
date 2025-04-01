@@ -104,15 +104,13 @@ export class FiatIntegrationClient {
     from: string,
     amount: number,
   ): Promise<number> {
-    const apiURL = process.env.CURRENCY_CONVERSION_API_URL;
-    const apiKey = process.env.CURRENCY_CONVERSION_API_KEY;
     const toParsed = to === 'USDT' ? 'USD' : to;
     const fromParsed = from === 'USDT' ? 'USD' : from;
     const pairName = fromParsed + toParsed;
 
     this.logger.info(`[getCurrencyConversion] Consultando par: ${pairName}`);
 
-    if (!rate) throw new Error('Rate not found for ' + fromParsed + toParsed);
+    if (fromParsed === 'USD') return amount;
 
     const pair = await this.getCurrentPair(fromParsed + toParsed);
 
