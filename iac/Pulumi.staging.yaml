@@ -144,6 +144,6 @@ config:
   b2crypto-iac:OTLP_HOST:
     secure: AAABAMu9Vm/eMV/Jje82olEc/1KUuhx4SIiJNfOoA1icfraSdFdRaH9UBxR4CL+Xbkb4hqPsQ+kVzoSwzqc=
   b2crypto-iac:OTLP_API_KEY:
-    secure: AAABAFZanau1bM/ujfPvOxrjgVEIBPnkx18OQQhL/MTp7h6Hkzlm4iOvl96kBlfHLn7aSLb6hKSlKOTvLY++2poOj0A=
+    secure: AAABADsnZpTvBzomuHvApgwfTiA53rBQ1UiaQx1gfVDXyEy+CdDTgNpzP0D9OnxAYrsPRZH+ojMojrqU2eQ8/mFlhms=
   b2crypto-iac:APP_VERSION: 0.9.0
   b2crypto-iac:TRM_ENDPOINT: https://api-trms-staging.b2fintech.com
