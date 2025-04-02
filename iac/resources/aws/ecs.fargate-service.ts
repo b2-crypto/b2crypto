@@ -33,7 +33,6 @@ import {
   TASK_CPU_MONOLITH,
   TASK_MEMORY_MONOLITH,
   TESTING,
-  TRM_ENDPOINT,
   TZ,
   URL_API_EMAIL_APP,
 } from '../../secrets';
