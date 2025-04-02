@@ -161,3 +161,5 @@ config:
     secure: AAABAPUWYchH7HVNHjQcibWBsgeI5gYR+BM6+7eKqC6c4WV8
   b2crypto-iac:COMMISION_NATIONAL:
     secure: AAABAIHkZ0h5IkKNNRLeu/gygN0Rl0TUcEIaHDHGDZ60aaj2
+  b2crypto-iac:TRM_API_URL:
+    secure: AAABAFmQnVvHjOOxT35LCAwpJpu9Lij8SAJblfcdpZbRiRRbAUKd2PwFBV8lSaxujaTSslNs4TGQ60UEWSw=
