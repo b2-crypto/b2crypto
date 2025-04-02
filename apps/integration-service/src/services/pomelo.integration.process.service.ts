@@ -126,17 +126,11 @@ export class PomeloIntegrationProcessService {
   private isOperationHasCommissions(process: any): boolean {
     return [
       OperationTransactionType.credit,
-      OperationTransactionType.reversal_credit,
       OperationTransactionType.debit,
-      OperationTransactionType.reversal_debit,
       OperationTransactionType.withdrawal,
-      OperationTransactionType.reversal_withdrawal,
       OperationTransactionType.payment,
-      OperationTransactionType.reversal_payment,
       OperationTransactionType.extra_cash,
-      OperationTransactionType.reversal_extra_cash,
       OperationTransactionType.purchase,
-      OperationTransactionType.reversal_purchase,
     ].includes(process?.transaction?.type);
   }
 
@@ -518,7 +512,7 @@ export class PomeloIntegrationProcessService {
       //============================================================
       //= Start - Create commission National
       //============================================================
-      if (authorize && amountUSD * percentageCommisionNational > 0) {
+      if (authorize && amountUSD * percentageCommisionNational >= 0) {
         const commisionNational = {
           ...commisionNationalDetail,
           parentTransaction: transactionId,
@@ -558,7 +552,7 @@ export class PomeloIntegrationProcessService {
       //============================================================
       // if (
       //   authorize &&
-      //   amountUSD * percentageCommisionInternational > 0 &&
+      //   amountUSD * percentageCommisionInternational >= 0 &&
       //   process.transaction.origin === CommisionTypeEnum.INTERNATIONAL
       // ) {
       //   const commisionInternational = {
