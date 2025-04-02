@@ -86,10 +86,10 @@ export const ecsFargateService = new awsx.ecs.FargateService(
                 mongoAtlasClusterExisting?.connectionStrings.apply(
                   (connections) => connections[0].standardSrv,
                 ) ??
-                // mongoAtlasCluster?.connectionStrings.apply(
-                //   (connections) => connections[0].standardSrv,
-                // ) ??
-                mongodbatlasServerlessInstance?.connectionStringsStandardSrv,
+                  // mongoAtlasCluster?.connectionStrings.apply(
+                  //   (connections) => connections[0].standardSrv,
+                  // ) ??
+                  mongodbatlasServerlessInstance?.connectionStringsStandardSrv,
                 SECRETS.MONGOATLAS_USERNAME,
                 SECRETS.MONGOATLAS_PASSWORD,
               ])
@@ -251,18 +251,13 @@ export const ecsFargateService = new awsx.ecs.FargateService(
             name: 'SOCIAL_MEDIA_LINKS',
             value: SOCIAL_MEDIA_LINKS,
           },
-          { name: 'OTLP_API_KEY', value: SECRETS.OTLP_API_KEY },
           {
-            name: 'OTLP_HOST_TRACES',
-            value: SECRETS.OTLP_HOST.apply((host) => `${host}/v1/traces`),
+            name: 'OTEL_EXPORTER_OTLP_ENDPOINT',
+            value: SECRETS.OTEL_EXPORTER_OTLP_ENDPOINT,
           },
           {
-            name: 'OTLP_HOST_LOGS',
-            value: SECRETS.OTLP_HOST.apply((host) => `${host}/v1/logs`),
-          },
-          {
-            name: 'OTLP_HOST_METRICS',
-            value: SECRETS.OTLP_HOST.apply((host) => `${host}/v1/metrics`),
+            name: 'OTEL_EXPORTER_OTLP_HEADERS',
+            value: SECRETS.OTEL_EXPORTER_OTLP_HEADERS,
           },
           {
             name: 'OPTL_SERVICE_NAME',

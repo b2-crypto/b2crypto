@@ -150,11 +150,11 @@ config:
     secure: AAABAJXYqNJO5WpwcszL3s1IpgkgNjqJMwL9i45sfG860AWN
   b2crypto-iac:COMMISION_INTERNATIONAL:
     secure: AAABALLhRCU3SkU5ca+teXSAld0gKgxRHzfMD++D8ypJk0Qx
-  b2crypto-iac:OTLP_HOST:
-    secure: AAABAGpnz1zOPDndnGKuYnOK/llED255Rq+ECG4V+rlSwlzY5UQPkrk+AfeeU/Hkryqa94C8V0EK2P5cdlE=
-  b2crypto-iac:OTLP_API_KEY:
-    secure: AAABAALodmK/bSPv93yoxprVNlH7qS23qhtq/FvhAlLY3mO2VUJE6DS2dFiYrZvx4xxVB+9+3uzP1lBGMEi/EpEnqa8=
   b2crypto-iac:APP_VERSION: 0.9.0
   b2crypto-iac:TASK_CPU_MONOLITH: "1024"
   b2crypto-iac:TASK_MEMORY_MONOLITH: "2048"
   b2crypto-iac:TRM_ENDPOINT: https://api-trms-testing.b2fintech.com
+  b2crypto-iac:OTEL_EXPORTER_OTLP_ENDPOINT:
+    secure: AAABAPDxQ4lNdRLS++C8C/dkVPciBA6Ssyx8V7gr3D22QXiR0EQG6LmfvJ4MLDw+uw6TVq8cr6+3SBUuZGY=
+  b2crypto-iac:OTEL_EXPORTER_OTLP_HEADERS:
+    secure: AAABAOo5um7UhE507o7VHA87yDdW4a/F+19EJ+TATzu/YA5d9DuJO0KaVUP5rqDVxT1dTRqK93zDhNglhpfmBORpabv3wBMsew4+R6RXhKHTAYvB0fkXbFQ=
