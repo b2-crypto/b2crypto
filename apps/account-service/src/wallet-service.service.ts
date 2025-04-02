@@ -1081,7 +1081,7 @@ export class WalletServiceService {
           },
         },
       })
-    ).list[0];
+    ).data[0]?.network[0]?.wallets[0];
 
     if (!walletBase) {
       throw new BadRequestException(

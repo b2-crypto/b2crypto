@@ -63,7 +63,7 @@ export class FiatIntegrationClient {
     from: string,
     amount: number,
   ): Promise<any> {
-    const to = process.env.DEFAULT_CURRENCY_CONVERSION_COIN;
+    const to = process.env.DEFAULT_CURRENCY_CONVERSION_COIN || 'USD';
     return this.getCurrencyConversion(to, from, amount);
   }
 

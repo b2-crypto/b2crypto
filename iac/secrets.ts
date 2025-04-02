@@ -40,10 +40,10 @@ export const SECRETS = pulumi
     config.requireSecret('V1_DB_HOST'),
     config.requireSecret('V1_DB_PORT'),
     config.requireSecret('V1_DB_NAME'),
-    config.requireSecret('OTLP_HOST'),
-    config.requireSecret('OTLP_API_KEY'),
     config.requireSecret('COMMISION_NATIONAL'),
     config.requireSecret('COMMISION_INTERNATIONAL'),
+    config.requireSecret('OTEL_EXPORTER_OTLP_ENDPOINT'),
+    config.requireSecret('OTEL_EXPORTER_OTLP_HEADERS'),
     config.requireSecret('TRM_API_URL'),
   ])
   .apply(
@@ -84,10 +84,10 @@ export const SECRETS = pulumi
       V1_DB_HOST,
       V1_DB_PORT,
       V1_DB_NAME,
-      OTLP_HOST,
-      OTLP_API_KEY,
       COMMISION_NATIONAL,
       COMMISION_INTERNATIONAL,
+      OTEL_EXPORTER_OTLP_ENDPOINT,
+      OTEL_EXPORTER_OTLP_HEADERS,
       TRM_API_URL,
     ]) => ({
       DATABASE_URL,
@@ -126,10 +126,10 @@ export const SECRETS = pulumi
       V1_DB_HOST,
       V1_DB_PORT,
       V1_DB_NAME,
-      OTLP_HOST,
-      OTLP_API_KEY,
       COMMISION_NATIONAL,
       COMMISION_INTERNATIONAL,
+      OTEL_EXPORTER_OTLP_ENDPOINT,
+      OTEL_EXPORTER_OTLP_HEADERS,
       TRM_API_URL,
     }),
   );
@@ -249,6 +249,7 @@ export const OPTL_COLLECTOR_MAX_CAPACITY_AUTOSCALING = parseInt(
 export const TASK_CPU_MONOLITH = config.require('TASK_CPU_MONOLITH');
 
 export const TASK_MEMORY_MONOLITH = config.require('TASK_MEMORY_MONOLITH');
+export const TRM_ENDPOINT = config.require('TRM_ENDPOINT');
 
 export const TAGS = {
   Company: COMPANY_NAME,

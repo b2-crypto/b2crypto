@@ -69,12 +69,12 @@ config:
   b2crypto-iac:RABBIT_MQ_USERNAME:
     secure: AAABAHI6k/ELUAz3H0TOaM58PGv62KFtrSDn8qrJe3Sf5lTzSEAknw==
   b2crypto-iac:REDIS_HOST:
-    secure: AAABAIwsCH4TIgMPQynxpV3tsJD5ivMuLF3nOyu43+UNcdHg3NcgX1yTeg/muIawjul5v8WQzyK3z31YBM/ti3xffiqS5TQ2BWTy3wyX1517bjwSSw==
+    secure: AAABAJE3OJM6r4qyFJ/blLFAOwOPhl85ti6z97q2arCaoXu9fF7R7f4wXBlpjaCyd0QhG2wZLGjtDRGIm6BTX56lde+EgaNfPX1CSjvx37h4XqvRrA==
   b2crypto-iac:REDIS_PASSWORD:
-    secure: AAABANhvOflWUkSrSJXjNWZL/2V0OKOOFxMsfnuA8ZIiyS+mkJ7+GzKtYcV0JBYYicqJ9Q19j6oGRE+60+XCmg==
+    secure: AAABAGWeHEKcwjkBtKtuLRHB6W5erz7CTkJ+u3o9/fPNwwCeYntkTn+Pz3hqfrUhFLEzg8w8rqeu+tc25Jk/gQ==
   b2crypto-iac:REDIS_PORT: "10790"
   b2crypto-iac:REDIS_USERNAME:
-    secure: AAABAFXkm6lT2wlH8kDQBKBuX0QNOKeBlklfqttIiHZNj7hZChS6
+    secure: AAABAHM4gY/0SJ187o0jYTMqaIch1+pTkV+OIOOeeah9yeO0PH56
   b2crypto-iac:STACK: staging
   b2crypto-iac:TESTING: "false"
   b2crypto-iac:TZ: UTC
@@ -137,14 +137,14 @@ config:
   b2crypto-iac:TASK_MEMORY_MONOLITH: "2048"
   b2crypto-iac:TASK_CPU_MONOLITH: "1024"
   b2crypto-iac:OTP_VALIDATION_TIME_SECONDS: "120"
-  b2crypto-iac:OTLP_HOST:
-    secure: AAABAJzRGlB0flJItWfVYub8503TH3NBE+CJ8BPkMH69cEieVhrI4duFS881CMWPgP4v/FAdX3BvVU6/jPA=
-  b2crypto-iac:OTLP_API_KEY:
-    secure: AAABAPo34+JTKl517zsMlbZ8yT+ib4HK/RrsWGlMlMlR8vzpJOwANWfZSusqchSwLIJ5R0eUeNJIM6at+GPp0mj3rNw=
   b2crypto-iac:COMMISION_INTERNATIONAL:
-    secure: AAABAOl5+pbHSVW/MDThBh6AVSCO2qhrZWaYdJLEFp6yaSup
+    secure: AAABAE0pnxjRg5jZNwpJQ9syHQ2TJ4Y4hiG36jJUvQVSDCV2
   b2crypto-iac:COMMISION_NATIONAL:
-    secure: AAABACBhUSMQFDM+uxelCVwMUGVKRjB8k9pfUvwb8tWp666i
+    secure: AAABAIUQ4mbREfArUY5Ov0JIdMKlanYYABjNfBxv398axnPT
   b2crypto-iac:APP_VERSION: 0.9.0
+  b2crypto-iac:OTEL_EXPORTER_OTLP_ENDPOINT:
+    secure: AAABAKI3KQFSHYrBdzTabvyBFq/12+xEI3YMLK115JSJH3Pp7ZgFqZm9zjRux9g7ZJps+9sAcmYWLFO4e20=
+  b2crypto-iac:OTEL_EXPORTER_OTLP_HEADERS:
+    secure: AAABALMNHJH0p4Ih0RVa5+x50fGppi8LmEp2UY5GNYYyZCXSakL/eBfx5sxME3EtwyHcK8/KfHM4WTL4m+usvvUcJlDy8QfdX7CUSN9Z1fi/SSPClHu+taI=
   b2crypto-iac:TRM_API_URL:
     secure: AAABAOXFPDF3IGyQyzLPFegDpbH33oglG7Rp1Mx+HM7htZaANeRC9db3j1/V+XcORGSi/Zbjt/ISLBEl3FhEupQIhrUTPQ==
