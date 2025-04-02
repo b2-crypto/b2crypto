@@ -44,6 +44,7 @@ export const SECRETS = pulumi
     config.requireSecret('COMMISION_INTERNATIONAL'),
     config.requireSecret('OTEL_EXPORTER_OTLP_ENDPOINT'),
     config.requireSecret('OTEL_EXPORTER_OTLP_HEADERS'),
+    config.requireSecret('TRM_API_URL'),
   ])
   .apply(
     ([
@@ -87,6 +88,7 @@ export const SECRETS = pulumi
       COMMISION_INTERNATIONAL,
       OTEL_EXPORTER_OTLP_ENDPOINT,
       OTEL_EXPORTER_OTLP_HEADERS,
+      TRM_API_URL,
     ]) => ({
       DATABASE_URL,
       RABBIT_MQ_HOST,
@@ -128,6 +130,7 @@ export const SECRETS = pulumi
       COMMISION_INTERNATIONAL,
       OTEL_EXPORTER_OTLP_ENDPOINT,
       OTEL_EXPORTER_OTLP_HEADERS,
+      TRM_API_URL,
     }),
   );
 

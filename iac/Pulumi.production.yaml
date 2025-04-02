@@ -162,3 +162,5 @@ config:
     secure: AAABAJo8BVmIh3BzIsun2xZgyJ9WbG3GtpCmUb1lSq0BxwmHbesXaRUqXWZJkXSu2eLJAVAdvSi2zjI6zrw=
   b2crypto-iac:OTEL_EXPORTER_OTLP_HEADERS:
     secure: AAABAF37kuh6tsdFI9HLD+QTheMtBp1kQXq3jtk4OcQx/p4ePF+E1jgIQZdiL0NEZapYwChkGLDpehmqcZyIlwpAJQsCdJvNcIVondS1Ggo//kt97uo2qQI=
+  b2crypto-iac:TRM_API_URL:
+    secure: AAABAFmQnVvHjOOxT35LCAwpJpu9Lij8SAJblfcdpZbRiRRbAUKd2PwFBV8lSaxujaTSslNs4TGQ60UEWSw=
