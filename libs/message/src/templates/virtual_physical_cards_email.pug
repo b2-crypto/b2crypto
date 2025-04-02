@@ -5,26 +5,44 @@ html(lang="es")
     .container
       include ./partials/header.pug
       .content
-        h2 Detalles de tu Tarjeta
+        div(style="display: flex; justify-content: center; align-items: center; flex-direction: column;")
+          - const iconsInfo = typeof socialMediaIcons === 'string' ? JSON.parse(socialMediaIcons) : socialMediaIcons
+        div(style="text-align: center; margin-bottom: 5px;")
+          img(src=(iconsInfo.check || '') alt="Confirmación" height="50vh" style="margin: 0 auto 7px auto; display: block;")
+        
+        h2(style="font-size: 15px; margin-bottom: 25px; color: #1A1431; text-align: center;") ¡Tu solicitud de tarjeta ha sido recibida!
         p Estimado/a #{vars.name},
         p Te informamos sobre el estado de tu tarjeta:
-        
+                
         ul
           li
             strong Tipo de Tarjeta: 
             | #{vars.cardType}
           li
-            strong M&eacute; Número de Tarjeta: 
+            strong Número de Tarjeta: 
             | **** **** **** #{vars.lastFourDigits}
           li
             strong Estado: 
             | #{vars.status}
-
+        
         if vars.cardType === 'Física'
           p Tu tarjeta física será enviada a la dirección registrada en los próximos días hábiles.
         else
           p Tu tarjeta virtual está lista para ser utilizada en compras en línea.
-
+        
         p Para activar tu tarjeta, sigue las instrucciones en nuestra aplicación móvil o sitio web.
-
-      include ./partials/footer.pug
+      
+      div(style="padding: 10px 0; border: 0; height: 15px; background-color: #FFFFFF; width: 100%; display: flex; justify-content: center; align-items: center;")
+        hr(style="border: 0; height: 1px; background-color: #000000; width: 80%; ")
+      
+      div(style="padding: 20px; padding-left: 35px; padding-right: 35px; font-size: 11px;")
+        p 
+          small Si tienes alguna pregunta o necesitas asistencia, no dudes en contactarnos a través de soporte@b2pay.app.
+          
+        p 
+          small Gracias por confiar en B2pay.
+        
+      div(style="padding: 10px 0; border: 0; height: 15px; background-color: #FFFFFF; width: 100%; display: flex; justify-content: center; align-items: center;")
+        hr(style="border: 0; height: 1px; background-color: #000000; width: 80%; ")
+      
+      

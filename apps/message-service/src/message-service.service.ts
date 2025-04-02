@@ -93,6 +93,17 @@ export class MessageServiceService {
   }
 
   async sendEmailOtpNotification(message: MessageCreateDto) {
+
+    const user = await this.builder.getPromiseUserEventClient(
+      EventsNamesUserEnum.findOneByEmail,
+      message.destinyText,
+    );
+    if (user) {
+      message.vars = {
+        ...message.vars,
+        name: user.name,
+      }
+    }
     const emailMessage = new EmailMessageBuilder()
       .setName('OTP Notification')
       .setBody(`Your OTP code is ${message.vars.otp}`)
@@ -102,6 +113,8 @@ export class MessageServiceService {
       .build();
     return this.sendEmail(emailMessage, TemplatesMessageEnum.otpNotification);
   }
+
+
   async sendEmailBalanceReport(message: MessageCreateDto) {
     const emailMessage = new EmailMessageBuilder()
       .setName(message.name ?? 'Balance Report')
@@ -123,7 +136,6 @@ export class MessageServiceService {
       );
       const userPerson = await this.builder.getPromisePersonEventClient(
         EventsNamesPersonEnum.findOneById, { _id: user.personalData });
-
       const emailMessage = new EmailMessageBuilder()
         .setName('Card Request Confirmation')
         .setBody('Your card request has been confirmed')
@@ -141,7 +153,6 @@ export class MessageServiceService {
       );
     }
   }
-
   async sendProfileRegistrationCreation(message: MessageCreateDto) {
     const emailMessage = new EmailMessageBuilder()
       .setName('Profile Registration Creation')
@@ -155,27 +166,30 @@ export class MessageServiceService {
       TemplatesMessageEnum.profileRegistrationCreation,
     );
   }
+
   async sendPurchaseRejected(message: MessageCreateDto) {
 
     const account = await this.builder.getPromiseAccountEventClient(
       EventsNamesAccountEnum.findOneByCardId,
       { id: message.vars.cardId },
     );
-
     const ownerID = account.owner;
     if (ownerID) {
       const user = await this.builder.getPromiseUserEventClient(
         EventsNamesUserEnum.findOneById,
         { _id: ownerID },
       );
-
       if (user && user.email) {
         const emailMessage = new EmailMessageBuilder()
           .setName('Purchase Rejected')
           .setBody('Your purchase has been rejected')
           .setOriginText(this.getOriginEmail())
           .setDestinyText(user.email)
-          .setVars(message.vars)
+          .setVars({
+            ...message.vars,
+            name: user.name,
+            currency: 'USDT'
+          })
           .build();
         return this.sendEmail(
           emailMessage,
@@ -184,6 +198,7 @@ export class MessageServiceService {
       }
     }
   }
+
 
   async sendPasswordRestoredEmail(message: MessageCreateDto) {
     const emailMessage = new EmailMessageBuilder()
@@ -212,6 +227,8 @@ export class MessageServiceService {
       TemplatesMessageEnum.virtualPhysicalCards,
     );
   }
+
+
 
   async sendPreRegisterEmail(message: MessageCreateDto) {
     const emailMessage = new EmailMessageBuilder()
@@ -251,7 +268,6 @@ export class MessageServiceService {
       }
     }
   }
-
   async sendPurchases(message: MessageCreateDto) {
     const getCard = await this.builder.getPromiseAccountEventClient(
       EventsNamesAccountEnum.findOneByCardId,
@@ -331,7 +347,6 @@ export class MessageServiceService {
       if (!html) {
         throw new Error('Failed to compile email template');
       }
-
       const mailOptions = {
         to: recipient,
         from,
@@ -384,7 +399,6 @@ export class MessageServiceService {
     };
     return colors[template] || '#007bff';
   }
-
   async sendEmailDisclaimer(lead: LeadDocument) {
     if (lead.hasSendDisclaimer) {
       //throw new RpcException('Disclaimer has send');
@@ -424,4 +438,11 @@ export class MessageServiceService {
     return crm?.clientZone;
   }
 }
+
+
+
+
+
+
+
 

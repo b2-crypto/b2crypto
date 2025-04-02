@@ -21,14 +21,14 @@ html(lang="es")
 
         .transaction-info(style="display: flex; margin-bottom: 22px;")
           div(style="display: flex; align-items: center; width: 30px;")
-            span(style="font-size: 1.3em;") 💰
+            img(src=iconsMails.currency alt=iconsMails.currency height="25vh")
           div(style="display: flex; align-items: center;")
             strong(style="margin-right: 8px; color: #000;") Moneda
             span(style="color: #000;") #{vars.currency}
         
         .transaction-info(style="display: flex; margin-bottom: 22px;")
           div(style="display: flex; align-items: center; width: 30px;")
-            span(style="font-size: 1.3em;") 💸
+            img(src=iconsMails.withdraw alt=iconsMails.withdraw height="25vh")
           div(style="display: flex; align-items: center;")
             strong(style="margin-right: 8px; color: #000;") Saldo Depositado
             span(style="color: #000;") #{vars.amountReload}
@@ -46,5 +46,3 @@ html(lang="es")
           div(style="display: flex; align-items: center;")
             strong(style="margin-right: 8px; color: #000;") Hash de la Transacción
             span(style="color: #000;") #{vars.hash || vars.transactionHash || ''}
-
-      include ./partials/footer.pug

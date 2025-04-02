@@ -5,61 +5,81 @@ html(lang="es")
     .container
       include ./partials/header.pug
       .content
-        p.title ¡Tu solicitud de tarjeta ha sido recibida!
-        p
-          small Estimado/a #{vars.name} #{vars.lastName},
-
-          small Gracias por solicitar tu tarjeta con nosotros. Queremos confirmarte que hemos recibido tu solicitud y te proporcionamos a continuación algunos detalles:
-
+        div(style="display: flex; justify-content: center; align-items: center; flex-direction: column;")
+          - const iconsInfo = typeof socialMediaIcons === 'string' ? JSON.parse(socialMediaIcons) : socialMediaIcons
+        div(style="text-align: center; margin-bottom: 5px;")
+          img(src=(iconsInfo.check || '') alt="Confirmación" height="50vh" style="margin: 0 auto 7px auto; display: block;")
+        
+        p(style="font-size: 15px; margin-bottom: 25px; color: #1A1431; text-align: center;") ¡Tu solicitud de tarjeta ha sido recibida! 💳
+        
+        p Estimada #{vars.name}
+        
+        p Gracias por solicitar tu tarjeta con nosotros. Queremos confirmarte que hemos recibido tu solicitud y te proporcionamos a continuación algunos detalles:
+        
         p 
+          strong Detalles de la solicitud:
+        p(style="margin-left: 15px; margin-bottom: 10px;")
           small
-            strong Detalles de la solicitud:
-        ul
-          li
-            small Tipo de Tarjeta: 
-            | #{vars.accountType}
-          li
-            small Nombre del Titular: 
-            | #{vars.cardType}
-          li
-            small Dirección de Envío: 
-            | #{vars.accountId}
-          li
-            small Estado de la Solicitud: 
-            | #{vars.status}
-
+            span(style="color: #1b1330") •
+            | Tipo de Tarjeta: #{vars.accountType || 'N/A'}
+            br
+            span(style="color: #1b1330") •
+            | Nombre del Titular: #{vars.name || 'N/A'}
+            br
+            span(style="color: #1b1330") •
+            | Dirección de Envío: #{vars.address || 'N/A'}
+            br
+            span(style="color: #1b1330") •
+            | Estado de la Solicitud: #{vars.status || 'N/A'}
+        
         p 
-          small
-            strong Estado de solicitud:
+          strong Estado de solicitud:
+        p En proceso: Estamos revisando tu solicitud y te mantendremos informado sobre su progreso.
+        
+        if vars.accountType === 'PHYSICAL'
+          p 
+            small Tu tarjeta física será enviada a la dirección registrada en los próximos días hábiles.
+        else
+          p 
+            small Tu tarjeta virtual está lista para ser utilizada en compras en línea.
+        
         p 
-          small En proceso: Estamos revisando tu solicitud y te mantendremos informado sobre su progreso.
-
-        p 
-          small
-            strong Entrega de la Tarjeta Física:
-        p 
-          small Si has solicitado una tarjeta física, estimamos que la recibirás en un plazo de 10 días hábiles.
-
-        p
-          small Gracias por confiar en B2pay.
-
-        hr
-
-        p 
-          small
+          small Para activar tu tarjeta, sigue las instrucciones en nuestra aplicación móvil o sitio web.
+      
+      div(style="padding: 10px 0; border: 0; height: 15px; background-color: #FFFFFF; width: 100%; display: flex; justify-content: center; align-items: center;")
+        hr(style="border: 0; height: 1px; background-color: #000000; width: 80%; ")
+      
+      .content
+        div(style="margin-bottom: 22px;")
+          p 
             strong Activación de la Tarjeta:
-
+          
+          p
+            small Una vez que recibas tu tarjeta, sigue estos pasos para activarla:
+          
+          p(style="margin-left: 15px; margin-bottom: 20px;")
+            small
+              span(style="display: inline-block; width: 20px; margin-right: 10px;") 1.
+              | Inicia sesión en tu cuenta en nuestra plataforma.
+              br
+              span(style="display: inline-block; width: 20px; margin-right: 10px;") 2.
+              | Navega a la sección de tarjetas y haz click en "Activar Tarjeta".
+              br
+              span(style="display: inline-block; width: 20px; margin-right: 10px;") 3.
+              | Introduce un PIN personalizado.
+              br
+              span(style="display: inline-block; width: 20px; margin-right: 10px;") 4.
+              | ¡Y listo! Tu tarjeta estará lista para ser utilizada.
+      
+      div(style="padding: 10px 0; border: 0; height: 15px; background-color: #FFFFFF; width: 100%; display: flex; justify-content: center; align-items: center;")
+        hr(style="border: 0; height: 1px; background-color: #000000; width: 80%; ")
+      
+      div(style="padding-bottom: 20px; padding-top: 20px; padding-left: 35px; padding-right: 35px; font-size: 11px;")
         p 
-          small Una vez que recibas tu tarjeta, sigue estos pasos para activarla:
-
-        ol 
-          li
-            small Inicia sesión en tu cuenta en nuestra plataforma.
-          li
-            small Navega a la sección de tarjetas y haz click en “Activar Tarjeta".
-          li
-            small Introduce un PIN personalizado.
-          li
-            small ¡Y listo! Tu tarjeta estará lista para ser utilizada.
-
-      include ./partials/footer.pug
+          small Si tienes alguna pregunta o necesitas asistencia, no dudes en contactarnos a través de soporte@b2pay.app o contacta a nuestro equipo de soporte al cliente a través de nuestro WhatsApp.
+          
+        p 
+          small Gracias por confiar en B2pay.
+        
+      div(style="padding: 10px 0; border: 0; height: 15px; background-color: #FFFFFF; width: 100%; display: flex; justify-content: center; align-items: center;")
+        hr(style="border: 0; height: 1px; background-color: #000000; width: 80%; ")
