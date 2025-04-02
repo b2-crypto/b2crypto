@@ -249,7 +249,6 @@ export const OPTL_COLLECTOR_MAX_CAPACITY_AUTOSCALING = parseInt(
 export const TASK_CPU_MONOLITH = config.require('TASK_CPU_MONOLITH');
 
 export const TASK_MEMORY_MONOLITH = config.require('TASK_MEMORY_MONOLITH');
-export const TRM_ENDPOINT = config.require('TRM_ENDPOINT');
 
 export const TAGS = {
   Company: COMPANY_NAME,
