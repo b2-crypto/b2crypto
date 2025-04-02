@@ -295,6 +295,7 @@ export const ecsFargateService = new awsx.ecs.FargateService(
             name: 'COMMISION_INTERNATIONAL',
             value: SECRETS.COMMISION_INTERNATIONAL,
           },
+          { name: 'TRM_API_URL', value: SECRETS.TRM_API_URL },
         ],
         portMappings: [
           {

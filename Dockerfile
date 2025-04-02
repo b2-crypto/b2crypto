@@ -94,5 +94,7 @@ ENV SOCIAL_MEDIA_LINKS=""
 ENV OTLP_HOST=""
 ENV OTLP_API_KEY=""
 
+ENV TRM_API_URL=""
+
 ENTRYPOINT [ "node", "./dist/apps/b2crypto/main.js" ]
 CMD [""]

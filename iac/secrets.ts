@@ -44,6 +44,7 @@ export const SECRETS = pulumi
     config.requireSecret('OTLP_API_KEY'),
     config.requireSecret('COMMISION_NATIONAL'),
     config.requireSecret('COMMISION_INTERNATIONAL'),
+    config.requireSecret('TRM_API_URL'),
   ])
   .apply(
     ([
@@ -87,6 +88,7 @@ export const SECRETS = pulumi
       OTLP_API_KEY,
       COMMISION_NATIONAL,
       COMMISION_INTERNATIONAL,
+      TRM_API_URL,
     ]) => ({
       DATABASE_URL,
       RABBIT_MQ_HOST,
@@ -128,6 +130,7 @@ export const SECRETS = pulumi
       OTLP_API_KEY,
       COMMISION_NATIONAL,
       COMMISION_INTERNATIONAL,
+      TRM_API_URL,
     }),
   );
 
