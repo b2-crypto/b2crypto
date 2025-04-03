@@ -3,9 +3,9 @@ html(lang="es")
   include ./partials/head.pug
   body
     .container
+      p(style="display:none;max-height:0;overflow:hidden;")
+        small ¡Tu compra ha sido aprobada exitosamente! 
       include ./partials/header.pug
-      
-      
       .content
         div(style="display: flex; justify-content: center; align-items: center; flex-direction: column;")
           - const iconsInfo = typeof socialMediaIcons === 'string' ? JSON.parse(socialMediaIcons) : socialMediaIcons
@@ -14,56 +14,56 @@ html(lang="es")
         
         p(style="font-size: 15px; margin-bottom: 25px; color: #1A1431; text-align: center;") ¡Compra aprobada exitosamente! 📦
         
-        p 
+        p(style="color: #1A1431;")
           small #{vars.name}, ¡Tu compra ha sido aprobada exitosamente! 
-        p 
+        p(style="color: #1A1431;")
           small Nos complace informarte que tu compra realizada el dia #{vars.transactionDate || 'N/A'} a las #{vars.transactionTime || 'N/A'} en #{vars.merchant || 'N/A'} ha sido aprobada con éxito. A continuación, te compartimos los detalles de tu transacción:
 
-        p 
+        p(style="color: #1A1431;")
           small
             strong Detalles de la Compra:
 
         .transaction-info(style="display: flex; margin-bottom: 22px; align-items: flex-start;")
           img(src=iconsInfo.date alt="Fecha" height="15vh" style="margin-right: 10px;margin-top: 8px !important;")
-          div(style="color: #1A1431; margin-top:-4px;")
+          div(style="color: #1A1431; margin-top:-4px;font-size: 9px;")
             div Fecha y Hora
             div #{vars.transactionDate || 'N/A'}, #{vars.transactionTime || 'N/A'}
         
         .transaction-info(style="display: flex; margin-bottom: 22px; align-items: flex-start;")
           img(src=iconsInfo.location alt="Ubicación" height="15vh" style="margin-right: 10px;margin-top: 8px !important;")
-          div(style="color: #1A1431; margin-top:-4px;")
+          div(style="color: #1A1431; margin-top:-4px;font-size: 9px;")
             div Establecimiento
             div #{vars.merchant || 'N/A'}
         
         .transaction-info(style="display: flex; margin-bottom: 22px; align-items: flex-start;")
           img(src=iconsInfo.tether alt="Moneda" height="15vh" style="margin-right: 10px;margin-top: 8px !important;")
-          div(style="color: #1A1431; margin-top:-4px;")
+          div(style="color: #1A1431; margin-top:-4px;font-size: 9px;")
             div Moneda
             div #{vars.currency || 'N/A'}
         
         .transaction-info(style="display: flex; margin-bottom: 22px; align-items: flex-start;")
           img(src=iconsInfo.currency alt="Monto" height="15vh" style="margin-right: 10px;margin-top: 8px !important;")
-          div(style="color: #1A1431; margin-top:-4px;")
+          div(style="color: #1A1431; margin-top:-4px;font-size: 9px;")
             div Monto
             div #{vars.amountReload || 'N/A'}
         
         .transaction-info(style="display: flex; margin-bottom: 22px; align-items: flex-start;")
           img(src=iconsInfo.payment alt="Método de pago" height="15vh" style="margin-right: 10px;margin-top: 8px !important;")
-          div(style="color: #1A1431; margin-top:-4px;")
+          div(style="color: #1A1431; margin-top:-4px;font-size: 9px;")
             div Método de Pago Utilizado
             div xxxx xxxx #{vars.lastFourDigits || 'N/A'}
 
-        p
+        p(style="color: #1A1431;")
           small Gracias por utilizar nuestros servicios para realizar tu compra.
       
       div(style="padding: 10px 0; border: 0; height: 15px; background-color: #FFFFFF; width: 100%; display: flex; justify-content: center; align-items: center;")
         hr(style="border: 0; height: 1px; background-color: #000000; width: 80%; ")
       
       div(style="padding: 20px;padding-left: 35px; padding-right: 35px;font-size: 11px;")
-        p 
+        p(style="color: #1A1431;") 
           small Si tienes alguna pregunta o necesitas asistencia, no dudes en contactarnos a través de soporte@b2pay.app o contacta a nuestro equipo de soporte al cliente a través de nuestro WhatsApp.
           
-        p 
+        p(style="color: #1A1431;") 
           small Gracias por unirte a nosotros. ¡Esperamos que disfrutes de tu experiencia con B2pay!
         
       div(style="padding: 10px 0; border: 0; height: 15px; background-color: #FFFFFF; width: 100%; display: flex; justify-content: center; align-items: center;")

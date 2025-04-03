@@ -105,7 +105,7 @@ export class MessageServiceService {
       }
     }
     const emailMessage = new EmailMessageBuilder()
-      .setName('OTP Notification')
+      .setName('A un paso de desbloquear tu vida financiera 🚀')
       .setBody(`Your OTP code is ${message.vars.otp}`)
       .setOriginText(this.getOriginEmail())
       .setDestinyText(message.destinyText)
@@ -127,6 +127,7 @@ export class MessageServiceService {
     return this.sendEmail(emailMessage, TemplatesMessageEnum.report);
   }
 
+
   async sendCardRequestConfirmationEmail(message: MessageCreateDto) {
     const ownerID = message.vars.owner;
     if (ownerID) {
@@ -137,10 +138,10 @@ export class MessageServiceService {
       const userPerson = await this.builder.getPromisePersonEventClient(
         EventsNamesPersonEnum.findOneById, { _id: user.personalData });
       const emailMessage = new EmailMessageBuilder()
-        .setName('Card Request Confirmation')
+        .setName('¡Recibido! Tu tarjeta está en camino')
         .setBody('Your card request has been confirmed')
         .setOriginText(this.getOriginEmail())
-        .setDestinyText(message.destinyText)
+        .setDestinyText(user.email)
         .setVars({
           ...message.vars,
           name: user.userCard.name && user.userCard.surname ? `${user.userCard.name} ${user.userCard.surname}` : user.name,
@@ -155,7 +156,7 @@ export class MessageServiceService {
   }
   async sendProfileRegistrationCreation(message: MessageCreateDto) {
     const emailMessage = new EmailMessageBuilder()
-      .setName('Profile Registration Creation')
+      .setName('¡Un nuevo capítulo empiezas hoy  con B2pay! ✨')
       .setBody('Your profile has been created')
       .setOriginText(this.getOriginEmail())
       .setDestinyText(message.destinyText)
@@ -166,7 +167,6 @@ export class MessageServiceService {
       TemplatesMessageEnum.profileRegistrationCreation,
     );
   }
-
   async sendPurchaseRejected(message: MessageCreateDto) {
 
     const account = await this.builder.getPromiseAccountEventClient(
@@ -181,7 +181,7 @@ export class MessageServiceService {
       );
       if (user && user.email) {
         const emailMessage = new EmailMessageBuilder()
-          .setName('Purchase Rejected')
+          .setName('No pudimos procesar tu compra, revisa los detalles')
           .setBody('Your purchase has been rejected')
           .setOriginText(this.getOriginEmail())
           .setDestinyText(user.email)
@@ -202,7 +202,7 @@ export class MessageServiceService {
 
   async sendPasswordRestoredEmail(message: MessageCreateDto) {
     const emailMessage = new EmailMessageBuilder()
-      .setName('Password Restored')
+      .setName('¡Todo listo! Tu nueva contraseña ya está funcionando')
       .setBody('Your password has been successfully restored.')
       .setOriginText(this.getOriginEmail())
       .setDestinyText(message.destinyText)
@@ -255,7 +255,7 @@ export class MessageServiceService {
 
       if (user && user.email) {
         const emailMessage = new EmailMessageBuilder()
-          .setName('Adjustments')
+          .setName('Ajuste de transacción')
           .setBody('Your card adjustments')
           .setOriginText(this.getOriginEmail())
           .setDestinyText(user.email)
@@ -269,36 +269,52 @@ export class MessageServiceService {
     }
   }
   async sendPurchases(message: MessageCreateDto) {
-    const getCard = await this.builder.getPromiseAccountEventClient(
-      EventsNamesAccountEnum.findOneByCardId,
-      { id: message.vars.cardId },
-    );
 
-    if (getCard && getCard.owner) {
-      const user = await this.builder.getPromiseUserEventClient(
-        EventsNamesUserEnum.findOneById,
-        { _id: getCard.owner },
+
+    /*  const transaction = await this.builder.getPromiseTransferEventClient(
+       EventsNamesTransferEnum.findAll,
+       {
+         where: {
+           "requestBodyJson.transaction.id": message.vars.transactionId
+         }
+       },
+     ) */ //TODO: Nestor fee 
+
+
+    if (message.vars.transactionStatus !== 'REJECTED') {
+      const getCard = await this.builder.getPromiseAccountEventClient(
+        EventsNamesAccountEnum.findOneByCardId,
+        { id: message.vars.cardId },
       );
+      if (getCard && getCard.owner) {
+        const user = await this.builder.getPromiseUserEventClient(
+          EventsNamesUserEnum.findOneById,
+          { _id: getCard.owner },
+        );
+        if (user && user.email) {
+          const emailMessage = new EmailMessageBuilder()
+            .setName('Tu compra fue procesada correctamente 🚀')
+            .setBody('Your recent purchases')
+            .setOriginText(this.getOriginEmail())
+            .setDestinyText(user.email)
+            .setVars({
+              ...message.vars,
+              name: user.name,
+              currency: 'USDT',
+            })
+            .build();
+          return this.sendEmail(emailMessage, TemplatesMessageEnum.passwordRestoredConfirmation);
 
-      if (user && user.email) {
-        const emailMessage = new EmailMessageBuilder()
-          .setName('Purchases')
-          .setBody('Your recent purchases')
-          .setOriginText(this.getOriginEmail())
-          .setDestinyText(user.email)
-          .setVars({
-            ...message.vars,
-            customerName: user.name,
-          })
-          .build();
-        return this.sendEmail(emailMessage, TemplatesMessageEnum.purchaseSuccessfullyApproved);
+        }
       }
     }
   }
 
+
+
   async sendCryptoWalletsManagement(message: MessageCreateDto) {
     const emailMessage = new EmailMessageBuilder()
-      .setName('Crypto Wallets Management')
+      .setName('¡Explora todo lo que puedes hacer con tu wallet!')
       .setBody('Your crypto wallets management')
       .setOriginText(this.getOriginEmail())
       .setDestinyText(message.destinyText)

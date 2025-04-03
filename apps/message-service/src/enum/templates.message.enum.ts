@@ -2,6 +2,7 @@ enum TemplatesMessageEnum {
   otpNotification = './libs/message/src/templates/otp_notification_email.pug',
   preRegister = './libs/message/src/templates/pre_register_email.pug',
   cardRequestConfirmation = './libs/message/src/templates/card_request_confirmation_email.pug',
+  cardActivation = './libs/message/src/templates/card_successfully_activated_email.pug',
   cardRecharge = './libs/message/src/templates/card_recharge_successful_email.pug',
   profileRegistrationCreation = './libs/message/src/templates/profile_registration_creation_email.pug',
   virtualPhysicalCards = './libs/message/src/templates/virtual_physical_cards_email.pug',

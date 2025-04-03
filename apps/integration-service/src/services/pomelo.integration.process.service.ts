@@ -57,6 +57,7 @@ export class PomeloIntegrationProcessService {
         amount,
         authorize,
       );
+
     }
     return response;
   }
@@ -628,6 +629,7 @@ export class PomeloIntegrationProcessService {
       vars: {
         cardId: authorization.card?.id || '',
         name: '',
+        transactionId: authorization.transaction.id,
         transactionDate: transactionDate,
         transactionTime: transactionTime,
         transactionStatus: process.status,
@@ -649,7 +651,6 @@ export class PomeloIntegrationProcessService {
 
       console.log(`Correo de notificación de rechazo enviado para transacción ${authorization.idempotency}`);
     }
-
     this.builder.emitMessageEventClient(
       EventsNamesMessageEnum.sendPurchases,
       data,

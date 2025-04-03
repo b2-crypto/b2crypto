@@ -1,5 +1,4 @@
-- const iconsInfo = typeof icons === 'string' ? JSON.parse(icons) : icons
-- const iconsMails = typeof iconsEmail === 'string' ? JSON.parse(iconsEmail) : iconsEmail
+- const iconsMails = typeof socialMediaIcons === 'string' ? JSON.parse(socialMediaIcons) : (socialMediaIcons || {})
 
 doctype html
 html(lang="es")
@@ -8,41 +7,50 @@ html(lang="es")
     .container
       include ./partials/header.pug
       .content
-        div(style="display: flex; justify-content: center; align-items: center; flex-direction: column;")
-          p.title(style="margin-block-end: 0.5em; margin-block-start: 0.5em;") Información de tu depósito
-        p 
+
+        div(style="text-align: center; margin-bottom: 5px;")
+          img(src=(iconsMails.info || '') alt="Info" height="50vh" style="margin: 0 auto 7px auto; display: block;")
+        p(style="font-size: 15px; margin-bottom: 25px; color: #1A1431; text-align: center;") Información de tu depósito
+
+        p(style="color: #1A1431;") 
           small Estimado/a #{vars.name},
-        p 
+        p(style="color: #1A1431;") 
           small Te informamos que tu depósito se ha realizado exitosamente. A continuación, encontrarás los detalles de la transacción:
 
-        p 
+        p(style="color: #1A1431;") 
           small
             strong Detalles del depósito:
+        br
+        .transaction-info(style="display: flex; margin-bottom: 22px; align-items: flex-start;")
+          img(src=(iconsMails.tether || '') alt=iconsMails.tether height="20vh" style="margin-right: 10px; margin-top: 6px;")
+          div(style="color: #1A1431; font-size: 9px;")
+            div Moneda
+            div #{vars.currency}
+        
+        .transaction-info(style="display: flex; margin-bottom: 22px; align-items: flex-start;")
+          img(src=(iconsMails.deposit || '') alt=iconsMails.deposit height="20vh" style="margin-right: 10px; margin-top: 6px;")
+          div(style="color: #1A1431; font-size: 9px;")
+            div Saldo Depositado
+            div #{vars.amountReload}
+        
+        .transaction-info(style="display: flex; margin-bottom: 22px; align-items: flex-start;")
+          img(src=(iconsMails.date || '') alt=iconsMails.date height="20vh" style="margin-right: 10px; margin-top: 6px;")
+          div(style="color: #1A1431; font-size: 9px;")
+            div Fecha y Hora
+            div #{vars.transactionDate || ''}#{vars.transactionDate && vars.transactionTime ? ', ' : ''}#{vars.transactionTime || ''}
+        
+        .transaction-info(style="display: flex; margin-bottom: 22px; align-items: flex-start;")
+          img(src=(iconsMails.TFA || '') alt=iconsMails.TFA height="20vh" style="margin-right: 10px; margin-top: 6px;")
+          div(style="color: #1A1431; font-size: 9px;")
+            div Hash de la Transacción
+            div #{vars.hash || vars.transactionHash || '66c38sxDf'}
 
-        .transaction-info(style="display: flex; margin-bottom: 22px;")
-          div(style="display: flex; align-items: center; width: 30px;")
-            img(src=iconsMails.currency alt=iconsMails.currency height="25vh")
-          div(style="display: flex; align-items: center;")
-            strong(style="margin-right: 8px; color: #000;") Moneda
-            span(style="color: #000;") #{vars.currency}
+      div(style="padding: 10px 0; border: 0; height: 15px; background-color: #FFFFFF; width: 100%; display: flex; justify-content: center; align-items: center;")
+        hr(style="border: 0; height: 1px; background-color: #000000; width: 80%;")
+
+      div(style="padding: 20px; padding-left: 35px; padding-right: 35px;")
+        p(style="color: #1A1431; font-size: 9px;")
+          | Si tienes alguna pregunta o necesitas asistencia, no dudes en contactarnos a través de soporte@b2pay.app o contacta a nuestro equipo de soporte al cliente a través de nuestro WhatsApp.
         
-        .transaction-info(style="display: flex; margin-bottom: 22px;")
-          div(style="display: flex; align-items: center; width: 30px;")
-            img(src=iconsMails.withdraw alt=iconsMails.withdraw height="25vh")
-          div(style="display: flex; align-items: center;")
-            strong(style="margin-right: 8px; color: #000;") Saldo Depositado
-            span(style="color: #000;") #{vars.amountReload}
-        
-        .transaction-info(style="display: flex; margin-bottom: 22px;")
-          div(style="display: flex; align-items: center; width: 30px;")
-            span(style="font-size: 1.3em;") 📅
-          div(style="display: flex; align-items: center;")
-            strong(style="margin-right: 8px; color: #000;") Fecha y Hora
-            span(style="color: #000;") #{vars.transactionDate || ''}#{vars.transactionDate && vars.transactionTime ? ', ' : ''}#{vars.transactionTime || ''}
-        
-        .transaction-info(style="display: flex; margin-bottom: 22px;")
-          div(style="display: flex; align-items: center; width: 30px;")
-            span(style="font-size: 1.3em;") 🔢
-          div(style="display: flex; align-items: center;")
-            strong(style="margin-right: 8px; color: #000;") Hash de la Transacción
-            span(style="color: #000;") #{vars.hash || vars.transactionHash || ''}
+        p(style="color: #1A1431; font-size: 9px;")
+          | Gracias por unirte a nosotros. ¡Esperamos que disfrutes de tu experiencia con B2pay!
