@@ -73,7 +73,7 @@ import { PomeloProcessEnum } from 'apps/integration-service/src/enums/pomelo.pro
 import EventsNamesPspAccountEnum from 'apps/psp-service/src/enum/events.names.psp.acount.enum';
 import EventsNamesStatsEnum from 'apps/stats-service/src/enum/events.names.stats.enum';
 import EventsNamesStatusEnum from 'apps/status-service/src/enum/events.names.status.enum';
-import { isMongoId } from 'class-validator';
+import { isBoolean, isMongoId } from 'class-validator';
 import { SwaggerSteakeyConfigEnum } from 'libs/config/enum/swagger.stakey.config.enum';
 import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import { ApproveOrRejectDepositDto } from '../../../libs/transfer/src/dto/approve.or.reject.deposit.dto';
@@ -181,6 +181,9 @@ export class TransferServiceController implements GenericServiceController {
     //query = await this.filterFromUserPermissions(query, req);
     this.logger.info(`[findAll] query: ${JSON.stringify(query)}`);
 
+    query.where.showToOwner = isBoolean(query.where.showToOwner)
+      ? query.where.showToOwner
+      : true;
     const result = await this.transferService.getAll(query);
 
     this.logger.info(`[findAll] result: ${JSON.stringify(result)}`);
