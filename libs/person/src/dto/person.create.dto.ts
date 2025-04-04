@@ -33,6 +33,10 @@ export class PersonCreateDto extends CreateAnyDto {
   @IsOptional()
   hasFamilyPEP: boolean;
 
+  @IsDate()
+  @IsOptional()
+  rotatingContractDateAccept: Date;
+
   @ApiProperty({
     required: true,
     description: 'Person number of document id',
