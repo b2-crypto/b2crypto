@@ -248,8 +248,6 @@ export class CardServiceController extends AccountServiceController {
     return rta;
   }
 
-
-
   @ApiSecurity('b2crypto-key')
   @ApiBearerAuth('bearerToken')
   @Post('create')
@@ -536,7 +534,7 @@ export class CardServiceController extends AccountServiceController {
           null,
           `Compra de ${createDto.type} ${createDto.accountType} ${level.name}`,
           `Reversal`,
-          true
+          true,
         );
       }
       this.logger.error(
@@ -606,7 +604,7 @@ export class CardServiceController extends AccountServiceController {
     if (totalPurchase > account.amount * 0.9) {
       throw new BadRequestException('Wallet with not enough balance');
     }
-  
+
     return this.cardBuilder.getPromiseTransferEventClient(
       EventsNamesTransferEnum.createOne,
       {
@@ -1651,11 +1649,15 @@ export class CardServiceController extends AccountServiceController {
       // Pay transfer between cards
       this.logger.info('[rechargeOne] Pay transfer between cards', 'Make');
     }
+    const fromName = `${from.name ?? from.firstName}`;
+    const toName = `${to.name ?? to.firstName}`;
     this.cardBuilder.emitTransferEventClient(
       EventsNamesTransferEnum.createOne,
       {
-        name: `Deposit card ${to.name}`,
-        description: `Deposit from ${from.name} to ${to.name}`,
+        name: `Deposit card ${toName}`,
+        description: `Deposit from ${fromName} to ${toName}`,
+        page: `from-${from._id}-to-${to._id}`,
+        leadCrmName: `${from.type}2${to.type}`,
         currency: to.currency,
         amount: createDto.amount,
         currencyCustodial: to.currencyCustodial,
@@ -1682,8 +1684,10 @@ export class CardServiceController extends AccountServiceController {
     this.cardBuilder.emitTransferEventClient(
       EventsNamesTransferEnum.createOne,
       {
-        name: `Withdrawal wallet ${from.name}`,
-        description: `Withdrawal from ${from.name} to ${to.name}`,
+        name: `Withdrawal wallet ${toName}`,
+        description: `Withdrawal from ${fromName} to ${toName}`,
+        page: `from-${from._id}-to-${to._id}`,
+        leadCrmName: `${from.type}2${to.type}`,
         currency: from.currency,
         amount: createDto.amount,
         currencyCustodial: from.currencyCustodial,

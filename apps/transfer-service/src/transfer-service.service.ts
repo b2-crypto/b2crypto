@@ -557,10 +557,10 @@ export class TransferServiceService
     isNew = true,
   ) {
     // TODO[hender-2023-09-6] If the lead's country has a custom rule, take it, if not, take the general rule
-    const ruleCftd = await this.getCategoryByName(
-      'Money to CFTD from lead',
-      TagEnum.RULE,
-    );
+    //const ruleCftd = await this.getCategoryByName(
+    //  'Money to CFTD from lead',
+    //  TagEnum.RULE,
+    //);
     if (!account.email) {
       const tmpAccount = await this.getAccountById(account._id);
       if (!tmpAccount) {
@@ -587,7 +587,11 @@ export class TransferServiceService
       (transferSaved.isApprove &&
         transferSaved.operationType === OperationTransactionType.withdrawal &&
         (transferSaved.isManualTx ||
-          transferSaved.leadCrmName === 'Fireblocks'))
+          transferSaved.leadCrmName === 'Fireblocks' ||
+          transferSaved.leadCrmName === 'CARD2CARD' ||
+          transferSaved.leadCrmName === 'CARD2WALLET' ||
+          transferSaved.leadCrmName === 'WALLET2CARD' ||
+          transferSaved.leadCrmName === 'WALLET2WALLET'))
     ) {
       const multiply = this.getMultiplyAmount(transferSaved.operationType);
       const resultBalance =
