@@ -1700,7 +1700,6 @@ export class CardServiceController extends AccountServiceController {
         psp: internalPspAccount.psp,
         pspAccount: internalPspAccount._id,
         operationType: OperationTransactionType.withdrawal,
-        page: req.get('Host'),
         statusPayment: StatusCashierEnum.APPROVED,
         isApprove: true,
         status: approvedStatus._id,
