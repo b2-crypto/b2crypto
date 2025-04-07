@@ -89,6 +89,7 @@ import { AccountServiceController } from './account-service.controller';
 import { AccountServiceService } from './account-service.service';
 import { AfgNamesEnum } from './enum/afg.names.enum';
 import EventsNamesAccountEnum from './enum/events.names.account.enum';
+import * as crypto from 'crypto';
 
 @ApiTags(SwaggerSteakeyConfigEnum.TAG_CARD)
 @Traceable()
@@ -1569,6 +1570,10 @@ export class CardServiceController extends AccountServiceController {
     throw new NotImplementedException();
   }
 
+  private createHash(key: string) {
+    return crypto.createHash('sha256').update(key).digest('hex');
+  }
+
   //@ApiExcludeEndpoint()
   @Post('recharge')
   @ApiTags(SwaggerSteakeyConfigEnum.TAG_CARD)
@@ -1576,6 +1581,24 @@ export class CardServiceController extends AccountServiceController {
   @ApiBearerAuth('bearerToken')
   @UseGuards(ApiKeyAuthGuard)
   async rechargeOne(@Body() createDto: CardDepositCreateDto, @Req() req?: any) {
+    const hashTx = this.createHash(
+      JSON.stringify({
+        from: createDto.from,
+        to: createDto.to,
+        amount: createDto.amount,
+      }),
+    );
+    const data = await this.cacheManager.get(hashTx);
+    this.logger.info(
+      `[rechargeOne] hash: ${hashTx} - inCache: ${JSON.stringify(
+        data,
+      )} - data: ${JSON.stringify(createDto)}`,
+    );
+    if (data) {
+      throw new BadRequestException('Transaction already processed');
+    }
+    await this.cacheManager.set(hashTx, createDto, 1 * 60 * 1000);
+
     const user: User = await this.getUser(req?.user?.id);
     if (!user.personalData) {
       throw new BadRequestException('Need the personal data to continue');
