@@ -181,9 +181,15 @@ export class TransferServiceController implements GenericServiceController {
     //query = await this.filterFromUserPermissions(query, req);
     this.logger.info(`[findAll] query: ${JSON.stringify(query)}`);
 
-    query.where.showToOwner = isBoolean(query.where.showToOwner)
+    const showToOwner = isBoolean(query?.where?.showToOwner)
       ? query.where.showToOwner
       : true;
+
+    query.where = {
+      ...query?.where,
+      showToOwner,
+    };
+
     const result = await this.transferService.getAll(query);
 
     this.logger.info(`[findAll] result: ${JSON.stringify(result)}`);
