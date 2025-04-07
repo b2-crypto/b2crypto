@@ -248,8 +248,6 @@ export class CardServiceController extends AccountServiceController {
     return rta;
   }
 
-
-
   @ApiSecurity('b2crypto-key')
   @ApiBearerAuth('bearerToken')
   @Post('create')
@@ -536,7 +534,7 @@ export class CardServiceController extends AccountServiceController {
           null,
           `Compra de ${createDto.type} ${createDto.accountType} ${level.name}`,
           `Reversal`,
-          true
+          true,
         );
       }
       this.logger.error(
@@ -606,7 +604,7 @@ export class CardServiceController extends AccountServiceController {
     if (totalPurchase > account.amount * 0.9) {
       throw new BadRequestException('Wallet with not enough balance');
     }
-  
+
     return this.cardBuilder.getPromiseTransferEventClient(
       EventsNamesTransferEnum.createOne,
       {
