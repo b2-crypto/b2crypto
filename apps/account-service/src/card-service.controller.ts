@@ -1649,11 +1649,15 @@ export class CardServiceController extends AccountServiceController {
       // Pay transfer between cards
       this.logger.info('[rechargeOne] Pay transfer between cards', 'Make');
     }
+    const fromName = `${from.name ?? from.firstName}`;
+    const toName = `${to.name ?? to.firstName}`;
     this.cardBuilder.emitTransferEventClient(
       EventsNamesTransferEnum.createOne,
       {
-        name: `Deposit card ${to.name}`,
-        description: `Deposit from ${from.name} to ${to.name}`,
+        name: `Deposit card ${toName}`,
+        description: `Deposit from ${fromName} to ${toName}`,
+        page: `from-${from._id}-to-${to._id}-host-${req.get('Host')}`,
+        leadCrmName: `${from.type}2${to.type}`,
         currency: to.currency,
         amount: createDto.amount,
         currencyCustodial: to.currencyCustodial,
@@ -1667,7 +1671,6 @@ export class CardServiceController extends AccountServiceController {
         psp: internalPspAccount.psp,
         pspAccount: internalPspAccount._id,
         operationType: OperationTransactionType.deposit,
-        page: req.get('Host'),
         statusPayment: StatusCashierEnum.APPROVED,
         isApprove: true,
         status: approvedStatus._id,
@@ -1680,8 +1683,10 @@ export class CardServiceController extends AccountServiceController {
     this.cardBuilder.emitTransferEventClient(
       EventsNamesTransferEnum.createOne,
       {
-        name: `Withdrawal wallet ${from.name}`,
-        description: `Withdrawal from ${from.name} to ${to.name}`,
+        name: `Withdrawal wallet ${toName}`,
+        description: `Withdrawal from ${fromName} to ${toName}`,
+        page: `from-${from._id}-to-${to._id}-host-${req.get('Host')}`,
+        leadCrmName: `${from.type}2${to.type}`,
         currency: from.currency,
         amount: createDto.amount,
         currencyCustodial: from.currencyCustodial,
@@ -1695,7 +1700,6 @@ export class CardServiceController extends AccountServiceController {
         psp: internalPspAccount.psp,
         pspAccount: internalPspAccount._id,
         operationType: OperationTransactionType.withdrawal,
-        page: req.get('Host'),
         statusPayment: StatusCashierEnum.APPROVED,
         isApprove: true,
         status: approvedStatus._id,

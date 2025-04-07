@@ -56,7 +56,7 @@ export class FiatIntegrationClient {
     private cacheManager: Cache,
     private readonly configService: ConfigService,
   ) {
-    this.TRM_API_URL = this.configService.getOrThrow('TRM_ENDPOINT');
+    this.TRM_API_URL = this.configService.getOrThrow('TRM_API_URL');
   }
 
   async getCurrencyConversionCustodial(
