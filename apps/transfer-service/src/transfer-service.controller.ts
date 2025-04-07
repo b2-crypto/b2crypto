@@ -73,7 +73,7 @@ import { PomeloProcessEnum } from 'apps/integration-service/src/enums/pomelo.pro
 import EventsNamesPspAccountEnum from 'apps/psp-service/src/enum/events.names.psp.acount.enum';
 import EventsNamesStatsEnum from 'apps/stats-service/src/enum/events.names.stats.enum';
 import EventsNamesStatusEnum from 'apps/status-service/src/enum/events.names.status.enum';
-import { isBoolean, isMongoId } from 'class-validator';
+import { isMongoId } from 'class-validator';
 import { SwaggerSteakeyConfigEnum } from 'libs/config/enum/swagger.stakey.config.enum';
 import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import { ApproveOrRejectDepositDto } from '../../../libs/transfer/src/dto/approve.or.reject.deposit.dto';
@@ -181,9 +181,10 @@ export class TransferServiceController implements GenericServiceController {
     //query = await this.filterFromUserPermissions(query, req);
     this.logger.info(`[findAll] query: ${JSON.stringify(query)}`);
 
-    const showToOwner = isBoolean(query?.where?.showToOwner)
-      ? query.where.showToOwner
-      : true;
+    const showToOwner =
+      typeof query?.where?.showToOwner === 'boolean'
+        ? query.where.showToOwner
+        : true;
 
     query.where = {
       ...query?.where,
@@ -206,6 +207,16 @@ export class TransferServiceController implements GenericServiceController {
   // @CheckPoliciesAbility(new PolicyHandlerTransferRead())
   async findAllMe(@Query() query: QuerySearchAnyDto, @Req() req?) {
     //query = await this.filterFromUserPermissions(query, req);
+    const showToOwner =
+      typeof query?.where?.showToOwner === 'boolean'
+        ? query.where.showToOwner
+        : true;
+
+    query.where = {
+      ...query?.where,
+      showToOwner,
+    };
+
     query = CommonService.getQueryWithUserId(query, req, 'userAccount');
     return this.transferService.getAll(query);
   }
