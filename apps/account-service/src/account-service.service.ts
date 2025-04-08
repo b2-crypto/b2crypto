@@ -191,7 +191,10 @@ export class AccountServiceService
       const walletCopy = wallet.toObject
         ? wallet.toObject()
         : JSON.parse(JSON.stringify(wallet));
-      tempResult[asset].networks[network].push(walletCopy);
+      tempResult[asset].networks[network].push({
+        ...walletCopy,
+        referral: walletCopy.referral ?? '',
+      });
     });
 
     const result = [];
