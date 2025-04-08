@@ -24,6 +24,10 @@ export class PersonEntity implements PersonInterface {
   email: string[];
   telephones: TelephoneModel[];
   phoneNumber: string;
+  preRegistry = false;
+  isPEP: boolean;
+  hasFamilyPEP: boolean;
+  rotatingContractDateAccept: Date;
   numDocId: string;
   typeDocId: DocIdTypeEnum;
   location: LocationModel;
@@ -41,4 +45,7 @@ export class PersonEntity implements PersonInterface {
   country: CountryCodeEnum;
   taxIdentificationType: string;
   taxIdentificationValue: string;
+  activitySector: string;
+  activityCode: string;
+  occupation: string;
 }
