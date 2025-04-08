@@ -61,7 +61,6 @@ import { UserEntity } from '@user/user/entities/user.entity';
 import EventsNamesActivityEnum from 'apps/activity-service/src/enum/events.names.activity.enum';
 import EventsNamesMessageEnum from 'apps/message-service/src/enum/events.names.message.enum';
 import EventsNamesPersonEnum from 'apps/person-service/src/enum/events.names.person.enum';
-import { isBoolean } from 'class-validator';
 import { SwaggerSteakeyConfigEnum } from 'libs/config/enum/swagger.stakey.config.enum';
 import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import { BadRequestError } from 'passport-headerapikey';
@@ -640,14 +639,14 @@ export class AuthServiceController {
     delete userCodeDto.user.twoFactorSecret;
     delete userCodeDto.user.twoFactorIsActive;
     // Checks verified email (first time sing-in)
-    const statusCode =
-      !isBoolean(userCodeDto.user.verifyEmail) ||
-      userCodeDto.user.verifyEmail === true
-        ? HttpStatus.OK
-        : HttpStatus.CREATED;
+    // const statusCode =
+    //   !isBoolean(userCodeDto.user.verifyEmail) ||
+    //   userCodeDto.user.verifyEmail === true
+    //     ? HttpStatus.OK
+    //     : HttpStatus.CREATED;
     // Get token
     let rta = {
-      statusCode,
+      statusCode: HttpStatus.OK,
       access_token: await this.authService.getTokenData(userCodeDto.user),
       refresh_token: await this.authService.getTokenData(
         userCodeDto.user,
