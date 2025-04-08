@@ -201,7 +201,7 @@ export class WalletServiceController extends AccountServiceController {
     query.where = query.where ?? {};
     query.where.type = TypesAccountEnum.WALLET;
     query.where.brand = req.user.brand;
-    return this.walletService.availableWalletsFireblocks(query);
+    return this.walletService.availableWalletsFireblocksLegacy(query);
   }
 
   @Get('networks')
@@ -258,6 +258,8 @@ export class WalletServiceController extends AccountServiceController {
   ) {
     const userId = req?.user.id;
 
+    const baseWallet = await this.validateUpsertWalletFireblocks(upsertOneMe);
+
     const result = await this.walletService.findAll({
       where: {
         owner: new mongo.ObjectId(userId),
@@ -278,15 +280,6 @@ export class WalletServiceController extends AccountServiceController {
 
       return this.walletService.updateOne(walletForUpdate);
     }
-
-    const res = await this.walletService.availableWalletsFireblocks({
-      where: { accountId: upsertOneMe.accountId },
-    });
-
-    const baseWallet = res.data[0]?.network[0]?.wallets[0];
-
-    if (!baseWallet)
-      throw new NotFoundException(`Wallet ${upsertOneMe.accountId} not found`);
 
     const walletForCreate = {
       ...upsertOneMe,
@@ -336,6 +329,27 @@ export class WalletServiceController extends AccountServiceController {
     throw new BadRequestException(
       `The accountType ${walletForCreate.accountType} is not valid`,
     );
+  }
+
+  private async validateUpsertWalletFireblocks(
+    dto: WalletCreateDto | WalletUpsertOneMeDto,
+  ) {
+    if (['TRX_USDT_S2UZ', 'USDT_ARB'].includes(dto.accountId)) {
+      throw new BadRequestException(
+        `Account ${dto.accountId} is not available`,
+      );
+    }
+
+    const res = await this.walletService.availableWalletsFireblocks({
+      where: { accountId: dto.accountId },
+    });
+
+    const baseWallet = res.data[0]?.network[0]?.wallets[0];
+
+    if (!baseWallet)
+      throw new NotFoundException(`Wallet ${dto.accountId} not found`);
+
+    return baseWallet;
   }
 
   private async createWalletFireblocks(createDto: WalletCreateDto, req?: any) {
