@@ -646,7 +646,7 @@ export class AuthServiceController {
     //     : HttpStatus.CREATED;
     // Get token
     let rta = {
-      statusCode: HttpStatus.OK,
+      statusCode: HttpStatus.CREATED,
       access_token: await this.authService.getTokenData(userCodeDto.user),
       refresh_token: await this.authService.getTokenData(
         userCodeDto.user,
