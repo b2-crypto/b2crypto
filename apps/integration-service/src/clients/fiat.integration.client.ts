@@ -56,7 +56,7 @@ export class FiatIntegrationClient {
     private cacheManager: Cache,
     private readonly configService: ConfigService,
   ) {
-    this.TRM_API_URL = this.configService.getOrThrow('TRM_ENDPOINT');
+    this.TRM_API_URL = this.configService.getOrThrow('TRM_API_URL');
   }
 
   async getCurrencyConversionCustodial(
@@ -86,7 +86,7 @@ export class FiatIntegrationClient {
           },
         }).then<IPair>((response) => response.json()));
 
-      if (!pairCached)
+      if (!pairCached?.value)
         await this.cacheManager.set(pair, pairResponse, 48 * 60 * 60 * 1000);
 
       return pairResponse;

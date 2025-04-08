@@ -24,7 +24,7 @@ import TelephoneDto from './telephone.dto';
 export class PersonCreateDto extends CreateAnyDto {
   @IsBoolean()
   preRegistry = false;
-
+  
   @IsBoolean()
   @IsOptional()
   isPEP: boolean;
@@ -143,30 +143,6 @@ export class PersonCreateDto extends CreateAnyDto {
   @IsString()
   @IsOptional()
   phoneNumber: string;
-
-  @ApiProperty({
-    required: false,
-    description: 'Person activity sector',
-  })
-  @IsString()
-  @IsOptional()
-  activitySector: string;
-
-  @ApiProperty({
-    required: false,
-    description: 'Person activity code (CIIU)',
-  })
-  @IsString()
-  @IsOptional()
-  activityCode: string;
-
-  @ApiProperty({
-    required: false,
-    description: 'Person occupation',
-  })
-  @IsString()
-  @IsOptional()
-  occupation: string;
 
   @ApiProperty({
     required: false,

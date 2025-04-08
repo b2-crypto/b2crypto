@@ -142,8 +142,9 @@ config:
   b2crypto-iac:COMMISION_NATIONAL:
     secure: AAABAIUQ4mbREfArUY5Ov0JIdMKlanYYABjNfBxv398axnPT
   b2crypto-iac:APP_VERSION: 0.9.0
-  b2crypto-iac:TRM_ENDPOINT: https://api-trms-staging.b2fintech.com
   b2crypto-iac:OTEL_EXPORTER_OTLP_ENDPOINT:
     secure: AAABAKI3KQFSHYrBdzTabvyBFq/12+xEI3YMLK115JSJH3Pp7ZgFqZm9zjRux9g7ZJps+9sAcmYWLFO4e20=
   b2crypto-iac:OTEL_EXPORTER_OTLP_HEADERS:
     secure: AAABALMNHJH0p4Ih0RVa5+x50fGppi8LmEp2UY5GNYYyZCXSakL/eBfx5sxME3EtwyHcK8/KfHM4WTL4m+usvvUcJlDy8QfdX7CUSN9Z1fi/SSPClHu+taI=
+  b2crypto-iac:TRM_API_URL:
+    secure: AAABAOXFPDF3IGyQyzLPFegDpbH33oglG7Rp1Mx+HM7htZaANeRC9db3j1/V+XcORGSi/Zbjt/ISLBEl3FhEupQIhrUTPQ==

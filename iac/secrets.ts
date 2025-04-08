@@ -44,6 +44,7 @@ export const SECRETS = pulumi
     config.requireSecret('COMMISION_INTERNATIONAL'),
     config.requireSecret('OTEL_EXPORTER_OTLP_ENDPOINT'),
     config.requireSecret('OTEL_EXPORTER_OTLP_HEADERS'),
+    config.requireSecret('TRM_API_URL'),
   ])
   .apply(
     ([
@@ -87,6 +88,7 @@ export const SECRETS = pulumi
       COMMISION_INTERNATIONAL,
       OTEL_EXPORTER_OTLP_ENDPOINT,
       OTEL_EXPORTER_OTLP_HEADERS,
+      TRM_API_URL,
     ]) => ({
       DATABASE_URL,
       RABBIT_MQ_HOST,
@@ -128,6 +130,7 @@ export const SECRETS = pulumi
       COMMISION_INTERNATIONAL,
       OTEL_EXPORTER_OTLP_ENDPOINT,
       OTEL_EXPORTER_OTLP_HEADERS,
+      TRM_API_URL,
     }),
   );
 
@@ -246,7 +249,6 @@ export const OPTL_COLLECTOR_MAX_CAPACITY_AUTOSCALING = parseInt(
 export const TASK_CPU_MONOLITH = config.require('TASK_CPU_MONOLITH');
 
 export const TASK_MEMORY_MONOLITH = config.require('TASK_MEMORY_MONOLITH');
-export const TRM_ENDPOINT = config.require('TRM_ENDPOINT');
 
 export const TAGS = {
   Company: COMPANY_NAME,

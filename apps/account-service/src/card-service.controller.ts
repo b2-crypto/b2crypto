@@ -89,6 +89,7 @@ import { AccountServiceController } from './account-service.controller';
 import { AccountServiceService } from './account-service.service';
 import { AfgNamesEnum } from './enum/afg.names.enum';
 import EventsNamesAccountEnum from './enum/events.names.account.enum';
+import * as crypto from 'crypto';
 
 @ApiTags(SwaggerSteakeyConfigEnum.TAG_CARD)
 @Traceable()
@@ -1569,6 +1570,10 @@ export class CardServiceController extends AccountServiceController {
     throw new NotImplementedException();
   }
 
+  private createHash(key: string) {
+    return crypto.createHash('sha256').update(key).digest('hex');
+  }
+
   //@ApiExcludeEndpoint()
   @Post('recharge')
   @ApiTags(SwaggerSteakeyConfigEnum.TAG_CARD)
@@ -1576,6 +1581,24 @@ export class CardServiceController extends AccountServiceController {
   @ApiBearerAuth('bearerToken')
   @UseGuards(ApiKeyAuthGuard)
   async rechargeOne(@Body() createDto: CardDepositCreateDto, @Req() req?: any) {
+    const hashTx = this.createHash(
+      JSON.stringify({
+        from: createDto.from,
+        to: createDto.to,
+        amount: createDto.amount,
+      }),
+    );
+    const data = await this.cacheManager.get(hashTx);
+    this.logger.info(
+      `[rechargeOne] hash: ${hashTx} - inCache: ${JSON.stringify(
+        data,
+      )} - data: ${JSON.stringify(createDto)}`,
+    );
+    if (data) {
+      throw new BadRequestException('Transaction already processed');
+    }
+    await this.cacheManager.set(hashTx, createDto, 1 * 60 * 1000);
+
     const user: User = await this.getUser(req?.user?.id);
     if (!user.personalData) {
       throw new BadRequestException('Need the personal data to continue');
@@ -1649,11 +1672,15 @@ export class CardServiceController extends AccountServiceController {
       // Pay transfer between cards
       this.logger.info('[rechargeOne] Pay transfer between cards', 'Make');
     }
+    const fromName = `${from.name ?? from.firstName}`;
+    const toName = `${to.name ?? to.firstName}`;
     this.cardBuilder.emitTransferEventClient(
       EventsNamesTransferEnum.createOne,
       {
-        name: `Deposit card ${to.name}`,
-        description: `Deposit from ${from.name} to ${to.name}`,
+        name: `Deposit card ${toName}`,
+        description: `Deposit from ${fromName} to ${toName}`,
+        page: `from-${from._id}-to-${to._id}-host-${req.get('Host')}`,
+        leadCrmName: `${from.type}2${to.type}`,
         currency: to.currency,
         amount: createDto.amount,
         currencyCustodial: to.currencyCustodial,
@@ -1667,7 +1694,6 @@ export class CardServiceController extends AccountServiceController {
         psp: internalPspAccount.psp,
         pspAccount: internalPspAccount._id,
         operationType: OperationTransactionType.deposit,
-        page: req.get('Host'),
         statusPayment: StatusCashierEnum.APPROVED,
         isApprove: true,
         status: approvedStatus._id,
@@ -1680,8 +1706,10 @@ export class CardServiceController extends AccountServiceController {
     this.cardBuilder.emitTransferEventClient(
       EventsNamesTransferEnum.createOne,
       {
-        name: `Withdrawal wallet ${from.name}`,
-        description: `Withdrawal from ${from.name} to ${to.name}`,
+        name: `Withdrawal wallet ${toName}`,
+        description: `Withdrawal from ${fromName} to ${toName}`,
+        page: `from-${from._id}-to-${to._id}-host-${req.get('Host')}`,
+        leadCrmName: `${from.type}2${to.type}`,
         currency: from.currency,
         amount: createDto.amount,
         currencyCustodial: from.currencyCustodial,
@@ -1695,7 +1723,6 @@ export class CardServiceController extends AccountServiceController {
         psp: internalPspAccount.psp,
         pspAccount: internalPspAccount._id,
         operationType: OperationTransactionType.withdrawal,
-        page: req.get('Host'),
         statusPayment: StatusCashierEnum.APPROVED,
         isApprove: true,
         status: approvedStatus._id,
