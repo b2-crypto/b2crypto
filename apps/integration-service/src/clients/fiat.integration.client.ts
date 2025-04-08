@@ -86,7 +86,7 @@ export class FiatIntegrationClient {
           },
         }).then<IPair>((response) => response.json()));
 
-      if (!pairCached?.value)
+      if (!pairCached)
         await this.cacheManager.set(pair, pairResponse, 48 * 60 * 60 * 1000);
 
       return pairResponse;

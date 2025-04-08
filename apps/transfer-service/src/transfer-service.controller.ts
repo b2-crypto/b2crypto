@@ -181,6 +181,16 @@ export class TransferServiceController implements GenericServiceController {
     //query = await this.filterFromUserPermissions(query, req);
     this.logger.info(`[findAll] query: ${JSON.stringify(query)}`);
 
+    const showToOwner =
+      typeof query?.where?.showToOwner === 'boolean'
+        ? query.where.showToOwner
+        : true;
+
+    query.where = {
+      ...query?.where,
+      showToOwner,
+    };
+
     const result = await this.transferService.getAll(query);
 
     this.logger.info(`[findAll] result: ${JSON.stringify(result)}`);
@@ -197,6 +207,16 @@ export class TransferServiceController implements GenericServiceController {
   // @CheckPoliciesAbility(new PolicyHandlerTransferRead())
   async findAllMe(@Query() query: QuerySearchAnyDto, @Req() req?) {
     //query = await this.filterFromUserPermissions(query, req);
+    const showToOwner =
+      typeof query?.where?.showToOwner === 'boolean'
+        ? query.where.showToOwner
+        : true;
+
+    query.where = {
+      ...query?.where,
+      showToOwner,
+    };
+
     query = CommonService.getQueryWithUserId(query, req, 'userAccount');
     return this.transferService.getAll(query);
   }
