@@ -1,19 +1,27 @@
 import { AccountCreateDto } from '@account/account/dto/account.create.dto';
+import { AccountUpdateDto } from '@account/account/dto/account.update.dto';
 import { CardDepositCreateDto } from '@account/account/dto/card-deposit.create.dto';
 import { CardCreateDto } from '@account/account/dto/card.create.dto';
+import { ConfigCardActivateDto } from '@account/account/dto/config.card.activate.dto';
+import { PinUpdateDto } from '@account/account/dto/pin.update.dto';
 import { AccountEntity } from '@account/account/entities/account.entity';
+import { AccountInterface } from '@account/account/entities/account.interface';
 import { AccountDocument } from '@account/account/entities/mongoose/account.schema';
 import { Card } from '@account/account/entities/mongoose/card.schema';
 import { UserCard } from '@account/account/entities/mongoose/user-card.schema';
 import CardTypesAccountEnum from '@account/account/enum/card.types.account.enum';
 import StatusAccountEnum from '@account/account/enum/status.account.enum';
 import TypesAccountEnum from '@account/account/enum/types.account.enum';
+import WalletTypesAccountEnum from '@account/account/enum/wallet.types.account.enum';
+import { Traceable } from '@amplication/opentelemetry-nestjs';
 import { ApiKeyAuthGuard } from '@auth/auth/guards/api.key.guard';
 import { BuildersService } from '@builder/builders';
+import { CategoryInterface } from '@category/category/entities/category.interface';
 import { CommonService } from '@common/common';
 import { NoCache } from '@common/common/decorators/no-cache.decorator';
 import CountryCodeEnum from '@common/common/enums/country.code.b2crypto.enum';
 import CurrencyCodeB2cryptoEnum from '@common/common/enums/currency-code-b2crypto.enum';
+import DocIdTypeEnum from '@common/common/enums/DocIdTypeEnum';
 import { CardsEnum } from '@common/common/enums/messages.enum';
 import ResourcesEnum from '@common/common/enums/ResourceEnum';
 import { StatusCashierEnum } from '@common/common/enums/StatusCashierEnum';
@@ -28,6 +36,7 @@ import {
   Body,
   Controller,
   Get,
+  HttpStatus,
   Inject,
   NotFoundException,
   NotImplementedException,
@@ -54,7 +63,11 @@ import {
   ApiSecurity,
   ApiTags,
 } from '@nestjs/swagger';
+import { OutboxServiceMongooseService } from '@outbox/outbox';
+import { OutboxCreateDto } from '@outbox/outbox/dto/outbox.create.dto';
+import { OutboxEvents } from '@outbox/outbox/enums/outbox.events';
 import { AddressSchema } from '@person/person/entities/mongoose/address.schema';
+import { PspAccountInterface } from '@psp-account/psp-account/entities/psp-account.interface';
 import { TransferCreateDto } from '@transfer/transfer/dto/transfer.create.dto';
 import { OperationTransactionType } from '@transfer/transfer/enum/operation.transaction.type.enum';
 import { User } from '@user/user/entities/mongoose/user.schema';
@@ -70,18 +83,9 @@ import EventsNamesUserEnum from 'apps/user-service/src/enum/events.names.user.en
 import { UserServiceService } from 'apps/user-service/src/user-service.service';
 import { isEmpty, isNumber, isString } from 'class-validator';
 import { SwaggerSteakeyConfigEnum } from 'libs/config/enum/swagger.stakey.config.enum';
-import * as pug from 'pug';
-
-import { AccountUpdateDto } from '@account/account/dto/account.update.dto';
-import { ConfigCardActivateDto } from '@account/account/dto/config.card.activate.dto';
-import { PinUpdateDto } from '@account/account/dto/pin.update.dto';
-import { AccountInterface } from '@account/account/entities/account.interface';
-import WalletTypesAccountEnum from '@account/account/enum/wallet.types.account.enum';
-import { Traceable } from '@amplication/opentelemetry-nestjs';
-import { CategoryInterface } from '@category/category/entities/category.interface';
-import DocIdTypeEnum from '@common/common/enums/DocIdTypeEnum';
-import { PspAccountInterface } from '@psp-account/psp-account/entities/psp-account.interface';
+import mongoose from 'mongoose';
 import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
+import * as pug from 'pug';
 import { ResponsePaginator } from '../../../libs/common/src/interfaces/response-pagination.interface';
 import { AccountServiceController } from './account-service.controller';
 import { AccountServiceService } from './account-service.service';
@@ -109,6 +113,8 @@ export class CardServiceController extends AccountServiceController {
     private readonly integration: IntegrationService,
     private readonly configService: ConfigService,
     private readonly currencyConversion: FiatIntegrationClient,
+    @Inject(OutboxServiceMongooseService)
+    private readonly outboxService: OutboxServiceMongooseService,
   ) {
     super(logger, cardService, cardBuilder);
   }
@@ -1784,8 +1790,22 @@ export class CardServiceController extends AccountServiceController {
       const cardId = (rta.data && rta.data['id']) || rta['id'];
       this.logger.info(`[physicalActiveCard] cardId actived ${cardId}`);
 
+      const createdAt = new Date();
+
+      const outbox = {
+        _id: new mongoose.Types.ObjectId(),
+        topic: OutboxEvents.sendOutbox,
+        correlationId: cardId,
+        jsonPayload: JSON.stringify({ cardId, rta }),
+        createdAt,
+        updatedAt: createdAt,
+        publishAfter: new Date(createdAt.getTime() + 15 * 1000),
+      } satisfies OutboxCreateDto;
+
+      await this.outboxService.create(outbox);
+
       return {
-        statusCode: 200,
+        statusCode: HttpStatus.OK,
         data: 'Card actived',
       };
 
