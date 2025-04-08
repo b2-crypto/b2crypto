@@ -40,6 +40,13 @@ export interface PersonInterface {
   country: CountryCodeEnum;
   taxIdentificationType: string;
   taxIdentificationValue: string;
+  preRegistry: boolean;
+  isPEP: boolean;
+  hasFamilyPEP: boolean;
+  rotatingContractDateAccept: Date;
+  activitySector: string;
+  activityCode: string;
+  occupation: string;
 }
 
 export const PersonPropertiesRelations = [
