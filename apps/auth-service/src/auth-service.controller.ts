@@ -644,7 +644,7 @@ export class AuthServiceController {
       !isBoolean(userCodeDto.user.verifyEmail) ||
       userCodeDto.user.verifyEmail === true
         ? HttpStatus.OK
-        : HttpStatus.NON_AUTHORITATIVE_INFORMATION;
+        : HttpStatus.CREATED;
     // Get token
     let rta = {
       statusCode,
