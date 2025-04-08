@@ -579,6 +579,7 @@ export class AuthServiceController {
       delete user.twoFactorQr;
       delete user.twoFactorSecret;
     }
+
     return this.authorizationEvent({
       user: user,
       code: req.body.code,
@@ -642,8 +643,8 @@ export class AuthServiceController {
     const statusCode =
       !isBoolean(userCodeDto.user.verifyEmail) ||
       userCodeDto.user.verifyEmail === true
-        ? 301
-        : 201;
+        ? HttpStatus.OK
+        : HttpStatus.NON_AUTHORITATIVE_INFORMATION;
     // Get token
     let rta = {
       statusCode,
