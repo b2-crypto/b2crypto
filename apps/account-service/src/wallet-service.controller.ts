@@ -31,6 +31,7 @@ import {
   Delete,
   Get,
   Inject,
+  NotFoundException,
   NotImplementedException,
   Param,
   Patch,
@@ -146,7 +147,7 @@ export class WalletServiceController extends AccountServiceController {
       cacheNameWalletCreate,
     );
     if (!creating && rta.totalElements == 0) {
-      await this.cacheManager.set(cacheNameWalletCreate, true, 6 * 1000);
+      await this.cacheManager.set(cacheNameWalletCreate, true, 15 * 1000);
       await this.createOne(
         {
           owner: query.where.owner,
@@ -200,7 +201,7 @@ export class WalletServiceController extends AccountServiceController {
     query.where = query.where ?? {};
     query.where.type = TypesAccountEnum.WALLET;
     query.where.brand = req.user.brand;
-    return this.walletService.availableWalletsFireblocks(query);
+    return this.walletService.availableWalletsFireblocksLegacy(query);
   }
 
   @Get('networks')
@@ -257,6 +258,8 @@ export class WalletServiceController extends AccountServiceController {
   ) {
     const userId = req?.user.id;
 
+    const baseWallet = await this.validateUpsertWalletFireblocks(upsertOneMe);
+
     const result = await this.walletService.findAll({
       where: {
         owner: new mongo.ObjectId(userId),
@@ -278,21 +281,10 @@ export class WalletServiceController extends AccountServiceController {
       return this.walletService.updateOne(walletForUpdate);
     }
 
-    const accountMap = new Map<string, string>([
-      ['TRX_USDT_S2UZ', 'USD Theter (Tron)'],
-      ['USDT_ARB', 'Tether USD (Arbitrum)'],
-    ]);
-
-    const walletName = accountMap.get(upsertOneMe.accountId);
-
-    if (!walletName) {
-      throw new BadRequestException('Account id not valid');
-    }
-
     const walletForCreate = {
       ...upsertOneMe,
       owner: userId,
-      name: walletName,
+      name: baseWallet.name,
       accountType: WalletTypesAccountEnum.VAULT,
       type: TypesAccountEnum.WALLET,
       pin: CommonService.getNumberDigits(
@@ -337,6 +329,27 @@ export class WalletServiceController extends AccountServiceController {
     throw new BadRequestException(
       `The accountType ${walletForCreate.accountType} is not valid`,
     );
+  }
+
+  private async validateUpsertWalletFireblocks(
+    dto: WalletCreateDto | WalletUpsertOneMeDto,
+  ) {
+    if (['TRX_USDT_S2UZ', 'USDT_ARB'].includes(dto.accountId)) {
+      throw new BadRequestException(
+        `Account ${dto.accountId} is not available`,
+      );
+    }
+
+    const res = await this.walletService.availableWalletsFireblocks({
+      where: { accountId: dto.accountId },
+    });
+
+    const baseWallet = res.data[0]?.network[0]?.wallets[0];
+
+    if (!baseWallet)
+      throw new NotFoundException(`Wallet ${dto.accountId} not found`);
+
+    return baseWallet;
   }
 
   private async createWalletFireblocks(createDto: WalletCreateDto, req?: any) {
@@ -694,7 +707,7 @@ export class WalletServiceController extends AccountServiceController {
           },
         },
       })
-    ).list[0];
+    ).data[0]?.network[0]?.wallets[0];
 
     if (!walletBase) {
       throw new BadRequestException(

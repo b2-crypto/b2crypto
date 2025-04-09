@@ -140,6 +140,7 @@ export class CategoryServiceService {
     page.list = paginator.list.map((pa) => new PspAccountResponseDto(pa));
     return page;
   }
+
   async getGeographicDataFromLibrary(
     type: string,
     parentId?: string,

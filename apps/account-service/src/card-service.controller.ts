@@ -80,13 +80,16 @@ import WalletTypesAccountEnum from '@account/account/enum/wallet.types.account.e
 import { Traceable } from '@amplication/opentelemetry-nestjs';
 import { CategoryInterface } from '@category/category/entities/category.interface';
 import DocIdTypeEnum from '@common/common/enums/DocIdTypeEnum';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { PspAccountInterface } from '@psp-account/psp-account/entities/psp-account.interface';
+import { Cache } from 'cache-manager';
 import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import { ResponsePaginator } from '../../../libs/common/src/interfaces/response-pagination.interface';
 import { AccountServiceController } from './account-service.controller';
 import { AccountServiceService } from './account-service.service';
 import { AfgNamesEnum } from './enum/afg.names.enum';
 import EventsNamesAccountEnum from './enum/events.names.account.enum';
+import * as crypto from 'crypto';
 
 @ApiTags(SwaggerSteakeyConfigEnum.TAG_CARD)
 @Traceable()
@@ -109,6 +112,7 @@ export class CardServiceController extends AccountServiceController {
     private readonly integration: IntegrationService,
     private readonly configService: ConfigService,
     private readonly currencyConversion: FiatIntegrationClient,
+    @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
   ) {
     super(logger, cardService, cardBuilder);
   }
@@ -245,8 +249,6 @@ export class CardServiceController extends AccountServiceController {
     return rta;
   }
 
-
-
   @ApiSecurity('b2crypto-key')
   @ApiBearerAuth('bearerToken')
   @Post('create')
@@ -365,14 +367,13 @@ export class CardServiceController extends AccountServiceController {
     let tx = null;
     if (price > 0) {
       try {
-
         tx = await this.txPurchaseCard(
+          createDto.fromAccountId,
           price,
           user,
           `PURCHASE_${createDto.type}_${createDto.accountType}`,
           null,
           `Compra de ${createDto.type} ${createDto.accountType} ${level.name}`,
-          createDto.fromAccountId,
         );
       } catch (err) {
         await this.getAccountService().deleteOneById(account._id);
@@ -527,6 +528,7 @@ export class CardServiceController extends AccountServiceController {
       await this.getAccountService().deleteOneById(account._id);
       if (price > 0) {
         await this.txPurchaseCard(
+          createDto.fromAccountId,
           price,
           user,
           `REVERSAL_PURCHASE_${createDto.type}_${createDto.accountType}`,
@@ -534,7 +536,6 @@ export class CardServiceController extends AccountServiceController {
           `Compra de ${createDto.type} ${createDto.accountType} ${level.name}`,
           `Reversal`,
           true,
-          createDto.fromAccountId,
         );
       }
       this.logger.error(
@@ -562,6 +563,7 @@ export class CardServiceController extends AccountServiceController {
   }
 
   private async txPurchaseCard(
+    fromAccountId: string,
     totalPurchase: number,
     owner: User,
     type: string,
@@ -569,7 +571,6 @@ export class CardServiceController extends AccountServiceController {
     description?: string,
     page?: string,
     reversal = false,
-    fromAccountId?: string,
   ) {
     const pspAccount = await this.getPspAccountBySlug(
       CommonService.getSlug('b2fintech'),
@@ -579,27 +580,32 @@ export class CardServiceController extends AccountServiceController {
         ? CommonService.getSlug('Reversal purchase')
         : CommonService.getSlug('Purchase wallet'),
     );
-    if (!account) {
 
-   
+    if (!account) {
+      const accountQuery = {
+        where: {
+          type: 'WALLET',
+          owner: owner._id,
+          _id: fromAccountId,
+        },
+      };
+
       const listAccount = await this.cardBuilder.getPromiseAccountEventClient(
         EventsNamesAccountEnum.findAll,
-        {
-          where: {
-            type: 'WALLET',
-            accountId: fromAccountId ?? 'TRX_USDT_S2UZ',
-            owner: owner._id,
-          },
-        },
+        accountQuery,
       );
+
       if (!listAccount.totalElements) {
         throw new BadRequestException('Need wallet to pay');
       }
+
       account = listAccount.list[0];
     }
+
     if (totalPurchase > account.amount * 0.9) {
-      throw new BadRequestException('Wallet with enough balance');
+      throw new BadRequestException('Wallet with not enough balance');
     }
+
     return this.cardBuilder.getPromiseTransferEventClient(
       EventsNamesTransferEnum.createOne,
       {
@@ -1564,6 +1570,10 @@ export class CardServiceController extends AccountServiceController {
     throw new NotImplementedException();
   }
 
+  private createHash(key: string) {
+    return crypto.createHash('sha256').update(key).digest('hex');
+  }
+
   //@ApiExcludeEndpoint()
   @Post('recharge')
   @ApiTags(SwaggerSteakeyConfigEnum.TAG_CARD)
@@ -1571,6 +1581,24 @@ export class CardServiceController extends AccountServiceController {
   @ApiBearerAuth('bearerToken')
   @UseGuards(ApiKeyAuthGuard)
   async rechargeOne(@Body() createDto: CardDepositCreateDto, @Req() req?: any) {
+    const hashTx = this.createHash(
+      JSON.stringify({
+        from: createDto.from,
+        to: createDto.to,
+        amount: createDto.amount,
+      }),
+    );
+    const data = await this.cacheManager.get(hashTx);
+    this.logger.info(
+      `[rechargeOne] hash: ${hashTx} - inCache: ${JSON.stringify(
+        data,
+      )} - data: ${JSON.stringify(createDto)}`,
+    );
+    if (data) {
+      throw new BadRequestException('Transaction already processed');
+    }
+    await this.cacheManager.set(hashTx, createDto, 1 * 60 * 1000);
+
     const user: User = await this.getUser(req?.user?.id);
     if (!user.personalData) {
       throw new BadRequestException('Need the personal data to continue');
@@ -1644,11 +1672,15 @@ export class CardServiceController extends AccountServiceController {
       // Pay transfer between cards
       this.logger.info('[rechargeOne] Pay transfer between cards', 'Make');
     }
+    const fromName = `${from.name ?? from.firstName}`;
+    const toName = `${to.name ?? to.firstName}`;
     this.cardBuilder.emitTransferEventClient(
       EventsNamesTransferEnum.createOne,
       {
-        name: `Deposit card ${to.name}`,
-        description: `Deposit from ${from.name} to ${to.name}`,
+        name: `Deposit card ${toName}`,
+        description: `Deposit from ${fromName} to ${toName}`,
+        page: `from-${from._id}-to-${to._id}-host-${req.get('Host')}`,
+        leadCrmName: `${from.type}2${to.type}`,
         currency: to.currency,
         amount: createDto.amount,
         currencyCustodial: to.currencyCustodial,
@@ -1662,7 +1694,6 @@ export class CardServiceController extends AccountServiceController {
         psp: internalPspAccount.psp,
         pspAccount: internalPspAccount._id,
         operationType: OperationTransactionType.deposit,
-        page: req.get('Host'),
         statusPayment: StatusCashierEnum.APPROVED,
         isApprove: true,
         status: approvedStatus._id,
@@ -1675,8 +1706,10 @@ export class CardServiceController extends AccountServiceController {
     this.cardBuilder.emitTransferEventClient(
       EventsNamesTransferEnum.createOne,
       {
-        name: `Withdrawal wallet ${from.name}`,
-        description: `Withdrawal from ${from.name} to ${to.name}`,
+        name: `Withdrawal wallet ${toName}`,
+        description: `Withdrawal from ${fromName} to ${toName}`,
+        page: `from-${from._id}-to-${to._id}-host-${req.get('Host')}`,
+        leadCrmName: `${from.type}2${to.type}`,
         currency: from.currency,
         amount: createDto.amount,
         currencyCustodial: from.currencyCustodial,
@@ -1690,7 +1723,6 @@ export class CardServiceController extends AccountServiceController {
         psp: internalPspAccount.psp,
         pspAccount: internalPspAccount._id,
         operationType: OperationTransactionType.withdrawal,
-        page: req.get('Host'),
         statusPayment: StatusCashierEnum.APPROVED,
         isApprove: true,
         status: approvedStatus._id,
@@ -2223,6 +2255,22 @@ export class CardServiceController extends AccountServiceController {
     @Payload() data: any,
   ) {
     CommonService.ack(ctx);
+
+    const IS_PROCESSING_CHECK_CARDS_IN_POMELO =
+      'isProcessingCheckCardsInPomelo';
+
+    const checkCardsInPomelo = await this.cacheManager.get<boolean>(
+      IS_PROCESSING_CHECK_CARDS_IN_POMELO,
+    );
+
+    if (checkCardsInPomelo) return;
+
+    await this.cacheManager.set(
+      IS_PROCESSING_CHECK_CARDS_IN_POMELO,
+      true,
+      5 * 60 * 1000,
+    );
+
     try {
       this.logger.info(`[checkCardsCreatedInPomelo] Start`);
       const paginator: ResponsePaginator<User> = new ResponsePaginator<User>();

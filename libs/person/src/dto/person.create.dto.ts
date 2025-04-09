@@ -24,6 +24,18 @@ import TelephoneDto from './telephone.dto';
 export class PersonCreateDto extends CreateAnyDto {
   @IsBoolean()
   preRegistry = false;
+  
+  @IsBoolean()
+  @IsOptional()
+  isPEP: boolean;
+
+  @IsBoolean()
+  @IsOptional()
+  hasFamilyPEP: boolean;
+
+  @IsDate()
+  @IsOptional()
+  rotatingContractDateAccept: Date;
 
   @ApiProperty({
     required: true,
