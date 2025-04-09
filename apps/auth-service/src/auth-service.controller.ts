@@ -643,7 +643,7 @@ export class AuthServiceController {
     const statusCode =
       !isBoolean(userCodeDto.user.verifyEmail) ||
       userCodeDto.user.verifyEmail === true
-        ? HttpStatus.CREATED
+        ? HttpStatus.MOVED_PERMANENTLY
         : HttpStatus.CREATED;
     // Get token
     let rta = {
