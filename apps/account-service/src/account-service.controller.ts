@@ -35,6 +35,7 @@ import {
 import { ApiExcludeEndpoint, ApiTags } from '@nestjs/swagger';
 import EventsNamesStatusEnum from 'apps/status-service/src/enum/events.names.status.enum';
 import EventsNamesUserEnum from 'apps/user-service/src/enum/events.names.user.enum';
+import { isBoolean } from 'class-validator';
 import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import { AccountServiceService } from './account-service.service';
 import EventsNamesAccountEnum from './enum/events.names.account.enum';
@@ -90,7 +91,9 @@ export class AccountServiceController implements GenericServiceController {
   @NoCache()
   findAllMe(@Query() query: QuerySearchAnyDto, @Req() req?: any) {
     query = CommonService.getQueryWithUserId(query, req, 'owner');
-    query.where.showToOwner = query.where?.showToOwner ?? true;
+    query.where.showToOwner = isBoolean(query.where?.showToOwner)
+      ? query.where?.showToOwner
+      : true;
     return this.accountService.findAll(query);
   }
 
