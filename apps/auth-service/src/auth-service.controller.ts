@@ -65,6 +65,7 @@ import { SwaggerSteakeyConfigEnum } from 'libs/config/enum/swagger.stakey.config
 import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import { BadRequestError } from 'passport-headerapikey';
 import EventsNamesUserEnum from '../../user-service/src/enum/events.names.user.enum';
+import { isBoolean } from 'class-validator';
 
 @ApiTags('AUTHENTICATION')
 @Traceable()
@@ -639,14 +640,14 @@ export class AuthServiceController {
     delete userCodeDto.user.twoFactorSecret;
     delete userCodeDto.user.twoFactorIsActive;
     // Checks verified email (first time sing-in)
-    // const statusCode =
-    //   !isBoolean(userCodeDto.user.verifyEmail) ||
-    //   userCodeDto.user.verifyEmail === true
-    //     ? HttpStatus.OK
-    //     : HttpStatus.CREATED;
+    const statusCode =
+      !isBoolean(userCodeDto.user.verifyEmail) ||
+      userCodeDto.user.verifyEmail === true
+        ? HttpStatus.MOVED_PERMANENTLY
+        : HttpStatus.CREATED;
     // Get token
     let rta = {
-      statusCode: HttpStatus.CREATED,
+      statusCode,
       access_token: await this.authService.getTokenData(userCodeDto.user),
       refresh_token: await this.authService.getTokenData(
         userCodeDto.user,
