@@ -1,4 +1,5 @@
 export enum OutboxEvents {
-  sendOutbox = 'SEND.OUTBOX',
-  deleteOutbox = 'DELETE.OUTBOX',
+  sendOutboxReadyForPublish = 'SEND.OUTBOX.READY.FOR.PUBLISH',
+  sendOutboxLagging = 'SEND.OUTBOX.LAGGING',
+  removeOutbox = 'REMOVE.OUTBOX',
 }
