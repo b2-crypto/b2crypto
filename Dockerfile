@@ -1,9 +1,10 @@
 FROM public.ecr.aws/docker/library/node:20.17.0-alpine3.20 AS base
+# FROM public.ecr.aws/docker/library/node:22.14.0-alpine AS base
 WORKDIR /app
 RUN apk add --update --no-cache curl
 RUN apk add --update --no-cache python3 py3-pip
 RUN apk add --update --no-cache make gcc g++
-RUN npm install -g pnpm@^9.15.5
+RUN npm install -g pnpm
 RUN pnpm config set store-dir .pnpm-store
 
 FROM base AS build
@@ -16,6 +17,7 @@ FROM base AS final
 WORKDIR /app
 COPY --from=build /app/dist/apps/b2crypto ./dist/apps/b2crypto
 COPY --from=build /app/package*.json ./
+COPY --from=build /app/pnpm-workspace.yaml ./
 COPY --from=build /app/sftp ./sftp
 COPY --from=build /app/libs/message/src/templates ./libs/message/src/templates
 RUN pnpm install --production
@@ -91,8 +93,10 @@ ENV LOGO_URL=""
 ENV SOCIAL_MEDIA_ICONS=""
 ENV SOCIAL_MEDIA_LINKS=""
 
-ENV OTLP_HOST=""
-ENV OTLP_API_KEY=""
+ENV OTEL_EXPORTER_OTLP_ENDPOINT=""
+ENV OTEL_EXPORTER_OTLP_HEADERS=""
+
+ENV TRM_API_URL=""
 
 ENTRYPOINT [ "node", "./dist/apps/b2crypto/main.js" ]
 CMD [""]

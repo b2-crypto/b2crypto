@@ -28,7 +28,7 @@ export type TransferDocument = Transfer & Document;
 @Schema()
 export class CommisionDetail {
   @Prop()
-  _id: ObjectId;
+  _id: mongoose.Types.ObjectId;
 
   @Prop()
   amount: number;
@@ -57,6 +57,9 @@ export const CommisionDetailSchema =
 })
 export class Transfer extends TransferEntity {
   id: ObjectId;
+
+  @Prop({ default: false })
+  isManualTx: boolean;
 
   @Prop()
   numericId: number;

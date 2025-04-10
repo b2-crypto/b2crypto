@@ -100,6 +100,7 @@ export class JobService {
     this.logger.info(
       `[checkCardsInPomelo] Checking Cards in pomelo: ${this.env} - ${JobService.name}`,
     );
+
     if (this.env === EnvironmentEnum.prod) {
       this.builder.emitAccountEventClient(
         EventsNamesAccountEnum.checkCardsCreatedInPomelo,

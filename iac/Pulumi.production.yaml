@@ -151,13 +151,15 @@ config:
     secure: AAABAGabyp3icdJdarqH7JzJLAJ7wbF/O0/Pd1mia1AaDT7/YKZ1BnjLa9yn3I0lfQEMImIU6IuhsJCuHgwSfsmMZJ/hAnlY
   b2crypto-iac:TASK_CPU_MONOLITH: '2048'
   b2crypto-iac:TASK_MEMORY_MONOLITH: '8192'
-  b2crypto-iac:OTLP_API_KEY:
-    secure: AAABADHM5UELG5jAU+Bsb+B+hGEdno+9wct+snPhpZ+/43/vWxto8g2Ho4hs+TwrYZdqWe8J2mCy4FHMYZkFV5MCnsU=
-  b2crypto-iac:OTLP_HOST:
-    secure: AAABAMhYn/sJPxJ962g3XCUi5xhew0N7Y/DIfFvgXPy0vbTy8Gr2LRy4wEQB2klH+BpMjzcX2r+EvL+G7+g=
   b2crypto-iac:APP_VERSION: 0.9.0
   b2crypto-iac:OTP_VALIDATION_TIME_SECONDS: '120'
   b2crypto-iac:COMMISION_INTERNATIONAL:
     secure: AAABAPUWYchH7HVNHjQcibWBsgeI5gYR+BM6+7eKqC6c4WV8
   b2crypto-iac:COMMISION_NATIONAL:
     secure: AAABAIHkZ0h5IkKNNRLeu/gygN0Rl0TUcEIaHDHGDZ60aaj2
+  b2crypto-iac:OTEL_EXPORTER_OTLP_ENDPOINT:
+    secure: AAABAJo8BVmIh3BzIsun2xZgyJ9WbG3GtpCmUb1lSq0BxwmHbesXaRUqXWZJkXSu2eLJAVAdvSi2zjI6zrw=
+  b2crypto-iac:OTEL_EXPORTER_OTLP_HEADERS:
+    secure: AAABAF37kuh6tsdFI9HLD+QTheMtBp1kQXq3jtk4OcQx/p4ePF+E1jgIQZdiL0NEZapYwChkGLDpehmqcZyIlwpAJQsCdJvNcIVondS1Ggo//kt97uo2qQI=
+  b2crypto-iac:TRM_API_URL:
+    secure: AAABAFmQnVvHjOOxT35LCAwpJpu9Lij8SAJblfcdpZbRiRRbAUKd2PwFBV8lSaxujaTSslNs4TGQ60UEWSw=

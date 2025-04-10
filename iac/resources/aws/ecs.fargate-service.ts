@@ -250,18 +250,13 @@ export const ecsFargateService = new awsx.ecs.FargateService(
             name: 'SOCIAL_MEDIA_LINKS',
             value: SOCIAL_MEDIA_LINKS,
           },
-          { name: 'OTLP_API_KEY', value: SECRETS.OTLP_API_KEY },
           {
-            name: 'OTLP_HOST_TRACES',
-            value: SECRETS.OTLP_HOST.apply((host) => `${host}/v1/traces`),
+            name: 'OTEL_EXPORTER_OTLP_ENDPOINT',
+            value: SECRETS.OTEL_EXPORTER_OTLP_ENDPOINT,
           },
           {
-            name: 'OTLP_HOST_LOGS',
-            value: SECRETS.OTLP_HOST.apply((host) => `${host}/v1/logs`),
-          },
-          {
-            name: 'OTLP_HOST_METRICS',
-            value: SECRETS.OTLP_HOST.apply((host) => `${host}/v1/metrics`),
+            name: 'OTEL_EXPORTER_OTLP_HEADERS',
+            value: SECRETS.OTEL_EXPORTER_OTLP_HEADERS,
           },
           {
             name: 'OPTL_SERVICE_NAME',
@@ -295,6 +290,7 @@ export const ecsFargateService = new awsx.ecs.FargateService(
             name: 'COMMISION_INTERNATIONAL',
             value: SECRETS.COMMISION_INTERNATIONAL,
           },
+          { name: 'TRM_API_URL', value: SECRETS.TRM_API_URL },
         ],
         portMappings: [
           {
