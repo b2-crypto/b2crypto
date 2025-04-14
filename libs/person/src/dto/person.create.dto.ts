@@ -24,7 +24,7 @@ import TelephoneDto from './telephone.dto';
 export class PersonCreateDto extends CreateAnyDto {
   @IsBoolean()
   preRegistry = false;
-  
+
   @IsBoolean()
   @IsOptional()
   isPEP: boolean;
