@@ -82,6 +82,24 @@ export class Person extends PersonEntity {
 
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'users' })
   user: User;
+
+  @Prop()
+  activitySector: string;
+
+  @Prop()
+  activityCode: string;
+
+  @Prop()
+  occupation: string;
+
+  @Prop()
+  isPEP: boolean;
+
+  @Prop()
+  hasFamilyPEP: boolean;
+
+  @Prop()
+  rotatingContractDateAccept: Date;
 }
 
 export const PersonSchema = SchemaFactory.createForClass(Person);
