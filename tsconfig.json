@@ -182,6 +182,12 @@
       ],
       "@app/distributed-cache/*": [
         "libs/distributed-cache/src/*"
+      ],
+      "@outbox/outbox": [
+        "libs/outbox/src"
+      ],
+      "@outbox/outbox/*": [
+        "libs/outbox/src/*"
       ]
     }
   }

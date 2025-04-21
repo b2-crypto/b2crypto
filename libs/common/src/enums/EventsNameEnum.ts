@@ -21,6 +21,7 @@ enum EventClientEnum {
   GROUP = 'GROUP',
   BRAND = 'BRAND',
   FILE = 'FILE',
+  OUTBOX = 'OUTBOX',
 }
 
 export default EventClientEnum;
