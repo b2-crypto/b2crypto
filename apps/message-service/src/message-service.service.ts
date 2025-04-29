@@ -76,6 +76,7 @@ export class MessageServiceService {
     return this.lib.remove(id);
   }
 
+
   async deleteManyMessages(ids: string[]) {
     return this.lib.removeMany(ids);
   }
@@ -88,9 +89,10 @@ export class MessageServiceService {
   private getOriginEmail(): string {
     return this.configService.get(
       'AWS_SES_FROM_DEFAULT',
-      'no-reply@b2crypto.com',
+      'no-reply@b2pay.app',
     );
   }
+
 
   async sendEmailOtpNotification(message: MessageCreateDto) {
 
@@ -111,9 +113,8 @@ export class MessageServiceService {
       .setDestinyText(message.destinyText)
       .setVars(message.vars)
       .build();
-    return this.sendEmail(emailMessage, TemplatesMessageEnum.otpNotification);
+    return this.sendEmail(emailMessage, TemplatesMessageEnum.cardActivation);
   }
-
 
   async sendEmailBalanceReport(message: MessageCreateDto) {
     const emailMessage = new EmailMessageBuilder()
@@ -185,7 +186,7 @@ export class MessageServiceService {
           .setName('No pudimos procesar tu compra, revisa los detalles')
           .setBody('Your purchase has been rejected')
           .setOriginText(this.getOriginEmail())
-          .setDestinyText('nestor.barraza+2@b2fintech.com')
+          .setDestinyText(message.destinyText)
           .setVars({
             ...message.vars,
             name: user.name,
@@ -355,7 +356,7 @@ export class MessageServiceService {
 
       const from = await this.configService.getOrThrow(
         'AWS_SES_FROM_DEFAULT',
-        'no-reply@b2crypto.com',
+        'no-reply@b2pay.app',
       );
 
       this.logger.info(`[sendEmail] Attempting to send email to ${recipient} using template ${template}`);

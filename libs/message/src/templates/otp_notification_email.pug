@@ -4,14 +4,14 @@ html(lang="es")
   body
     .container
       p(style="display:none;max-height:0;overflow:hidden;")
-           Código de Verificación OTP: Tu código OTP de b2crypto es ...
+           codigo de Verificación OTP: Tu codigo OTP de b2crypto es ...
       include ./partials/header.pug
       .content
-        p(style="margin-bottom: 25px; color: #1A1431; text-align: center;") Código de Verificación OTP
+        p(style="margin-bottom: 25px; color: #1A1431; text-align: center;") codigo de Verificación OTP
         
         p Hola #{vars.name},
 
-        p Tu código OTP de b2crypto es:
+        p Tu codigo OTP de b2crypto es:
 
         table(width="100%", cellpadding="0", cellspacing="0", border="0", style="margin-top: 20px;")
           tr
@@ -19,9 +19,9 @@ html(lang="es")
               each digit in vars.otp.toString().split('')
                 span(style="background-color: #FFFFFF; color: #1b1330; padding: 8px 12px; border-radius: 8px; margin: 0 5px; display: inline-block;") #{digit}
 
-        p Este código es válido por un tiempo limitado. Por favor, úsalo pronto para completar tu verificación.
+        p Este codigo es válido por un tiempo limitado. Por favor, úsalo pronto para completar tu verificación.
 
-        p Si no has solicitado este código, por favor ignora este correo y contacta con nuestro equipo de soporte.
+        p Si no has solicitado este codigo, por favor ignora este correo y contacta con nuestro equipo de soporte.
 
         p Gracias por usar b2crypto para tus transacciones seguras.
 

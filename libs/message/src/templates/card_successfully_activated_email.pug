@@ -12,32 +12,31 @@ html(lang="es")
           img(src=(iconsInfo.check || '') alt="Éxito" height="50vh" style="margin: 0 auto 7px auto; display: block;")
           
         p(style="margin-bottom: 25px; color: #1A1431; text-align: center;") ¡Tu tarjeta ha sido activada exitosamente!
-        p Estimada Emilia Di Carlo
-
+        p Estimada Emilia Di Carlo 
         p Nos complace informarte que tu tarjeta física ha sido activada exitosamente.
         p Ya puedes empezar a usarla para tus compras y transacciones.
-
+        
         p(style="margin-left: 2px; color: #1b1330")
           strong(style="") Detalles de la tarjeta:
           br
-          
-            span(style="color: #1b1330") •
-            |  Nombre del Titular: #{vars.name || 'N/A'}
-            br
-            span(style="color: #1b1330") •
-            |  Numero de tarjeta: #{vars.lastFour || 'N/A'}
+          span(style="color: #1b1330") • 
+          |  Nombre del Titular: #{vars.name || 'N/A'}
+          br
+          span(style="color: #1b1330") • 
+          |  Numero de tarjeta: #{vars.lastFour || 'N/A'}
+          br
         
         p
           strong Recuerda tu PIN:
           br
-          strong Es muy importante que mantengas tu PIN en secreto.
+          | Es muy importante que mantengas tu PIN en secreto.
           br
-          | Nunca compartas este código con nadie y asegúrate de guardarlo en un lugar seguro.
+          | Nunca compartas este codigo con nadie y asegúrate de guardarlo en un lugar seguro.
         
         p Gracias por confiar en B2pay.
       
       div(style="padding: 10px 0; border: 0; height: 10px; background-color: #FFFFFF; width: 100%; display: flex; justify-content: center; align-items: center;")
-        hr(style="border: 0; height: 1px; background-color: #000000; width: 80%; ") 
+        hr(style="border: 0; height: 1px; background-color: #000000; width: 80%; ")
 
       div(style="padding: 20px; padding-left: 35px; padding-right: 35px;")
         p(style="margin-bottom: 5px; color: #1A1431; text-align: center;") Consejos de seguridad
@@ -60,7 +59,7 @@ html(lang="es")
           span(style="display: inline-block;") 5.
           | Si notas alguna actividad inusual o si pierdes tu tarjeta puedes bloquearla o congelarla.
           br
-
+      
       div(style="padding: 10px 0; border: 0; height: 10px; background-color: #FFFFFF; width: 100%; display: flex; justify-content: center; align-items: center;")
         hr(style="border: 0; height: 1px; background-color: #000000; width: 80%; ")
 
