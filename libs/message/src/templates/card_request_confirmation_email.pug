@@ -10,16 +10,16 @@ html(lang="es")
         div(style="text-align: center; margin-bottom: 5px;")
           img(src=(iconsInfo.check || '') alt="Confirmación" height="50vh" style="margin: 0 auto 7px auto; display: block;")
         
-        p(style="font-size: 15px; margin-bottom: 25px; color: #1A1431; text-align: center;") ¡Tu solicitud de tarjeta ha sido recibida! 💳
+        p(style="margin-bottom: 25px; color: #1A1431; text-align: center;") ¡Tu solicitud de tarjeta ha sido recibida! 💳
         
         p(style="color: #1b1330") Estimada #{vars.name}
         
         p(style="color: #1b1330") Gracias por solicitar tu tarjeta con nosotros. Queremos confirmarte que hemos recibido tu solicitud y te proporcionamos a continuación algunos detalles:
         
         p(style="margin-left: 2px; color: #1b1330")
-          strong(style="font-size:9px !important;") Detalles de la solicitud:
+          strong(style="") Detalles de la solicitud:
           br
-          small
+          
             span(style="color: #1b1330") •
             | Tipo de Tarjeta: #{vars.accountType || 'N/A'}
             br
@@ -33,32 +33,32 @@ html(lang="es")
             | Estado de la Solicitud: #{vars.status || 'N/A'}
         
         p(style="color: #1b1330;") 
-          strong(style="font-size:9px !important;") Estado de solicitud:
+          strong(style="") Estado de solicitud:
           br
-          small  En proceso: Estamos revisando tu solicitud y te mantendremos informado sobre su progreso.
-        
-        p(style="color: #1b1330;") 
-          strong(style="font-size:9px !important;") Entrega de la Tarjeta Física:
-          br
-          small  Si has solicitado una tarjeta física, estimamos que la recibirás en un plazo de 10 días hábiles.
-        
-       
-        p(style="color: #1b1330;") 
-          small Gracias por confiar en B2pay.
-     
+            En proceso: Estamos revisando tu solicitud y te mantendremos informado sobre su progreso.
+      
+      p Si has solicitado una tarjeta física, estimamos que la recibirás en un plazo de 10 días hábiles.
+      
+      p Gracias por confiar en B2pay.
+      
+      p Una vez que recibas tu tarjeta, sigue estos pasos para activarla:
+      
+      p Si tienes alguna pregunta o necesitas asistencia, no dudes en contactarnos a través de soporte@b2pay.app o contacta a nuestro equipo de soporte al cliente a través de nuestro WhatsApp.
+      
+      p Gracias por unirte a nosotros. ¡Esperamos que disfrutes de tu experiencia con B2pay!
       
       div(style="padding: 10px 0; border: 0; height: 15px; background-color: #FFFFFF; width: 100%; display: flex; justify-content: center; align-items: center;")
         hr(style="border: 0; height: 1px; background-color: #000000; width: 80%; ")
       
       .content
         div(style="margin-bottom: 22px;")
-          p(style="color: #1b1330; font-weight:bold; font-size:9px !important;") Activación de la Tarjeta:
+          p(style="color: #1b1330; font-weight:bold;") Activación de la Tarjeta:
           
           p(style="color: #1b1330;")
-            small Una vez que recibas tu tarjeta, sigue estos pasos para activarla:
+             Una vez que recibas tu tarjeta, sigue estos pasos para activarla:
           
           p(style="margin-left: 2px; margin-bottom: 20px;color: #1b1330")
-            small
+            
               span(style="display: inline-block;") 1.
               | Inicia sesión en tu cuenta en nuestra plataforma.
               br
@@ -74,12 +74,12 @@ html(lang="es")
       div(style="padding: 10px 0; border: 0; height: 15px; background-color: #FFFFFF; width: 100%; display: flex; justify-content: center; align-items: center;")
         hr(style="border: 0; height: 1px; background-color: #000000; width: 80%; ")
       
-      div(style="padding-bottom: 20px; padding-top: 20px; padding-left: 35px; padding-right: 35px; font-size: 11px;")
+      div(style="padding-bottom: 20px; padding-top: 20px; padding-left: 35px; padding-right: 35px;")
         p 
-          small Si tienes alguna pregunta o necesitas asistencia, no dudes en contactarnos a través de soporte@b2pay.app o contacta a nuestro equipo de soporte al cliente a través de nuestro WhatsApp.
+           Si tienes alguna pregunta o necesitas asistencia, no dudes en contactarnos a través de soporte@b2pay.app o contacta a nuestro equipo de soporte al cliente a través de nuestro WhatsApp.
           br
           br
-          small  Gracias por unirte a nosotros. ¡Esperamos que disfrutes de tu experiencia con B2pay!
+            Gracias por unirte a nosotros. ¡Esperamos que disfrutes de tu experiencia con B2pay!
         
       div(style="padding: 10px 0; border: 0; height: 15px; background-color: #FFFFFF; width: 100%; display: flex; justify-content: center; align-items: center;")
         hr(style="border: 0; height: 1px; background-color: #000000; width: 80%; ")

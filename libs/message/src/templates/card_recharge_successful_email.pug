@@ -9,15 +9,15 @@ html(lang="es")
           - const iconsInfo = typeof socialMediaIcons === 'string' ? JSON.parse(socialMediaIcons) : socialMediaIcons
         div(style="text-align: center; margin-bottom: 5px;")
           img(src=(iconsInfo.check || iconsInfo.error || iconsInfo.warning || '') alt="Error" height="50vh" style="margin: 0 auto 7px auto; display: block;")
-        p(style="font-size: 15px; margin-bottom: 25px; color: #1A1431; text-align: center;") ¡Recarga de tarjeta realizada con éxito!
+        p(style="margin-bottom: 25px; color: #1A1431; text-align: center;") ¡Recarga de tarjeta realizada con éxito!
 
         p 
-          small Estimado/a #{vars.name},
+           Estimado/a #{vars.name},
         p 
-          small Nos complace informarte que tu recarga de tarjeta se ha realizado exitosamente. A continuación, te proporcionamos los detalles de la transacción:
+           Nos complace informarte que tu recarga de tarjeta se ha realizado exitosamente. A continuación, te proporcionamos los detalles de la transacción:
 
         p 
-          small
+          
             strong Detalles de la Recarga:
 
         .transaction-info(style="display: flex; margin-bottom: 22px; align-items: flex-start;")
@@ -44,17 +44,17 @@ html(lang="es")
             div Nuevo Saldo de la Tarjeta
             div #{vars.amount || '$5.200,00 USDT'}
         p 
-          small
+          
             strong Verifica tu Saldo y Transacciones:
         p
-          small Agradecemos tu confianza en nuestro servicio de recarga de tarjetas. Estamos comprometidos en ofrecerte una experiencia segura y conveniente para gestionar tus finanzas.
+           Agradecemos tu confianza en nuestro servicio de recarga de tarjetas. Estamos comprometidos en ofrecerte una experiencia segura y conveniente para gestionar tus finanzas.
 
       div(style="padding: 10px 0; border: 0; height: 15px; background-color: #FFFFFF; width: 100%; display: flex; justify-content: center; align-items: center;")
         hr(style="border: 0; height: 1px; background-color: #000000; width: 80%; ")
 
-      div(style="padding-bottom: 20px; padding-top: 10px; padding-left: 35px; padding-right: 35px; font-size: 11px;")
+      div(style="padding-bottom: 20px; padding-top: 10px; padding-left: 35px; padding-right: 35px;")
         p 
-          small Si tienes alguna pregunta o necesitas asistencia, no dudes en contactarnos a través de soporte@b2pay.app o contacta a nuestro equipo de soporte al cliente a través de nuestro WhatsApp.
+           Si tienes alguna pregunta o necesitas asistencia, no dudes en contactarnos a través de soporte@b2pay.app o contacta a nuestro equipo de soporte al cliente a través de nuestro WhatsApp.
           br
           br
-          small  Gracias por unirte a nosotros. ¡Esperamos que disfrutes de tu experiencia con B2pay!
+            Gracias por unirte a nosotros. ¡Esperamos que disfrutes de tu experiencia con B2pay!

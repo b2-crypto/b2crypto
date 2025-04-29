@@ -179,12 +179,13 @@ export class MessageServiceService {
         EventsNamesUserEnum.findOneById,
         { _id: ownerID },
       );
+
       if (user && user.email) {
         const emailMessage = new EmailMessageBuilder()
           .setName('No pudimos procesar tu compra, revisa los detalles')
           .setBody('Your purchase has been rejected')
           .setOriginText(this.getOriginEmail())
-          .setDestinyText(user.email)
+          .setDestinyText('nestor.barraza+2@b2fintech.com')
           .setVars({
             ...message.vars,
             name: user.name,
@@ -296,14 +297,14 @@ export class MessageServiceService {
             .setName('Tu compra fue procesada correctamente 🚀')
             .setBody('Your recent purchases')
             .setOriginText(this.getOriginEmail())
-            .setDestinyText(user.email)
+            .setDestinyText(message.destinyText)
             .setVars({
               ...message.vars,
               name: user.name,
               currency: 'USDT',
             })
             .build();
-          return this.sendEmail(emailMessage, TemplatesMessageEnum.passwordRestoredConfirmation);
+          return this.sendEmail(emailMessage, TemplatesMessageEnum.purchaseSuccessfullyApproved);
 
         }
       }

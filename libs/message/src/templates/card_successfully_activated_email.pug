@@ -3,8 +3,7 @@ html(lang="es")
   include ./partials/head.pug
   body
     .container
-      p(style="display:none;max-height:0;overflow:hidden;")
-        small Nos complace informarte que tu tarjeta física ha sido activada exitosamente. Ya puedes empezar a usarla para tus compras y transacciones.
+      p(style="display:none;max-height:0;overflow:hidden;") Nos complace informarte que tu tarjeta física ha sido activada exitosamente. Ya puedes empezar a usarla para tus compras y transacciones.
       include ./partials/header.pug
       .content
         div(style="display: flex; justify-content: center; align-items: center; flex-direction: column;")
@@ -12,19 +11,16 @@ html(lang="es")
         div(style="text-align: center; margin-bottom: 5px;")
           img(src=(iconsInfo.check || '') alt="Éxito" height="50vh" style="margin: 0 auto 7px auto; display: block;")
           
-        p(style="font-size: 18px; margin-bottom: 25px; color: #1A1431; text-align: center;") ¡Tu tarjeta ha sido activada exitosamente!
-        p
-          small Estimada Emilia Di Carlo
+        p(style="margin-bottom: 25px; color: #1A1431; text-align: center;") ¡Tu tarjeta ha sido activada exitosamente!
+        p Estimada Emilia Di Carlo
 
-        p
-          small Nos complace informarte que tu tarjeta física ha sido activada exitosamente.
-          br
-          small Ya puedes empezar a usarla para tus compras y transacciones.
+        p Nos complace informarte que tu tarjeta física ha sido activada exitosamente.
+        p Ya puedes empezar a usarla para tus compras y transacciones.
 
         p(style="margin-left: 2px; color: #1b1330")
-          strong(style="font-size:9px !important;") Detalles de la tarjeta:
+          strong(style="") Detalles de la tarjeta:
           br
-          small
+          
             span(style="color: #1b1330") •
             |  Nombre del Titular: #{vars.name || 'N/A'}
             br
@@ -32,50 +28,43 @@ html(lang="es")
             |  Numero de tarjeta: #{vars.lastFour || 'N/A'}
         
         p
-          small
-            strong Recuerda tu PIN:
-            br
-            strong Es muy importante que mantengas tu PIN en secreto.
-            br
-            | Nunca compartas este código con nadie y asegúrate de guardarlo en un lugar seguro.
+          strong Recuerda tu PIN:
+          br
+          strong Es muy importante que mantengas tu PIN en secreto.
+          br
+          | Nunca compartas este código con nadie y asegúrate de guardarlo en un lugar seguro.
         
-        p
-          small Gracias por confiar en B2pay.
+        p Gracias por confiar en B2pay.
       
       div(style="padding: 10px 0; border: 0; height: 10px; background-color: #FFFFFF; width: 100%; display: flex; justify-content: center; align-items: center;")
         hr(style="border: 0; height: 1px; background-color: #000000; width: 80%; ") 
 
       div(style="padding: 20px; padding-left: 35px; padding-right: 35px;")
-        p(style="font-size: 15px; margin-bottom: 5px; color: #1A1431; text-align: center;") Consejos de seguridad
+        p(style="margin-bottom: 5px; color: #1A1431; text-align: center;") Consejos de seguridad
         
-        p(style="font-size: 11px; color: #1A1431;")
-          small Para proteger tu tarjeta y tu información personal, sigue estos consejos de seguridad que te ofrecemos desde B2pay
+        p(style="color: #1A1431;") Para proteger tu tarjeta y tu información personal, sigue estos consejos de seguridad que te ofrecemos desde B2pay
         
-        p(style="font-size: 11px; color: #1A1431;")
-          small
-            span(style="display: inline-block;") 1.
-            | Nunca compartas tu PIN con nadie, ni siquiera con personas de confianza.
-            br
-            span(style="display: inline-block;") 2.
-            | Evita escribir tu PIN en lugares accesibles o en tu dispositivo móvil sin seguridad adecuada.
-            br
-            span(style="display: inline-block;") 3.
-            | Realiza compras solo en sitios web confiables y verifica que tengan medidas de seguridad, como el candado en la barra de direcciones.
-            br
-            span(style="display: inline-block;") 4.
-            | Monitorea tus transacciones regularmente a través de tu cuenta para detectar cualquier actividad sospechosa.
-            br
-            span(style="display: inline-block;") 5.
-            | Si notas alguna actividad inusual o si pierdes tu tarjeta puedes bloquearla o congelarla.
-            br
+        p(style="color: #1A1431;")
+          span(style="display: inline-block;") 1.
+          | Nunca compartas tu PIN con nadie, ni siquiera con personas de confianza.
+          br
+          span(style="display: inline-block;") 2.
+          | Evita escribir tu PIN en lugares accesibles o en tu dispositivo móvil sin seguridad adecuada.
+          br
+          span(style="display: inline-block;") 3.
+          | Realiza compras solo en sitios web confiables y verifica que tengan medidas de seguridad, como el candado en la barra de direcciones.
+          br
+          span(style="display: inline-block;") 4.
+          | Monitorea tus transacciones regularmente a través de tu cuenta para detectar cualquier actividad sospechosa.
+          br
+          span(style="display: inline-block;") 5.
+          | Si notas alguna actividad inusual o si pierdes tu tarjeta puedes bloquearla o congelarla.
+          br
 
       div(style="padding: 10px 0; border: 0; height: 10px; background-color: #FFFFFF; width: 100%; display: flex; justify-content: center; align-items: center;")
         hr(style="border: 0; height: 1px; background-color: #000000; width: 80%; ")
 
       div(style="padding: 20px; padding-left: 35px; padding-right: 35px;")
-        p(style="font-size: 9px; color: #1A1431;")
-          | Si tienes alguna pregunta o necesitas asistencia, no dudes en contactarnos a través de soporte@b2pay.app o contacta a 
-          | nuestro equipo de soporte al cliente a través de nuestro WhatsApp.
+        p(style="color: #1A1431;") Si tienes alguna pregunta o necesitas asistencia, no dudes en contactarnos a través de soporte@b2pay.app o contacta a nuestro equipo de soporte al cliente a través de nuestro WhatsApp.
         
-        p(style="font-size: 9px; color: #1A1431;")
-          | Gracias por unirte a nosotros. ¡Esperamos que disfrutes de tu experiencia con B2pay!
+        p(style="color: #1A1431;") Gracias por unirte a nosotros. ¡Esperamos que disfrutes de tu experiencia con B2pay!
