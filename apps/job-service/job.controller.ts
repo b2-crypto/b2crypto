@@ -4,7 +4,7 @@ import EventClientEnum from '@common/common/enums/EventsNameEnum';
 import { Controller, Inject } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { ClientProxy, EventPattern } from '@nestjs/microservices';
-import { Cron, CronExpression } from '@nestjs/schedule';
+// import { Cron, CronExpression } from '@nestjs/schedule';
 import { ApiTags } from '@nestjs/swagger';
 import { OutboxEvents } from '@outbox/outbox/enums/outbox.events';
 import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
@@ -23,9 +23,9 @@ export class JobController {
     @Inject(EventClientEnum.OUTBOX) private readonly brokerService: ClientProxy,
   ) {}
 
-  @Cron(CronExpression.EVERY_10_SECONDS, {
-    timeZone: process.env.TZ,
-  })
+  // @Cron(CronExpression.EVERY_10_SECONDS, {
+  //   timeZone: process.env.TZ,
+  // })
   async sendOutboxReadyForPublish() {
     this.logger.info(`[sendOutboxReadyForPublish] Send ready for publish`);
 
@@ -45,9 +45,9 @@ export class JobController {
     return this.jobService.sendOutboxReadyForPublish();
   }
 
-  @Cron(CronExpression.EVERY_5_MINUTES, {
-    timeZone: process.env.TZ,
-  })
+  // @Cron(CronExpression.EVERY_5_MINUTES, {
+  //   timeZone: process.env.TZ,
+  // })
   async sendOutboxLagging() {
     this.logger.info(`[sendOutboxLagging] Send lagging`);
 
@@ -67,9 +67,9 @@ export class JobController {
     return this.jobService.sendOutboxLagging();
   }
 
-  @Cron(CronExpression.EVERY_5_MINUTES, {
-    timeZone: process.env.TZ,
-  })
+  // @Cron(CronExpression.EVERY_5_MINUTES, {
+  //   timeZone: process.env.TZ,
+  // })
   async removeOutbox() {
     this.logger.info(`[removeOutbox] Remove outbox`);
 
