@@ -609,7 +609,14 @@ export class TransferServiceService
       transferSaved.isApprove &&
       transferSaved.operationType !== OperationTransactionType.deposit &&
       transferSaved.leadCrmName !== 'Fireblocks' &&
-      !transferSaved.isManualTx
+      !(
+        transferSaved.isManualTx ||
+        transferSaved.leadCrmName === 'Fireblocks' ||
+        transferSaved.leadCrmName === 'CARD2CARD' ||
+        transferSaved.leadCrmName === 'CARD2WALLET' ||
+        transferSaved.leadCrmName === 'WALLET2CARD' ||
+        transferSaved.leadCrmName === 'WALLET2WALLET'
+      )
     ) {
       transferSaved.accountPrevBalance = this.createPrevBalance(
         transferSaved,
