@@ -2224,9 +2224,11 @@ export class CardServiceController extends AccountServiceController {
       );
       if (data.authorize) {
         const allowedBalance =
-          card.amount * (1.0 - this.BLOCK_BALANCE_PERCENTAGE - data.commision);
+          card.amount * (1 - this.BLOCK_BALANCE_PERCENTAGE);
 
-        if (allowedBalance <= data.amount) {
+        const totalMount = data.amount * (1 + data.commision);
+
+        if (allowedBalance <= totalMount) {
           this.logger.info(
             `[processPomeloTransaction] Card proccess: ${CardsEnum.CARD_PROCESS_INSUFFICIENT_FUNDS}`,
           );
