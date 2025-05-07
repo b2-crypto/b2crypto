@@ -11,7 +11,7 @@ html(lang="es")
         div(style="text-align: center; margin-bottom: 5px;")
           img(src=(iconsInfo.check || '') alt="Error" height="50vh" style="margin: 0 auto 7px auto; display: block;")
         
-        p(style="margin-bottom: 25px; color: #1A1431; text-align: center;") ¡Compra aprobada exitosamente! 📦
+        h1(style="margin-bottom: 25px; color: #1A1431; text-align: center;") ¡Compra aprobada exitosamente! 📦
         
         p(style="color: #1A1431;") #{vars.name}, ¡Tu compra ha sido aprobada exitosamente!
         p(style="color: #1A1431;") Nos complace informarte que tu compra realizada el dia #{vars.transactionDate || 'N/A'} a las #{vars.transactionTime || 'N/A'} en #{vars.merchant || 'N/A'} ha sido aprobada con éxito. A continuación, te compartimos los detalles de tu transacción:
