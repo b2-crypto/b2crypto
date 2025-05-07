@@ -39,7 +39,7 @@ export class PomeloIntegrationProcessService {
     private readonly currencyConversion: FiatIntegrationClient,
     private readonly builder: BuildersService,
     private readonly configService: ConfigService,
-  ) { }
+  ) {}
 
   private async process(
     process: any,
@@ -90,7 +90,6 @@ export class PomeloIntegrationProcessService {
         amount,
         authorize,
       );
-
     }
     return response;
   }
@@ -201,20 +200,20 @@ export class PomeloIntegrationProcessService {
         : 0,
       amountCustodial: isOperationHasCommissions
         ? transferAmountCustodial *
-        percentageCommisionNational /* isOperationHasReversal
+          percentageCommisionNational /* isOperationHasReversal
           ? parentCommisionNational?.amountCustodial
           : transferAmountCustodial * percentageCommisionNational */
         : 0,
       currency: isOperationHasReversal
         ? parentCommisionNational?.currency
         : transferCurrency === 'USD'
-          ? 'USDT'
-          : transferCurrency,
+        ? 'USDT'
+        : transferCurrency,
       currencyCustodial: isOperationHasReversal
         ? parentCommisionNational?.currencyCustodial
         : transferCurrencyCustodial === 'USD'
-          ? 'USDT'
-          : transferCurrencyCustodial,
+        ? 'USDT'
+        : transferCurrencyCustodial,
       commisionType: CommisionTypeEnum.NATIONAL,
     };
   }
@@ -245,26 +244,26 @@ export class PomeloIntegrationProcessService {
       _id: id,
       amount: isOperationHasCommissions
         ? transferAmount *
-        percentageCommisionInternational /* isOperationHasReversal
+          percentageCommisionInternational /* isOperationHasReversal
           ? parentCommisionInternational?.amount
           : transferAmount * percentageCommisionInternational */
         : 0,
       amountCustodial: isOperationHasCommissions
         ? transferAmountCustodial *
-        percentageCommisionInternational /* isOperationHasReversal
+          percentageCommisionInternational /* isOperationHasReversal
           ? parentCommisionInternational?.amountCustodial
           : transferAmountCustodial * percentageCommisionInternational */
         : 0,
       currency: isOperationHasReversal
         ? parentCommisionInternational?.currency
         : transferCurrency === 'USD'
-          ? 'USDT'
-          : transferCurrency,
+        ? 'USDT'
+        : transferCurrency,
       currencyCustodial: isOperationHasReversal
         ? parentCommisionInternational?.currencyCustodial
         : transferCurrencyCustodial === 'USD'
-          ? 'USDT'
-          : transferCurrencyCustodial,
+        ? 'USDT'
+        : transferCurrencyCustodial,
       commisionType: CommisionTypeEnum.INTERNATIONAL,
     };
   }
@@ -344,35 +343,35 @@ export class PomeloIntegrationProcessService {
 
     return parentTransaction
       ? {
-        ...pretransaction,
-        parentTransaction: parentTransaction._id,
-        parentTransactionDetail: {
-          _id: parentTransaction._id,
-          amount: parentTransaction.amount,
-          currency: parentTransaction.currency,
-          amountCustodial: parentTransaction.amountCustodial,
-          currencyCustodial: parentTransaction.currencyCustodial,
-          operationType: parentTransaction.operationType,
-        },
-        amount:
+          ...pretransaction,
+          parentTransaction: parentTransaction._id,
+          parentTransactionDetail: {
+            _id: parentTransaction._id,
+            amount: parentTransaction.amount,
+            currency: parentTransaction.currency,
+            amountCustodial: parentTransaction.amountCustodial,
+            currencyCustodial: parentTransaction.currencyCustodial,
+            operationType: parentTransaction.operationType,
+          },
+          amount:
             /* isOperationHasReversal
             ? parentTransaction?.amount ?? pretransaction.amount
             : pretransaction.amount */ pretransaction.amount,
-        currency:
+          currency:
             /* isOperationHasReversal
             ? parentTransaction?.currency ?? pretransaction.currency
             : pretransaction.currency */ pretransaction.currency,
-        amountCustodial:
+          amountCustodial:
             /* isOperationHasReversal
             ? parentTransaction?.amountCustodial ??
               pretransaction.amountCustodial
             : pretransaction.amountCustodial */ pretransaction.amountCustodial,
-        currencyCustodial:
+          currencyCustodial:
             /* isOperationHasReversal
             ? parentTransaction?.currencyCustodial ??
               pretransaction.currencyCustodial
             : pretransaction.currencyCustodial */ pretransaction.currencyCustodial,
-      }
+        }
       : pretransaction;
   }
 
@@ -414,9 +413,7 @@ export class PomeloIntegrationProcessService {
       //= Start - Find Parent Commissions
       //============================================================
       const parentCommisions = parentTransaction
-
         ? await this.findParentCommissions(parentTransaction)
-
         : [];
 
       this.logger.info(
@@ -599,7 +596,8 @@ export class PomeloIntegrationProcessService {
       //============================================================
     } catch (error) {
       this.logger.info(
-        `[createTransferRecord] Error creating transfer: ${error.message || error
+        `[createTransferRecord] Error creating transfer: ${
+          error.message || error
         }`,
       );
     }
@@ -807,10 +805,10 @@ export class PomeloIntegrationProcessService {
         headers,
       );
 
-
       this.sendAdjustmentNotificationEmail(adjustment).catch((error) => {
         this.logger.error(
-          `[ProcessNotification] Error sending adjustment notification email ${error.message || error
+          `[ProcessNotification] Error sending adjustment notification email ${
+            error.message || error
           }`,
         );
       });
@@ -818,7 +816,8 @@ export class PomeloIntegrationProcessService {
       return processed;
     } catch (error) {
       this.logger.error(
-        `[ProcessNotification] Error processing adjustment ${error.message || error
+        `[ProcessNotification] Error processing adjustment ${
+          error.message || error
         }`,
       );
     }
@@ -878,11 +877,12 @@ export class PomeloIntegrationProcessService {
         year: 'numeric',
       });
 
-      transactionTime = txnDate.toLocaleTimeString('es-ES', {
-        hour: '2-digit',
-        minute: '2-digit',
-        hour12: false,
-      }) + 'h';
+      transactionTime =
+        txnDate.toLocaleTimeString('es-ES', {
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: false,
+        }) + 'h';
     } else {
       const now = new Date();
       transactionDate = now.toLocaleDateString('es-ES', {
@@ -890,22 +890,26 @@ export class PomeloIntegrationProcessService {
         month: 'long',
         year: 'numeric',
       });
-      transactionTime = now.toLocaleTimeString('es-ES', {
-        hour: '2-digit',
-        minute: '2-digit',
-        hour12: false,
-      }) + 'h';
+      transactionTime =
+        now.toLocaleTimeString('es-ES', {
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: false,
+        }) + 'h';
     }
 
     let amountFormatted = '';
     let currencyCode = '';
 
-    if (authorization.amount?.local?.total && authorization.amount?.local?.currency) {
+    if (
+      authorization.amount?.local?.total &&
+      authorization.amount?.local?.currency
+    ) {
       currencyCode = authorization.amount.local.currency;
       const totalAmount = parseFloat(authorization.amount.local.total);
       amountFormatted = new Intl.NumberFormat('es-ES', {
         style: 'currency',
-        currency: currencyCode
+        currency: currencyCode,
       }).format(totalAmount);
     }
     const data = {
@@ -926,14 +930,17 @@ export class PomeloIntegrationProcessService {
     };
 
     if (process.status === 'REJECTED') {
-      (data.vars as any).rejectionReason = process.status_detail || process.message;
+      (data.vars as any).rejectionReason =
+        process.status_detail || process.message;
 
       this.builder.emitMessageEventClient(
         EventsNamesMessageEnum.sendPurchaseRejected,
         data,
       );
 
-      console.log(`Correo de notificación de rechazo enviado para transacción ${authorization.idempotency}`);
+      console.log(
+        `Correo de notificación de rechazo enviado para transacción ${authorization.idempotency}`,
+      );
     }
     this.builder.emitMessageEventClient(
       EventsNamesMessageEnum.sendPurchases,
@@ -943,4 +950,3 @@ export class PomeloIntegrationProcessService {
     return process;
   }
 }
-

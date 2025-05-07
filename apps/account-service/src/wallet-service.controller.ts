@@ -403,8 +403,6 @@ export class WalletServiceController extends AccountServiceController {
     throw new BadRequestException('Only work in Prod');
   }
 
-
-
   private async sendNotification(createdWallet: any, user: User) {
     this.logger.info('[sendNotification] Sending notification new wallet');
     const emailData = {
@@ -423,7 +421,6 @@ export class WalletServiceController extends AccountServiceController {
       EventsNamesMessageEnum.sendCryptoWalletsManagement,
       emailData,
     );
-
 
     if (!createdWallet.crm) {
       const transferBtn: TransferCreateButtonDto = {
@@ -1153,7 +1150,8 @@ export class WalletServiceController extends AccountServiceController {
         }
       } catch (error) {
         this.logger.error(
-          `[rechargeOne] Error creating transaction on Fireblocks ${error.message || error
+          `[rechargeOne] Error creating transaction on Fireblocks ${
+            error.message || error
           }`,
         );
         throw new BadRequestException('Sorry, something went wrong');
@@ -1198,8 +1196,9 @@ export class WalletServiceController extends AccountServiceController {
         EventsNamesTransferEnum.createOne,
         {
           name: `Withdrawal wallet ${from.name}`,
-          description: `Withdrawal from ${from.name} to ${to?.name ?? createDto.to
-            }`,
+          description: `Withdrawal from ${from.name} to ${
+            to?.name ?? createDto.to
+          }`,
           currency: from.currency,
           idPayment: rta?.data?.id,
           responsepayment: rta?.data,
@@ -1530,14 +1529,16 @@ export class WalletServiceController extends AccountServiceController {
             )
             .catch((err) => {
               this.logger.error(
-                `[sweepOmnibus] Catch sweep error deposit ${vaultFrom.name}_${from.name
+                `[sweepOmnibus] Catch sweep error deposit ${vaultFrom.name}_${
+                  from.name
                 } ${err.message || err}`,
               );
               return null;
             })
             .then((rta) => {
               this.logger.info(
-                `[sweepOmnibus] rta sweep deposit ${vaultFrom.name}_${from.name
+                `[sweepOmnibus] rta sweep deposit ${vaultFrom.name}_${
+                  from.name
                 } ${JSON.stringify(rta?.data, null, 2)}`,
               );
               return Promise.all([
@@ -1565,14 +1566,16 @@ export class WalletServiceController extends AccountServiceController {
             )
             .catch((err) => {
               this.logger.error(
-                `[sweepOmnibus] Catch sweep error withdrawal ${vaultFrom.name
+                `[sweepOmnibus] Catch sweep error withdrawal ${
+                  vaultFrom.name
                 }_${from.name} ${err.message || err}`,
               );
               return null;
             })
             .then((rta) => {
               this.logger.info(
-                `[sweepOmnibus] rta sweep withdrawal ${vaultFrom.name}_${from.name
+                `[sweepOmnibus] rta sweep withdrawal ${vaultFrom.name}_${
+                  from.name
                 } ${JSON.stringify(rta?.data, null, 2)}`,
               );
               return Promise.all([

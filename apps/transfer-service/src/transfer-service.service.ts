@@ -1716,11 +1716,19 @@ export class TransferServiceService
     headers: Array<string>,
     date?: Date,
   ): Promise<AttachmentsEmailConfig> {
+    const storageFolder = 'storage';
+
+    if (!fs.existsSync(storageFolder)) {
+      fs.mkdirSync(storageFolder);
+    }
+
     const filename = this.getFullname(listName, date);
+
     const fileUri = `storage/${filename}`;
     if (fs.existsSync(fileUri)) {
       fs.unlinkSync(fileUri);
     }
+
     const objBase = this.getCustomObj(headers);
     // File created
     this.addDataToFile(objBase, filename, true, true);

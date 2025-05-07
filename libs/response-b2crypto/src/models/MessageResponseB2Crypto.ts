@@ -32,6 +32,7 @@ export class MessageResponseB2Crypto {
     switch (code) {
       case 201:
       case 200:
+      case 301:
         message =
           'was ' +
           MessageResponseB2Crypto.getMessageAction(action) +
