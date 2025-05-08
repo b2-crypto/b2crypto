@@ -222,6 +222,21 @@ export class MessageServiceController implements GenericServiceController {
       this.logger.error(`[eventSendEmailReport] error: ${err.message || err}`);
     }
   }
+
+  @AllowAnon()
+  @EventPattern(EventsNamesMessageEnum.sendPurchases)
+  async eventSendPurchases(
+    @Payload() message: MessageCreateDto,
+    @Ctx() ctx: RmqContext,
+  ) {
+    CommonService.ack(ctx);
+    try {
+      await this.messageService.sendPurchases(message);
+    } catch (err) {
+      this.logger.error(`[eventSendPurchases] error: ${err.message || err}`);
+    }
+  }
+
   @AllowAnon()
   @EventPattern(EventsNamesMessageEnum.sendPurchaseRejected)
   async eventSendPurchaseRejected(
@@ -345,19 +360,7 @@ export class MessageServiceController implements GenericServiceController {
       );
     }
   }
-  @AllowAnon()
-  @EventPattern(EventsNamesMessageEnum.sendPurchases)
-  async eventSendPurchases(
-    @Payload() message: MessageCreateDto,
-    @Ctx() ctx: RmqContext,
-  ) {
-    CommonService.ack(ctx);
-    try {
-      await this.messageService.sendPurchases(message);
-    } catch (err) {
-      this.logger.error(`[eventSendPurchases] error: ${err.message || err}`);
-    }
-  }
+
   @AllowAnon()
   @EventPattern(EventsNamesMessageEnum.sendPreRegisterEmail)
   async eventSendPreRegister(

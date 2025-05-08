@@ -61,11 +61,11 @@ import { UserEntity } from '@user/user/entities/user.entity';
 import EventsNamesActivityEnum from 'apps/activity-service/src/enum/events.names.activity.enum';
 import EventsNamesMessageEnum from 'apps/message-service/src/enum/events.names.message.enum';
 import EventsNamesPersonEnum from 'apps/person-service/src/enum/events.names.person.enum';
+import { isBoolean } from 'class-validator';
 import { SwaggerSteakeyConfigEnum } from 'libs/config/enum/swagger.stakey.config.enum';
 import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import { BadRequestError } from 'passport-headerapikey';
 import EventsNamesUserEnum from '../../user-service/src/enum/events.names.user.enum';
-import { isBoolean } from 'class-validator';
 
 @ApiTags('AUTHENTICATION')
 @Traceable()
@@ -324,6 +324,11 @@ export class AuthServiceController {
             name: user.name,
             username: user.email,
             password: psw,
+            datetime: new Intl.DateTimeFormat('es-CO', {
+              dateStyle: 'full',
+              timeStyle: 'long',
+              timeZone: 'America/Bogota',
+            }).format(new Date()),
           },
         };
         this.builder.emitMessageEventClient(
