@@ -6,7 +6,7 @@ import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { ClientProxy } from '@nestjs/microservices';
-import { Cron, CronExpression } from '@nestjs/schedule';
+// import { Cron, CronExpression } from '@nestjs/schedule';
 import { OutboxServiceMongooseService } from '@outbox/outbox';
 import EventsNamesAccountEnum from 'apps/account-service/src/enum/events.names.account.enum';
 import EventsNamesTransferEnum from 'apps/transfer-service/src/enum/events.names.transfer.enum';
@@ -21,12 +21,12 @@ export class JobService {
   static readonly periodicTime = {
     //sendBalanceCardReports: CronExpression.EVERY_DAY_AT_1PM,
     /**  */
-    sendBalanceCardReports: '30 10 * * *',
-    sweepOmnibus: CronExpression.EVERY_12_HOURS,
-    checkBalanceUser: CronExpression.EVERY_DAY_AT_11AM,
-    checkCardsInPomelo: '0 */8 * * * *',
-    checkB2BinPayTransfers: CronExpression.EVERY_5_MINUTES,
-    sendLast6hHistoryTransfer: CronExpression.EVERY_6_HOURS,
+    // sendBalanceCardReports: '30 10 * * *',
+    // sweepOmnibus: CronExpression.EVERY_12_HOURS,
+    // checkBalanceUser: CronExpression.EVERY_DAY_AT_11AM,
+    // checkCardsInPomelo: '0 */8 * * * *',
+    // checkB2BinPayTransfers: CronExpression.EVERY_5_MINUTES,
+    // sendLast6hHistoryTransfer: CronExpression.EVERY_6_HOURS,
   };
   private env = 'DEV';
 
@@ -60,9 +60,9 @@ export class JobService {
     }
   }
 
-  @Cron(JobService.periodicTime.sendBalanceCardReports, {
-    timeZone: process.env.TZ,
-  })
+  // @Cron(JobService.periodicTime.sendBalanceCardReports, {
+  //   timeZone: process.env.TZ,
+  // })
   async sendBalanceCardReportsCron() {
     this.logger.info(
       `[sendBalanceCardReportsCron] Sended balance card report: ${this.env} - ${JobService.name}`,
@@ -79,9 +79,9 @@ export class JobService {
     }
   }
 
-  @Cron(JobService.periodicTime.checkBalanceUser, {
-    timeZone: process.env.TZ,
-  })
+  // @Cron(JobService.periodicTime.checkBalanceUser, {
+  //   timeZone: process.env.TZ,
+  // })
   checkBalanceUserCron() {
     this.logger.info(
       `[checkBalanceUserCron] Checked balance users: ${this.env} - ${JobService.name}`,
@@ -94,9 +94,9 @@ export class JobService {
     }
   }
 
-  @Cron(JobService.periodicTime.checkCardsInPomelo, {
-    timeZone: process.env.TZ,
-  })
+  // @Cron(JobService.periodicTime.checkCardsInPomelo, {
+  //   timeZone: process.env.TZ,
+  // })
   checkCardsInPomelo() {
     this.logger.info(
       `[checkCardsInPomelo] Checking Cards in pomelo: ${this.env} - ${JobService.name}`,
@@ -110,9 +110,9 @@ export class JobService {
     }
   }
 
-  @Cron(JobService.periodicTime.checkB2BinPayTransfers, {
-    timeZone: process.env.TZ,
-  })
+  // @Cron(JobService.periodicTime.checkB2BinPayTransfers, {
+  //   timeZone: process.env.TZ,
+  // })
   sweepOmibus() {
     this.logger.info(
       `[sweepOmibus] Job sweep omibus: ${this.env} - ${JobService.name}`,
@@ -125,9 +125,9 @@ export class JobService {
     }
   }
 
-  @Cron(JobService.periodicTime.checkB2BinPayTransfers, {
-    timeZone: process.env.TZ,
-  })
+  // @Cron(JobService.periodicTime.checkB2BinPayTransfers, {
+  //   timeZone: process.env.TZ,
+  // })
   checkB2BinPayTransfers() {
     this.logger.warn(
       `[checkB2BinPayTransfers] Disabled Job checkB2BinPayTransfers: ${this.env} - ${JobService.name}`,
