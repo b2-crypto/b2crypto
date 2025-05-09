@@ -5,8 +5,9 @@ import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 import { AppModuleJobs } from './app.module.jobs';
 
-async function bootstrap() {
+async function bootstrap(port?: number | string) {
   Logger.log(process.env.TZ, 'Timezone Microservice');
+  port = port ?? process.env.PORT ?? 3000;
   const app = await NestFactory.create(AppModuleJobs, {
     // logger: false,
     cors: true,
@@ -28,10 +29,8 @@ async function bootstrap() {
       configService.get('ENVIRONMENT') ?? EnvironmentEnum.dev,
     ),
   );
-  await app.startAllMicroservices();
-  if (typeof process.send === 'function') {
-    process.send('ready');
-  }
+  Logger.log(port, 'Port Microservice Jobs');
+  await app.listen(port);
 }
 
-bootstrap();
+bootstrap(3001);
