@@ -23,7 +23,7 @@ export class JobController {
     @Inject(EventClientEnum.OUTBOX) private readonly brokerService: ClientProxy,
   ) {}
 
-  @Cron(CronExpression.EVERY_10_SECONDS, {
+  @Cron(CronExpression.EVERY_30_SECONDS, {
     timeZone: process.env.TZ,
   })
   async sendOutboxReadyForPublish() {
