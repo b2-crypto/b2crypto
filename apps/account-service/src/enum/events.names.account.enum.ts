@@ -5,35 +5,35 @@ enum EventsNamesAccountEnum {
   download = 'ACCOUNT.DOWNLOAD',
 
   // Card Operations
-  createMany = 'CARD.CREATE.MANY',
-  createOne = 'CARD.CREATE.ONE',
-  createOneCard = 'ACCOUNT.CREATE.ONE.CARD',
-  updateMany = 'CARD.UPDATE.MANY',
-  updateOne = 'CARD.UPDATE.ONE',
-  updateAmount = 'CARD.UPDATE.AMOUNT',
-  updateMigratedOwner = 'CARD.MIGRATE.OWNER',
-  updateOneByTpId = 'CARD.UPDATE.ONE.BY.TP.ID',
-  updateOneCard = 'ACCOUNT.UPDATE.ONE.CARD',
-  customUpdateOne = 'ACCOUNT.CUSTOM.UPDATE.ONE',
-  setAffinityGroup = 'CARD.SET.AFFINITY.GROUP',
-  setBalanceByCard = 'SET.BALANCE.BY.CARD',
-  deleteMany = 'CARD.DELETE.MANY',
-  deleteOneById = 'CARD.DELETE.ONE.BY.ID',
+  createMany = 'CARD.CREATE.MANY.JOBS',
+  createOne = 'CARD.CREATE.ONE.JOBS',
+  createOneCard = 'ACCOUNT.CREATE.ONE.CARD.JOBS',
+  updateMany = 'CARD.UPDATE.MANY.JOBS',
+  updateOne = 'CARD.UPDATE.ONE.JOBS',
+  updateAmount = 'CARD.UPDATE.AMOUNT.JOBS',
+  updateMigratedOwner = 'CARD.MIGRATE.OWNER.JOBS',
+  updateOneByTpId = 'CARD.UPDATE.ONE.BY.TP.ID.JOBS',
+  updateOneCard = 'ACCOUNT.UPDATE.ONE.CARD.JOBS',
+  customUpdateOne = 'ACCOUNT.CUSTOM.UPDATE.ONE.JOBS',
+  setAffinityGroup = 'CARD.SET.AFFINITY.GROUP.JOBS',
+  setBalanceByCard = 'SET.BALANCE.BY.CARD.JOBS',
+  deleteMany = 'CARD.DELETE.MANY.JOBS',
+  deleteOneById = 'CARD.DELETE.ONE.BY.ID.JOBS',
 
   // Card Queries
-  findAll = 'FILE.CARD.ALL',
-  findOneById = 'CARD.FIND.ONE.BY.ID',
-  findOneByCardId = 'CARD.FIND.ONE.BY.CARD.ID',
-  findOneByTpId = 'CARD.FIND.ONE.BY.TP.ID',
+  findAll = 'FILE.CARD.ALL.JOBS',
+  findOneById = 'CARD.FIND.ONE.BY.ID.JOBS',
+  findOneByCardId = 'CARD.FIND.ONE.BY.CARD.ID.JOBS',
+  findOneByTpId = 'CARD.FIND.ONE.BY.TP.ID.JOBS',
 
   // Migration
-  mingrateOne = 'CARD.MIGRATE.ONE',
-  findAllCardsToMigrate = 'FIND.CARD.ALL',
+  mingrateOne = 'CARD.MIGRATE.ONE.JOBS',
+  findAllCardsToMigrate = 'FIND.CARD.ALL.JOBS',
 
   // Wallet
-  createOneWallet = 'ACCOUNT.CREATE.ONE.WALLET',
-  migrateOneWallet = 'WALLET.MIGRATE.ONE',
-  sweepOmnibus = 'WALLET.SWEEP.OMNIBUS',
+  createOneWallet = 'ACCOUNT.CREATE.ONE.WALLET.JOBS',
+  migrateOneWallet = 'WALLET.MIGRATE.ONE.JOBS',
+  sweepOmnibus = 'WALLET.SWEEP.OMNIBUS.JOBS',
 
   // Affiliate Related
   getAffiliatesFromCards = 'CARD.FIND.AFFILIATES.JOBS',
