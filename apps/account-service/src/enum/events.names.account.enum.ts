@@ -36,23 +36,23 @@ enum EventsNamesAccountEnum {
   sweepOmnibus = 'WALLET.SWEEP.OMNIBUS',
 
   // Affiliate Related
-  getAffiliatesFromCards = 'CARD.FIND.AFFILIATES',
-  addCardFromAffiliate = 'CARD.CREATE.FROM.AFFILIATE',
+  getAffiliatesFromCards = 'CARD.FIND.AFFILIATES.JOBS',
+  addCardFromAffiliate = 'CARD.CREATE.FROM.AFFILIATE.JOBS',
 
   // Stats & Checks
-  checkCardsCreatedInPomelo = 'CARD.CHECK.CREATED.IN.POMELO',
-  checkCardsForAffiliateStats = 'CARD.CHECK.FOR.AFFILIATE.STATS',
-  checkCardsForBrandStats = 'CARD.CHECK.FOR.BRAND.STATS',
-  checkCardsForCrmStats = 'CARD.CHECK.FOR.CRM.STATS',
-  checkCardsStatusInCrm = 'CARD.CHECK.STATUS.IN.CRM',
-  checkStatsDateAll = 'CARD.CHECK.STATS.DATE.ALL',
-  count = 'ACCOUNT.COUNT',
+  checkCardsCreatedInPomelo = 'CARD.CHECK.CREATED.IN.POMELO.JOBS',
+  checkCardsForAffiliateStats = 'CARD.CHECK.FOR.AFFILIATE.STATS.JOBS',
+  checkCardsForBrandStats = 'CARD.CHECK.FOR.BRAND.STATS.JOBS',
+  checkCardsForCrmStats = 'CARD.CHECK.FOR.CRM.STATS.JOBS',
+  checkCardsStatusInCrm = 'CARD.CHECK.STATUS.IN.CRM.JOBS',
+  checkStatsDateAll = 'CARD.CHECK.STATS.DATE.ALL.JOBS',
+  count = 'ACCOUNT.COUNT.JOBS',
 
   // Transactions & Reports
-  athorizationTx = 'CARD.AUTHORIZATION.TX',
-  pomeloTransaction = 'CARD.POMELO.TRANSACTION',
-  sendBalanceReport = 'ACCOUNT.SEND.BALANCE.REPORT',
-  levelUpCards = 'CARD.LEVEL.UP',
+  athorizationTx = 'CARD.AUTHORIZATION.TX.JOBS',
+  pomeloTransaction = 'CARD.POMELO.TRANSACTION.JOBS',
+  sendBalanceReport = 'ACCOUNT.SEND.BALANCE.REPORT.JOBS',
+  levelUpCards = 'CARD.LEVEL.UP.JOBS',
 }
 
 export default EventsNamesAccountEnum;
