@@ -2547,7 +2547,7 @@ export class CardServiceController extends AccountServiceController {
       const userCardCreated = await cardIntegration.createUser(
         userCardDto,
         null,
-        AbortSignal.timeout(15000),
+        AbortSignal?.timeout(15000),
       );
 
       this.logger.info(

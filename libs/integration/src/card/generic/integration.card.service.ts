@@ -247,7 +247,7 @@ export class IntegrationCardService<
       this.routesMap.activateCard,
       request,
       undefined,
-      AbortSignal.timeout(10000),
+      AbortSignal?.timeout(10000),
     );
   }
 
