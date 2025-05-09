@@ -148,43 +148,24 @@ export class JobService {
     this.logger.info(`[sendOutboxReadyForPublish] Send ready for publish`);
 
     const now = new Date();
-    const nowSeconds = now.getSeconds();
-    const newSeconds =
-      nowSeconds >= 0 && nowSeconds < 10
-        ? 0
-        : nowSeconds >= 10 && nowSeconds < 20
-        ? 10
-        : nowSeconds >= 20 && nowSeconds < 30
-        ? 20
-        : nowSeconds >= 30 && nowSeconds < 40
-        ? 30
-        : nowSeconds >= 40 && nowSeconds < 50
-        ? 40
-        : nowSeconds >= 50 && nowSeconds < 60
-        ? 50
-        : 0;
-
-    now.setSeconds(newSeconds);
-    now.setMilliseconds(0);
-
     const processId = process.pid;
     const cacheKey = `outbox.ready.for.publish`;
     const outboxReadyForPublishRunningId = await this.cacheManager.get<number>(
       cacheKey,
     );
 
-    if (outboxReadyForPublishRunningId) {
-      this.logger.info(
-        `[sendOutboxReadyForPublish] Already other process running in ${outboxReadyForPublishRunningId}`,
-      );
+    try {
+      if (outboxReadyForPublishRunningId) {
+        this.logger.info(
+          `[sendOutboxReadyForPublish] Already other process running in ${outboxReadyForPublishRunningId}`,
+        );
 
-      return;
-    }
+        return;
+      }
 
-    await this.cacheManager.set(cacheKey, processId, 30 * 60 * 1000);
+      await this.cacheManager.set(cacheKey, processId, 30 * 60 * 1000);
 
-    const outboxes = await this.outboxService
-      .findAll({
+      const outboxes = await this.outboxService.findAll({
         where: {
           publishAfter: { $lte: now },
           isInOutbox: false,
@@ -192,43 +173,21 @@ export class JobService {
         },
         page: 1,
         take: 100,
-      })
-      .catch(async (err) => {
-        this.logger.error(
-          `[sendOutboxReadyForPublish] Error: ${err.message || err}`,
-        );
-
-        await this.cacheManager.del(cacheKey);
-
-        throw err;
       });
 
-    this.logger.info(
-      `[sendOutboxReadyForPublish] Outbox finded: ${outboxes.list.length}`,
-    );
+      this.logger.info(
+        `[sendOutboxReadyForPublish] Outbox finded: ${outboxes.list.length}`,
+      );
 
-    if (outboxes.list.length == 0) return;
+      const outboxIds = outboxes.list.map((outbox) => String(outbox._id));
 
-    const outboxIds = outboxes.list.map((outbox) => String(outbox._id));
-
-    await this.outboxService
-      .updateMany(outboxIds, [
+      await this.outboxService.updateMany(outboxIds, [
         {
           isInOutbox: true,
         },
-      ])
-      .catch(async (err) => {
-        this.logger.error(
-          `[sendOutboxReadyForPublish] Error: ${err.message || err}`,
-        );
+      ]);
 
-        await this.cacheManager.del(cacheKey);
-
-        throw err;
-      });
-
-    for (const outbox of outboxes.list) {
-      try {
+      for (const outbox of outboxes.list) {
         await lastValueFrom(
           this.brokerService.emit(outbox.topic, outbox.jsonPayload),
         );
@@ -236,46 +195,42 @@ export class JobService {
         await this.outboxService.update(outbox._id, {
           isPublished: true,
         });
-      } catch (err) {
-        this.logger.error(
-          `[sendOutboxReadyForPublish] Error: ${err.message || err}`,
-        );
-
-        await this.cacheManager.del(cacheKey);
-
-        throw err;
       }
-    }
 
-    await this.cacheManager.del(cacheKey);
+      await this.cacheManager.del(cacheKey);
+    } catch (err) {
+      this.logger.error(
+        `[sendOutboxReadyForPublish] Error: ${err.message || err}`,
+      );
+
+      await this.cacheManager.del(cacheKey);
+
+      throw err;
+    }
   }
 
   async sendOutboxLagging() {
     this.logger.info(`[sendOutboxLagging] Send lagging`);
 
     const now = new Date();
-
-    now.setSeconds(0);
-    now.setMilliseconds(0);
-
     const processId = process.pid;
     const cacheKey = `outbox.lagging`;
     const outboxLaggingRunningId = await this.cacheManager.get<number>(
       cacheKey,
     );
 
-    if (outboxLaggingRunningId) {
-      this.logger.info(
-        `[sendOutboxLagging] Already other process running in ${outboxLaggingRunningId}`,
-      );
+    try {
+      if (outboxLaggingRunningId) {
+        this.logger.info(
+          `[sendOutboxLagging] Already other process running in ${outboxLaggingRunningId}`,
+        );
 
-      return;
-    }
+        return;
+      }
 
-    await this.cacheManager.set(cacheKey, processId, 30 * 60 * 1000);
+      await this.cacheManager.set(cacheKey, processId, 30 * 60 * 1000);
 
-    const outboxes = await this.outboxService
-      .findAll({
+      const outboxes = await this.outboxService.findAll({
         where: {
           publishAfter: { $lte: now },
           isInOutbox: true,
@@ -283,21 +238,13 @@ export class JobService {
         },
         page: 1,
         take: 100,
-      })
-      .catch(async (err) => {
-        this.logger.error(`[sendOutboxLagging] Error: ${err.message || err}`);
-
-        await this.cacheManager.del(cacheKey);
-
-        throw err;
       });
 
-    this.logger.info(
-      `[sendOutboxLagging] Outbox finded: ${outboxes.list.length}`,
-    );
+      this.logger.info(
+        `[sendOutboxLagging] Outbox finded: ${outboxes.list.length}`,
+      );
 
-    for (const outbox of outboxes.list) {
-      try {
+      for (const outbox of outboxes.list) {
         await lastValueFrom(
           this.brokerService.emit(outbox.topic, outbox.jsonPayload),
         );
@@ -305,16 +252,16 @@ export class JobService {
         await this.outboxService.update(outbox._id, {
           isPublished: true,
         });
-      } catch (err) {
-        this.logger.error(`[sendOutboxLagging] Error: ${err.message || err}`);
-
-        await this.cacheManager.del(cacheKey);
-
-        throw err;
       }
-    }
 
-    await this.cacheManager.del(cacheKey);
+      await this.cacheManager.del(cacheKey);
+    } catch (err) {
+      this.logger.error(`[sendOutboxLagging] Error: ${err.message || err}`);
+
+      await this.cacheManager.del(cacheKey);
+
+      throw err;
+    }
   }
 
   async removeOutbox() {
@@ -324,27 +271,31 @@ export class JobService {
     const cacheKey = `outbox.remove`;
     const outboxRemoveRunningId = await this.cacheManager.get<number>(cacheKey);
 
-    if (outboxRemoveRunningId) {
-      this.logger.info(
-        `[removeOutbox] Already other process running in ${outboxRemoveRunningId}`,
-      );
-
-      return;
-    }
-
-    await this.cacheManager.set(cacheKey, processId, 30 * 60 * 1000);
-
     try {
+      if (outboxRemoveRunningId) {
+        this.logger.info(
+          `[removeOutbox] Already other process running in ${outboxRemoveRunningId}`,
+        );
+
+        return;
+      }
+
+      await this.cacheManager.set(cacheKey, processId, 30 * 60 * 1000);
+
       await this.outboxService.removeAllData({
         where: {
           isInOutbox: true,
           isPublished: true,
         },
       });
-    } catch (error) {
-      this.logger.error(`[removeOutbox] Error: ${error.message || error}`);
-    } finally {
+
       await this.cacheManager.del(cacheKey);
+    } catch (err) {
+      this.logger.error(`[removeOutbox] Error: ${err.message || err}`);
+
+      await this.cacheManager.del(cacheKey);
+
+      throw err;
     }
   }
 }
