@@ -16,7 +16,7 @@ export class PomeloV1DBClient {
     user: process.env.V1_DB_USER,
     password: process.env.V1_DB_PWD,
     host: process.env.V1_DB_HOST,
-    port: process.env.V1_DB_PORT,
+    port: parseInt(process.env.V1_DB_PORT, 10),
     database: process.env.V1_DB_NAME,
   };
 

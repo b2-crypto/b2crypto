@@ -18,6 +18,15 @@
         "tsConfigPath": "apps/b2crypto/tsconfig.app.json"
       }
     },
+    "b2crypto-jobs": {
+      "type": "application",
+      "root": "apps/b2crypto",
+      "entryFile": "main-jobs",
+      "sourceRoot": "apps/b2crypto/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/b2crypto/tsconfig.app.json"
+      }
+    },
     "b2crypto-microservices": {
       "type": "application",
       "root": "apps/b2crypto",
