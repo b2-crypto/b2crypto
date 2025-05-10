@@ -1,17 +1,9 @@
-import { OpenTelemetryModule } from '@amplication/opentelemetry-nestjs';
 import { CorrelationIdMiddleware } from '@common/common/middlewares';
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
-import { JobModule } from 'apps/job-service/job.module';
-import { LoggerModule } from 'nestjs-pino';
 import { configApp } from './config.app.const';
-import { loggerConfig } from './logger.config';
 
 @Module({
-  imports: [
-    OpenTelemetryModule.forRoot(),
-    LoggerModule.forRoot(loggerConfig),
-    ...new Set([...configApp.imports, ...[JobModule]]),
-  ],
+  imports: [...new Set([...configApp.imports])],
   controllers: [...new Set([...configApp.controllers])],
   providers: [...new Set([...configApp.providers])],
   exports: [...new Set([...configApp.exports])],

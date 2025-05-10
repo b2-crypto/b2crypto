@@ -1,3 +1,4 @@
+import { OpenTelemetryModule } from '@amplication/opentelemetry-nestjs';
 import { DistributedCacheModule } from '@app/distributed-cache';
 import { AuthModule } from '@auth/auth';
 import { BuildersModule } from '@builder/builders';
@@ -32,11 +33,16 @@ import { TrafficServiceModule } from 'apps/traffic-service/src/traffic-service.m
 import { TransferServiceModule } from 'apps/transfer-service/src/transfer-service.module';
 import { UserServiceModule } from 'apps/user-service/src/user-service.module';
 import configuration from 'config/configuration';
+import { LoggerModule } from 'nestjs-pino';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { loggerConfig } from './logger.config';
+// import { JobModule } from 'apps/job-service/job.module';
 
 export const configApp = {
   imports: [
+    OpenTelemetryModule.forRoot(),
+    LoggerModule.forRoot(loggerConfig),
     DistributedCacheModule,
     ConfigModule.forRoot({
       isGlobal: true,
@@ -44,6 +50,7 @@ export const configApp = {
     }),
     BuildersModule,
     ResponseB2CryptoModule,
+    // JobModule,
     // Services Privated
     AccountServiceModule,
     UserServiceModule,
