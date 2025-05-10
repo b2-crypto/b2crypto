@@ -2,6 +2,7 @@ import { Traceable } from '@amplication/opentelemetry-nestjs';
 import EventClientEnum from '@common/common/enums/EventsNameEnum';
 import { Inject, Injectable } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
+import { EventsNamesOutboxEnum } from '@outbox/outbox/enums/events.names.outbox.enum';
 import EventsNamesAccountEnum from 'apps/account-service/src/enum/events.names.account.enum';
 import EventsNamesActivityEnum from 'apps/activity-service/src/enum/events.names.activity.enum';
 import EventsNamesAffiliateEnum from 'apps/affiliate-service/src/enum/events.names.affiliate.enum';
@@ -73,6 +74,8 @@ export class BuildersService {
     private personClient: ClientProxy,
     @Inject(EventClientEnum.GROUP)
     private groupClient: ClientProxy,
+    @Inject(EventClientEnum.OUTBOX)
+    private outboxClient: ClientProxy,
   ) {}
 
   getEventClient(): ClientProxy {
@@ -117,6 +120,10 @@ export class BuildersService {
 
   getTransferEventClient(): ClientProxy {
     return this.transferClient;
+  }
+
+  getOutboxEventClient(): ClientProxy {
+    return this.outboxClient;
   }
 
   getAffiliateEventClient(): ClientProxy {
@@ -286,6 +293,17 @@ export class BuildersService {
   ): Promise<TResponse> {
     return this.getPromiseFromObserver(
       this.getTrafficEventClient(),
+      eventName,
+      data,
+    );
+  }
+  async getPromiseOutboxEventClient<
+    TData,
+    TResponse = void,
+    TEvent = EventsNamesOutboxEnum,
+  >(eventName: TEvent, data: TData): Promise<TResponse> {
+    return this.getPromiseFromObserver(
+      this.getOutboxEventClient(),
       eventName,
       data,
     );

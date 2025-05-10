@@ -1,14 +1,13 @@
 import { Traceable } from '@amplication/opentelemetry-nestjs';
+import { BuildersService } from '@builder/builders';
 import { EnvironmentEnum } from '@common/common/enums/environment.enum';
-import EventClientEnum from '@common/common/enums/EventsNameEnum';
 import { Controller, Inject } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { ClientProxy, EventPattern } from '@nestjs/microservices';
+import { EventPattern } from '@nestjs/microservices';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { ApiTags } from '@nestjs/swagger';
-import { OutboxEvents } from '@outbox/outbox/enums/outbox.events';
+import { EventsNamesOutboxEnum } from '@outbox/outbox/enums/events.names.outbox.enum';
 import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
-import { lastValueFrom } from 'rxjs';
 import { JobService } from './job.service';
 
 @ApiTags('JOBS')
@@ -20,7 +19,8 @@ export class JobController {
     private readonly configService: ConfigService,
     @InjectPinoLogger(JobController.name)
     private readonly logger: PinoLogger,
-    @Inject(EventClientEnum.OUTBOX) private readonly brokerService: ClientProxy,
+    @Inject(BuildersService)
+    private readonly builder: BuildersService,
   ) {}
 
   @Cron(CronExpression.EVERY_30_SECONDS, {
@@ -32,13 +32,14 @@ export class JobController {
     if (
       this.configService.get<string>('ENVIRONMENT') === EnvironmentEnum.prod
     ) {
-      await lastValueFrom(
-        this.brokerService.emit(OutboxEvents.sendOutboxReadyForPublish, ''),
+      await this.builder.getPromiseOutboxEventClient<string>(
+        EventsNamesOutboxEnum.sendOutboxReadyForPublish,
+        '',
       );
     }
   }
 
-  @EventPattern(OutboxEvents.sendOutboxReadyForPublish)
+  @EventPattern(EventsNamesOutboxEnum.sendOutboxReadyForPublish)
   async sendedOutboxReadyForPublish() {
     this.logger.info(`[sendedOutboxReadyForPublish] Sended ready for publish`);
 
@@ -54,13 +55,14 @@ export class JobController {
     if (
       this.configService.get<string>('ENVIRONMENT') === EnvironmentEnum.prod
     ) {
-      await lastValueFrom(
-        this.brokerService.emit(OutboxEvents.sendOutboxLagging, ''),
+      await this.builder.getPromiseOutboxEventClient<string>(
+        EventsNamesOutboxEnum.sendOutboxLagging,
+        '',
       );
     }
   }
 
-  @EventPattern(OutboxEvents.sendOutboxLagging)
+  @EventPattern(EventsNamesOutboxEnum.sendOutboxLagging)
   async sendedOutboxLagging() {
     this.logger.info(`[sendedOutboxLagging] Sended lagging`);
 
@@ -76,13 +78,14 @@ export class JobController {
     if (
       this.configService.get<string>('ENVIRONMENT') === EnvironmentEnum.prod
     ) {
-      await lastValueFrom(
-        this.brokerService.emit(OutboxEvents.removeOutbox, ''),
+      await this.builder.getPromiseOutboxEventClient<string>(
+        EventsNamesOutboxEnum.removeOutbox,
+        '',
       );
     }
   }
 
-  @EventPattern(OutboxEvents.removeOutbox)
+  @EventPattern(EventsNamesOutboxEnum.removeOutbox)
   async removedOutbox() {
     this.logger.info(`[removedOutbox] Removed outbox`);
 

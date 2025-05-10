@@ -125,15 +125,7 @@ import { BuildersService } from './builders.service';
     },
     {
       provide: EventClientEnum.OUTBOX,
-      useFactory: QueueAdminModule.factoryEventClient(EventClientEnum.TRANSFER),
-      inject: [ConfigService],
-    },
-  ],
-  exports: [
-    BuildersService,
-    {
-      provide: EventClientEnum.OUTBOX,
-      useFactory: QueueAdminModule.factoryEventClient(EventClientEnum.TRANSFER),
+      useFactory: QueueAdminModule.factoryEventClient(EventClientEnum.OUTBOX),
       inject: [ConfigService],
     },
   ],

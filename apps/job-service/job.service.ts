@@ -1,11 +1,9 @@
 import { Traceable } from '@amplication/opentelemetry-nestjs';
 import { BuildersService } from '@builder/builders';
 import { EnvironmentEnum } from '@common/common/enums/environment.enum';
-import EventClientEnum from '@common/common/enums/EventsNameEnum';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { ClientProxy } from '@nestjs/microservices';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { OutboxServiceMongooseService } from '@outbox/outbox';
 import EventsNamesAccountEnum from 'apps/account-service/src/enum/events.names.account.enum';
@@ -13,7 +11,6 @@ import EventsNamesTransferEnum from 'apps/transfer-service/src/enum/events.names
 import EventsNamesUserEnum from 'apps/user-service/src/enum/events.names.user.enum';
 import { Cache } from 'cache-manager';
 import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
-import { lastValueFrom } from 'rxjs';
 
 @Traceable()
 @Injectable()
@@ -36,7 +33,6 @@ export class JobService {
     readonly configService: ConfigService,
     @Inject(BuildersService)
     private readonly builder: BuildersService,
-    @Inject(EventClientEnum.OUTBOX) private readonly brokerService: ClientProxy,
     @Inject(OutboxServiceMongooseService)
     private readonly outboxService: OutboxServiceMongooseService,
     @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
@@ -188,8 +184,9 @@ export class JobService {
       ]);
 
       for (const outbox of outboxes.list) {
-        await lastValueFrom(
-          this.brokerService.emit(outbox.topic, outbox.jsonPayload),
+        await this.builder.getPromiseOutboxEventClient<string, void, string>(
+          outbox.topic,
+          outbox.jsonPayload,
         );
 
         await this.outboxService.update(outbox._id, {
@@ -245,8 +242,9 @@ export class JobService {
       );
 
       for (const outbox of outboxes.list) {
-        await lastValueFrom(
-          this.brokerService.emit(outbox.topic, outbox.jsonPayload),
+        await this.builder.getPromiseOutboxEventClient<string, void, string>(
+          outbox.topic,
+          outbox.jsonPayload,
         );
 
         await this.outboxService.update(outbox._id, {
