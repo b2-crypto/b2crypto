@@ -1,6 +1,6 @@
 {
   "name": "b2crypto-jobs",
-  "script": "./dist-pm2/b2crypto/main-jobs.js",
+  "script": "./dist-pm2/apps/b2crypto/main-jobs.js",
   "exp_backoff_restart_delay": 100,
   "instances": "1",
   "exec_mode": "cluster",
