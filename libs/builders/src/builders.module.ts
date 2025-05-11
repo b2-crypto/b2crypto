@@ -129,5 +129,6 @@ import { BuildersService } from './builders.service';
       inject: [ConfigService],
     },
   ],
+  exports: [BuildersService],
 })
 export class BuildersModule {}
