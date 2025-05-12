@@ -20,6 +20,7 @@ import { FileServiceModule } from 'apps/file-service/src/file-service.module';
 import { GroupServiceModule } from 'apps/group-service/src/group-service.module';
 import { IntegrationServiceModule } from 'apps/integration-service/src/integration-service.module';
 import { IpAddressServiceModule } from 'apps/ip-address-service/src/ip-address-service.module';
+import { JobModule } from 'apps/job-service/job.module';
 import { LeadServiceModule } from 'apps/lead-service/src/lead-service.module';
 import { MessageServiceModule } from 'apps/message-service/src/message-service.module';
 import { PermissionServiceModule } from 'apps/permission-service/src/permission-service.module';
@@ -37,7 +38,6 @@ import { LoggerModule } from 'nestjs-pino';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { loggerConfig } from './logger.config';
-// import { JobModule } from 'apps/job-service/job.module';
 
 export const configApp = {
   imports: [
@@ -50,7 +50,7 @@ export const configApp = {
     }),
     BuildersModule,
     ResponseB2CryptoModule,
-    // JobModule,
+    JobModule,
     // Services Privated
     AccountServiceModule,
     UserServiceModule,
