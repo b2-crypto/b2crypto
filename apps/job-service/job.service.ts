@@ -9,6 +9,7 @@ import { OutboxServiceMongooseService } from '@outbox/outbox';
 import EventsNamesAccountEnum from 'apps/account-service/src/enum/events.names.account.enum';
 import EventsNamesTransferEnum from 'apps/transfer-service/src/enum/events.names.transfer.enum';
 import EventsNamesUserEnum from 'apps/user-service/src/enum/events.names.user.enum';
+import axios from 'axios';
 import { Cache } from 'cache-manager';
 import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 
@@ -18,6 +19,7 @@ export class JobService {
   static readonly periodicTime = {
     //sendBalanceCardReports: CronExpression.EVERY_DAY_AT_1PM,
     /**  */
+    sendBalanceCard8amReports: CronExpression.EVERY_DAY_AT_8AM,
     sendBalanceCardReports: '30 10 * * *',
     sweepOmnibus: CronExpression.EVERY_12_HOURS,
     checkBalanceUser: CronExpression.EVERY_DAY_AT_11AM,
@@ -52,6 +54,20 @@ export class JobService {
       this.builder.emitTransferEventClient(
         EventsNamesTransferEnum.sendLast6hHistoryCardWalletDeposits,
         0,
+      );
+    }
+  }
+
+  @Cron(JobService.periodicTime.sendBalanceCard8amReports, {
+    timeZone: process.env.TZ,
+  })
+  async sendBalanceCardReports8amCron() {
+    this.logger.info(
+      `[sendBalanceCardReports8AMCron] Sended balance card report: ${this.env} - ${JobService.name}`,
+    );
+    if (this.env == EnvironmentEnum.prod) {
+      await axios.get(
+        'https://main.d1v0cgah6fkrya.amplifyapp.com/api/cards/slack-report',
       );
     }
   }
