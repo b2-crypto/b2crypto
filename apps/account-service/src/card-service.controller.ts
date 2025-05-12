@@ -1,19 +1,27 @@
 import { AccountCreateDto } from '@account/account/dto/account.create.dto';
+import { AccountUpdateDto } from '@account/account/dto/account.update.dto';
 import { CardDepositCreateDto } from '@account/account/dto/card-deposit.create.dto';
 import { CardCreateDto } from '@account/account/dto/card.create.dto';
+import { ConfigCardActivateDto } from '@account/account/dto/config.card.activate.dto';
+import { PinUpdateDto } from '@account/account/dto/pin.update.dto';
 import { AccountEntity } from '@account/account/entities/account.entity';
+import { AccountInterface } from '@account/account/entities/account.interface';
 import { AccountDocument } from '@account/account/entities/mongoose/account.schema';
 import { Card } from '@account/account/entities/mongoose/card.schema';
 import { UserCard } from '@account/account/entities/mongoose/user-card.schema';
 import CardTypesAccountEnum from '@account/account/enum/card.types.account.enum';
 import StatusAccountEnum from '@account/account/enum/status.account.enum';
 import TypesAccountEnum from '@account/account/enum/types.account.enum';
+import WalletTypesAccountEnum from '@account/account/enum/wallet.types.account.enum';
+import { Traceable } from '@amplication/opentelemetry-nestjs';
 import { ApiKeyAuthGuard } from '@auth/auth/guards/api.key.guard';
 import { BuildersService } from '@builder/builders';
+import { CategoryInterface } from '@category/category/entities/category.interface';
 import { CommonService } from '@common/common';
 import { NoCache } from '@common/common/decorators/no-cache.decorator';
 import CountryCodeEnum from '@common/common/enums/country.code.b2crypto.enum';
 import CurrencyCodeB2cryptoEnum from '@common/common/enums/currency-code-b2crypto.enum';
+import DocIdTypeEnum from '@common/common/enums/DocIdTypeEnum';
 import { CardsEnum } from '@common/common/enums/messages.enum';
 import ResourcesEnum from '@common/common/enums/ResourceEnum';
 import { StatusCashierEnum } from '@common/common/enums/StatusCashierEnum';
@@ -23,11 +31,13 @@ import { IntegrationService } from '@integration/integration';
 import IntegrationCardEnum from '@integration/integration/card/enums/IntegrationCardEnum';
 import { UserCardDto } from '@integration/integration/card/generic/dto/user.card.dto';
 import { IntegrationCardService } from '@integration/integration/card/generic/integration.card.service';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import {
   BadRequestException,
   Body,
   Controller,
   Get,
+  HttpStatus,
   Inject,
   NotFoundException,
   NotImplementedException,
@@ -54,7 +64,10 @@ import {
   ApiSecurity,
   ApiTags,
 } from '@nestjs/swagger';
+import { OutboxServiceMongooseService } from '@outbox/outbox';
+import { OutboxCreateDto } from '@outbox/outbox/dto/outbox.create.dto';
 import { AddressSchema } from '@person/person/entities/mongoose/address.schema';
+import { PspAccountInterface } from '@psp-account/psp-account/entities/psp-account.interface';
 import { TransferCreateDto } from '@transfer/transfer/dto/transfer.create.dto';
 import { OperationTransactionType } from '@transfer/transfer/enum/operation.transaction.type.enum';
 import { User } from '@user/user/entities/mongoose/user.schema';
@@ -68,28 +81,18 @@ import { StatusServiceService } from 'apps/status-service/src/status-service.ser
 import EventsNamesTransferEnum from 'apps/transfer-service/src/enum/events.names.transfer.enum';
 import EventsNamesUserEnum from 'apps/user-service/src/enum/events.names.user.enum';
 import { UserServiceService } from 'apps/user-service/src/user-service.service';
-import { isEmpty, isNumber, isString } from 'class-validator';
-import { SwaggerSteakeyConfigEnum } from 'libs/config/enum/swagger.stakey.config.enum';
-import * as pug from 'pug';
-
-import { AccountUpdateDto } from '@account/account/dto/account.update.dto';
-import { ConfigCardActivateDto } from '@account/account/dto/config.card.activate.dto';
-import { PinUpdateDto } from '@account/account/dto/pin.update.dto';
-import { AccountInterface } from '@account/account/entities/account.interface';
-import WalletTypesAccountEnum from '@account/account/enum/wallet.types.account.enum';
-import { Traceable } from '@amplication/opentelemetry-nestjs';
-import { CategoryInterface } from '@category/category/entities/category.interface';
-import DocIdTypeEnum from '@common/common/enums/DocIdTypeEnum';
-import { CACHE_MANAGER } from '@nestjs/cache-manager';
-import { PspAccountInterface } from '@psp-account/psp-account/entities/psp-account.interface';
 import { Cache } from 'cache-manager';
+import { isEmpty, isNumber, isString } from 'class-validator';
+import * as crypto from 'crypto';
+import { SwaggerSteakeyConfigEnum } from 'libs/config/enum/swagger.stakey.config.enum';
+import mongoose from 'mongoose';
 import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
+import * as pug from 'pug';
 import { ResponsePaginator } from '../../../libs/common/src/interfaces/response-pagination.interface';
 import { AccountServiceController } from './account-service.controller';
 import { AccountServiceService } from './account-service.service';
 import { AfgNamesEnum } from './enum/afg.names.enum';
 import EventsNamesAccountEnum from './enum/events.names.account.enum';
-import * as crypto from 'crypto';
 
 @ApiTags(SwaggerSteakeyConfigEnum.TAG_CARD)
 @Traceable()
@@ -112,6 +115,8 @@ export class CardServiceController extends AccountServiceController {
     private readonly integration: IntegrationService,
     private readonly configService: ConfigService,
     private readonly currencyConversion: FiatIntegrationClient,
+    @Inject(OutboxServiceMongooseService)
+    private readonly outboxService: OutboxServiceMongooseService,
     @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
   ) {
     super(logger, cardService, cardBuilder);
@@ -1674,64 +1679,69 @@ export class CardServiceController extends AccountServiceController {
     }
     const fromName = `${from.name ?? from.firstName}`;
     const toName = `${to.name ?? to.firstName}`;
+    const createDeposit = {
+      name: `Deposit card ${toName}`,
+      description: `Deposit from ${fromName} to ${toName}`,
+      page: `from-${from._id}-to-${to._id}-host-${req.get('Host')}`,
+      leadCrmName: `${from.type}2${to.type}`,
+      currency: to.currency,
+      amount: createDto.amount,
+      currencyCustodial: to.currencyCustodial,
+      amountCustodial: createDto.amount,
+      account: to._id,
+      userCreator: req?.user?.id,
+      userAccount: to.owner,
+      typeAccount: to.type,
+      typeAccountType: to.accountType,
+      typeTransaction: depositCardCategory._id,
+      psp: internalPspAccount.psp,
+      pspAccount: internalPspAccount._id,
+      operationType: OperationTransactionType.deposit,
+      statusPayment: StatusCashierEnum.APPROVED,
+      isApprove: true,
+      status: approvedStatus._id,
+      brand: to.brand,
+      crm: to.crm,
+      confirmedAt: new Date(),
+      approvedAt: new Date(),
+    } as unknown as TransferCreateDto;
+    const createWithdrawal = {
+      name: `Withdrawal wallet ${toName}`,
+      description: `Withdrawal from ${fromName} to ${toName}`,
+      page: `from-${from._id}-to-${to._id}-host-${req.get('Host')}`,
+      leadCrmName: `${from.type}2${to.type}`,
+      currency: from.currency,
+      amount: createDto.amount,
+      currencyCustodial: from.currencyCustodial,
+      amountCustodial: createDto.amount,
+      account: from._id,
+      userCreator: req?.user?.id,
+      userAccount: from.owner,
+      typeAccount: from.type,
+      typeAccountType: from.accountType,
+      typeTransaction: withdrawalCategory._id,
+      psp: internalPspAccount.psp,
+      pspAccount: internalPspAccount._id,
+      operationType: OperationTransactionType.withdrawal,
+      statusPayment: StatusCashierEnum.APPROVED,
+      isApprove: true,
+      status: approvedStatus._id,
+      brand: from.brand,
+      crm: from.crm,
+      confirmedAt: new Date(),
+      approvedAt: new Date(),
+    } as unknown as TransferCreateDto;
+
     this.cardBuilder.emitTransferEventClient(
       EventsNamesTransferEnum.createOne,
-      {
-        name: `Deposit card ${toName}`,
-        description: `Deposit from ${fromName} to ${toName}`,
-        page: `from-${from._id}-to-${to._id}-host-${req.get('Host')}`,
-        leadCrmName: `${from.type}2${to.type}`,
-        currency: to.currency,
-        amount: createDto.amount,
-        currencyCustodial: to.currencyCustodial,
-        amountCustodial: createDto.amount,
-        account: to._id,
-        userCreator: req?.user?.id,
-        userAccount: to.owner,
-        typeAccount: to.type,
-        typeAccountType: to.accountType,
-        typeTransaction: depositCardCategory._id,
-        psp: internalPspAccount.psp,
-        pspAccount: internalPspAccount._id,
-        operationType: OperationTransactionType.deposit,
-        statusPayment: StatusCashierEnum.APPROVED,
-        isApprove: true,
-        status: approvedStatus._id,
-        brand: to.brand,
-        crm: to.crm,
-        confirmedAt: new Date(),
-        approvedAt: new Date(),
-      } as unknown as TransferCreateDto,
+      createDeposit,
     );
+
     this.cardBuilder.emitTransferEventClient(
       EventsNamesTransferEnum.createOne,
-      {
-        name: `Withdrawal wallet ${toName}`,
-        description: `Withdrawal from ${fromName} to ${toName}`,
-        page: `from-${from._id}-to-${to._id}-host-${req.get('Host')}`,
-        leadCrmName: `${from.type}2${to.type}`,
-        currency: from.currency,
-        amount: createDto.amount,
-        currencyCustodial: from.currencyCustodial,
-        amountCustodial: createDto.amount,
-        account: from._id,
-        userCreator: req?.user?.id,
-        userAccount: from.owner,
-        typeAccount: from.type,
-        typeAccountType: from.accountType,
-        typeTransaction: withdrawalCategory._id,
-        psp: internalPspAccount.psp,
-        pspAccount: internalPspAccount._id,
-        operationType: OperationTransactionType.withdrawal,
-        statusPayment: StatusCashierEnum.APPROVED,
-        isApprove: true,
-        status: approvedStatus._id,
-        brand: from.brand,
-        crm: from.crm,
-        confirmedAt: new Date(),
-        approvedAt: new Date(),
-      } as unknown as TransferCreateDto,
+      createWithdrawal,
     );
+
     from.amount = from.amount - createDto.amount;
     return from;
   }
@@ -1824,78 +1834,108 @@ export class CardServiceController extends AccountServiceController {
       const cardId = (rta.data && rta.data['id']) || rta['id'];
       this.logger.info(`[physicalActiveCard] cardId actived ${cardId}`);
 
+      const createdAt = new Date();
+
+      const outbox = {
+        _id: new mongoose.Types.ObjectId(),
+        topic: EventsNamesAccountEnum.setAffinityGroup,
+        correlationId: cardId,
+        jsonPayload: JSON.stringify({ cardId, user, configActivate }),
+        createdAt,
+        updatedAt: createdAt,
+        publishAfter: new Date(createdAt.getTime() + 15 * 1000),
+      } satisfies OutboxCreateDto;
+
+      await this.outboxService.create(outbox);
+
       return {
-        statusCode: 200,
+        statusCode: HttpStatus.OK,
         data: 'Card actived',
       };
-
-      // let crd = null;
-      // let card = null;
-      // let cards = null;
-      // try {
-      //   cards = await cardIntegration.getCard(cardId);
-      //   this.logger.info(
-      //     `[physicalActiveCard] Result pomelo active ${JSON.stringify(cards)}`,
-      //   );
-      //   crd = cards.data;
-      //   this.logger.info(`[physicalActiveCard] Search card active ${cardId}`);
-      //   card = await this.cardService.findAll({
-      //     where: {
-      //       'cardConfig.id': crd.id,
-      //     },
-      //   });
-      // } catch (err) {
-      //   this.logger.error(`[physicalActiveCard] Error get card pomelo ${err}`);
-      //   throw new BadRequestException('Get Card error');
-      // }
-      // if (!card.totalElements) {
-      //   const cardDto = this.buildCardDto(crd, user.personalData, user.email);
-      //   cardDto.pin = configActivate.pin;
-      //   const n_card = await this.cardService.createOne(
-      //     cardDto as AccountCreateDto,
-      //   );
-      //   this.logger.info(
-      //     `[physicalActiveCard] Card created ${n_card.id} for ${user.email}`,
-      //   );
-      //   let afgName = 'grupo-1';
-      //   if (configActivate.promoCode == 'pm2413') {
-      //     afgName = 'grupo-3';
-      //   }
-      //   const cardAfg = await this.getAfgByLevel(afgName, true);
-      //   const group = await this.buildAFG(null, cardAfg);
-      //   const afg = group.list[0];
-      //   try {
-      //     const rta = await cardIntegration.updateCard({
-      //       id: crd?.id,
-      //       affinity_group_id: afg.valueGroup,
-      //     });
-      //     this.logger.info(
-      //       `[physicalActiveCard] Updated AFG Card-${
-      //         n_card?.id
-      //       } ${JSON.stringify(rta.data)}`,
-      //     );
-      //     this.cardBuilder.emitAccountEventClient(
-      //       EventsNamesAccountEnum.updateOne,
-      //       {
-      //         id: n_card?.id.toString(),
-      //         group: afg._id,
-      //       },
-      //     );
-      //   } catch (error) {
-      //     this.logger.error(
-      //       `[physicalActiveCard] Update AFG Card-${n_card?.id}-${user.email} ${
-      //         error.message || error
-      //       }`,
-      //     );
-      //     //throw new BadRequestException('Bad update card');
-      //   }
-      // }
-      // return {
-      //   statusCode: 200,
-      //   data: 'Card actived',
-      // };
     }
     return rta;
+  }
+
+  @EventPattern(EventsNamesAccountEnum.setAffinityGroup)
+  async setAffinityGroupEventHandler(
+    @Payload() data: string,
+    @Ctx() ctx: RmqContext,
+  ) {
+    CommonService.ack(ctx);
+    this.logger.info(`[setAffinityGroupEventHandler] ${data}`);
+
+    const { cardId, user, configActivate } = JSON.parse(data);
+
+    const cardIntegration = await this.integration.getCardIntegration(
+      IntegrationCardEnum.POMELO,
+    );
+
+    let crd = null;
+    let card = null;
+    let cards = null;
+    try {
+      cards = await cardIntegration.getCard(cardId);
+      this.logger.info(
+        `[physicalActiveCard] Result pomelo active ${JSON.stringify(cards)}`,
+      );
+      crd = cards.data;
+      this.logger.info(`[physicalActiveCard] Search card active ${cardId}`);
+      card = await this.cardService.findAll({
+        where: {
+          'cardConfig.id': crd.id,
+        },
+      });
+    } catch (err) {
+      this.logger.error(`[physicalActiveCard] Error get card pomelo ${err}`);
+      throw new BadRequestException('Get Card error');
+    }
+    if (!card.totalElements) {
+      const cardDto = this.buildCardDto(crd, user.personalData, user.email);
+      cardDto.pin = configActivate.pin;
+      const n_card = await this.cardService.createOne(
+        cardDto as AccountCreateDto,
+      );
+      this.logger.info(
+        `[physicalActiveCard] Card created ${n_card.id} for ${user.email}`,
+      );
+      let afgName = 'grupo-1';
+      if (configActivate.promoCode == 'pm2413') {
+        afgName = 'grupo-3';
+      }
+      const cardAfg = await this.getAfgByLevel(afgName, true);
+      const group = await this.buildAFG(null, cardAfg);
+      const afg = group.list[0];
+      try {
+        const rta = await cardIntegration.updateCard({
+          id: crd?.id,
+          affinity_group_id: afg.valueGroup,
+        });
+        this.logger.info(
+          `[physicalActiveCard] Updated AFG Card-${n_card?.id} ${JSON.stringify(
+            rta.data,
+          )}`,
+        );
+        this.cardBuilder.emitAccountEventClient(
+          EventsNamesAccountEnum.updateOne,
+          {
+            id: n_card?.id.toString(),
+            group: afg._id,
+          },
+        );
+      } catch (error) {
+        this.logger.error(
+          `[physicalActiveCard] Update AFG Card-${n_card?.id}-${user.email} ${
+            error.message || error
+          }`,
+        );
+        //throw new BadRequestException('Bad update card');
+      }
+    }
+
+    return {
+      statusCode: 200,
+      data: 'Card actived',
+    };
   }
 
   @Get('sensitive-info/:cardId')
@@ -2184,9 +2224,11 @@ export class CardServiceController extends AccountServiceController {
       );
       if (data.authorize) {
         const allowedBalance =
-          card.amount * (1.0 - this.BLOCK_BALANCE_PERCENTAGE - data.commision);
+          card.amount * (1 - this.BLOCK_BALANCE_PERCENTAGE);
 
-        if (allowedBalance <= data.amount) {
+        const totalMount = data.amount * (1 + data.commision);
+
+        if (allowedBalance <= totalMount) {
           this.logger.info(
             `[processPomeloTransaction] Card proccess: ${CardsEnum.CARD_PROCESS_INSUFFICIENT_FUNDS}`,
           );

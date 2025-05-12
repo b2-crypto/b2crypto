@@ -8,18 +8,13 @@ import {
   OnModuleInit,
 } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
-import { JobModule } from 'apps/job-service/job.module';
 import { SeedModule } from 'apps/seed-service/seed.module';
 import { SeedService } from 'apps/seed-service/seed.service';
-import { LoggerModule } from 'nestjs-pino';
 import { configApp } from './config.app.const';
-import { loggerConfig } from './logger.config';
 
 const configHttp = {
   ...configApp,
 };
-
-configHttp.imports.push(JobModule, LoggerModule.forRoot(loggerConfig));
 
 configHttp.providers.push({
   provide: APP_GUARD,

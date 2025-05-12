@@ -1,9 +1,9 @@
-import { Module } from '@nestjs/common';
-import { BuildersService } from './builders.service';
 import EventClientEnum from '@common/common/enums/EventsNameEnum';
+import { QueueAdminModule } from '@common/common/queue-admin-providers/queue.admin.provider.module';
+import { Module } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { ResponseB2CryptoModule } from '@response-b2crypto/response-b2crypto';
-import { QueueAdminModule } from '@common/common/queue-admin-providers/queue.admin.provider.module';
+import { BuildersService } from './builders.service';
 
 @Module({
   imports: [ResponseB2CryptoModule],
@@ -121,6 +121,11 @@ import { QueueAdminModule } from '@common/common/queue-admin-providers/queue.adm
     {
       provide: EventClientEnum.TRANSFER,
       useFactory: QueueAdminModule.factoryEventClient(EventClientEnum.TRANSFER),
+      inject: [ConfigService],
+    },
+    {
+      provide: EventClientEnum.OUTBOX,
+      useFactory: QueueAdminModule.factoryEventClient(EventClientEnum.OUTBOX),
       inject: [ConfigService],
     },
   ],

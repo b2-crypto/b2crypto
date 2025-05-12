@@ -3,4 +3,5 @@ export enum EnvironmentEnum {
   dev = 'DEV',
   stage = 'STAGE',
   local = 'LOCAL',
+  test = 'TEST',
 }

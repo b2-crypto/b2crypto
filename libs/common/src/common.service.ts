@@ -377,10 +377,7 @@ export class CommonService {
     query = query ?? {};
     query.where = query.where ?? {};
     query.where[attrName] = userId;
-    //ANCHOR - Descomentar para activar el filtro de showToOwner
-    // query.where.showToOwner = isBoolean(query.where.showToOwner)
-    //   ? query.where.showToOwner
-    //   : true;
+
     return query;
   }
   static checkWhitelistedIps(context: ExecutionContext): boolean {

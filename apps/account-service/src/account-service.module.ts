@@ -16,6 +16,7 @@ import { HttpModule } from '@nestjs/axios';
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { APP_FILTER, APP_INTERCEPTOR } from '@nestjs/core';
+import { OutboxModule } from '@outbox/outbox';
 import { ResponseB2CryptoModule } from '@response-b2crypto/response-b2crypto';
 import { StatusModule } from '@status/status';
 import { UserModule } from '@user/user';
@@ -33,6 +34,7 @@ import { WalletServiceService } from './wallet-service.service';
 @Module({
   imports: [
     DistributedCacheModule,
+    OutboxModule,
     ConfigModule.forRoot({
       isGlobal: true,
       load: [configuration],
