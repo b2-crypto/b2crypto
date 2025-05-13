@@ -84,10 +84,7 @@ export class MessageServiceService {
   }
 
   private getOriginEmail(): string {
-    return this.configService.get(
-      'AWS_SES_FROM_DEFAULT',
-      'no-reply@b2pay.app.com',
-    );
+    return this.configService.get('AWS_SES_FROM_DEFAULT', 'no-reply@b2pay.app');
   }
 
   async sendEmailOtpNotification(message: MessageCreateDto) {
@@ -285,7 +282,7 @@ export class MessageServiceService {
 
       const from = await this.configService.getOrThrow(
         'AWS_SES_FROM_DEFAULT',
-        'no-reply@b2pay.app.com',
+        'no-reply@b2pay.app',
       );
       const html = this.compileHtml(message.vars ?? message, template);
 
