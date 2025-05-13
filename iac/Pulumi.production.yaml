@@ -12,7 +12,7 @@ config:
     secure: AAABAGls8PcE7wwNnKyWw/Lmfq6qtA0tWnTnMUHFjat78raQPvYH2S8=
   b2crypto-iac:AUTHORIZATIONS_BLOCK_BALANCE_PERCENTAGE: '0.1'
   b2crypto-iac:AWS_SES_FROM_DEFAULT:
-    secure: AAABAHMg0uxQ6P5/yjQmk8Hz397NKnNQafLi+qGEddxmdC+wGSJwRCMfIdq52Yu1jZGglVA=
+    secure: AAABAAusI53HdAA6Yz+uXFRSSYPHdSUiyGTW4PTt9swlj1HTN/UpdNmvPupaTRnwdfQ=
   b2crypto-iac:AWS_SES_HOST:
     secure: AAABAE6Vdbj9SX9JqenbcH84/LXLSleePIhcE4v8Zcyjsq0raEgp2IeQEhAvB+bDqmvsfBORbDwLWVvXOqfu/sny
   b2crypto-iac:AWS_SES_PASSWORD:
