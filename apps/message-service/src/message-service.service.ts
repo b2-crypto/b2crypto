@@ -86,7 +86,7 @@ export class MessageServiceService {
   private getOriginEmail(): string {
     return this.configService.get(
       'AWS_SES_FROM_DEFAULT',
-      'no-reply@b2crypto.com',
+      'no-reply@b2pay.app.com',
     );
   }
 
@@ -285,7 +285,7 @@ export class MessageServiceService {
 
       const from = await this.configService.getOrThrow(
         'AWS_SES_FROM_DEFAULT',
-        'no-reply@b2crypto.com',
+        'no-reply@b2pay.app.com',
       );
       const html = this.compileHtml(message.vars ?? message, template);
 
