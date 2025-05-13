@@ -191,6 +191,8 @@ export class JobService {
         `[sendOutboxReadyForPublish] Outbox finded: ${outboxes.list.length}`,
       );
 
+      if (outboxes.list.length === 0) return;
+
       const outboxIds = outboxes.list.map((outbox) => String(outbox._id));
 
       await this.outboxService.updateMany(outboxIds, [
@@ -256,6 +258,8 @@ export class JobService {
       this.logger.info(
         `[sendOutboxLagging] Outbox finded: ${outboxes.list.length}`,
       );
+
+      if (outboxes.list.length === 0) return;
 
       for (const outbox of outboxes.list) {
         await this.builder.getPromiseOutboxEventClient<string, void, string>(
