@@ -13,6 +13,7 @@ import {
   HttpStatus,
   Injectable,
   InternalServerErrorException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import {
@@ -46,52 +47,41 @@ export class PomeloIntegrationProcessService {
     idempotency: string,
     authorize: boolean,
     headers: any,
-  ): Promise<any> {
-    let response = await this.cache.getResponse(idempotency);
+  ) {
+    const responseCached = (await this.cache.getResponse(idempotency)) as
+      | string
+      | null;
 
-    response = typeof response === 'string' ? JSON.parse(response) : response;
+    const responseParsed =
+      typeof responseCached === 'string'
+        ? (JSON.parse(responseCached) as {
+            status: CardsEnum;
+            message: string;
+            status_detail: CardsEnum;
+          })
+        : responseCached;
 
-    if (response == null) {
-      response = await this.cache.setTooEarly(idempotency);
-      const amount = await this.getAmount(process);
-
-      //REVIEW - Check if transaction already executed
-      // const transactionId = process.transaction.id;
-
-      // const transactions = await this.builder.getPromiseTransferEventClient<{
-      //   list: Transfer[];
-      // }>(EventsNamesTransferEnum.findAll, {
-      //   where: {
-      //     'requestBodyJson.transaction.id': transactionId,
-      //     leadCrmName: { $ne: 'Sales' },
-      //   },
-      // });
-
-      // if (transactions.list.length > 0) {
-      //   this.logger.info(
-      //     `[executeProcess] Transaction already executed: ${JSON.stringify(
-      //       transactions.list,
-      //       null,
-      //       2,
-      //     )}`,
-      //   );
-      //   return this.buildProcessResponse(
-      //     CardsEnum.CARD_PROCESS_TRANSACTION_EXISTS,
-      //     authorize,
-      //   );
-      // }
-
-      response = await this.executeProcess(process, authorize, amount.usd);
-      await this.cache.setResponse(idempotency, response);
-      await this.createTransferRecord(
-        process,
-        headers,
-        response,
-        amount,
-        authorize,
-      );
+    if (responseParsed != null) {
+      return { response: responseParsed, transfer: null };
     }
-    return response;
+
+    await this.cache.setTooEarly(idempotency);
+
+    const amount = await this.getAmount(process);
+
+    const response = await this.executeProcess(process, authorize, amount.usd);
+
+    await this.cache.setResponse(idempotency, response);
+
+    const transfer = await this.createTransferRecord(
+      process,
+      headers,
+      response,
+      amount,
+      authorize,
+    );
+
+    return { response, transfer };
   }
 
   private isOperationHasParent(process: any): boolean {
@@ -594,6 +584,8 @@ export class PomeloIntegrationProcessService {
       //   );
       // }
       //============================================================
+
+      return transaction;
     } catch (error) {
       this.logger.info(
         `[createTransferRecord] Error creating transfer: ${
@@ -628,7 +620,7 @@ export class PomeloIntegrationProcessService {
     process: any,
     authorize: boolean,
     usdAmount: number,
-  ): Promise<any> {
+  ) {
     try {
       const percentageCommisionNational = parseFloat(
         this.configService.getOrThrow('COMMISION_NATIONAL'),
@@ -690,7 +682,7 @@ export class PomeloIntegrationProcessService {
     }
   }
 
-  private buildProcessResponse(result: CardsEnum, authorize: boolean): any {
+  private buildProcessResponse(result: CardsEnum, authorize: boolean) {
     if (authorize) {
       if (result === CardsEnum.CARD_PROCESS_OK) {
         return {
@@ -716,51 +708,49 @@ export class PomeloIntegrationProcessService {
     return this.buildErrorResponse(result, authorize);
   }
 
-  private buildErrorResponse(result: CardsEnum, authorize: boolean): any {
-    let response = {};
+  private buildErrorResponse(result: CardsEnum, authorize: boolean) {
+    if (!authorize) {
+      // If it is processing an adjustment it must respond with a different status code.
+      throw new UnauthorizedException(result);
+    }
+
     if (result === CardsEnum.CARD_PROCESS_INVALID_AMOUNT) {
-      response = {
+      return {
         status: CardsEnum.CARD_PROCESS_REJECTED,
         message: `Transaction rejected.`,
         status_detail: CardsEnum.CARD_PROCESS_INVALID_AMOUNT,
       };
     } else if (result === CardsEnum.CARD_PROCESS_FAILURE) {
-      response = {
+      return {
         status: CardsEnum.CARD_PROCESS_REJECTED,
         message: `Transaction rejected.`,
         status_detail: CardsEnum.CARD_PROCESS_SYSTEM_ERROR,
       };
     } else if (result === CardsEnum.CARD_PROCESS_CARD_NOT_FOUND) {
-      response = {
+      return {
         status: CardsEnum.CARD_PROCESS_REJECTED,
         message: `Transaction rejected.`,
         status_detail: CardsEnum.CARD_PROCESS_CARD_NOT_FOUND,
       };
     } else if (result === CardsEnum.CARD_PROCESS_INSUFFICIENT_FUNDS) {
-      response = {
+      return {
         status: CardsEnum.CARD_PROCESS_REJECTED,
         message: `Transaction rejected.`,
         status_detail: CardsEnum.CARD_PROCESS_INSUFFICIENT_FUNDS,
       };
     } else if (result === CardsEnum.CARD_PROCESS_INVALID_INSTALLMENTS) {
-      response = {
+      return {
         status: CardsEnum.CARD_PROCESS_REJECTED,
         message: `Transaction rejected.`,
         status_detail: CardsEnum.CARD_PROCESS_INVALID_INSTALLMENTS,
       };
     } else if (result === CardsEnum.CARD_PROCESS_CARD_LOCKED) {
-      response = {
+      return {
         status: CardsEnum.CARD_PROCESS_REJECTED,
         message: `Transaction rejected.`,
         status_detail: CardsEnum.CARD_PROCESS_CARD_LOCKED,
       };
     }
-
-    if (!authorize) {
-      // If it is processing an adjustment it must respond with a different status code.
-      throw new InternalServerErrorException(result);
-    }
-    return response;
   }
 
   async processNotification(
@@ -865,6 +855,8 @@ export class PomeloIntegrationProcessService {
       headers,
     );
 
+    if (!process.transfer) return process.response;
+
     let transactionDate = '';
     let transactionTime = '';
 
@@ -898,20 +890,10 @@ export class PomeloIntegrationProcessService {
         }) + 'h';
     }
 
-    let amountFormatted = '';
-    let currencyCode = '';
+    const currencyCode = 'USD';
+    const totalAmount = parseFloat(process.transfer.amountCustodial.toFixed(2));
+    const amountFormatted = `${totalAmount} USDT`;
 
-    if (
-      authorization.amount?.local?.total &&
-      authorization.amount?.local?.currency
-    ) {
-      currencyCode = authorization.amount.local.currency;
-      const totalAmount = parseFloat(authorization.amount.local.total);
-      amountFormatted = new Intl.NumberFormat('es-ES', {
-        style: 'currency',
-        currency: currencyCode,
-      }).format(totalAmount);
-    }
     const data = {
       transport: TransportEnum.EMAIL,
       vars: {
@@ -920,7 +902,7 @@ export class PomeloIntegrationProcessService {
         transactionId: authorization.transaction.id,
         transactionDate: transactionDate,
         transactionTime: transactionTime,
-        transactionStatus: process.status,
+        transactionStatus: process.response.status,
         transactionType: authorization.transaction?.type || '',
         merchant: authorization.merchant?.name || '',
         lastFourDigits: authorization.card?.last_four || '',
@@ -929,9 +911,9 @@ export class PomeloIntegrationProcessService {
       },
     };
 
-    if (process.status === 'REJECTED') {
+    if (process.response.status === 'REJECTED') {
       (data.vars as any).rejectionReason =
-        process.status_detail || process.message;
+        process.response.status_detail || process.response.message;
 
       this.builder.emitMessageEventClient(
         EventsNamesMessageEnum.sendPurchaseRejected,
@@ -947,6 +929,6 @@ export class PomeloIntegrationProcessService {
       data,
     );
 
-    return process;
+    return process.response;
   }
 }
