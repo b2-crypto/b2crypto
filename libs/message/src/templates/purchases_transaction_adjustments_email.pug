@@ -23,25 +23,25 @@ html(lang="es")
           p(style="color: #1A1431; margin-bottom: 15px; font-weight: 600;") Detalle del Ajuste:
           
         .transaction-info(style="display: flex; margin-bottom: 22px; align-items: flex-start;")
-          img(src=(iconsInfo.date || iconsInfo.calendar || '') alt="Fecha" height="20vh" style="margin-right: 15px; margin-top: 6px;")
+          img(src=(iconsInfo.date || iconsInfo.calendar || '') alt="Fecha" height="15vh" style="margin-right: 15px; margin-top: 6px;")
           div(style="color: #1A1431;")
             div(style="font-weight: 500; margin-bottom: 3px;") Fecha y Hora
             div #{vars.transactionDate || '31 de Julio del 2024, 17:50h'}
         
         .transaction-info(style="display: flex; margin-bottom: 22px; align-items: flex-start;")
-          img(src=(iconsInfo.withdraw || '') alt="Moneda" height="20vh" style="margin-right: 15px; margin-top: 6px;")
+          img(src=(iconsInfo.withdraw || '') alt="Moneda" height="15vh" style="margin-right: 15px; margin-top: 6px;")
           div(style="color: #1A1431;")
             div(style="font-weight: 500; margin-bottom: 3px;") Moneda
             div #{vars.currency || 'USDT'}
         
         .transaction-info(style="display: flex; margin-bottom: 22px; align-items: flex-start;")
-          img(src=(iconsInfo.currency2 ||'') alt="Monto" height="20vh" style="margin-right: 15px; margin-top: 6px;")
+          img(src=(iconsInfo.currency2 ||'') alt="Monto" height="15vh" style="margin-right: 15px; margin-top: 6px;")
           div(style="color: #1A1431;")
             div(style="font-weight: 500; margin-bottom: 3px;") Monto
             div $ #{vars.amount || '130,00 USDT'}
         
         .transaction-info(style="display: flex; margin-bottom: 22px; align-items: flex-start;")
-          img(src=(iconsInfo.location || iconsInfo.merchant || '') alt="Establecimiento" height="20vh" style="margin-right: 15px; margin-top: 6px;")
+          img(src=(iconsInfo.location || iconsInfo.merchant || '') alt="Establecimiento" height="15vh" style="margin-right: 15px; margin-top: 6px;")
           div(style="color: #1A1431;")
             div(style="font-weight: 500; margin-bottom: 3px;") Establecimiento
             div #{vars.merchant || ''}

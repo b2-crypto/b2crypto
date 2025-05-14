@@ -3,15 +3,14 @@ html(lang="es")
   include ./partials/head.pug
   body
     .container
-      p(style="display:none;max-height:0;overflow:hidden;")
-           codigo de Verificación OTP: Tu codigo OTP de B2pay es ...
+      p(style="display:none;max-height:0;overflow:hidden;") Código de Verificación OTP: Tu código OTP de B2pay es ...
       include ./partials/header.pug
       .content
         h1(style="margin-bottom: 25px; color: #1A1431; text-align: center;") Código de verificación OTP
         
         p Hola #{vars.name}
 
-        p Tu codigo OTP de B2pay es:
+        p Tu código OTP de B2pay es:
 
         table(width="100%", cellpadding="0", cellspacing="0", border="0", style="margin-top: 20px; margin-bottom: 20px")
           tr
@@ -19,9 +18,9 @@ html(lang="es")
               each digit in vars.otp.toString().split('')
                 span(style="background-color: #FFFFFF; color: #1b1330; padding: 8px 8px; border-radius: 8px; margin: 0 5px; display: inline-block; font-weight: bold; font-size: 16px;") #{digit}
 
-        p Este codigo es válido por un tiempo limitado. Por favor, úsalo pronto para completar tu verificación.
+        p Este código es válido por un tiempo limitado. Por favor, úsalo pronto para completar tu verificación.
 
-        p Si no has solicitado este codigo, por favor ignora este correo y contacta con nuestro equipo de soporte.
+        p Si no has solicitado este código, por favor ignora este correo y contacta con nuestro equipo de soporte.
 
         p Gracias por usar B2pay para tus transacciones seguras.
 

@@ -16,35 +16,35 @@ html(lang="es")
         p
           strong Detalles del retiro:
 
-        .transaction-info(style="display: flex; margin-bottom: 22px;")
+        .transaction-info(style="display: flex; margin-bottom: 22px; align-items: flex-start;")
           div(style="display: flex; align-items: center; width: 30px;")
             span 💰
           div(style="display: flex; align-items: center;")
             strong(style="margin-right: 8px; color: #000;") Moneda
             span(style="color: #000;") #{vars.currency}
         
-        .transaction-info(style="display: flex; margin-bottom: 22px;")
+        .transaction-info(style="display: flex; margin-bottom: 22px; align-items: flex-start;")
           div(style="display: flex; align-items: center; width: 30px;")
             span 💸
           div(style="display: flex; align-items: center;")
             strong(style="margin-right: 8px; color: #000;") Saldo Retirado
             span(style="color: #000;") #{vars.amountReload}
         
-        .transaction-info(style="display: flex; margin-bottom: 22px;")
+        .transaction-info(style="display: flex; margin-bottom: 22px; align-items: flex-start;")
           div(style="display: flex; align-items: center; width: 30px;")
             span 📅
           div(style="display: flex; align-items: center;")
             strong(style="margin-right: 8px; color: #000;") Fecha y Hora
             span(style="color: #000;") #{vars.transactionDate || ''}#{vars.transactionDate && vars.transactionTime ? ', ' : ''}#{vars.transactionTime || ''}
         
-        .transaction-info(style="display: flex; margin-bottom: 22px;")
+        .transaction-info(style="display: flex; margin-bottom: 22px; align-items: flex-start;")
           div(style="display: flex; align-items: center; width: 30px;")
             span 📍
           div(style="display: flex; align-items: center;")
             strong(style="margin-right: 8px; color: #000;") Dirección de destino
             span(style="color: #000;") #{vars.destinationAddress || vars.address || ''}
         
-        .transaction-info(style="display: flex; margin-bottom: 22px;")
+        .transaction-info(style="display: flex; margin-bottom: 22px; align-items: flex-start;")
           div(style="display: flex; align-items: center; width: 30px;")
             span 🔄
           div(style="display: flex; align-items: center;")
