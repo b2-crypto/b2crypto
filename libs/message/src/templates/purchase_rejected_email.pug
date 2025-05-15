@@ -3,7 +3,7 @@ html(lang="es")
   include ./partials/head.pug
   body
     .container
-      p(style="display:none;max-height:0;overflow:hidden;") Lo sentimos, tu compra ha sido rechazada
+      p(style="display:none;max-height:0;overflow:hidden;") Lamentamos informarte que tu intento de compra no pudo ser procesado. A continuación, te proporcionamos más detalles sobre esta situación
       include ./partials/header.pug
       .content
         - const iconsInfo = typeof socialMediaIcons === 'string' ? JSON.parse(socialMediaIcons) : (socialMediaIcons || {})
@@ -57,26 +57,16 @@ html(lang="es")
       div(style="padding: 20px; padding-left: 35px; padding-right: 35px;")
         p(style="color: #1A1431;") Para evitar que este tipo de situaciones se repitan en el futuro, te recomendamos:
 
-        p(style="margin-left: 5px; color: #1A1431;")
-          
-            span(style="display: inline-block;") 1.
-              dd Verificar el saldo de tu cuenta: Asegúrate de que cuentas con los fondos suficientes antes de realizar una compra.
-            br
-            span(style="display: inline-block;") 2.
-              dd Actualizar la información de tu tarjeta: Si has cambiado de tarjeta o tu información ha caducado, actualiza los datos en tus métodos de pago.
-            br
-            span(style="display: inline-block;") 3.
-              dd Revisar la información de la transacción: Asegúrate de que los detalles de la compra y el establecimiento sean correctos.
-            br
-            span(style="display: inline-block;") 4.
-              dd Nuestra tesorería cripto garantiza que pequeñas fluctuaciones en la paridad uno a uno entre tu stablecoin y su contraparte fiat no afecten tu capacidad de pago. Por ello, establecemos un límite de gasto del 90% sobre los fondos totales disponibles en tu tarjeta.
-            br
-        p(style="color: #1A1431;")
-           
-            | Si deseas más información o tienes alguna pregunta, no dudes en contactarnos.
-            br
-            br
-            | Ofrecemos disculpas por cualquier inconveniente causado por esta situación y estamos aquí para asistirte en lo que necesites. Tu satisfacción es nuestra prioridad, y queremos asegurarnos de que puedas disfrutar de una experiencia sin interrupciones en el futuro.
+        ol
+          li Verificar el saldo de tu cuenta: Asegúrate de que cuentas con los fondos suficientes antes de realizar una compra.
+          li Actualizar la información de tu tarjeta: Si has cambiado de tarjeta o tu información ha caducado, actualiza los datos en tus métodos de pago.
+          li Revisar la información de la transacción: Asegúrate de que los detalles de la compra y el establecimiento sean correctos.
+          li Nuestra tesorería cripto garantiza que pequeñas fluctuaciones en la paridad uno a uno entre tu stablecoin y su contraparte fiat no afecten tu capacidad de pago. Por ello, establecemos un límite de gasto del 90% sobre los fondos totales disponibles en tu tarjeta.
+
+        p(style="color: #1A1431;") Si deseas más información o tienes alguna pregunta, no dudes en contactarnos.
+          br
+          br
+          | Ofrecemos disculpas por cualquier inconveniente causado por esta situación y estamos aquí para asistirte en lo que necesites. Tu satisfacción es nuestra prioridad, y queremos asegurarnos de que puedas disfrutar de una experiencia sin interrupciones en el futuro.
 
       div(style="padding: 10px 0; border: 0; height: 15px; background-color: #FFFFFF; width: 100%; display: flex; justify-content: center; align-items: center;")
         hr(style="border: 0; height: 1px; background-color: #000000; width: 80%;")
@@ -84,9 +74,7 @@ html(lang="es")
       div(style="padding: 20px; padding-left: 35px; padding-right: 35px;")
         p(style="color: #1A1431;")
           | Si tienes alguna pregunta o necesitas asistencia, no dudes en contactarnos a través de soporte@b2pay.app o contacta a 
-          | nuestro equipo de soporte al cliente a través de nuestro WhatsApp.
+          | nuestro equipo de soporte al cliente a través de nuestro <a href="https://wa.link/2jql8k" target="_blank">WhatsApp</a>.
         
         p(style="color: #1A1431;")
           | Gracias por unirte a nosotros. ¡Esperamos que disfrutes de tu experiencia con B2pay!
-
-      

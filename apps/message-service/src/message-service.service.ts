@@ -154,7 +154,7 @@ export class MessageServiceService {
   }
   async sendProfileRegistrationCreation(message: MessageCreateDto) {
     const emailMessage = new EmailMessageBuilder()
-      .setName('¡Un nuevo capítulo empiezas hoy  con B2pay! ✨')
+      .setName('¡Un nuevo capítulo empiezas hoy con B2pay! ✨')
       .setBody('Your profile has been created')
       .setOriginText(this.getOriginEmail())
       .setDestinyText(message.destinyText)
@@ -306,7 +306,9 @@ export class MessageServiceService {
 
   async sendCryptoWalletsManagement(message: MessageCreateDto) {
     const emailMessage = new EmailMessageBuilder()
-      .setName('¡Explora todo lo que puedes hacer con tu wallet!')
+      .setName(
+        '¡Explora todo lo que puedes hacer con tu wallet! - Manejar tu vida financiera nunca habia sido tan sencillo.',
+      )
       .setBody('Your crypto wallets management')
       .setOriginText(this.getOriginEmail())
       .setDestinyText(message.destinyText)

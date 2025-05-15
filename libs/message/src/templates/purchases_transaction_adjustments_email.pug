@@ -3,8 +3,7 @@ html(lang="es")
   include ./partials/head.pug
   body
     .container
-      p(style="display:none;max-height:0;overflow:hidden;")
-         Notificación de Ajuste en tu Transacción: Queremos informarte que se ha realizado un ajuste en una de tus transacciones recientes.
+      p(style="display:none;max-height:0;overflow:hidden;") Notificación de Ajuste en tu Transacción: Queremos informarte que se ha realizado un ajuste en una de tus transacciones recientes.
       include ./partials/header.pug
       .content
         - const iconsInfo = typeof socialMediaIcons === 'string' ? JSON.parse(socialMediaIcons) : (socialMediaIcons || {})
