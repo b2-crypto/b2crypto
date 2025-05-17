@@ -1443,7 +1443,7 @@ export class WalletServiceService {
   private async calculateWithdrawalFees(sourceWallet: AccountDocument) {
     const baseFee = 5;
     const percentageFee = sourceWallet.accountId
-      .toLocaleLowerCase()
+      .toLowerCase()
       .includes('arbitrum')
       ? 0.05
       : 0.03;

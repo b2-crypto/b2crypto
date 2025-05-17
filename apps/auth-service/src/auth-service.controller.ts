@@ -735,13 +735,13 @@ export class AuthServiceController {
   }
 
   private async getOtpGenerated(email: string) {
-    const _email = email.toLocaleLowerCase();
+    const _email = email.toLowerCase();
     this.logger.info(`[getOtpGenerated] email: ${_email}`);
     return this.cacheManager.get<number>(_email);
   }
 
   private async deleteOtpGenerated(email: string) {
-    const _email = email.toLocaleLowerCase();
+    const _email = email.toLowerCase();
     this.logger.info(`[deleteOtpGenerated] email: ${_email}`);
     return this.cacheManager.del(_email);
   }

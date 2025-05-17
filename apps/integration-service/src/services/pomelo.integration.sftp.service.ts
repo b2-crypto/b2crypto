@@ -14,7 +14,7 @@ export class PomeloIntegrationSFTPService {
 
   private client = new sftpClient();
   private sshKey = fs.readFileSync(
-    `./sftp/pomelo-${process.env.ENVIRONMENT?.toLocaleLowerCase()}`,
+    `./sftp/pomelo-${process.env.ENVIRONMENT?.toLowerCase()}`,
     'utf8',
   );
 
