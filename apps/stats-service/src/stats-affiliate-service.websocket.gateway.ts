@@ -100,7 +100,7 @@ export class StatsAffiliateServiceWebsocketGateway extends BasicWebsocketGateway
         FTDS: item?.quantityFtd ?? 0,
         CFTDS: item?.quantityCftd ?? 0,
         TOTAL_CFTDS: (item?.quantityFtd ?? 0) + (item?.quantityCftd ?? 0),
-        PERCENTAGE_CFTD: (item?.quantityCftd ?? 0) / item?.quantityLeads ?? 0,
+        PERCENTAGE_CFTD: (item?.quantityCftd ?? 0) / (item?.quantityLeads || 1),
         PERCENTAGE_AFFILIATE_CONVERSION: item?.conversionApprovedLead ?? 0,
         PERCENTAGE_REAL_CONVERTION: item?.conversion ?? 0,
       }),

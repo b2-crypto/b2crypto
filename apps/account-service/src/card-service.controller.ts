@@ -764,47 +764,10 @@ export class CardServiceController extends AccountServiceController {
   }
 
   private getAfgProd(cardAfg: AfgNamesEnum) {
-    let afg = {
-      id: 'afg-2lZYP9KVezJJcvSKCkAMbNPOolq',
-      name: 'Consumer-Virtual-1k',
-      card_type_supported: ['VIRTUAL'],
-      innominate: false,
-      months_to_expiration: 96,
-      issued_account: 9,
-      fee_account: 36,
-      exchange_rate_type: 'none',
-      exchange_rate_amount: 0,
-      non_usd_exchange_rate_amount: 0,
-      dcc_exchange_rate_amount: 0,
-      local_withdrawal_allowed: true,
-      international_withdrawal_allowed: true,
-      local_ecommerce_allowed: true,
-      international_ecommerce_allowed: true,
-      local_purchases_allowed: true,
-      international_purchases_allowed: true,
-      product_id: 'prd-2dK0YVgQ2DnpvfNcq8pmdNnwz0I',
-      local_extracash_allowed: true,
-      international_extracash_allowed: true,
-      plastic_model: 1,
-      kit_model: 1,
-      status: 'ACTIVE',
-      embossing_company: 'IDEMIA',
-      courier_company: 'DOMINA',
-      exchange_currency_name: 'COP',
-      activation_code_enabled: false,
-      total_exchange_rate: 4149.79,
-      total_non_usd_exchange_rate: 4149.79,
-      total_dcc_exchange_rate: 4149.79,
-      provider: 'MASTERCARD',
-      custom_name_on_card_enabled: false,
-      provider_algorithm: 'MCHIP',
-      start_date: '2024-09-03',
-      dcvv_enabled: false,
-    };
     switch (cardAfg) {
       // PHYSICAL
       case AfgNamesEnum.CONSUMER_NOMINADA_3K:
-        afg = {
+        return {
           id: 'afg-2lZUsLQBqiS9izPyZfm9WW7gJUr',
           name: 'Consumer-Nominada-3k',
           card_type_supported: ['PHYSICAL'],
@@ -841,9 +804,8 @@ export class CardServiceController extends AccountServiceController {
           start_date: '2024-09-03',
           dcvv_enabled: false,
         };
-        break;
       case AfgNamesEnum.CONSUMER_NOMINADA_10K:
-        afg = {
+        return {
           id: 'afg-2lZXPZEUyjw5BtJGpPw566eYvtx',
           name: 'Consumer-Nominada-10k',
           card_type_supported: ['PHYSICAL'],
@@ -880,9 +842,8 @@ export class CardServiceController extends AccountServiceController {
           start_date: '2024-09-03',
           dcvv_enabled: false,
         };
-        break;
       case AfgNamesEnum.CONSUMER_NOMINADA_25K:
-        afg = {
+        return {
           id: 'afg-2lZXXQoTu1rZqIefYA0gMrmjksA',
           name: 'Consumer-Nominada-25k',
           card_type_supported: ['PHYSICAL'],
@@ -919,9 +880,8 @@ export class CardServiceController extends AccountServiceController {
           start_date: '2024-09-03',
           dcvv_enabled: false,
         };
-        break;
       case AfgNamesEnum.CONSUMER_NOMINADA_100K:
-        afg = {
+        return {
           id: 'afg-2lZXdcYBx3twdM3QRIY4UzSDKRs',
           name: 'Consumer-Nominada-100k',
           card_type_supported: ['PHYSICAL'],
@@ -958,9 +918,8 @@ export class CardServiceController extends AccountServiceController {
           start_date: '2024-09-03',
           dcvv_enabled: false,
         };
-        break;
       case AfgNamesEnum.CONSUMER_INNOMINADA_25K:
-        afg = {
+        return {
           id: 'afg-2lZYCpM3SS1Bn6mDP4VLPgOaHXo',
           name: 'Consumer-Innominada-25k',
           card_type_supported: ['PHYSICAL'],
@@ -997,9 +956,8 @@ export class CardServiceController extends AccountServiceController {
           start_date: '2024-09-03',
           dcvv_enabled: false,
         };
-        break;
       case AfgNamesEnum.CONSUMER_INNOMINADA_100K:
-        afg = {
+        return {
           id: 'afg-2lZYHlB3qAN9LnPKMV395flMUlp',
           name: 'Consumer-Innominada-100k',
           card_type_supported: ['PHYSICAL'],
@@ -1036,10 +994,9 @@ export class CardServiceController extends AccountServiceController {
           start_date: '2024-09-03',
           dcvv_enabled: false,
         };
-        break;
       // VIRTUAL
       case AfgNamesEnum.CONSUMER_VIRTUAL_1K:
-        afg = {
+        return {
           id: 'afg-2lZYP9KVezJJcvSKCkAMbNPOolq',
           name: 'Consumer-Virtual-1k',
           card_type_supported: ['VIRTUAL'],
@@ -1076,9 +1033,8 @@ export class CardServiceController extends AccountServiceController {
           start_date: '2024-09-03',
           dcvv_enabled: false,
         };
-        break;
       case AfgNamesEnum.CONSUMER_VIRTUAL_2K:
-        afg = {
+        return {
           id: 'afg-2lZYTHIOaWFW1uB8kg79vuhuWuS',
           name: 'Consumer-Virtual-2k',
           card_type_supported: ['VIRTUAL'],
@@ -1115,9 +1071,8 @@ export class CardServiceController extends AccountServiceController {
           start_date: '2024-09-03',
           dcvv_enabled: false,
         };
-        break;
       case AfgNamesEnum.CONSUMER_VIRTUAL_5K:
-        afg = {
+        return {
           id: 'afg-2lZhmFyzsHojufE42Tfn1X73mnG',
           name: 'Consumer-Virtual-5k',
           card_type_supported: ['VIRTUAL'],
@@ -1154,9 +1109,8 @@ export class CardServiceController extends AccountServiceController {
           start_date: '2024-09-03',
           dcvv_enabled: false,
         };
-        break;
       case AfgNamesEnum.CONSUMER_VIRTUAL_10K:
-        afg = {
+        return {
           id: 'afg-2lZYZ7oGxBT1FhsSnBvywgVrCQq',
           name: 'Consumer-Virtual-10k',
           card_type_supported: ['VIRTUAL'],
@@ -1193,57 +1147,54 @@ export class CardServiceController extends AccountServiceController {
           start_date: '2024-09-03',
           dcvv_enabled: false,
         };
-        break;
       default:
-        throw new BadRequestException('Card AFG not found');
+        return {
+          id: 'afg-2lZYP9KVezJJcvSKCkAMbNPOolq',
+          name: 'Consumer-Virtual-1k',
+          card_type_supported: ['VIRTUAL'],
+          innominate: false,
+          months_to_expiration: 96,
+          issued_account: 9,
+          fee_account: 36,
+          exchange_rate_type: 'none',
+          exchange_rate_amount: 0,
+          non_usd_exchange_rate_amount: 0,
+          dcc_exchange_rate_amount: 0,
+          local_withdrawal_allowed: true,
+          international_withdrawal_allowed: true,
+          local_ecommerce_allowed: true,
+          international_ecommerce_allowed: true,
+          local_purchases_allowed: true,
+          international_purchases_allowed: true,
+          product_id: 'prd-2dK0YVgQ2DnpvfNcq8pmdNnwz0I',
+          local_extracash_allowed: true,
+          international_extracash_allowed: true,
+          plastic_model: 1,
+          kit_model: 1,
+          status: 'ACTIVE',
+          embossing_company: 'IDEMIA',
+          courier_company: 'DOMINA',
+          exchange_currency_name: 'COP',
+          activation_code_enabled: false,
+          total_exchange_rate: 4149.79,
+          total_non_usd_exchange_rate: 4149.79,
+          total_dcc_exchange_rate: 4149.79,
+          provider: 'MASTERCARD',
+          custom_name_on_card_enabled: false,
+          provider_algorithm: 'MCHIP',
+          start_date: '2024-09-03',
+          dcvv_enabled: false,
+        };
     }
-    return afg;
   }
 
   private getAfgStage(cardAfg: AfgNamesEnum) {
-    let afg = {
-      id: 'afg-2VtGPHue8VIrXsJa0H7OzLLri4T',
-      name: 'Afinidad basica 2',
-      card_type_supported: ['VIRTUAL', 'PHYSICAL'],
-      innominate: false,
-      months_to_expiration: 96,
-      issued_account: 9,
-      fee_account: 36,
-      exchange_rate_type: 'none',
-      exchange_rate_amount: 0,
-      non_usd_exchange_rate_amount: 0,
-      dcc_exchange_rate_amount: 0,
-      local_withdrawal_allowed: false,
-      international_withdrawal_allowed: false,
-      local_ecommerce_allowed: true,
-      international_ecommerce_allowed: true,
-      local_purchases_allowed: true,
-      international_purchases_allowed: true,
-      product_id: 'prd-2VtGP4RvXv5enzWYe2jikrxucrG',
-      local_extracash_allowed: true,
-      international_extracash_allowed: true,
-      plastic_model: 1,
-      kit_model: 1,
-      status: 'ACTIVE',
-      embossing_company: 'THALES',
-      courier_company: 'ESTAFETA',
-      exchange_currency_name: 'MXN',
-      activation_code_enabled: false,
-      total_exchange_rate: 20.6,
-      total_non_usd_exchange_rate: 20.6,
-      total_dcc_exchange_rate: 20.6,
-      provider: 'MASTERCARD',
-      custom_name_on_card_enabled: false,
-      provider_algorithm: 'EMV_CSKD',
-      start_date: '2023-09-25',
-      dcvv_enabled: false,
-    };
     switch (cardAfg) {
       case AfgNamesEnum.CONSUMER_NOMINADA_3K:
       case AfgNamesEnum.CONSUMER_NOMINADA_10K:
       case AfgNamesEnum.CONSUMER_NOMINADA_25K:
       case AfgNamesEnum.CONSUMER_NOMINADA_100K:
-        afg = {
+        return {
           id: 'afg-2fdxV2deQc0qHDbTtCwOlbFZJBL',
           name: 'B2Crypto COL physical credit nominated',
           card_type_supported: ['PHYSICAL'],
@@ -1280,10 +1231,9 @@ export class CardServiceController extends AccountServiceController {
           start_date: '2024-04-26',
           dcvv_enabled: false,
         };
-        break;
       case AfgNamesEnum.CONSUMER_INNOMINADA_25K:
       case AfgNamesEnum.CONSUMER_INNOMINADA_100K:
-        afg = {
+        return {
           id: 'afg-2jc1143Egwfm4SUOaAwBz9IfZKb',
           name: 'B2Crypto innominated',
           card_type_supported: ['PHYSICAL'],
@@ -1320,12 +1270,11 @@ export class CardServiceController extends AccountServiceController {
           start_date: '2024-07-22',
           dcvv_enabled: false,
         };
-        break;
       case AfgNamesEnum.CONSUMER_VIRTUAL_1K:
       case AfgNamesEnum.CONSUMER_VIRTUAL_2K:
       case AfgNamesEnum.CONSUMER_VIRTUAL_5K:
       case AfgNamesEnum.CONSUMER_VIRTUAL_10K:
-        afg = {
+        return {
           id: 'afg-2jhjNvaMmNsNHzbx54nWv12j9MQ',
           name: 'B2Crypto Virtual',
           card_type_supported: ['VIRTUAL'],
@@ -1362,9 +1311,45 @@ export class CardServiceController extends AccountServiceController {
           start_date: '2024-07-24',
           dcvv_enabled: false,
         };
-        break;
+      default:
+        return {
+          id: 'afg-2VtGPHue8VIrXsJa0H7OzLLri4T',
+          name: 'Afinidad basica 2',
+          card_type_supported: ['VIRTUAL', 'PHYSICAL'],
+          innominate: false,
+          months_to_expiration: 96,
+          issued_account: 9,
+          fee_account: 36,
+          exchange_rate_type: 'none',
+          exchange_rate_amount: 0,
+          non_usd_exchange_rate_amount: 0,
+          dcc_exchange_rate_amount: 0,
+          local_withdrawal_allowed: false,
+          international_withdrawal_allowed: false,
+          local_ecommerce_allowed: true,
+          international_ecommerce_allowed: true,
+          local_purchases_allowed: true,
+          international_purchases_allowed: true,
+          product_id: 'prd-2VtGP4RvXv5enzWYe2jikrxucrG',
+          local_extracash_allowed: true,
+          international_extracash_allowed: true,
+          plastic_model: 1,
+          kit_model: 1,
+          status: 'ACTIVE',
+          embossing_company: 'THALES',
+          courier_company: 'ESTAFETA',
+          exchange_currency_name: 'MXN',
+          activation_code_enabled: false,
+          total_exchange_rate: 20.6,
+          total_non_usd_exchange_rate: 20.6,
+          total_dcc_exchange_rate: 20.6,
+          provider: 'MASTERCARD',
+          custom_name_on_card_enabled: false,
+          provider_algorithm: 'EMV_CSKD',
+          start_date: '2023-09-25',
+          dcvv_enabled: false,
+        };
     }
-    return afg;
   }
 
   private async buildAFG(
@@ -1864,9 +1849,16 @@ export class CardServiceController extends AccountServiceController {
     @Ctx() ctx: RmqContext,
   ) {
     CommonService.ack(ctx);
-    this.logger.info(`[setAffinityGroupEventHandler] ${data}`);
 
     const { cardId, user, configActivate } = JSON.parse(data);
+
+    this.logger.info(
+      `[setAffinityGroupEventHandler] ${JSON.stringify({
+        cardId,
+        user,
+        configActivate,
+      })}`,
+    );
 
     const cardIntegration = await this.integration.getCardIntegration(
       IntegrationCardEnum.POMELO,
@@ -1878,17 +1870,28 @@ export class CardServiceController extends AccountServiceController {
     try {
       cards = await cardIntegration.getCard(cardId);
       this.logger.info(
-        `[physicalActiveCard] Result pomelo active ${JSON.stringify(cards)}`,
+        `[setAffinityGroupEventHandler] Result pomelo active ${JSON.stringify(
+          cards,
+        )}`,
       );
       crd = cards.data;
-      this.logger.info(`[physicalActiveCard] Search card active ${cardId}`);
+
+      this.logger.info(
+        `[setAffinityGroupEventHandler] crd: ${JSON.stringify(crd)}`,
+      );
+
+      this.logger.info(
+        `[setAffinityGroupEventHandler] Search card active ${cardId}`,
+      );
       card = await this.cardService.findAll({
         where: {
           'cardConfig.id': crd.id,
         },
       });
     } catch (err) {
-      this.logger.error(`[physicalActiveCard] Error get card pomelo ${err}`);
+      this.logger.error(
+        `[setAffinityGroupEventHandler] Error get card pomelo ${err}`,
+      );
       throw new BadRequestException('Get Card error');
     }
     if (!card.totalElements) {
@@ -1898,22 +1901,39 @@ export class CardServiceController extends AccountServiceController {
         cardDto as AccountCreateDto,
       );
       this.logger.info(
-        `[physicalActiveCard] Card created ${n_card.id} for ${user.email}`,
+        `[setAffinityGroupEventHandler] Card created ${n_card.id} for ${user.email}`,
       );
-      let afgName = 'grupo-1';
-      if (configActivate.promoCode == 'pm2413') {
-        afgName = 'grupo-3';
-      }
+
+      const afgName =
+        configActivate?.promoCode == 'pm2413' ? 'grupo-3' : 'grupo-1';
+
+      this.logger.info(`[setAffinityGroupEventHandler] afgName: ${afgName}`);
+
       const cardAfg = this.getAfgByLevel(afgName, true);
+
+      this.logger.info(
+        `[setAffinityGroupEventHandler] cardAfg: ${JSON.stringify(cardAfg)}`,
+      );
+
       const group = await this.buildAFG(null, cardAfg);
+
+      this.logger.info(
+        `[setAffinityGroupEventHandler] group: ${JSON.stringify(group)}`,
+      );
+
       const afg = group.list[0];
+
+      this.logger.info(
+        `[setAffinityGroupEventHandler] AFG: ${JSON.stringify(afg)}`,
+      );
+
       try {
         const rta = await cardIntegration.updateCard({
           id: crd?.id,
           affinity_group_id: afg.valueGroup,
         });
         this.logger.info(
-          `[physicalActiveCard] Updated AFG Card-${n_card?.id} ${JSON.stringify(
+          `[setAffinityGroupEventHandler] Updated AFG Card ${JSON.stringify(
             rta.data,
           )}`,
         );
@@ -1926,9 +1946,9 @@ export class CardServiceController extends AccountServiceController {
         );
       } catch (error) {
         this.logger.error(
-          `[physicalActiveCard] Update AFG Card-${n_card?.id}-${user.email} ${
-            error.message || error
-          }`,
+          `[setAffinityGroupEventHandler] Update AFG Card-${n_card?.id}-${
+            user.email
+          } ${error.message || error}`,
         );
         //throw new BadRequestException('Bad update card');
       }

@@ -86,7 +86,8 @@ export class StatsPspAccountServiceWebsocketGateway extends BasicWebsocketGatewa
           FTDS: item?.quantityFtd ?? 0,
           CFTDS: item?.quantityCftd ?? 0,
           TOTAL_CFTDS: (item?.quantityFtd ?? 0) + (item?.quantityCftd ?? 0),
-          PERCENTAGE_CFTD: (item?.quantityCftd ?? 0) / item?.quantityLeads ?? 0,
+          PERCENTAGE_CFTD:
+            (item?.quantityCftd ?? 0) / (item?.quantityLeads || 1),
           PERCENTAGE_AFFILIATE_CONVERSION: item?.conversionDatabase ?? 0,
           PERCENTAGE_REAL_CONVERTION: item?.conversion ?? 0,
         }),
