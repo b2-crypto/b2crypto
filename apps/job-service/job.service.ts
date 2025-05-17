@@ -191,7 +191,11 @@ export class JobService {
         `[sendOutboxReadyForPublish] Outbox finded: ${outboxes.list.length}`,
       );
 
-      if (outboxes.list.length === 0) return;
+      if (outboxes.list.length === 0) {
+        await this.cacheManager.del(cacheKey);
+
+        return;
+      }
 
       const outboxIds = outboxes.list.map((outbox) => String(outbox._id));
 
@@ -259,7 +263,10 @@ export class JobService {
         `[sendOutboxLagging] Outbox finded: ${outboxes.list.length}`,
       );
 
-      if (outboxes.list.length === 0) return;
+      if (outboxes.list.length === 0) {
+        await this.cacheManager.del(cacheKey);
+        return;
+      }
 
       for (const outbox of outboxes.list) {
         await this.builder.getPromiseOutboxEventClient<string, void, string>(
