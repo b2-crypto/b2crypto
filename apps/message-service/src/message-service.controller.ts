@@ -241,6 +241,31 @@ export class MessageServiceController implements GenericServiceController {
       EventsNamesMessageEnum.sendActivatePhysicalCards,
       sendActivatePhysicalCardsData,
     );
+
+    const sendDepositWalletReceivedData = {
+      name: 'Se ha recibido un deposito en tu wallet',
+      body: `Tu wallet ha sido recargada exitosamente`,
+      originText: 'Sistema',
+      destinyText: email,
+      transport: TransportEnum.EMAIL,
+      destiny: null,
+      vars: {
+        name: email,
+        currency: 'USDT',
+        amountReload: '1000.00',
+        transactionDate: new Intl.DateTimeFormat('es-CO', {
+          dateStyle: 'full',
+          timeStyle: 'long',
+          timeZone: 'America/Bogota',
+        }).format(new Date()),
+        transactionHash: '0x1234567890abcdef',
+      },
+    };
+
+    this.builder.emitMessageEventClient(
+      EventsNamesMessageEnum.sendDepositWalletReceived,
+      sendDepositWalletReceivedData,
+    );
   }
 
   @NoCache()
@@ -484,7 +509,6 @@ export class MessageServiceController implements GenericServiceController {
     }
   }
 
-  // Activacion de tarjeta, Deposito en wallet, recarga de tarjeta
   @AllowAnon()
   @EventPattern(EventsNamesMessageEnum.sendActivatePhysicalCards)
   async eventSendActivatePhysicalCards(
@@ -497,6 +521,23 @@ export class MessageServiceController implements GenericServiceController {
     } catch (err) {
       this.logger.error(
         `[eventSendActivatePhysicalCards] error: ${err.message || err}`,
+      );
+    }
+  }
+
+  // Deposito en wallet, recarga de tarjeta
+  @AllowAnon()
+  @EventPattern(EventsNamesMessageEnum.sendDepositWalletReceived)
+  async eventSendDepositWalletReceived(
+    @Payload() message: MessageCreateDto,
+    @Ctx() ctx: RmqContext,
+  ) {
+    CommonService.ack(ctx);
+    try {
+      await this.messageService.sendDepositWalletReceived(message);
+    } catch (err) {
+      this.logger.error(
+        `[eventSendDepositWalletReceived] error: ${err.message || err}`,
       );
     }
   }

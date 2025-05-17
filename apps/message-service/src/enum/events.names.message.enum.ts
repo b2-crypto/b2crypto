@@ -21,6 +21,7 @@ enum EventsNamesMessageEnum {
   sendCardRequestConfirmationEmail = 'MESSAGE.SEND.CARD.REQUEST.CONFIRMATION.EMAIL',
   sendProfileRegistrationCreation = 'MESSAGE.SEND.PROFILE.REGISTRATION.CREATION',
   sendActivatePhysicalCards = 'MESSAGE.SEND.ACTIVE.PHYSICAL.CARDS',
+  sendDepositWalletReceived = 'MESSAGE.SEND.DEPOSIT.WALLET.RECEIVED',
   sendAdjustments = 'MESSAGE.SEND.PURCHASES.TRANSACTION.ADJUSTMENTS',
   sendPurchases = 'MESSAGE.SEND.PURCHASES.TRANSACTION.PURCHASES',
   sendCryptoWalletsManagement = 'MESSAGE.SEND.CRYPTO.WALLETS.MANAGEMENT',

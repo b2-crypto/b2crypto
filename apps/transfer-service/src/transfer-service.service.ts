@@ -1,6 +1,7 @@
 import { AccountUpdateDto } from '@account/account/dto/account.update.dto';
 import { AccountInterface } from '@account/account/entities/account.interface';
 import { AccountDocument } from '@account/account/entities/mongoose/account.schema';
+import TypesAccountEnum from '@account/account/enum/types.account.enum';
 import { AffiliateDocument } from '@affiliate/affiliate/infrastructure/mongoose/affiliate.schema';
 import { Traceable } from '@amplication/opentelemetry-nestjs';
 import { BuildersService } from '@builder/builders';
@@ -303,6 +304,7 @@ export class TransferServiceService
         ? this.createResultBalance(transfer, account)
         : account.amount;
       const transferSaved = await this.lib.create(transfer);
+
       if (
         transferSaved.typeTransaction?.toString() === depositLinkCategory._id
       ) {
@@ -359,6 +361,38 @@ export class TransferServiceService
           throw new BadRequestException(err);
         }
       }
+
+      if (
+        transfer.operationType === OperationTransactionType.deposit &&
+        transfer.typeAccount === TypesAccountEnum.WALLET
+      ) {
+        const sendDepositWalletReceivedData = {
+          name: 'Se ha recibido un deposito en tu wallet',
+          body: `Tu wallet ha sido recargada exitosamente`,
+          originText: 'Sistema',
+          destinyText: account.email,
+          transport: TransportEnum.EMAIL,
+          destiny: null,
+          vars: {
+            name: account.email,
+            currency: transfer.currency,
+            amountReload: `${transfer.amount} ${transfer.currency}`,
+            transactionDate: new Intl.DateTimeFormat('es-CO', {
+              dateStyle: 'full',
+              timeStyle: 'long',
+              timeZone: 'America/Bogota',
+            }).format(transferSaved.createdAt),
+            transactionHash:
+              transfer?.['responseAccount']?.['data']?.['txHash'] ?? '',
+          },
+        };
+
+        this.builder.emitMessageEventClient(
+          EventsNamesMessageEnum.sendDepositWalletReceived,
+          sendDepositWalletReceivedData,
+        );
+      }
+
       await this.updateAccount(data.account, transferSaved);
       return transferSaved;
     }

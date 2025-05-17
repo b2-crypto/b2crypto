@@ -34,13 +34,13 @@ html(lang="es")
           img(src=(iconsMails.date || '') alt=iconsMails.date height="20vh" style="margin-right: 10px; margin-top: 6px;")
           div(style="color: #1A1431;")
             div Fecha y Hora
-            div #{vars.transactionDate || ''}#{vars.transactionDate && vars.transactionTime ? ', ' : ''}#{vars.transactionTime || ''}
+            div #{vars.transactionDate || ''}
         
         .transaction-info(style="display: flex; margin-bottom: 22px; align-items: flex-start;")
           img(src=(iconsMails.TFA || '') alt=iconsMails.TFA height="20vh" style="margin-right: 10px; margin-top: 6px;")
           div(style="color: #1A1431;")
             div Hash de la Transacción
-            div #{vars.hash || vars.transactionHash || '66c38sxDf'}
+            div #{vars.transactionHash || ''}
 
       div(style="padding: 10px 0; border: 0; height: 15px; background-color: #FFFFFF; width: 100%; display: flex; justify-content: center; align-items: center;")
         hr(style="border: 0; height: 1px; background-color: #000000; width: 80%;")

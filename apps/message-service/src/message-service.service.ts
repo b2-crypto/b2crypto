@@ -225,6 +225,17 @@ export class MessageServiceService {
     );
   }
 
+  async sendDepositWalletReceived(message: MessageCreateDto) {
+    const emailMessage = new EmailMessageBuilder()
+      .setName('Deposit Wallet Received')
+      .setBody('Your deposit wallet received details')
+      .setOriginText(this.getOriginEmail())
+      .setDestinyText(message.destinyText)
+      .setVars(message.vars)
+      .build();
+    return this.sendEmail(emailMessage, TemplatesMessageEnum.depositReceived);
+  }
+
   async sendPreRegisterEmail(message: MessageCreateDto) {
     const emailMessage = new EmailMessageBuilder()
       .setName('Pre-registration Confirmation')
