@@ -3,6 +3,9 @@ import {
   Controller,
   Delete,
   Get,
+  HttpCode,
+  HttpStatus,
+  Inject,
   Param,
   ParseArrayPipe,
   Patch,
@@ -13,8 +16,10 @@ import { ApiTags } from '@nestjs/swagger';
 
 import { Traceable } from '@amplication/opentelemetry-nestjs';
 import { AllowAnon } from '@auth/auth/decorators/allow-anon.decorator';
+import { BuildersService } from '@builder/builders';
 import { CommonService } from '@common/common';
 import { NoCache } from '@common/common/decorators/no-cache.decorator';
+import TransportEnum from '@common/common/enums/TransportEnum';
 import GenericServiceController from '@common/common/interfaces/controller.generic.interface';
 import { QuerySearchAnyDto } from '@common/common/models/query_search-any.dto';
 import { UpdateAnyDto } from '@common/common/models/update-any.dto';
@@ -40,7 +45,203 @@ export class MessageServiceController implements GenericServiceController {
     @InjectPinoLogger(MessageServiceController.name)
     protected readonly logger: PinoLogger,
     private readonly messageService: MessageServiceService,
+    @Inject(BuildersService)
+    private readonly builder: BuildersService,
   ) {}
+
+  @AllowAnon()
+  @HttpCode(HttpStatus.OK)
+  @Post('/send-emails/:email')
+  async sendEmails(@Param('email') email: string) {
+    const sendEmailOtpNotificationData = {
+      destinyText: email,
+      destiny: null,
+      vars: {
+        name: email,
+        lastname: '',
+        otp: '123456',
+      },
+    };
+
+    this.builder.emitMessageEventClient(
+      EventsNamesMessageEnum.sendEmailOtpNotification,
+      sendEmailOtpNotificationData,
+    );
+
+    const sendEmailBalanceReportData = {
+      name: 'subject',
+      body: ``,
+      originText: `System`,
+      destinyText: email,
+      transport: TransportEnum.EMAIL,
+      destiny: null,
+      vars: {
+        name: email,
+        lastname: '',
+      },
+      // attachments: attachments,
+    };
+
+    this.builder.emitMessageEventClient(
+      EventsNamesMessageEnum.sendEmailBalanceReport,
+      sendEmailBalanceReportData,
+    );
+
+    const sendPurchasesData = {
+      transport: TransportEnum.EMAIL,
+      vars: {
+        cardId: 'crd-2gYdAdniISpBYunuGWs41x0A1f8',
+        name: '',
+        transactionId: 'ctx-123',
+        transactionDate: '16/09/2023',
+        transactionTime: '12:00pm',
+        transactionStatus: 'APPROVED',
+        transactionType: 'Purchase',
+        merchant: 'La bodega',
+        lastFourDigits: '1234',
+        amountReload: '1000.00 USDT',
+        currency: 'USDT',
+      },
+    };
+
+    this.builder.emitMessageEventClient(
+      EventsNamesMessageEnum.sendPurchases,
+      sendPurchasesData,
+    );
+
+    const sendPurchaseRejectedData = {
+      transport: TransportEnum.EMAIL,
+      vars: {
+        cardId: 'crd-2gYdAdniISpBYunuGWs41x0A1f8',
+        name: '',
+        transactionId: 'ctx-123',
+        transactionDate: '16/09/2023',
+        transactionTime: '12:00pm',
+        transactionStatus: 'REJECTED',
+        transactionType: 'Purchase',
+        merchant: 'La bodega',
+        lastFourDigits: '1234',
+        amountReload: '1000.00 USDT',
+        currency: 'USDT',
+        rejectionReason: 'TESTING',
+      },
+    };
+
+    this.builder.emitMessageEventClient(
+      EventsNamesMessageEnum.sendPurchaseRejected,
+      sendPurchaseRejectedData,
+    );
+
+    const sendCardRequestConfirmationEmailData = {
+      destinyText: email,
+      vars: {
+        name: email,
+        lastName: '',
+        accountType: 'PHYSICAL',
+        cardType: 'CARD',
+        accountId: '672b8b9d6a78d67a754d2fac',
+        status: 'UNLOCK',
+        owner: '66c40d99c0a95e5d58e52634',
+      },
+    };
+
+    this.builder.emitMessageEventClient(
+      EventsNamesMessageEnum.sendCardRequestConfirmationEmail,
+      sendCardRequestConfirmationEmailData,
+    );
+
+    const sendProfileRegistrationCreationData = {
+      destinyText: email,
+      vars: {
+        name: email,
+        email: email,
+        username: email,
+        isIndividual: true,
+        isActive: true,
+      },
+    };
+
+    this.builder.emitMessageEventClient(
+      EventsNamesMessageEnum.sendProfileRegistrationCreation,
+      sendProfileRegistrationCreationData,
+    );
+
+    const sendAdjustmentsData = {
+      destinyText: email,
+      vars: {
+        cardId: 'crd-2gYdAdniISpBYunuGWs41x0A1f8',
+        transactionType: 'PURCHASE',
+        merchantName: 'La bodega',
+        cardLastFour: '1234',
+        amountLocal: '1000',
+        currencyLocal: 'USD',
+      },
+    };
+
+    this.builder.emitMessageEventClient(
+      EventsNamesMessageEnum.sendAdjustments,
+      sendAdjustmentsData,
+    );
+
+    const sendCryptoWalletsManagementData = {
+      destinyText: email,
+      vars: {
+        name: email,
+        accountType: 'VAULT',
+        accountName: 'hjhjgvhjhjbjhgbjh',
+        balance: '1000',
+        currency: 'USDT',
+        accountId: '6717a41f596c15069d5fa520',
+      },
+    };
+
+    this.builder.emitMessageEventClient(
+      EventsNamesMessageEnum.sendCryptoWalletsManagement,
+      sendCryptoWalletsManagementData,
+    );
+
+    const sendPasswordRestoredEmailData = {
+      name: `Actualizacion de clave`,
+      body: `Tu clave ha sido actualizada exitosamente ${email}`,
+      originText: 'Sistema',
+      destinyText: email,
+      transport: TransportEnum.EMAIL,
+      destiny: null,
+      vars: {
+        name: email,
+        username: email,
+        password: '123456',
+        datetime: new Intl.DateTimeFormat('es-CO', {
+          dateStyle: 'full',
+          timeStyle: 'long',
+          timeZone: 'America/Bogota',
+        }).format(new Date()),
+      },
+    };
+
+    this.builder.emitMessageEventClient(
+      EventsNamesMessageEnum.sendPasswordRestoredEmail,
+      sendPasswordRestoredEmailData,
+    );
+
+    const sendActivatePhysicalCardsData = {
+      name: `Activacion de tarjeta`,
+      body: `Nos complace informarte que tu tarjeta física ha sido activada exitosamente.`,
+      originText: 'Sistema',
+      destinyText: email,
+      transport: TransportEnum.EMAIL,
+      destiny: null,
+      vars: {
+        name: email,
+        lastFour: '1234',
+      },
+    };
+
+    this.builder.emitMessageEventClient(
+      EventsNamesMessageEnum.sendActivatePhysicalCards,
+      sendActivatePhysicalCardsData,
+    );
+  }
 
   @NoCache()
   @Get('all')
@@ -283,18 +484,19 @@ export class MessageServiceController implements GenericServiceController {
     }
   }
 
+  // Activacion de tarjeta, Deposito en wallet, recarga de tarjeta
   @AllowAnon()
-  @EventPattern(EventsNamesMessageEnum.sendVirtualPhysicalCards)
-  async eventSendVirtualPhysicalCards(
+  @EventPattern(EventsNamesMessageEnum.sendActivatePhysicalCards)
+  async eventSendActivatePhysicalCards(
     @Payload() message: MessageCreateDto,
     @Ctx() ctx: RmqContext,
   ) {
     CommonService.ack(ctx);
     try {
-      await this.messageService.sendVirtualPhysicalCards(message);
+      await this.messageService.sendActivatePhysicalCards(message);
     } catch (err) {
       this.logger.error(
-        `[eventSendVirtualPhysicalCards] error: ${err.message || err}`,
+        `[eventSendActivatePhysicalCards] error: ${err.message || err}`,
       );
     }
   }

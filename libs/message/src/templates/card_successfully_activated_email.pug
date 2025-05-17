@@ -12,26 +12,23 @@ html(lang="es")
           img(src=(iconsInfo.check || '') alt="Éxito" height="50vh" style="margin: 0 auto 7px auto; display: block;")
           
         h1(style="margin-bottom: 25px; color: #1A1431; text-align: center;") ¡Tu tarjeta ha sido activada exitosamente!
-        p Estimada Emilia Di Carlo 
+        p Estimado/a #{vars.name || ''} 
         p Nos complace informarte que tu tarjeta física ha sido activada exitosamente.
         p Ya puedes empezar a usarla para tus compras y transacciones.
         
         p(style="margin-left: 2px; color: #1b1330")
           strong(style="") Detalles de la tarjeta:
-          br
-          span(style="color: #1b1330") • 
-          |  Nombre del Titular: #{vars.name || 'N/A'}
-          br
-          span(style="color: #1b1330") • 
-          |  Numero de tarjeta: #{vars.lastFour || 'N/A'}
-          br
-        
+
+          ul
+            li Nombre del Titular: #{vars.name || 'N/A'}
+            li Numero de tarjeta: #{vars.lastFour || 'N/A'}
+
         p
           strong Recuerda tu PIN:
-          br
-          | Es muy importante que mantengas tu PIN en secreto.
-          br
-          | Nunca compartas este codigo con nadie y asegúrate de guardarlo en un lugar seguro.
+        
+        p Es muy importante que mantengas tu PIN en secreto.
+        
+        p Nunca compartas este codigo con nadie y asegúrate de guardarlo en un lugar seguro.
         
         p Gracias por confiar en B2pay.
       

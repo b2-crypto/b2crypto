@@ -5,7 +5,7 @@ enum TemplatesMessageEnum {
   cardActivation = './libs/message/src/templates/card_successfully_activated_email.pug',
   cardRecharge = './libs/message/src/templates/card_recharge_successful_email.pug',
   profileRegistrationCreation = './libs/message/src/templates/profile_registration_creation_email.pug',
-  virtualPhysicalCards = './libs/message/src/templates/virtual_physical_cards_email.pug',
+  activatePhysicalCards = './libs/message/src/templates/card_successfully_activated_email.pug',
   adjustments = './libs/message/src/templates/purchases_transaction_adjustments_email.pug',
   purchases = './libs/message/src/templates/purchases_email.pug',
   cryptoWalletsManagement = './libs/message/src/templates/crypto_wallets_management_email.pug',

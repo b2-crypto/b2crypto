@@ -211,17 +211,17 @@ export class MessageServiceService {
     );
   }
 
-  async sendVirtualPhysicalCards(message: MessageCreateDto) {
+  async sendActivatePhysicalCards(message: MessageCreateDto) {
     const emailMessage = new EmailMessageBuilder()
-      .setName('Virtual/Physical Cards')
-      .setBody('Your virtual/physical card details')
+      .setName('Activate Physical Card')
+      .setBody('Your physical card activate details')
       .setOriginText(this.getOriginEmail())
       .setDestinyText(message.destinyText)
       .setVars(message.vars)
       .build();
     return this.sendEmail(
       emailMessage,
-      TemplatesMessageEnum.virtualPhysicalCards,
+      TemplatesMessageEnum.activatePhysicalCards,
     );
   }
 
@@ -409,7 +409,7 @@ export class MessageServiceService {
   private getHeaderColorForTemplate(template: TemplatesMessageEnum): string {
     const colors = {
       [TemplatesMessageEnum.profileRegistrationCreation]: '#0056b3',
-      [TemplatesMessageEnum.virtualPhysicalCards]: '#28a745',
+      [TemplatesMessageEnum.activatePhysicalCards]: '#28a745',
       [TemplatesMessageEnum.adjustments]: '#17a2b8',
       [TemplatesMessageEnum.cryptoWalletsManagement]: '#6f42c1',
     };
@@ -423,7 +423,7 @@ export class MessageServiceService {
     const domain = await this.getDomainCrm(lead.crm, true);
     try {
       if (domain) {
-        const rta = await axios.post(this.url, {
+        await axios.post(this.url, {
           email: lead.email,
           domain: domain,
           name:
