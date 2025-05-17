@@ -704,7 +704,7 @@ export class AuthServiceController {
     const otpTTL =
       msOTP ??
       this.configService.get<number>('OTP_VALIDATION_TIME_SECONDS', 120) * 1000;
-    const email = user.email.toLowerCase();
+    const email = user.email?.toLowerCase() ?? user.email;
 
     const otpSended =
       (await this.getOtpGenerated(email)) ?? CommonService.getOTP();
@@ -735,13 +735,13 @@ export class AuthServiceController {
   }
 
   private async getOtpGenerated(email: string) {
-    const _email = email.toLowerCase();
+    const _email = email?.toLowerCase() ?? email;
     this.logger.info(`[getOtpGenerated] email: ${_email}`);
     return this.cacheManager.get<number>(_email);
   }
 
   private async deleteOtpGenerated(email: string) {
-    const _email = email.toLowerCase();
+    const _email = email?.toLowerCase() ?? email;
     this.logger.info(`[deleteOtpGenerated] email: ${_email}`);
     return this.cacheManager.del(_email);
   }
