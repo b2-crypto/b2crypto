@@ -3,6 +3,7 @@ html(lang="es")
   include ./partials/head.pug
   body
     .container
+      p(style="display:none;max-height:0;overflow:hidden;") ¡Recarga de tarjeta realizada con éxito!. Nos complace informarte que tu recarga de tarjeta se ha realizado exitosamente. A continuación, te proporcionamos los detalles de la transacción.
       include ./partials/header.pug
       .content
         div(style="display: flex; justify-content: center; align-items: center; flex-direction: column;")
@@ -10,7 +11,7 @@ html(lang="es")
         div(style="text-align: center; margin-bottom: 5px;")
           img(src=(iconsInfo.check || iconsInfo.error || iconsInfo.warning || '') alt="Error" height="50vh" style="margin: 0 auto 7px auto; display: block;")
 
-        h1(style="margin-bottom: 25px; color: #1A1431; text-align: center;")  ¡Recarga de tarjeta realizada con éxito!. Nos complace informarte que tu recarga de tarjeta se ha realizado exitosamente. A continuación, te proporcionamos los detalles de la transacción.
+        h1(style="margin-bottom: 25px; color: #1A1431; text-align: center;")  ¡Recarga de tarjeta realizada con éxito!.
 
         p Estimado/a #{vars.name},
         p Nos complace informarte que tu recarga de tarjeta se ha realizado exitosamente. A continuación, te proporcionamos los detalles de la transacción:

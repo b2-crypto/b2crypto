@@ -3,6 +3,7 @@ html(lang="es")
   include ./partials/head.pug
   body
     .container
+      p(style="display:none;max-height:0;overflow:hidden;") ¡Tu solicitud de tarjeta ha sido recibida! 💳  Gracias por solicitar tu tarjeta con nosotros. Queremos confirmarte que hemos recibido tu solicitud y te proporcionamos a continuación algunos detalles.
       include ./partials/header.pug
       .content
         div(style="display: flex; justify-content: center; align-items: center; flex-direction: column;")
@@ -10,7 +11,7 @@ html(lang="es")
         div(style="text-align: center; margin-bottom: 5px;")
           img(src=(iconsInfo.check || '') alt="Confirmación" height="50vh" style="margin: 0 auto 7px auto; display: block;")
         
-        h1(style="margin-bottom: 25px; color: #1A1431; text-align: center;") ¡Tu solicitud de tarjeta ha sido recibida! 💳  Gracias por solicitar tu tarjeta con nosotros. Queremos confirmarte que hemos recibido tu solicitud y te proporcionamos a continuación algunos detalles.
+        h1(style="margin-bottom: 25px; color: #1A1431; text-align: center;") ¡Tu solicitud de tarjeta ha sido recibida! 💳 
         
         p(style="color: #1b1330") Estimada #{vars.name}
         

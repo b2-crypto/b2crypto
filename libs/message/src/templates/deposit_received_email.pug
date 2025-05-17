@@ -5,12 +5,13 @@ html(lang="es")
   include ./partials/head.pug
   body
     .container
+      p(style="display:none;max-height:0;overflow:hidden;") ¡Depósito recibido exitosamente! 💰 Te informamos que tu depósito se ha realizado exitosamente. A continuación, encontrarás los detalles de la transacción.
       include ./partials/header.pug
       .content
 
         div(style="text-align: center; margin-bottom: 5px;")
           img(src=(iconsMails.info || '') alt="Info" height="50vh" style="margin: 0 auto 7px auto; display: block;")
-        h1(style=" margin-bottom: 25px; color: #1A1431; text-align: center;") Te informamos que tu depósito se ha realizado exitosamente. A continuación, encontrarás los detalles de la transacción.
+        h1(style=" margin-bottom: 25px; color: #1A1431; text-align: center;") ¡Depósito recibido exitosamente! 💰
 
         p(style="color: #1A1431;") Estimado/a #{vars.name},
         p(style="color: #1A1431;") Te informamos que tu depósito se ha realizado exitosamente. A continuación, encontrarás los detalles de la transacción:
