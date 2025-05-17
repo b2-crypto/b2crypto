@@ -236,6 +236,17 @@ export class MessageServiceService {
     return this.sendEmail(emailMessage, TemplatesMessageEnum.depositReceived);
   }
 
+  async sendRechargeCardReceived(message: MessageCreateDto) {
+    const emailMessage = new EmailMessageBuilder()
+      .setName('Recharge Card Received')
+      .setBody('Your recharge card received details')
+      .setOriginText(this.getOriginEmail())
+      .setDestinyText(message.destinyText)
+      .setVars(message.vars)
+      .build();
+    return this.sendEmail(emailMessage, TemplatesMessageEnum.cardRecharge);
+  }
+
   async sendPreRegisterEmail(message: MessageCreateDto) {
     const emailMessage = new EmailMessageBuilder()
       .setName('Pre-registration Confirmation')

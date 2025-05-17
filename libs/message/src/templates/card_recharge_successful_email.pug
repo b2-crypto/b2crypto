@@ -34,13 +34,13 @@ html(lang="es")
           img(src=iconsInfo.date alt="Fecha y Hora" height="15vh" style="margin-right: 10px; margin-top: 6px;")
           div(style="color: #1A1431;")
             div Fecha y Hora
-            div #{vars.date || '14 de Julio del 2024, 17:55h'}
+            div #{vars.transactionDate || ''}
 
         .transaction-info(style="display: flex; margin-bottom: 22px; align-items: flex-start;")
           img(src=iconsInfo.creditCard alt="Nuevo Saldo" height="15vh" style="margin-right: 10px; margin-top: 6px;")
           div(style="color: #1A1431;")
             div Nuevo Saldo de la Tarjeta
-            div #{vars.amount || '$5.200,00 USDT'}
+            div #{vars.amountAccount || ''}
 
         p
           strong Verifica tu Saldo y Transacciones:
