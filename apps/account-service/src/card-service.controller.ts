@@ -26,6 +26,7 @@ import { CardsEnum } from '@common/common/enums/messages.enum';
 import ResourcesEnum from '@common/common/enums/ResourceEnum';
 import { StatusCashierEnum } from '@common/common/enums/StatusCashierEnum';
 import TagEnum from '@common/common/enums/TagEnum';
+import TransportEnum from '@common/common/enums/TransportEnum';
 import { QuerySearchAnyDto } from '@common/common/models/query_search-any.dto';
 import { IntegrationService } from '@integration/integration';
 import IntegrationCardEnum from '@integration/integration/card/enums/IntegrationCardEnum';
@@ -75,6 +76,7 @@ import { CategoryServiceService } from 'apps/category-service/src/category-servi
 import EventsNamesCategoryEnum from 'apps/category-service/src/enum/events.names.category.enum';
 import { GroupServiceService } from 'apps/group-service/src/group-service.service';
 import { FiatIntegrationClient } from 'apps/integration-service/src/clients/fiat.integration.client';
+import EventsNamesMessageEnum from 'apps/message-service/src/enum/events.names.message.enum';
 import EventsNamesPspAccountEnum from 'apps/psp-service/src/enum/events.names.psp.acount.enum';
 import EventsNamesStatusEnum from 'apps/status-service/src/enum/events.names.status.enum';
 import { StatusServiceService } from 'apps/status-service/src/status-service.service';
@@ -1902,7 +1904,7 @@ export class CardServiceController extends AccountServiceController {
       if (configActivate.promoCode == 'pm2413') {
         afgName = 'grupo-3';
       }
-      const cardAfg = await this.getAfgByLevel(afgName, true);
+      const cardAfg = this.getAfgByLevel(afgName, true);
       const group = await this.buildAFG(null, cardAfg);
       const afg = group.list[0];
       try {
@@ -1931,6 +1933,24 @@ export class CardServiceController extends AccountServiceController {
         //throw new BadRequestException('Bad update card');
       }
     }
+
+    const sendActivatePhysicalCardsData = {
+      name: `Activacion de tarjeta`,
+      body: `Nos complace informarte que tu tarjeta física ha sido activada exitosamente.`,
+      originText: 'Sistema',
+      destinyText: user.email,
+      transport: TransportEnum.EMAIL,
+      destiny: null,
+      vars: {
+        name: `${user.personalData.name} ${user.personalData.lastName}`,
+        lastFour: crd.last_four,
+      },
+    };
+
+    this.cardBuilder.emitMessageEventClient(
+      EventsNamesMessageEnum.sendActivatePhysicalCards,
+      sendActivatePhysicalCardsData,
+    );
 
     return {
       statusCode: 200,
