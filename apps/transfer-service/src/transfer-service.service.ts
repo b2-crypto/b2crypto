@@ -362,6 +362,11 @@ export class TransferServiceService
         }
       }
 
+      const accountUpdated = await this.updateAccount(
+        data.account,
+        transferSaved,
+      );
+
       if (
         transfer.operationType === OperationTransactionType.deposit &&
         transfer.typeAccount === TypesAccountEnum.WALLET
@@ -375,8 +380,8 @@ export class TransferServiceService
           destiny: null,
           vars: {
             name: account.email,
-            currency: transfer.currency,
-            amountReload: `${transfer.amount} ${transfer.currency}`,
+            currency: transferSaved.currency,
+            amountReload: `${transferSaved.amount} ${transferSaved.currency}`,
             transactionDate: new Intl.DateTimeFormat('es-CO', {
               dateStyle: 'full',
               timeStyle: 'long',
@@ -393,7 +398,36 @@ export class TransferServiceService
         );
       }
 
-      await this.updateAccount(data.account, transferSaved);
+      if (
+        transfer.operationType === OperationTransactionType.deposit &&
+        transfer.typeAccount === TypesAccountEnum.CARD
+      ) {
+        const sendDepositWalletReceivedData = {
+          name: 'Se ha recibido una recarga en tu tarjeta',
+          body: 'Tu tarjeta ha sido recargada exitosamente',
+          originText: 'Sistema',
+          destinyText: account.email,
+          transport: TransportEnum.EMAIL,
+          destiny: null,
+          vars: {
+            name: account.email,
+            currency: transferSaved.currencyCustodial,
+            amountReload: `${transferSaved.amountCustodial} ${transferSaved.currencyCustodial}`,
+            transactionDate: new Intl.DateTimeFormat('es-CO', {
+              dateStyle: 'full',
+              timeStyle: 'long',
+              timeZone: 'America/Bogota',
+            }).format(transferSaved.createdAt),
+            amountAccount: accountUpdated.amount,
+          },
+        };
+
+        this.builder.emitMessageEventClient(
+          EventsNamesMessageEnum.sendDepositWalletReceived,
+          sendDepositWalletReceivedData,
+        );
+      }
+
       return transferSaved;
     }
     throw new BadRequestException(this.getMessageError(data));
