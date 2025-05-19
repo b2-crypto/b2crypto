@@ -6,7 +6,6 @@ import { ResponseHttpExceptionFilter } from '@common/common/exceptions/response.
 import { ResponseInterceptor } from '@common/common/interceptors/response.interceptor';
 import { IProvider } from '@common/common/interfaces/i.provider.interface';
 import { QueueAdminModule } from '@common/common/queue-admin-providers/queue.admin.provider.module';
-import { ConfigModule } from '@nestjs/config';
 import { APP_FILTER, APP_INTERCEPTOR } from '@nestjs/core';
 import { ResponseB2CryptoModule } from '@response-b2crypto/response-b2crypto';
 import { AccountServiceModule } from 'apps/account-service/src/account-service.module';
@@ -33,7 +32,6 @@ import { StatusServiceModule } from 'apps/status-service/src/status-service.modu
 import { TrafficServiceModule } from 'apps/traffic-service/src/traffic-service.module';
 import { TransferServiceModule } from 'apps/transfer-service/src/transfer-service.module';
 import { UserServiceModule } from 'apps/user-service/src/user-service.module';
-import configuration from 'config/configuration';
 import { LoggerModule } from 'nestjs-pino';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -44,10 +42,6 @@ export const configApp = {
     OpenTelemetryModule.forRoot(),
     LoggerModule.forRoot(loggerConfig),
     DistributedCacheModule,
-    ConfigModule.forRoot({
-      isGlobal: true,
-      load: [configuration],
-    }),
     BuildersModule,
     ResponseB2CryptoModule,
     // JobModule,

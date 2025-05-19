@@ -1,4 +1,4 @@
 [tools]
-node = "22"
+node = "latest"
 pnpm = "latest"
 pulumi = "latest"
