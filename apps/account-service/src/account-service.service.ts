@@ -591,6 +591,7 @@ export class AccountServiceService
           cardType: account.type,
           accountId: account.accountId,
           status: account.statusText,
+          owner: account.owner,
         },
       };
 

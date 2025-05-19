@@ -324,8 +324,7 @@ export class SecurityServiceController {
       );
     } catch (error) {
       this.logger.error(
-        `[registryUser] Error sending user registration email: ${
-          error.message || error
+        `[registryUser] Error sending user registration email: ${error.message || error
         }`,
       );
     }
@@ -353,7 +352,6 @@ export class SecurityServiceController {
       refresh_token: rta.refresh_token,
     };
   }
-
   @ApiKeyCheck()
   @Post('sign-in')
   @UseGuards(ApiKeyAuthGuard, LocalAuthGuard)
@@ -422,7 +420,7 @@ export class SecurityServiceController {
     delete userCodeDto.user.twoFactorIsActive;
     const statusCode =
       !isBoolean(userCodeDto.user.verifyEmail) ||
-      userCodeDto.user.verifyEmail === true
+        userCodeDto.user.verifyEmail === true
         ? 301
         : 201;
     let rta = {
@@ -520,8 +518,7 @@ export class SecurityServiceController {
       return client;
     } catch (err) {
       this.logger.error(
-        `[getClientFromPublicKey] Error getting client from public key: ${
-          err.message || err
+        `[getClientFromPublicKey] Error getting client from public key: ${err.message || err
         }`,
       );
       throw new UnauthorizedException();

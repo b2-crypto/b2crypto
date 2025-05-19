@@ -1,0 +1,54 @@
+- const iconsMails = typeof socialMediaIcons === 'string' ? JSON.parse(socialMediaIcons) : (socialMediaIcons || {})
+
+doctype html
+html(lang="es")
+  include ./partials/head.pug
+  body
+    .container
+      p(style="display:none;max-height:0;overflow:hidden;") ¡Depósito recibido exitosamente! 💰 Te informamos que tu depósito se ha realizado exitosamente. A continuación, encontrarás los detalles de la transacción.
+      include ./partials/header.pug
+      .content
+
+        div(style="text-align: center; margin-bottom: 5px;")
+          img(src=(iconsMails.info || '') alt="Info" height="50vh" style="margin: 0 auto 7px auto; display: block;")
+        h1(style=" margin-bottom: 25px; color: #1A1431; text-align: center;") ¡Depósito recibido exitosamente! 💰
+
+        p(style="color: #1A1431;") Estimado/a #{vars.name},
+        p(style="color: #1A1431;") Te informamos que tu depósito se ha realizado exitosamente. A continuación, encontrarás los detalles de la transacción:
+
+        p(style="color: #1A1431;")
+          strong Detalles del depósito:
+        br
+        .transaction-info(style="display: flex; margin-bottom: 22px; align-items: flex-start;")
+          img(src=(iconsMails.tether || '') alt=iconsMails.tether height="20vh" style="margin-right: 10px; margin-top: 6px;")
+          div(style="color: #1A1431;")
+            div Moneda
+            div #{vars.currency}
+        
+        .transaction-info(style="display: flex; margin-bottom: 22px; align-items: flex-start;")
+          img(src=(iconsMails.deposit || '') alt=iconsMails.deposit height="20vh" style="margin-right: 10px; margin-top: 6px;")
+          div(style="color: #1A1431;")
+            div Saldo Depositado
+            div #{vars.amountReload}
+        
+        .transaction-info(style="display: flex; margin-bottom: 22px; align-items: flex-start;")
+          img(src=(iconsMails.date || '') alt=iconsMails.date height="20vh" style="margin-right: 10px; margin-top: 6px;")
+          div(style="color: #1A1431;")
+            div Fecha y Hora
+            div #{vars.transactionDate || ''}
+        
+        .transaction-info(style="display: flex; margin-bottom: 22px; align-items: flex-start;")
+          img(src=(iconsMails.TFA || '') alt=iconsMails.TFA height="20vh" style="margin-right: 10px; margin-top: 6px;")
+          div(style="color: #1A1431;")
+            div Hash de la Transacción
+            div #{vars.transactionHash || ''}
+
+      div(style="padding: 10px 0; border: 0; height: 15px; background-color: #FFFFFF; width: 100%; display: flex; justify-content: center; align-items: center;")
+        hr(style="border: 0; height: 1px; background-color: #000000; width: 80%;")
+
+      div(style="padding: 20px; padding-left: 35px; padding-right: 35px;")
+        p(style="color: #1A1431;")
+          | Si tienes alguna pregunta o necesitas asistencia, no dudes en contactarnos a través de soporte@b2pay.app o contacta a nuestro equipo de soporte al cliente a través de nuestro <a href="https://wa.link/2jql8k" target="_blank">WhatsApp</a>.
+        
+        p(style="color: #1A1431;")
+          | Gracias por unirte a nosotros. ¡Esperamos que disfrutes de tu experiencia con B2pay!

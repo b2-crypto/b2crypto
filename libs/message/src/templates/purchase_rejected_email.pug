@@ -1,0 +1,81 @@
+doctype html
+html(lang="es")
+  include ./partials/head.pug
+  body
+    .container
+      p(style="display:none;max-height:0;overflow:hidden;") Lo sentimos, tu compra ha sido rechazada. Lamentamos informarte que tu intento de compra no pudo ser procesado.
+      include ./partials/header.pug
+      .content
+        - const iconsInfo = typeof socialMediaIcons === 'string' ? JSON.parse(socialMediaIcons) : (socialMediaIcons || {})
+        
+        div(style="text-align: center; margin-bottom: 5px;")
+          img(src=(iconsInfo.errorIcon || iconsInfo.error || iconsInfo.warning || '') alt="Error" height="50vh" style="margin: 0 auto 7px auto; display: block;")
+        h1(style="margin-bottom: 25px; color: #1A1431; text-align: center;") Lo sentimos, tu compra ha sido rechazada
+        
+        p(style="color: #1A1431;") #{vars.name || 'Estimado cliente'} tu compra ha sido rechazada
+        
+        p(style="color: #1A1431;") 
+          | Lamentamos informarte que tu intento de compra realizado el #{vars.transactionDate || 'N/A'} a las #{vars.transactionTime || 'N/A'} en #{vars.merchant || 'N/A'} 
+          | no pudo ser procesado. A continuación, te proporcionamos más detalles sobre esta situación:
+
+        div(style="margin-top: 25px; margin-bottom: 25px;")
+          p(style="color: #1A1431; margin-bottom: 5px;")
+            strong Detalles de la Transacción Rechazada:
+          
+        .transaction-info(style="display: flex; margin-bottom: 22px; align-items: flex-start;")
+          img(src=(iconsInfo.date || '') alt="Fecha" height="15vh" style="margin-right: 10px; margin-top: 6px;")
+          div(style="color: #1A1431;")
+            div Fecha y Hora
+            div #{vars.transactionDate || 'N/A'}, #{vars.transactionTime || 'N/A'}
+        
+        .transaction-info(style="display: flex; margin-bottom: 22px; align-items: flex-start;")
+          img(src=(iconsInfo.location || '') alt="Ubicación" height="15vh" style="margin-right: 10px; margin-top: 6px;")
+          div(style="color: #1A1431;")
+            div Establecimiento
+            div #{vars.merchant || 'N/A'}
+        
+        .transaction-info(style="display: flex; margin-bottom: 22px; align-items: flex-start;")
+          img(src=(iconsInfo.tether || iconsInfo.withdraw || '') alt="Moneda" height="15vh" style="margin-right: 10px; margin-top: 6px;")
+          div(style="color: #1A1431;")
+            div Moneda
+            div #{vars.currency || 'N/A'}
+        
+        .transaction-info(style="display: flex; margin-bottom: 22px; align-items: flex-start;")
+          img(src=(iconsInfo.currency || '') alt="Importe" height="15vh" style="margin-right: 10px; margin-top: 6px;")
+          div(style="color: #1A1431;")
+            div Monto
+            div(style="color: #1A1431;") #{vars.amountReload || 'N/A'}
+        
+        .transaction-info(style="display: flex; margin-bottom: 22px; align-items: flex-start;")
+          img(src=(iconsInfo.payment || iconsInfo.creditCard || '') alt="Método de pago" height="15vh" style="margin-right: 10px; margin-top: 6px;")
+          div(style="color: #1A1431;")
+            div Método de Pago Utilizado
+            div xxxx xxxx #{vars.lastFourDigits || 'N/A'}
+
+      div(style="padding: 10px 0; border: 0; height: 15px; background-color: #FFFFFF; width: 100%; display: flex; justify-content: center; align-items: center;")
+        hr(style="border: 0; height: 1px; background-color: #000000; width: 80%;")
+      
+      div(style="padding: 20px; padding-left: 35px; padding-right: 35px;")
+        p(style="color: #1A1431;") Para evitar que este tipo de situaciones se repitan en el futuro, te recomendamos:
+
+        ol
+          li Verificar el saldo de tu cuenta: Asegúrate de que cuentas con los fondos suficientes antes de realizar una compra.
+          li Actualizar la información de tu tarjeta: Si has cambiado de tarjeta o tu información ha caducado, actualiza los datos en tus métodos de pago.
+          li Revisar la información de la transacción: Asegúrate de que los detalles de la compra y el establecimiento sean correctos.
+          li Nuestra tesorería cripto garantiza que pequeñas fluctuaciones en la paridad uno a uno entre tu stablecoin y su contraparte fiat no afecten tu capacidad de pago. Por ello, establecemos un límite de gasto del 90% sobre los fondos totales disponibles en tu tarjeta.
+
+        p(style="color: #1A1431;") Si deseas más información o tienes alguna pregunta, no dudes en contactarnos.
+          br
+          br
+          | Ofrecemos disculpas por cualquier inconveniente causado por esta situación y estamos aquí para asistirte en lo que necesites. Tu satisfacción es nuestra prioridad, y queremos asegurarnos de que puedas disfrutar de una experiencia sin interrupciones en el futuro.
+
+      div(style="padding: 10px 0; border: 0; height: 15px; background-color: #FFFFFF; width: 100%; display: flex; justify-content: center; align-items: center;")
+        hr(style="border: 0; height: 1px; background-color: #000000; width: 80%;")
+
+      div(style="padding: 20px; padding-left: 35px; padding-right: 35px;")
+        p(style="color: #1A1431;")
+          | Si tienes alguna pregunta o necesitas asistencia, no dudes en contactarnos a través de soporte@b2pay.app o contacta a 
+          | nuestro equipo de soporte al cliente a través de nuestro <a href="https://wa.link/2jql8k" target="_blank">WhatsApp</a>.
+        
+        p(style="color: #1A1431;")
+          | Gracias por unirte a nosotros. ¡Esperamos que disfrutes de tu experiencia con B2pay!

@@ -1,0 +1,40 @@
+- const iconsInfo = typeof icons === 'string' ? JSON.parse(icons) : icons
+- const iconsMails = typeof iconsEmail === 'string' ? JSON.parse(iconsEmail) : iconsEmail
+
+doctype html
+html(lang="es")
+  include ./partials/head.pug
+  body
+    .container
+      p(style="display:none;max-height:0;overflow:hidden;") Información de tu deposito. Te informamos que tu deposito ha sido procesado exitosamente. A continuación, te proporcionamos los detalles de esta actualización.
+      include ./partials/header.pug
+      .content
+        div(style="display: flex; justify-content: center; align-items: center; flex-direction: column;")
+          img(src=iconsInfo.info alt=iconsInfo.info)
+          p.title(style="margin-block-end: 0.5em; margin-block-start: 0.5em;") Información de tu deposito
+        p Estimado/a #{vars.name},
+        p Nos complace informarte que tu transferencia se ha realizado exitosamente. A continuación, encontrarás los detalles de la transacción:
+
+        div(style="padding: 20px; background-color: #F8F8F8; border-radius: 10px; margin: 20px 0;")
+          div(style="display: flex; justify-content: space-between; margin-bottom: 10px;")
+            p(style="margin: 0;") Moneda:
+            p(style="margin: 0;") #{vars.currency}
+        div(style="display: flex; justify-content: space-between; margin-bottom: 10px;")
+          p(style="margin: 0;") Monto:
+          p(style="margin: 0;") #{vars.amountReload}
+        div(style="display: flex; justify-content: space-between; margin-bottom: 10px;")
+          p(style="margin: 0;") Fecha y hora:
+          p(style="margin: 0;") 14 de Julio del 2024, 17:55h
+        div(style="display: flex; justify-content: space-between; margin-bottom: 10px;")
+          p(style="margin: 0;") ID de transacción:
+          p(style="margin: 0;") 02BF54U79
+        div(style="display: flex; justify-content: space-between; margin-bottom: 10px;")
+          p(style="margin: 0;") Referencia:
+          p(style="margin: 0;") 98NHF0NDR48
+
+        p Puedes verificar tu saldo y el historial completo de tus transacciones accediendo a tu wallet a través del siguiente boton.
+
+        div(style="display: flex; justify-content: center; align-items: center; gap: 0.5em;")
+          a.button(href="#" target="_blank" rel="noopener noreferrer") Verificar saldo
+
+      

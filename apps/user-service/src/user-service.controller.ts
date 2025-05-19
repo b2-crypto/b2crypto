@@ -171,6 +171,11 @@ export class UserServiceController implements GenericServiceController {
                 name: user.name,
                 username: user.username,
                 password: pwd,
+                datetime: new Intl.DateTimeFormat('es-CO', {
+                  dateStyle: 'full',
+                  timeStyle: 'long',
+                  timeZone: 'America/Bogota',
+                }).format(new Date()),
               },
             };
             this.builder.emitMessageEventClient(

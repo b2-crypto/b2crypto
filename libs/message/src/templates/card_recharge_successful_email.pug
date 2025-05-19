@@ -1,0 +1,57 @@
+doctype html
+html(lang="es")
+  include ./partials/head.pug
+  body
+    .container
+      p(style="display:none;max-height:0;overflow:hidden;") ¡Recarga de tarjeta realizada con éxito!. Nos complace informarte que tu recarga de tarjeta se ha realizado exitosamente. A continuación, te proporcionamos los detalles de la transacción.
+      include ./partials/header.pug
+      .content
+        div(style="display: flex; justify-content: center; align-items: center; flex-direction: column;")
+          - const iconsInfo = typeof socialMediaIcons === 'string' ? JSON.parse(socialMediaIcons) : socialMediaIcons
+        div(style="text-align: center; margin-bottom: 5px;")
+          img(src=(iconsInfo.check || iconsInfo.error || iconsInfo.warning || '') alt="Error" height="50vh" style="margin: 0 auto 7px auto; display: block;")
+
+        h1(style="margin-bottom: 25px; color: #1A1431; text-align: center;")  ¡Recarga de tarjeta realizada con éxito!.
+
+        p Estimado/a #{vars.name},
+        p Nos complace informarte que tu recarga de tarjeta se ha realizado exitosamente. A continuación, te proporcionamos los detalles de la transacción:
+
+        p 
+          strong Detalles de la Recarga:
+
+        .transaction-info(style="display: flex; margin-bottom: 22px; align-items: flex-start;")
+          img(src=iconsInfo.tether alt="Moneda" height="15vh" style="margin-right: 10px; margin-top: 6px;")
+          div(style="color: #1A1431;")
+            div Moneda
+            div #{vars.currency || ''}
+
+        .transaction-info(style="display: flex; margin-bottom: 22px; align-items: flex-start;")
+          img(src=iconsInfo.cardReload alt="Monto Recargado" height="15vh" style="margin-right: 10px; margin-top: 6px;")
+          div(style="color: #1A1431;")
+            div Monto Recargado
+            div #{vars.amountReload || ''}
+
+        .transaction-info(style="display: flex; margin-bottom: 22px; align-items: flex-start;")
+          img(src=iconsInfo.date alt="Fecha y Hora" height="15vh" style="margin-right: 10px; margin-top: 6px;")
+          div(style="color: #1A1431;")
+            div Fecha y Hora
+            div #{vars.transactionDate || ''}
+
+        .transaction-info(style="display: flex; margin-bottom: 22px; align-items: flex-start;")
+          img(src=iconsInfo.creditCard alt="Nuevo Saldo" height="15vh" style="margin-right: 10px; margin-top: 6px;")
+          div(style="color: #1A1431;")
+            div Nuevo Saldo de la Tarjeta
+            div #{vars.amountAccount || ''}
+
+        p
+          strong Verifica tu Saldo y Transacciones:
+        p Agradecemos tu confianza en nuestro servicio de recarga de tarjetas. Estamos comprometidos en ofrecerte una experiencia segura y conveniente para gestionar tus finanzas.
+
+      div(style="padding: 10px 0; border: 0; height: 15px; background-color: #FFFFFF; width: 100%; display: flex; justify-content: center; align-items: center;")
+        hr(style="border: 0; height: 1px; background-color: #000000; width: 80%; ")
+
+      div(style="padding-bottom: 20px; padding-top: 10px; padding-left: 35px; padding-right: 35px;")
+        p Si tienes alguna pregunta o necesitas asistencia, no dudes en contactarnos a través de soporte@b2pay.app o contacta a nuestro equipo de soporte al cliente a través de nuestro <a href="https://wa.link/2jql8k" target="_blank">WhatsApp</a>.
+        br
+        br
+        p Gracias por unirte a nosotros. ¡Esperamos que disfrutes de tu experiencia con B2pay!

@@ -1,5 +1,4 @@
 FROM public.ecr.aws/docker/library/node:20.17.0-alpine3.20 AS base
-# FROM public.ecr.aws/docker/library/node:22.14.0-alpine AS base
 WORKDIR /app
 RUN apk add --update --no-cache curl
 RUN apk add --update --no-cache python3 py3-pip

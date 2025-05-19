@@ -1,0 +1,59 @@
+- const iconsInfo = typeof icons === 'string' ? JSON.parse(icons) : icons
+- const iconsMails = typeof iconsEmail === 'string' ? JSON.parse(iconsEmail) : iconsEmail
+
+doctype html
+html(lang="es")
+  include ./partials/head.pug
+  body
+    .container
+      p(style="display:none;max-height:0;overflow:hidden;") Información de tu retiro. Te informamos que hemos recibido tu solicitud de retiro de criptomonedas. A continuación, te proporcionamos los detalles de tu transacción.
+      include ./partials/header.pug
+      .content
+        div(style="display: flex; justify-content: center; align-items: center; flex-direction: column;")
+          p.title(style="margin-block-end: 0.5em; margin-block-start: 0.5em;") Información de tu retiro
+        p Estimado/a #{vars.name},
+        p Nos complace informarte que hemos recibido tu solicitud de retiro de criptomonedas. A continuación, te proporcionamos los detalles de tu transacción:
+
+        p
+          strong Detalles del retiro:
+
+        .transaction-info(style="display: flex; margin-bottom: 22px; align-items: flex-start;")
+          div(style="display: flex; align-items: center; width: 30px;")
+            span 💰
+          div(style="display: flex; align-items: center;")
+            strong(style="margin-right: 8px; color: #000;") Moneda
+            span(style="color: #000;") #{vars.currency}
+        
+        .transaction-info(style="display: flex; margin-bottom: 22px; align-items: flex-start;")
+          div(style="display: flex; align-items: center; width: 30px;")
+            span 💸
+          div(style="display: flex; align-items: center;")
+            strong(style="margin-right: 8px; color: #000;") Saldo Retirado
+            span(style="color: #000;") #{vars.amountReload}
+        
+        .transaction-info(style="display: flex; margin-bottom: 22px; align-items: flex-start;")
+          div(style="display: flex; align-items: center; width: 30px;")
+            span 📅
+          div(style="display: flex; align-items: center;")
+            strong(style="margin-right: 8px; color: #000;") Fecha y Hora
+            span(style="color: #000;") #{vars.transactionDate || ''}#{vars.transactionDate && vars.transactionTime ? ', ' : ''}#{vars.transactionTime || ''}
+        
+        .transaction-info(style="display: flex; margin-bottom: 22px; align-items: flex-start;")
+          div(style="display: flex; align-items: center; width: 30px;")
+            span 📍
+          div(style="display: flex; align-items: center;")
+            strong(style="margin-right: 8px; color: #000;") Dirección de destino
+            span(style="color: #000;") #{vars.destinationAddress || vars.address || ''}
+        
+        .transaction-info(style="display: flex; margin-bottom: 22px; align-items: flex-start;")
+          div(style="display: flex; align-items: center; width: 30px;")
+            span 🔄
+          div(style="display: flex; align-items: center;")
+            strong(style="margin-right: 8px; color: #000;") Estado de Retiro
+            span(style="color: #000;") #{vars.status || 'En proceso'}
+
+        p
+          strong Estado del retiro:
+        p Si el estado es "Pendiente" o "En Proceso", significa que estamos procesando tu solicitud. Recibirás una notificación adicional una vez que se complete este proceso.
+
+      

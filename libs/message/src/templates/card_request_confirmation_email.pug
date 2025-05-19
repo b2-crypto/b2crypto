@@ -1,0 +1,70 @@
+doctype html
+html(lang="es")
+  include ./partials/head.pug
+  body
+    .container
+      p(style="display:none;max-height:0;overflow:hidden;") ¡Tu solicitud de tarjeta ha sido recibida! 💳  Gracias por solicitar tu tarjeta con nosotros. Queremos confirmarte que hemos recibido tu solicitud y te proporcionamos a continuación algunos detalles.
+      include ./partials/header.pug
+      .content
+        div(style="display: flex; justify-content: center; align-items: center; flex-direction: column;")
+          - const iconsInfo = typeof socialMediaIcons === 'string' ? JSON.parse(socialMediaIcons) : socialMediaIcons
+        div(style="text-align: center; margin-bottom: 5px;")
+          img(src=(iconsInfo.check || '') alt="Confirmación" height="50vh" style="margin: 0 auto 7px auto; display: block;")
+        
+        h1(style="margin-bottom: 25px; color: #1A1431; text-align: center;") ¡Tu solicitud de tarjeta ha sido recibida! 💳 
+        
+        p(style="color: #1b1330") Estimada #{vars.name}
+        
+        p(style="color: #1b1330") Gracias por solicitar tu tarjeta con nosotros. Queremos confirmarte que hemos recibido tu solicitud y te proporcionamos a continuación algunos detalles:
+        
+        p(style="margin-left: 2px; color: #1b1330")
+          strong(style="") Detalles de la solicitud:
+          br
+          
+          ul
+            li Tipo de Tarjeta: #{vars.accountType || 'N/A'}
+            li Nombre del Titular: #{vars.name || 'N/A'}
+            li Dirección de Envío: #{vars.address || 'N/A'}
+            li Estado de la Solicitud: #{vars.status || 'N/A'}
+        
+        p(style="color: #1b1330;") 
+          strong(style="") Estado de solicitud:
+          br
+          | En proceso: Estamos revisando tu solicitud y te mantendremos informado sobre su progreso.
+      
+        p Si has solicitado una tarjeta física, estimamos que la recibirás en un plazo de 10 días hábiles.
+        
+        p Gracias por confiar en B2pay.
+        
+        p Una vez que recibas tu tarjeta, sigue estos pasos para activarla:
+        
+        p Si tienes alguna pregunta o necesitas asistencia, no dudes en contactarnos a través de soporte@b2pay.app o contacta a nuestro equipo de soporte al cliente a través de nuestro <a href="https://wa.link/2jql8k" target="_blank">WhatsApp</a>.
+        
+        p Gracias por unirte a nosotros. ¡Esperamos que disfrutes de tu experiencia con B2pay!
+      
+      div(style="padding: 10px 0; border: 0; height: 15px; background-color: #FFFFFF; width: 100%; display: flex; justify-content: center; align-items: center;")
+        hr(style="border: 0; height: 1px; background-color: #000000; width: 80%; ")
+      
+      .content
+        div(style="margin-bottom: 22px;")
+          p(style="color: #1b1330; font-weight:bold;") Activación de la Tarjeta:
+          
+          p(style="color: #1b1330;") Una vez que recibas tu tarjeta, sigue estos pasos para activarla:
+
+          ol
+            li Inicia sesión en tu cuenta en nuestra plataforma.
+            li Navega a la sección de tarjetas y haz click en "Activar Tarjeta".
+            li Introduce un PIN personalizado.
+            li ¡Y listo! Tu tarjeta estará lista para ser utilizada.
+
+      div(style="padding: 10px 0; border: 0; height: 15px; background-color: #FFFFFF; width: 100%; display: flex; justify-content: center; align-items: center;")
+      hr(style="border: 0; height: 1px; background-color: #000000; width: 80%; ")
+      
+      div(style="padding-bottom: 20px; padding-top: 20px; padding-left: 35px; padding-right: 35px;")
+        p Si tienes alguna pregunta o necesitas asistencia, no dudes en contactarnos a través de soporte@b2pay.app o contacta a nuestro equipo de soporte al cliente a través de nuestro <a href="https://wa.link/2jql8k" target="_blank">WhatsApp</a>.
+        br
+        br
+        p Gracias por unirte a nosotros. ¡Esperamos que disfrutes de tu experiencia con B2pay!
+        
+      div(style="padding: 10px 0; border: 0; height: 15px; background-color: #FFFFFF; width: 100%; display: flex; justify-content: center; align-items: center;")
+        hr(style="border: 0; height: 1px; background-color: #000000; width: 80%; ")

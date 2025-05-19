@@ -324,6 +324,11 @@ export class AuthServiceController {
             name: user.name,
             username: user.email,
             password: psw,
+            datetime: new Intl.DateTimeFormat('es-CO', {
+              dateStyle: 'full',
+              timeStyle: 'long',
+              timeZone: 'America/Bogota',
+            }).format(new Date()),
           },
         };
         this.builder.emitMessageEventClient(

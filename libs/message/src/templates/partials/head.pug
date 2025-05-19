@@ -2,36 +2,49 @@ head
   meta(charset="UTF-8")
   meta(name="viewport", content="width=device-width, initial-scale=1.0")
   title= pageTitle
-  link(href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet")
-  
   style.
     body {
-      font-family: Arial, sans-serif;
+      font-family: 'Helvetica', Arial, sans-serif;
       line-height: 1.6;
       color: #333;
       margin: 0;
-      padding: 0;
-      background-color: #f4f4f4;
+      padding-left: 30px; 
+      padding-right: 30px;
+      background-color: #FFFFFF;
+      font-weight: 400;
+      font-size: 14px;
+    }
+    body, h2, p, ul, ol, li, .container, .otp-digit, .content, .header .title, .small-title, .footer {
+      font-family: 'Helvetica', Arial, sans-serif;
+    }
+    h1, .title {
+      font-family: 'Helvetica', Arial, sans-serif;
+      font-size: 18px;
+      font-weight: bold;
+    }
+    h2, h3, .subtitle {
+      font-family: 'Helvetica', Arial, sans-serif;
+      font-size: 14px;
     }
     .container {
-      max-width: 600px;
+      max-width: 1000px;
       margin: 0 auto;
-      background-color: #ffffff;
+      background-color: #EEEBF1;
     }
     .header {
       background-color: #1b1330;
-      padding: 10px 20px;
+      padding: 15px 25px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      width: 100%;
     }
     .logo-container {
       display: flex;
       align-items: center;
     }
     .logo {
-      height: 100px;
+      margin-top:15px;
+      height: 70px;
       width: auto;
     }
     .social-icons {
@@ -50,30 +63,104 @@ head
     }
     .content {
       padding: 20px;
+      padding-left: 35px; 
+      padding-right: 35px;
+      font-size: 12px;
+      font-weight: 400;
     }
     h2 {
       color: #000;
       margin-top: 0;
     }
     p {
-      color: #000;
+      color: #1b1330;
+      font-size: 12px;
+      font-weight: 400;
     }
     ul, ol, li {
-      padding-left: 20px;
-      margin: 10px 0;
-      color: #000;
+      padding-left: 4px;
+      margin: 10px 5px;
+      color: #1b1330;
+      font-size: 12px;
+    }
+    a {
+      color: #1b1330;
+      font-weight: bold;
     }
     .button {
       display: inline-block;
-      background-color: #0000ff;
+      background-color: #1b1330;
       color: #ffffff;
       padding: 10px 20px;
       text-decoration: none;
-      border-radius: 5px;
+      border-radius: 20px;
       margin-top: 20px;
     }
     .footer {
-      padding: 10px 20px;
-      font-size: 12px;
-      color: #666;
+      font-size: 11px;
     }
+    
+    .otp-digit {
+      display: inline-block;
+      width: 40px;
+      height: 40px;
+      line-height: 40px;
+      text-align: center;
+      background-color: #EEEBF1;
+      color: #1b1330;
+      color: white;
+      font-size: 18px;
+      font-weight: bold;
+      border-radius: 4px;
+      margin: 0 5px;
+    }
+    
+    .title {
+      font-size: 20px;
+      font-weight: bold;
+      margin-bottom: 20px;
+    }
+
+    .icon-info {
+      display: flex;
+      align-items: flex-start;
+      margin-bottom: 15px;
+    }
+
+    .icon-info div {
+      margin-left: 10px;
+    }
+
+    .small-title {
+      font-weight: bold;
+      color: #000;
+    }
+
+    .transaction-info {
+      display: flex;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+
+    .transaction-info strong {
+      margin-right: 8px;
+      color: #000;
+    }
+
+    .container-button {
+      text-align: center;
+      margin: 25px 0;
+    }
+    .support-block {
+        max-width: 600px;
+        margin: 0 auto;
+        background-color: #EEEBF1;
+        padding: 20px 35px;
+        font-size: 11px;
+      }
+    .separator {
+        max-width: 600px;
+        margin: 0 auto;
+        padding: 0;
+    }
+    

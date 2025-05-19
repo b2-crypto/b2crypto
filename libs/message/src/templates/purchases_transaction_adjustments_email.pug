@@ -1,0 +1,60 @@
+doctype html
+html(lang="es")
+  include ./partials/head.pug
+  body
+    .container
+      p(style="display:none;max-height:0;overflow:hidden;") Notificación de Ajuste en tu Transacción. Queremos informarte que se ha realizado un ajuste en una de tus transacciones recientes.
+      include ./partials/header.pug
+      .content
+        - const iconsInfo = typeof socialMediaIcons === 'string' ? JSON.parse(socialMediaIcons) : (socialMediaIcons || {})
+        
+        div(style="text-align: center; margin-bottom: 25px;")
+          img(src=(iconsInfo.infoIcon || iconsInfo.info || '') alt="Información" height="60vh" style="margin: 0 auto 15px auto; display: block;")
+          h1(style="color: #1A1431; text-align: center; font-weight: 600;") Notificación de ajuste en tu transacción
+        
+        p(style="color: #1A1431; margin-bottom: 20px;") Estimad#{vars.genero === 'F' ? 'a' : 'o'} #{vars.nombre || 'cliente'}
+        
+        p(style="color: #1A1431; margin-bottom: 30px;") 
+          | Queremos informarte que se ha realizado un ajuste en una de tus transacciones recientes. A continuación, te 
+          | proporcionamos los detalles específicos del ajuste:
+
+        div(style="margin-top: 25px; margin-bottom: 20px;")
+          p(style="color: #1A1431; margin-bottom: 15px; font-weight: 600;") Detalle del Ajuste:
+          
+        .transaction-info(style="display: flex; margin-bottom: 22px; align-items: flex-start;")
+          img(src=(iconsInfo.date || iconsInfo.calendar || '') alt="Fecha" height="15vh" style="margin-right: 15px; margin-top: 6px;")
+          div(style="color: #1A1431;")
+            div(style="font-weight: 500; margin-bottom: 3px;") Fecha y Hora
+            div #{vars.transactionDate || '31 de Julio del 2024, 17:50h'}
+        
+        .transaction-info(style="display: flex; margin-bottom: 22px; align-items: flex-start;")
+          img(src=(iconsInfo.withdraw || '') alt="Moneda" height="15vh" style="margin-right: 15px; margin-top: 6px;")
+          div(style="color: #1A1431;")
+            div(style="font-weight: 500; margin-bottom: 3px;") Moneda
+            div #{vars.currency || 'USDT'}
+        
+        .transaction-info(style="display: flex; margin-bottom: 22px; align-items: flex-start;")
+          img(src=(iconsInfo.currency2 ||'') alt="Monto" height="15vh" style="margin-right: 15px; margin-top: 6px;")
+          div(style="color: #1A1431;")
+            div(style="font-weight: 500; margin-bottom: 3px;") Monto
+            div $ #{vars.amount || '130,00 USDT'}
+        
+        .transaction-info(style="display: flex; margin-bottom: 22px; align-items: flex-start;")
+          img(src=(iconsInfo.location || iconsInfo.merchant || '') alt="Establecimiento" height="15vh" style="margin-right: 15px; margin-top: 6px;")
+          div(style="color: #1A1431;")
+            div(style="font-weight: 500; margin-bottom: 3px;") Establecimiento
+            div #{vars.merchant || ''}
+
+        div(style="margin-top: 35px; margin-bottom: 20px;")
+          p(style="color: #1A1431; margin-bottom: 15px; font-weight: 600;") Actualización de Saldo:
+          p(style="color: #1A1431;") 
+            | Te informamos que tu saldo ha sido actualizado para reflejar este ajuste. Puedes verificar tu saldo actualizado
+            | a través de nuestra banca en línea, aplicación móvil, o visitando una de nuestras sucursales.
+
+      div(style="padding: 10px 0; border: 0; height: 15px; background-color: #FFFFFF; width: 100%; display: flex; justify-content: center; align-items: center;")
+        hr(style="border: 0; height: 1px; background-color: #000000; width: 80%;")
+
+      div(style="padding: 20px; padding-left: 35px; padding-right: 35px;")
+        p(style="color: #1A1431;")
+          | Si tienes alguna pregunta o necesitas asistencia, no dudes en contactarnos a través de support@b2fintech.com Gracias por unirte a nosotros. 
+          | ¡Esperamos que disfrutes de tu experiencia con B2pay!

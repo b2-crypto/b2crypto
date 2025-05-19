@@ -26,7 +26,7 @@ class ResponseB2Crypto {
         ? data
         : data?.data;
 
-    if (data.nextPage) {
+    if (data?.nextPage) {
       this.page = {
         nextPage: data.nextPage,
         prevPage: data.prevPage,
@@ -38,11 +38,11 @@ class ResponseB2Crypto {
         order: Array<string>,
       };
       this.data = data.list;
-    } else if (data._id || data.id) {
+    } else if (data?._id || data?.id) {
       this.data = data;
-    } else if (data.message) {
-      this.page = data.page;
-      this.data = data.data;
+    } else if (data?.message) {
+      this.page = data?.page;
+      this.data = data?.data;
     }
   }
 
