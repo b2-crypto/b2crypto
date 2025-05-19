@@ -19,6 +19,7 @@ COPY --from=build /app/package*.json ./
 COPY --from=build /app/pnpm-workspace.yaml ./
 COPY --from=build /app/sftp ./sftp
 COPY --from=build /app/libs/message/src/templates ./libs/message/src/templates
+COPY --from=build /app/libs/message/src/icons ./libs/message/src/icons
 RUN pnpm install --production
 
 ENV ENVIRONMENT="dev"
