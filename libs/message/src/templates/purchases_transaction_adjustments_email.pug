@@ -24,25 +24,25 @@ html(lang="es")
         .transaction-info(style="display: flex; margin-bottom: 22px; align-items: flex-start;")
           img(src=(iconsInfo.date || iconsInfo.calendar || '') alt="Fecha" height="15vh" style="margin-right: 15px; margin-top: 6px;")
           div(style="color: #1A1431;")
-            div(style="font-weight: 500; margin-bottom: 3px;") Fecha y Hora
+            div(style="font-weight: 500; margin-bottom: 3px; font-size: 10px;") Fecha y Hora
             div #{vars.transactionDate || '31 de Julio del 2024, 17:50h'}
         
         .transaction-info(style="display: flex; margin-bottom: 22px; align-items: flex-start;")
           img(src=(iconsInfo.withdraw || '') alt="Moneda" height="15vh" style="margin-right: 15px; margin-top: 6px;")
           div(style="color: #1A1431;")
-            div(style="font-weight: 500; margin-bottom: 3px;") Moneda
+            div(style="font-weight: 500; margin-bottom: 3px; font-size: 10px;") Moneda
             div #{vars.currency || 'USDT'}
         
         .transaction-info(style="display: flex; margin-bottom: 22px; align-items: flex-start;")
           img(src=(iconsInfo.currency2 ||'') alt="Monto" height="15vh" style="margin-right: 15px; margin-top: 6px;")
           div(style="color: #1A1431;")
-            div(style="font-weight: 500; margin-bottom: 3px;") Monto
+            div(style="font-weight: 500; margin-bottom: 3px; font-size: 10px;") Monto
             div $ #{vars.amount || '130,00 USDT'}
         
         .transaction-info(style="display: flex; margin-bottom: 22px; align-items: flex-start;")
           img(src=(iconsInfo.location || iconsInfo.merchant || '') alt="Establecimiento" height="15vh" style="margin-right: 15px; margin-top: 6px;")
           div(style="color: #1A1431;")
-            div(style="font-weight: 500; margin-bottom: 3px;") Establecimiento
+            div(style="font-weight: 500; margin-bottom: 3px; font-size: 10px;") Establecimiento
             div #{vars.merchant || ''}
 
         div(style="margin-top: 35px; margin-bottom: 20px;")
