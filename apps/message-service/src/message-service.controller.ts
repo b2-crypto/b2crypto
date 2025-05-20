@@ -53,6 +53,14 @@ export class MessageServiceController implements GenericServiceController {
   @HttpCode(HttpStatus.OK)
   @Post('/send-emails/:email')
   async sendEmails(@Param('email') email: string) {
+    const transactionDate = new Intl.DateTimeFormat('es-CO', {
+      dateStyle: 'full',
+      timeStyle: 'long',
+      timeZone: 'America/Bogota',
+    }).format(new Date());
+    const transactionDateCapitalized =
+      transactionDate.charAt(0).toUpperCase() + transactionDate.slice(1);
+
     const sendEmailOtpNotificationData = {
       destinyText: email,
       destiny: null,
@@ -93,7 +101,7 @@ export class MessageServiceController implements GenericServiceController {
         cardId: 'crd-2gYdAdniISpBYunuGWs41x0A1f8',
         name: '',
         transactionId: 'ctx-123',
-        transactionDate: '16/09/2023',
+        transactionDate: transactionDateCapitalized,
         transactionTime: '12:00pm',
         transactionStatus: 'APPROVED',
         transactionType: 'Purchase',
@@ -115,7 +123,7 @@ export class MessageServiceController implements GenericServiceController {
         cardId: 'crd-2gYdAdniISpBYunuGWs41x0A1f8',
         name: '',
         transactionId: 'ctx-123',
-        transactionDate: '16/09/2023',
+        transactionDate: transactionDateCapitalized,
         transactionTime: '12:00pm',
         transactionStatus: 'REJECTED',
         transactionType: 'Purchase',
@@ -211,11 +219,7 @@ export class MessageServiceController implements GenericServiceController {
         name: email,
         username: email,
         password: '123456',
-        datetime: new Intl.DateTimeFormat('es-CO', {
-          dateStyle: 'full',
-          timeStyle: 'long',
-          timeZone: 'America/Bogota',
-        }).format(new Date()),
+        datetime: transactionDateCapitalized,
       },
     };
 
@@ -253,11 +257,7 @@ export class MessageServiceController implements GenericServiceController {
         name: email,
         currency: 'USDT',
         amountReload: '1000.00',
-        transactionDate: new Intl.DateTimeFormat('es-CO', {
-          dateStyle: 'full',
-          timeStyle: 'long',
-          timeZone: 'America/Bogota',
-        }).format(new Date()),
+        transactionDate: transactionDateCapitalized,
         transactionHash: '0x1234567890abcdef',
       },
     };
@@ -278,11 +278,7 @@ export class MessageServiceController implements GenericServiceController {
         name: email,
         currency: 'USDT',
         amountReload: '1000.00',
-        transactionDate: new Intl.DateTimeFormat('es-CO', {
-          dateStyle: 'full',
-          timeStyle: 'long',
-          timeZone: 'America/Bogota',
-        }).format(new Date()),
+        transactionDate: transactionDateCapitalized,
         amountAccount: '2000.00',
       },
     };

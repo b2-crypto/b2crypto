@@ -371,6 +371,14 @@ export class TransferServiceService
         transfer.operationType === OperationTransactionType.deposit &&
         transfer.typeAccount === TypesAccountEnum.WALLET
       ) {
+        const transactionDate = new Intl.DateTimeFormat('es-CO', {
+          dateStyle: 'full',
+          timeStyle: 'long',
+          timeZone: 'America/Bogota',
+        }).format(transferSaved.createdAt);
+        const transactionDateCapitalized =
+          transactionDate.charAt(0).toUpperCase() + transactionDate.slice(1);
+
         const sendDepositWalletReceivedData = {
           name: 'Se ha recibido un deposito en tu wallet',
           body: `Tu wallet ha sido recargada exitosamente`,
@@ -382,11 +390,7 @@ export class TransferServiceService
             name: account.email,
             currency: transferSaved.currency,
             amountReload: `${transferSaved.amount} ${transferSaved.currency}`,
-            transactionDate: new Intl.DateTimeFormat('es-CO', {
-              dateStyle: 'full',
-              timeStyle: 'long',
-              timeZone: 'America/Bogota',
-            }).format(transferSaved.createdAt),
+            transactionDate: transactionDateCapitalized,
             transactionHash:
               transfer?.['responseAccount']?.['data']?.['txHash'] ?? '',
           },
@@ -402,6 +406,14 @@ export class TransferServiceService
         transfer.operationType === OperationTransactionType.deposit &&
         transfer.typeAccount === TypesAccountEnum.CARD
       ) {
+        const transactionDate = new Intl.DateTimeFormat('es-CO', {
+          dateStyle: 'full',
+          timeStyle: 'long',
+          timeZone: 'America/Bogota',
+        }).format(transferSaved.createdAt);
+        const transactionDateCapitalized =
+          transactionDate.charAt(0).toUpperCase() + transactionDate.slice(1);
+
         const sendDepositWalletReceivedData = {
           name: 'Se ha recibido una recarga en tu tarjeta',
           body: 'Tu tarjeta ha sido recargada exitosamente',
@@ -413,11 +425,7 @@ export class TransferServiceService
             name: account.email,
             currency: transferSaved.currencyCustodial,
             amountReload: `${transferSaved.amountCustodial} ${transferSaved.currencyCustodial}`,
-            transactionDate: new Intl.DateTimeFormat('es-CO', {
-              dateStyle: 'full',
-              timeStyle: 'long',
-              timeZone: 'America/Bogota',
-            }).format(transferSaved.createdAt),
+            transactionDate: transactionDateCapitalized,
             amountAccount: accountUpdated.amount,
           },
         };
