@@ -21,35 +21,35 @@ html(lang="es")
           div(style="display: flex; align-items: center; width: 30px;")
             span 💰
           div(style="display: flex; align-items: center;")
-            strong(style="margin-right: 8px; color: #000;") Moneda
+            strong(style="margin-right: 8px; color: #000; font-size: 10px;") Moneda
             span(style="color: #000;") #{vars.currency}
         
         .transaction-info(style="display: flex; margin-bottom: 22px; align-items: flex-start;")
           div(style="display: flex; align-items: center; width: 30px;")
             span 💸
           div(style="display: flex; align-items: center;")
-            strong(style="margin-right: 8px; color: #000;") Saldo Retirado
+            strong(style="margin-right: 8px; color: #000; font-size: 10px;") Saldo Retirado
             span(style="color: #000;") #{vars.amountReload}
         
         .transaction-info(style="display: flex; margin-bottom: 22px; align-items: flex-start;")
           div(style="display: flex; align-items: center; width: 30px;")
             span 📅
           div(style="display: flex; align-items: center;")
-            strong(style="margin-right: 8px; color: #000;") Fecha y Hora
+            strong(style="margin-right: 8px; color: #000; font-size: 10px;") Fecha y Hora
             span(style="color: #000;") #{vars.transactionDate || ''}#{vars.transactionDate && vars.transactionTime ? ', ' : ''}#{vars.transactionTime || ''}
         
         .transaction-info(style="display: flex; margin-bottom: 22px; align-items: flex-start;")
           div(style="display: flex; align-items: center; width: 30px;")
             span 📍
           div(style="display: flex; align-items: center;")
-            strong(style="margin-right: 8px; color: #000;") Dirección de destino
+            strong(style="margin-right: 8px; color: #000; font-size: 10px;") Dirección de destino
             span(style="color: #000;") #{vars.destinationAddress || vars.address || ''}
         
         .transaction-info(style="display: flex; margin-bottom: 22px; align-items: flex-start;")
           div(style="display: flex; align-items: center; width: 30px;")
             span 🔄
           div(style="display: flex; align-items: center;")
-            strong(style="margin-right: 8px; color: #000;") Estado de Retiro
+            strong(style="margin-right: 8px; color: #000; font-size: 10px;") Estado de Retiro
             span(style="color: #000;") #{vars.status || 'En proceso'}
 
         p

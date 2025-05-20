@@ -893,6 +893,8 @@ export class PomeloIntegrationProcessService {
     const currencyCode = 'USD';
     const totalAmount = parseFloat(process.transfer.amountCustodial.toFixed(2));
     const amountFormatted = `${totalAmount} USDT`;
+    const transactionDateCapitalized =
+      transactionDate.charAt(0).toUpperCase() + transactionDate.slice(1);
 
     const data = {
       transport: TransportEnum.EMAIL,
@@ -900,7 +902,7 @@ export class PomeloIntegrationProcessService {
         cardId: authorization.card?.id || '',
         name: '',
         transactionId: authorization.transaction.id,
-        transactionDate: transactionDate,
+        transactionDate: transactionDateCapitalized,
         transactionTime: transactionTime,
         transactionStatus: process.response.status,
         transactionType: authorization.transaction?.type || '',

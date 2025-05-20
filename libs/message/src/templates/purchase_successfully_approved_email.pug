@@ -22,31 +22,31 @@ html(lang="es")
         .transaction-info(style="display: flex; margin-bottom: 22px; align-items: flex-start;")
           img(src=iconsInfo.date alt="Fecha" height="15vh" style="margin-right: 10px;margin-top: 8px !important;")
           div(style="color: #1A1431; margin-top:-4px;")
-            div Fecha y Hora
+            div(style="font-size: 10px;") Fecha y Hora
             div #{vars.transactionDate || 'N/A'}, #{vars.transactionTime || 'N/A'}
         
         .transaction-info(style="display: flex; margin-bottom: 22px; align-items: flex-start;")
           img(src=iconsInfo.location alt="Ubicación" height="15vh" style="margin-right: 10px;margin-top: 8px !important;")
           div(style="color: #1A1431; margin-top:-4px;")
-            div Establecimiento
+            div(style="font-size: 10px;") Establecimiento
             div #{vars.merchant || 'N/A'}
         
         .transaction-info(style="display: flex; margin-bottom: 22px; align-items: flex-start;")
           img(src=iconsInfo.tether alt="Moneda" height="15vh" style="margin-right: 10px;margin-top: 8px !important;")
           div(style="color: #1A1431; margin-top:-4px;")
-            div Moneda
+            div(style="font-size: 10px;") Moneda
             div #{vars.currency || 'N/A'}
         
         .transaction-info(style="display: flex; margin-bottom: 22px; align-items: flex-start;")
           img(src=iconsInfo.currency alt="Monto" height="15vh" style="margin-right: 10px;margin-top: 8px !important;")
           div(style="color: #1A1431; margin-top:-4px;")
-            div Monto
+            div(style="font-size: 10px;") Monto
             div #{vars.amountReload || 'N/A'}
         
         .transaction-info(style="display: flex; margin-bottom: 22px; align-items: flex-start;")
           img(src=iconsInfo.payment alt="Método de pago" height="15vh" style="margin-right: 10px;margin-top: 8px !important;")
           div(style="color: #1A1431; margin-top:-4px;")
-            div Método de Pago Utilizado
+            div(style="font-size: 10px;") Método de Pago Utilizado
             div xxxx xxxx #{vars.lastFourDigits || 'N/A'}
 
         p(style="color: #1A1431;") Gracias por utilizar nuestros servicios para realizar tu compra.

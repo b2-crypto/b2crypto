@@ -313,6 +313,13 @@ export class AuthServiceController {
         }
         await this.deleteOtpGenerated(restorePasswordDto.email);
         const psw = restorePasswordDto.password;
+        const datetime = new Intl.DateTimeFormat('es-CO', {
+          dateStyle: 'full',
+          timeStyle: 'long',
+          timeZone: 'America/Bogota',
+        }).format(new Date());
+        const datetimeCapitalized =
+          datetime.charAt(0).toUpperCase() + datetime.slice(1);
         const emailData = {
           name: `Actualizacion de clave`,
           body: `Tu clave ha sido actualizada exitosamente ${user.name}`,
@@ -324,11 +331,7 @@ export class AuthServiceController {
             name: user.name,
             username: user.email,
             password: psw,
-            datetime: new Intl.DateTimeFormat('es-CO', {
-              dateStyle: 'full',
-              timeStyle: 'long',
-              timeZone: 'America/Bogota',
-            }).format(new Date()),
+            datetime: datetimeCapitalized,
           },
         };
         this.builder.emitMessageEventClient(

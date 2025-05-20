@@ -100,8 +100,8 @@ export class MessageServiceService {
       };
     }
     const emailMessage = new EmailMessageBuilder()
-      .setName('A un paso de desbloquear tu vida financiera 🚀')
-      .setBody(`Your OTP code is ${message.vars.otp}`)
+      .setName('Este es tu codigo de verificacion OTP 🚀')
+      .setBody('Este es tu codigo de verificacion OTP 🚀')
       .setOriginText(this.getOriginEmail())
       .setDestinyText(message.destinyText)
       .setVars(message.vars)
@@ -213,8 +213,8 @@ export class MessageServiceService {
 
   async sendActivatePhysicalCards(message: MessageCreateDto) {
     const emailMessage = new EmailMessageBuilder()
-      .setName('Activate Physical Card')
-      .setBody('Your physical card activate details')
+      .setName('¡Ya puedes usarla! Tu tarjeta está activada')
+      .setBody('¡Ya puedes usarla! Tu tarjeta está activada')
       .setOriginText(this.getOriginEmail())
       .setDestinyText(message.destinyText)
       .setVars(message.vars)
@@ -238,8 +238,8 @@ export class MessageServiceService {
 
   async sendRechargeCardReceived(message: MessageCreateDto) {
     const emailMessage = new EmailMessageBuilder()
-      .setName('Recharge Card Received')
-      .setBody('Your recharge card received details')
+      .setName('Depósito recibido')
+      .setBody('Depósito recibido')
       .setOriginText(this.getOriginEmail())
       .setDestinyText(message.destinyText)
       .setVars(message.vars)
