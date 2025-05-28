@@ -891,7 +891,9 @@ export class PomeloIntegrationProcessService {
     }
 
     const currencyCode = 'USD';
-    const totalAmount = parseFloat(process.transfer.amountCustodial.toFixed(2));
+    const totalAmount = parseFloat(
+      Number(process.transfer.amountCustodial).toFixed(2),
+    );
     const amountFormatted = `${totalAmount} USDT`;
     const transactionDateCapitalized =
       transactionDate.charAt(0).toUpperCase() + transactionDate.slice(1);
@@ -921,8 +923,7 @@ export class PomeloIntegrationProcessService {
         EventsNamesMessageEnum.sendPurchaseRejected,
         data,
       );
-
-      console.log(
+      this.logger.info(
         `Correo de notificación de rechazo enviado para transacción ${authorization.idempotency}`,
       );
     }
