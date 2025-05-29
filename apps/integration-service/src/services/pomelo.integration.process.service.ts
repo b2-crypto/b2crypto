@@ -788,14 +788,16 @@ export class PomeloIntegrationProcessService {
   }
   async processAdjustment(adjustment: Adjustment, headers: any): Promise<any> {
     try {
-      const processed = await this.process(
+      const { transfer, response } = await this.process(
         adjustment,
         adjustment.idempotency,
         false,
         headers,
       );
 
-      this.sendAdjustmentNotificationEmail(adjustment).catch((error) => {
+      this.sendAdjustmentNotificationEmail(adjustment, {
+        amountCustodial: Number(transfer.amountCustodial),
+      }).catch((error) => {
         this.logger.error(
           `[ProcessNotification] Error sending adjustment notification email ${
             error.message || error
@@ -803,7 +805,7 @@ export class PomeloIntegrationProcessService {
         );
       });
 
-      return processed;
+      return response;
     } catch (error) {
       this.logger.error(
         `[ProcessNotification] Error processing adjustment ${
@@ -815,16 +817,43 @@ export class PomeloIntegrationProcessService {
 
   private async sendAdjustmentNotificationEmail(
     adjustment: Adjustment,
+    {
+      amountCustodial,
+    }: {
+      amountCustodial: number;
+    },
   ): Promise<void> {
     if (adjustment.user && adjustment.user.id) {
+      const transactionDate = adjustment.transaction?.local_date_time
+        ? new Date(adjustment.transaction.local_date_time).toLocaleDateString(
+            'es-ES',
+            {
+              day: '2-digit',
+              month: 'long',
+              year: 'numeric',
+            },
+          )
+        : new Date().toLocaleDateString('es-ES', {
+            day: '2-digit',
+            month: 'long',
+            year: 'numeric',
+          });
+
+      const currencyCode = 'USD';
+      const totalAmount = parseFloat(amountCustodial.toFixed(2));
+      const amountFormatted = `${totalAmount} USDT`;
+      const transactionDateCapitalized =
+        transactionDate.charAt(0).toUpperCase() + transactionDate.slice(1);
+
       const data = {
         vars: {
           cardId: adjustment.card.id,
           transactionType: adjustment.transaction?.type,
-          merchantName: adjustment.merchant?.name,
+          merchant: adjustment.merchant?.name || '',
           cardLastFour: adjustment.card?.last_four,
-          amountLocal: adjustment.amount?.settlement?.total,
-          currencyLocal: adjustment.amount?.settlement?.currency,
+          amount: amountFormatted,
+          currency: currencyCode,
+          transactionDate: transactionDateCapitalized,
         },
       };
 
