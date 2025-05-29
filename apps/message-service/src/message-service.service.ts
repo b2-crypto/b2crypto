@@ -140,9 +140,9 @@ export class MessageServiceService {
         .setVars({
           ...message.vars,
           name:
-            user.userCard.name && user.userCard.surname
+            user?.userCard?.name && user?.userCard?.surname
               ? `${user.userCard.name} ${user.userCard.surname}`
-              : user.name,
+              : user?.name,
           address: userPerson.location.address.street_name,
         })
         .build();
