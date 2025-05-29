@@ -12,7 +12,7 @@ html(lang="es")
           img(src=(iconsInfo.infoIcon || iconsInfo.info || '') alt="Información" height="60vh" style="margin: 0 auto 15px auto; display: block;")
           h1(style="color: #1A1431; text-align: center; font-weight: 600;") Notificación de ajuste en tu transacción
         
-        p(style="color: #1A1431; margin-bottom: 20px;") Estimad#{vars.genero === 'F' ? 'a' : 'o'} #{vars.nombre || 'cliente'}
+        p(style="color: #1A1431; margin-bottom: 20px;") Estimado/a #{vars.customerName || vars.email},
         
         p(style="color: #1A1431; margin-bottom: 30px;") 
           | Queremos informarte que se ha realizado un ajuste en una de tus transacciones recientes. A continuación, te 
@@ -25,25 +25,25 @@ html(lang="es")
           img(src=(iconsInfo.date || iconsInfo.calendar || '') alt="Fecha" height="15vh" style="margin-right: 15px; margin-top: 6px;")
           div(style="color: #1A1431;")
             div(style="font-weight: 500; margin-bottom: 3px; font-size: 10px;") Fecha y Hora
-            div #{vars.transactionDate || '31 de Julio del 2024, 17:50h'}
+            div #{vars.transactionDate}
         
         .transaction-info(style="display: flex; margin-bottom: 22px; align-items: flex-start;")
           img(src=(iconsInfo.withdraw || '') alt="Moneda" height="15vh" style="margin-right: 15px; margin-top: 6px;")
           div(style="color: #1A1431;")
             div(style="font-weight: 500; margin-bottom: 3px; font-size: 10px;") Moneda
-            div #{vars.currency || 'USDT'}
+            div #{vars.currency}
         
         .transaction-info(style="display: flex; margin-bottom: 22px; align-items: flex-start;")
           img(src=(iconsInfo.currency2 ||'') alt="Monto" height="15vh" style="margin-right: 15px; margin-top: 6px;")
           div(style="color: #1A1431;")
             div(style="font-weight: 500; margin-bottom: 3px; font-size: 10px;") Monto
-            div $ #{vars.amount || '130,00 USDT'}
+            div $ #{vars.amount}
         
         .transaction-info(style="display: flex; margin-bottom: 22px; align-items: flex-start;")
           img(src=(iconsInfo.location || iconsInfo.merchant || '') alt="Establecimiento" height="15vh" style="margin-right: 15px; margin-top: 6px;")
           div(style="color: #1A1431;")
             div(style="font-weight: 500; margin-bottom: 3px; font-size: 10px;") Establecimiento
-            div #{vars.merchant || ''}
+            div #{vars.merchant}
 
         div(style="margin-top: 35px; margin-bottom: 20px;")
           p(style="color: #1A1431; margin-bottom: 15px; font-weight: 600;") Actualización de Saldo:

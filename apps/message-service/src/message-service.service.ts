@@ -278,6 +278,7 @@ export class MessageServiceService {
           .setDestinyText(user.email)
           .setVars({
             ...message.vars,
+            email: user.email,
             customerName: user.name,
           })
           .build();
