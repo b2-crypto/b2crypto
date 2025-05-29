@@ -12,7 +12,7 @@ html(lang="es")
           img(src=(iconsInfo.infoIcon || iconsInfo.info || '') alt="Información" height="60vh" style="margin: 0 auto 15px auto; display: block;")
           h1(style="color: #1A1431; text-align: center; font-weight: 600;") Notificación de ajuste en tu transacción
         
-        p(style="color: #1A1431; margin-bottom: 20px;") Estimado/a #{vars.customerName}
+        p(style="color: #1A1431; margin-bottom: 20px;") Estimado/a #{vars.customerName || vars.email},
         
         p(style="color: #1A1431; margin-bottom: 30px;") 
           | Queremos informarte que se ha realizado un ajuste en una de tus transacciones recientes. A continuación, te 
