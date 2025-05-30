@@ -25,8 +25,6 @@ export class ResponseHttpExceptionFilter implements ExceptionFilter {
   }
 
   private getStatus(rta, exception) {
-    return typeof rta?.statusCode === 'string'
-      ? exception.status
-      : rta?.statusCode ?? 500;
+    return rta?.statusCode ?? exception?.status ?? exception?.statusCode ?? 500;
   }
 }
