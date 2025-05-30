@@ -32,14 +32,14 @@ export class ResponseInterceptor implements NestInterceptor {
       map((data) => {
         //const isHtml = data._headers['content-type']?.includes('html');
         if (this.checkPomeloHooksResponse(res)) {
-          return data?.data || data;
+          return data?.data ?? data;
         }
         if (context['contextType'] === 'rpc') {
           return data;
         }
         if (!!data) {
           data.statusCode = this.getStatusCode(data, res);
-          if (isString(data.status)) {
+          if (isString(data?.status)) {
             delete data.status;
           }
           res.status(data?.statusCode ?? 500);
@@ -71,7 +71,7 @@ export class ResponseInterceptor implements NestInterceptor {
         ? 201
         : !!data?.response
         ? data?.response?.statusCode
-        : isNumber(res.status)
+        : isNumber(res?.status)
         ? res?.status
         : 400)
     );
