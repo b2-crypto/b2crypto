@@ -1620,14 +1620,15 @@ export class CardServiceController extends AccountServiceController {
     const from = await this.getAccountService().findOneById(
       createDto.from.toString(),
     );
-    // if (from.type != TypesAccountEnum.WALLET) {
-    //   this.logger.error(
-    //     'Type not same',
-    //     CardServiceController.name,
-    //     'Card.rechargeOne.wallet',
-    //   );
-    //   throw new BadRequestException('Wallet not found');
-    // }
+    // [hender-2025/08/07] Only from Wallet
+    if (from.type != TypesAccountEnum.WALLET) {
+      this.logger.error(
+        `Type ${from.type} is not wallet`,
+        CardServiceController.name,
+        'Card.rechargeOne.from',
+      );
+      throw new BadRequestException('Wallet not found');
+    }
     if (!from) {
       throw new BadRequestException('Wallet or Card not valid');
     }
