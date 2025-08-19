@@ -71,6 +71,7 @@ export const ecsFargateService = new awsx.ecs.FargateService(
         memory: parseInt(TASK_MEMORY_MONOLITH),
         essential: true,
         environment: [
+          { name: 'NODE_ENV', value: STACK.toLowerCase() },
           { name: 'ENVIRONMENT', value: ENVIRONMENT },
           { name: 'APP_NAME', value: APP_NAME },
           { name: 'APP_VERSION', value: APP_VERSION },

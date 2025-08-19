@@ -48,6 +48,7 @@ export interface IPair {
 @Injectable()
 export class FiatIntegrationClient {
   private readonly TRM_API_URL: string;
+  private readonly NODE_ENV: string;
 
   constructor(
     @InjectPinoLogger(FiatIntegrationClient.name)
@@ -57,6 +58,7 @@ export class FiatIntegrationClient {
     private readonly configService: ConfigService,
   ) {
     this.TRM_API_URL = this.configService.getOrThrow('TRM_API_URL');
+    this.NODE_ENV = this.configService.getOrThrow('NODE_ENV');
   }
 
   async getCurrencyConversionCustodial(
@@ -75,7 +77,9 @@ export class FiatIntegrationClient {
     this.logger.info(`[getCurrencyConversion] url: ${url}`);
 
     try {
-      const pairCached = await this.cacheManager.get<{ value: IPair }>(pair);
+      const pairCached = await this.cacheManager.get<{ value: IPair }>(
+        `${this.NODE_ENV}:${pair}`,
+      );
 
       const pairResponse =
         pairCached?.value ??
@@ -87,7 +91,11 @@ export class FiatIntegrationClient {
         }).then<IPair>((response) => response.json()));
 
       if (!pairCached?.value)
-        await this.cacheManager.set(pair, pairResponse, 48 * 60 * 60 * 1000);
+        await this.cacheManager.set(
+          `${this.NODE_ENV}:${pair}`,
+          pairResponse,
+          48 * 60 * 60 * 1000,
+        );
 
       return pairResponse;
     } catch (error) {
